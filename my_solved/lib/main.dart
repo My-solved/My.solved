@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:my_solved/veiws/search_view.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(MaterialApp(
+    title: 'MY.SOLVED',
+    home: MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -13,6 +18,15 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: Scaffold(
         appBar: AppBar(),
+        body: Center(
+          child: TextButton(
+            child: Text('Search View Test'),
+            onPressed: () {
+              Navigator.push(context,
+                  CupertinoPageRoute(builder: (context) => SearchView()));
+            },
+          ),
+        ),
       ),
     );
   }
