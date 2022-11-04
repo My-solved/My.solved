@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:my_solved/veiws/search_view.dart';
+import 'package:my_solved/pages/main_tab_page.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -15,18 +14,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       home: Scaffold(
-        appBar: AppBar(),
-        body: Center(
-          child: TextButton(
-            child: Text('Search View Test'),
-            onPressed: () {
-              Navigator.push(context,
-                  CupertinoPageRoute(builder: (context) => SearchView()));
-            },
-          ),
-        ),
+        body: MainTabPage(),
       ),
     );
   }
