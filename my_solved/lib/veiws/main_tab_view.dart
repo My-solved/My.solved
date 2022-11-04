@@ -12,7 +12,7 @@ class MainTabView extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        appBar: AppBar(),
+        appBar: null,
         body: SafeArea(
           child: viewModel.widgetOptions.elementAt(viewModel.selectedIndex),
         ),
