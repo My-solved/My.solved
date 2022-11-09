@@ -11,6 +11,7 @@ class MainTabView extends StatelessWidget {
 
     return CupertinoTabScaffold(
       tabBar: CupertinoTabBar(
+        activeColor: Color(0xff11ce3c),
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(CupertinoIcons.house_fill),
