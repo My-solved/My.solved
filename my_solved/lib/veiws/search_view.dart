@@ -45,7 +45,35 @@ class SearchView extends StatelessWidget {
               else
                 Container(
                   padding: EdgeInsets.only(top: 20, left: 20, right: 20),
-                  child: Text('검색 결과'),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Container(
+                        padding: EdgeInsets.only(top: 20),
+                        child: Text(
+                          '문제',
+                          style:
+                              TextStyle(fontSize: 12, color: Color(0xff767676)),
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.only(top: 20),
+                        child: Text(
+                          '사용자',
+                          style:
+                              TextStyle(fontSize: 12, color: Color(0xff767676)),
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.only(top: 20),
+                        child: Text(
+                          '태그',
+                          style:
+                              TextStyle(fontSize: 12, color: Color(0xff767676)),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
             ],
           ),
