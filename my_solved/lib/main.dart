@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:my_solved/pages/main_tab_page.dart';
 
 void main() {
-  runApp(MaterialApp(
+  runApp(CupertinoApp(
     title: 'MY.SOLVED',
     home: MyApp(),
   ));
@@ -13,11 +13,8 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        appBar: null,
-        body: MainTabPage(),
-      ),
+    return CupertinoApp(
+      home: MainTabPage(),
     );
   }
 }

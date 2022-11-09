@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'package:my_solved/view_models/main_tab_view_model.dart';
 
@@ -9,33 +9,30 @@ class MainTabView extends StatelessWidget {
   Widget build(BuildContext context) {
     var viewModel = Provider.of<MainTabViewModel>(context);
 
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: null,
-        body: SafeArea(
-          child: viewModel.widgetOptions.elementAt(viewModel.selectedIndex),
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: "Home",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.search),
-              label: "Search",
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.book),
-              label: "Recommand",
-            )
-          ],
-          currentIndex: viewModel.selectedIndex,
-          selectedItemColor: Colors.green,
-          onTap: viewModel.onItemTapped,
-        ),
+    return CupertinoTabScaffold(
+      tabBar: CupertinoTabBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.house_fill),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.search),
+            label: 'Search',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.book_fill),
+            label: 'Recommand',
+          ),
+        ],
       ),
+      tabBuilder: (BuildContext context, int index) {
+        return CupertinoTabView(
+          builder: (BuildContext context) {
+            return viewModel.widgetOptions[index];
+          },
+        );
+      },
     );
   }
 }
