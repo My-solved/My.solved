@@ -16,13 +16,14 @@ class SearchView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Container(
-                padding: EdgeInsets.only(top: 40, left: 20, right: 20),
-                child: Text(
-                  '문제 검색',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+              if (!viewModel.isSubmitted)
+                Container(
+                  padding: EdgeInsets.only(top: 40, left: 20, right: 20),
+                  child: Text(
+                    '문제 검색',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+                  ),
                 ),
-              ),
               Container(
                 padding: EdgeInsets.only(top: 40, left: 16, right: 16),
                 child: CupertinoSearchTextField(
@@ -32,10 +33,20 @@ class SearchView extends StatelessWidget {
                   },
                   onSubmitted: (String value) {
                     viewModel.textFieldChanged(value);
+                    viewModel.textFieldSubmitted();
                   },
                 ),
               ),
-              Text(viewModel.text),
+              if (!viewModel.isSubmitted)
+                Container(
+                  padding: EdgeInsets.only(top: 20, left: 20, right: 20),
+                  child: Text('과거 검색 내역'),
+                )
+              else
+                Container(
+                  padding: EdgeInsets.only(top: 20, left: 20, right: 20),
+                  child: Text('검색 결과'),
+                ),
             ],
           ),
         ),
