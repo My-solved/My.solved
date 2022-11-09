@@ -56,6 +56,11 @@ class SearchView extends StatelessWidget {
                               TextStyle(fontSize: 12, color: Color(0xff767676)),
                         ),
                       ),
+                      for (Problem problem in viewModel.problems)
+                        Container(
+                          padding: EdgeInsets.only(top: 10),
+                          child: Text(problem.titleKo),
+                        ),
                       Container(
                         padding: EdgeInsets.only(top: 20),
                         child: Text(
@@ -64,6 +69,11 @@ class SearchView extends StatelessWidget {
                               TextStyle(fontSize: 12, color: Color(0xff767676)),
                         ),
                       ),
+                      for (User user in viewModel.users)
+                        Container(
+                          padding: EdgeInsets.only(top: 10),
+                          child: Text(user.handle),
+                        ),
                       Container(
                         padding: EdgeInsets.only(top: 20),
                         child: Text(
@@ -72,6 +82,13 @@ class SearchView extends StatelessWidget {
                               TextStyle(fontSize: 12, color: Color(0xff767676)),
                         ),
                       ),
+                      for (Tag tag in viewModel.tags)
+                        Container(
+                          color: Color(0xffefefef),
+                          width: MediaQuery.of(context).size.width,
+                          margin: EdgeInsets.only(top: 10),
+                          child: Text(tag.key),
+                        ),
                     ],
                   ),
                 ),
