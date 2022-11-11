@@ -99,10 +99,53 @@ class SearchView extends StatelessWidget {
                     if (snapshot.hasData) {
                       return Column(
                         children: [
+                          Align(
+                            alignment: Alignment.topLeft,
+                            child: Container(
+                              padding: EdgeInsets.only(top: 20, left: 20),
+                              child: Text(
+                                '문제',
+                                style: TextStyle(
+                                    fontSize: 12, color: Color(0xff767676)),
+                              ),
+                            ),
+                          ),
                           for (dynamic problem in snapshot.data!.problems)
                             Container(
                               padding: EdgeInsets.only(top: 10),
                               child: Text(problem['title'].toString()),
+                            ),
+                          Align(
+                            alignment: Alignment.topLeft,
+                            child: Container(
+                              padding: EdgeInsets.only(top: 20, left: 20),
+                              child: Text(
+                                '사용자',
+                                style: TextStyle(
+                                    fontSize: 12, color: Color(0xff767676)),
+                              ),
+                            ),
+                          ),
+                          for (dynamic user in snapshot.data!.users)
+                            Container(
+                            padding: EdgeInsets.only(top: 10),
+                            child: Text(user['handle'].toString()),
+                            ),
+                          Align(
+                            alignment: Alignment.topLeft,
+                            child: Container(
+                              padding: EdgeInsets.only(top: 20, left: 20),
+                              child: Text(
+                                '태그',
+                                style: TextStyle(
+                                    fontSize: 12, color: Color(0xff767676)),
+                              ),
+                            ),
+                          ),
+                          for (dynamic tag in snapshot.data!.tags)
+                            Container(
+                              padding: EdgeInsets.only(top: 10),
+                              child: Text(tag['key'].toString()),
                             ),
                         ],
                       );
