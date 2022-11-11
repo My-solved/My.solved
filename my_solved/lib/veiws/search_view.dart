@@ -82,8 +82,7 @@ class SearchView extends StatelessWidget {
                                         padding:
                                             EdgeInsets.only(top: 20, left: 20),
                                         child: Text(
-                                            problem['problemId'].toString() +
-                                                '번'),
+                                            '${problem['id']}번'),
                                       ),
                                       Container(
                                         padding: EdgeInsets.only(
@@ -102,24 +101,11 @@ class SearchView extends StatelessWidget {
                                               top: 12,
                                               left: 20,
                                             ),
-                                            child: Text('맞은 사람 수 : ',
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: Color(0xff767676),
-                                                )),
-                                          ),
-                                          Container(
-                                            padding: EdgeInsets.only(
-                                              top: 12,
-                                              right: 20,
-                                            ),
-                                            child: Text(
-                                                problem['acceptedUserCount']
-                                                    .toString(),
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: Color(0xff767676),
-                                                )),
+                                            child: Text('맞은 사람 수 : ${problem['solved']}',
+                                            style: TextStyle(
+                                            fontSize: 14,
+                                            color: Color(0xff767676),
+                                            )),
                                           ),
                                         ],
                                       ),
@@ -130,63 +116,7 @@ class SearchView extends StatelessWidget {
                                               top: 4,
                                               left: 20,
                                             ),
-                                            child: Text('Level : ',
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: Color(0xff767676),
-                                                )),
-                                          ),
-                                          Container(
-                                            padding: EdgeInsets.only(
-                                              top: 4,
-                                              right: 20,
-                                            ),
-                                            child: Text(
-                                                problem['level'].toString(),
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: Color(0xff767676),
-                                                )),
-                                          ),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Container(
-                                            padding: EdgeInsets.only(
-                                              top: 4,
-                                              left: 20,
-                                            ),
-                                            child: Text('평균 시도 횟수 : ',
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: Color(0xff767676),
-                                                )),
-                                          ),
-                                          Container(
-                                            padding: EdgeInsets.only(
-                                              top: 4,
-                                              right: 20,
-                                            ),
-                                            child: Text(
-                                                problem['averageTries']
-                                                    .toString(),
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: Color(0xff767676),
-                                                )),
-                                          ),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Container(
-                                            padding: EdgeInsets.only(
-                                              top: 4,
-                                              left: 20,
-                                              bottom: 20,
-                                            ),
-                                            child: Text('태그 : ',
+                                            child: Text('Level : ${problem['level']}',
                                                 style: TextStyle(
                                                   fontSize: 14,
                                                   color: Color(0xff767676),
@@ -247,8 +177,9 @@ class SearchView extends StatelessWidget {
                                         left: 20,
                                         right: 20,
                                       ),
-                                      child: Text(tag['key'].toString())),
+                                      child: Text('${tag['key']} : ${tag['description']}'),
                                 ),
+                                )
                             ],
                           ),
                         );
