@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:my_solved/model/search/suggestion.dart';
+import 'package:my_solved/provider/search/suggestion_api.dart';
 
 class SearchViewModel with ChangeNotifier {
   String text = '';
   bool isSubmitted = false;
+  late Future<SearchSuggestion> future;
+
   var problems = [
     Problem(1450, '냅색문제', 1450, 2, 3.33),
     Problem(1451, '테스트문제', 11, 2, 2.12),
@@ -17,7 +21,12 @@ class SearchViewModel with ChangeNotifier {
 
   void textFieldSubmitted() {
     isSubmitted = true;
+    future = searchSuggestion(text);
     notifyListeners();
+  }
+
+  Problem dynamicToProblem(dynamic problemBefore) {
+    return problemBefore as Problem;
   }
 }
 
