@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:my_solved/view_models/search_view_model.dart';
 import 'package:provider/provider.dart';
 
@@ -43,55 +44,71 @@ class SearchView extends StatelessWidget {
                   child: Text('과거 검색 내역'),
                 )
               else
-                Container(
-                  padding: EdgeInsets.only(top: 20, left: 20, right: 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Container(
-                        padding: EdgeInsets.only(top: 20),
-                        child: Text(
-                          '문제',
-                          style:
-                              TextStyle(fontSize: 12, color: Color(0xff767676)),
-                        ),
-                      ),
-                      for (Problem problem in viewModel.problems)
-                        Container(
-                          padding: EdgeInsets.only(top: 10),
-                          child: Text(problem.titleKo),
-                        ),
-                      Container(
-                        padding: EdgeInsets.only(top: 20),
-                        child: Text(
-                          '사용자',
-                          style:
-                              TextStyle(fontSize: 12, color: Color(0xff767676)),
-                        ),
-                      ),
-                      for (User user in viewModel.users)
-                        Container(
-                          padding: EdgeInsets.only(top: 10),
-                          child: Text(user.handle),
-                        ),
-                      Container(
-                        padding: EdgeInsets.only(top: 20),
-                        child: Text(
-                          '태그',
-                          style:
-                              TextStyle(fontSize: 12, color: Color(0xff767676)),
-                        ),
-                      ),
-                      for (Tag tag in viewModel.tags)
-                        Container(
-                          color: Color(0xffefefef),
-                          width: MediaQuery.of(context).size.width,
-                          margin: EdgeInsets.only(top: 10),
-                          child: Text(tag.key),
-                        ),
-                    ],
-                  ),
-                ),
+                // Container(
+                //   padding: EdgeInsets.only(top: 20, left: 20, right: 20),
+                //   child: Column(
+                //     crossAxisAlignment: CrossAxisAlignment.start,
+                //     children: <Widget>[
+                //       Container(
+                //         padding: EdgeInsets.only(top: 20),
+                //         child: Text(
+                //           '문제',
+                //           style:
+                //               TextStyle(fontSize: 12, color: Color(0xff767676)),
+                //         ),
+                //       ),
+                //       for (Problem problem in viewModel.problems)
+                //         Container(
+                //           padding: EdgeInsets.only(top: 10),
+                //           child: Text(problem.titleKo),
+                //         ),
+                //       Container(
+                //         padding: EdgeInsets.only(top: 20),
+                //         child: Text(
+                //           '사용자',
+                //           style:
+                //               TextStyle(fontSize: 12, color: Color(0xff767676)),
+                //         ),
+                //       ),
+                //       for (User user in viewModel.users)
+                //         Container(
+                //           padding: EdgeInsets.only(top: 10),
+                //           child: Text(user.handle),
+                //         ),
+                //       Container(
+                //         padding: EdgeInsets.only(top: 20),
+                //         child: Text(
+                //           '태그',
+                //           style:
+                //               TextStyle(fontSize: 12, color: Color(0xff767676)),
+                //         ),
+                //       ),
+                //       for (Tag tag in viewModel.tags)
+                //         Container(
+                //           color: Color(0xffefefef),
+                //           width: MediaQuery.of(context).size.width,
+                //           margin: EdgeInsets.only(top: 10),
+                //           child: Text(tag.key),
+                //         ),
+                //     ],
+                //   ),
+                // ),
+                FutureBuilder(
+                  future: viewModel.future,
+                  builder: ((context, snapshot) {
+                    if (snapshot.hasData) {
+                      return Column(
+                        children: [
+                          for (dynamic problem in snapshot.data!.problems)
+                            Text(problem.toString())
+                        ],
+                      );
+                    } else if (snapshot.hasError) {
+                      return Text('${snapshot.error}');
+                    }
+                    return const CircularProgressIndicator();
+                  }),
+                )
             ],
           ),
         ),
