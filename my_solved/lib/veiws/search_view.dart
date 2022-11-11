@@ -100,7 +100,10 @@ class SearchView extends StatelessWidget {
                       return Column(
                         children: [
                           for (dynamic problem in snapshot.data!.problems)
-                            Text(problem.toString())
+                            Container(
+                              padding: EdgeInsets.only(top: 10),
+                              child: Text(problem['title'].toString()),
+                            ),
                         ],
                       );
                     } else if (snapshot.hasError) {
