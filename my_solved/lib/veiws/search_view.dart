@@ -81,16 +81,14 @@ class SearchView extends StatelessWidget {
                                       Container(
                                         padding:
                                             EdgeInsets.only(top: 20, left: 20),
-                                        child: Text(
-                                            '${problem['id']}번'),
+                                        child: Text('${problem['id']}번'),
                                       ),
                                       Container(
                                         padding: EdgeInsets.only(
                                           top: 10,
                                           left: 20,
                                         ),
-                                        child: Text(
-                                          problem['title'].toString(),
+                                        child: Text('${problem['title']}',
                                           style: TextStyle(fontSize: 22),
                                         ),
                                       ),
@@ -151,7 +149,7 @@ class SearchView extends StatelessWidget {
                                         left: 20,
                                         right: 20,
                                       ),
-                                      child: Text(user['handle'].toString())),
+                                      child: Text('${user['handle']}')),
                                 ),
                               Container(
                                 padding: EdgeInsets.only(top: 20),
