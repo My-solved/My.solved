@@ -23,7 +23,7 @@ class MainTabView extends StatelessWidget {
           ),
           BottomNavigationBarItem(
             icon: Icon(CupertinoIcons.book_fill),
-            label: 'Recommand',
+            label: 'Problem',
           ),
         ],
       ),
