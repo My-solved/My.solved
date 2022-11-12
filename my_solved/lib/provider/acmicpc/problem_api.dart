@@ -5,13 +5,13 @@ import 'package:html/parser.dart' as parser;
 import 'dart:developer' as developer;
 
 Future<dom.Document> problemShow(String text) async {
-  final response = await http.get(Uri.parse('https://www.acmicpc.net/problem/$text'));
+  final response = await http.get(Uri.parse("https://www.acmicpc.net/problem/$text"));
   final statusCode = response.statusCode;
 
-  dom.Document document = parser.parse(response.body);
-  developer.log(document.getElementById('problem_description').toString());
+  final document = parser.parse(response.body);
 
   if (statusCode == 200){
+    developer.log(document.getElementById('problem_description')!.text);
     return document;
   } else {
     throw Exception('Failed to load');

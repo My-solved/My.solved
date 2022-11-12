@@ -26,7 +26,7 @@ class ProblemView extends StatelessWidget {
             Container(
               padding: EdgeInsets.only(top: 40, left: 16, right: 16),
               child: CupertinoSearchTextField(
-                placeholder: '문제 번호, 문제 제목을 입력해주세요.',
+                placeholder: '문제 번호를 입력해주세요.',
                 onChanged: (String value) {
                   viewModel.textFieldChanged(value);
                 },
@@ -46,12 +46,49 @@ class ProblemView extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                            Container(
-                              padding: EdgeInsets.only(top: 20),
-                              child: Text(
-                                style: TextStyle(fontSize: 16), snapshot.data!.getElementById('problem_description').toString(),
-                              ),
+                          Align(alignment: Alignment.center,child: Container(
+                            padding: EdgeInsets.only(top: 20),
+                            child: Text(snapshot.data!.getElementById('problem_title')!.text),
+                          ),),
+                          Container(
+                            padding: EdgeInsets.only(top: 20),
+                            child: Text(
+                              '문제',
+                              style:
+                                  TextStyle(fontSize: 16, color: Color(0xff767676)),
                             ),
+                          ),
+                          Container(
+                            child: Text(snapshot.data!.getElementById('problem_description')!.text,
+                              style: TextStyle(fontSize: 14, color: Color(0xff767676)),
+                            ),
+                          ),
+                          Container(
+                            padding: EdgeInsets.only(top: 20),
+                            child: Text(
+                              '입력',
+                              style:
+                                  TextStyle(fontSize: 16, color: Color(0xff767676)),
+                            ),
+                          ),
+                          Container(
+                            child: Text(snapshot.data!.getElementById('problem_input')!.text,
+                              style: TextStyle(fontSize: 14, color: Color(0xff767676)),
+                            ),
+                          ),
+                          Container(
+                            padding: EdgeInsets.only(top: 20),
+                            child: Text(
+                              '출력',
+                              style:
+                                  TextStyle(fontSize: 16, color: Color(0xff767676)),
+                            ),
+                          ),
+                          Container(
+                            child: Text(snapshot.data!.getElementById('problem_output')!.text,
+                              style: TextStyle(fontSize: 14, color: Color(0xff767676)),
+                            ),
+                          ),
                         ],
                       ),
                     );
