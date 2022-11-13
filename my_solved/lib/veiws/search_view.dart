@@ -57,127 +57,15 @@ class SearchView extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              Container(
-                                padding: EdgeInsets.only(top: 20),
-                                child: Text(
-                                  '문제',
-                                  style: TextStyle(
-                                      fontSize: 12, color: Color(0xff767676)),
-                                ),
-                              ),
+                              problemHeader(),
                               for (dynamic problem in snapshot.data!.problems)
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: Color(0xffefefef),
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(10)),
-                                  ),
-                                  width: MediaQuery.of(context).size.width,
-                                  margin: EdgeInsets.only(top: 10),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Container(
-                                        padding:
-                                            EdgeInsets.only(top: 20, left: 20),
-                                        child: Text('${problem['id']}번'),
-                                      ),
-                                      Container(
-                                        padding: EdgeInsets.only(
-                                          top: 10,
-                                          left: 20,
-                                        ),
-                                        child: Text('${problem['title']}',
-                                          style: TextStyle(fontSize: 22),
-                                        ),
-                                      ),
-                                      Row(
-                                        children: [
-                                          Container(
-                                            padding: EdgeInsets.only(
-                                              top: 12,
-                                              left: 20,
-                                            ),
-                                            child: Text('맞은 사람 수 : ${problem['solved']}',
-                                            style: TextStyle(
-                                            fontSize: 14,
-                                            color: Color(0xff767676),
-                                            )),
-                                          ),
-                                        ],
-                                      ),
-                                      Row(
-                                        children: [
-                                          Container(
-                                            padding: EdgeInsets.only(
-                                              top: 4,
-                                              left: 20,
-                                            ),
-                                            child: Text('Level : ${problem['level']}',
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  color: Color(0xff767676),
-                                                )),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              Container(
-                                padding: EdgeInsets.only(top: 20),
-                                child: Text(
-                                  '사용자',
-                                  style: TextStyle(
-                                      fontSize: 12, color: Color(0xff767676)),
-                                ),
-                              ),
+                                problemCell(problem, context),
+                              userHeader(),
                               for (dynamic user in snapshot.data!.users)
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: Color(0xffefefef),
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(10)),
-                                  ),
-                                  width: MediaQuery.of(context).size.width,
-                                  margin: EdgeInsets.only(top: 10),
-                                  child: Container(
-                                      padding: EdgeInsets.only(
-                                        top: 12,
-                                        bottom: 12,
-                                        left: 20,
-                                        right: 20,
-                                      ),
-                                      child: Text('${user['handle']}')),
-                                ),
-                              Container(
-                                padding: EdgeInsets.only(top: 20),
-                                child: Text(
-                                  '태그',
-                                  style: TextStyle(
-                                      fontSize: 12, color: Color(0xff767676)),
-                                ),
-                              ),
+                                userCell(user, context),
+                              tagHeader(),
                               for (dynamic tag in snapshot.data!.tags)
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: Color(0xffefefef),
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(10)),
-                                  ),
-                                  width: MediaQuery.of(context).size.width,
-                                  margin: EdgeInsets.only(top: 10),
-                                  child: Container(
-                                      padding: EdgeInsets.only(
-                                        top: 12,
-                                        bottom: 12,
-                                        left: 20,
-                                        right: 20,
-                                      ),
-                                      child: Text('${tag['key']} : ${tag['description']}'),
-                                ),
-                                )
+                                tagCell(tag, context)
                             ],
                           ),
                         );
@@ -190,6 +78,150 @@ class SearchView extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+extension SearchViewExtension on SearchView {
+  Widget problemHeader() {
+    return CupertinoPageScaffold(
+      child: Container(
+        padding: EdgeInsets.only(top: 20),
+        child: Text(
+          '문제',
+          style: TextStyle(fontSize: 12, color: Color(0xff767676)),
+        ),
+      ),
+    );
+  }
+
+  Widget problemCell(dynamic problem, BuildContext context) {
+    return CupertinoPageScaffold(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Color(0xffefefef),
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+        ),
+        width: MediaQuery.of(context).size.width,
+        margin: EdgeInsets.only(top: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              padding: EdgeInsets.only(top: 20, left: 20),
+              child: Text('${problem['id']}번'),
+            ),
+            Container(
+              padding: EdgeInsets.only(
+                top: 10,
+                left: 20,
+              ),
+              child: Text(
+                '${problem['title']}',
+                style: TextStyle(fontSize: 22),
+              ),
+            ),
+            Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.only(
+                    top: 12,
+                    left: 20,
+                  ),
+                  child: Text('맞은 사람 수 : ${problem['solved']}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xff767676),
+                      )),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.only(
+                    top: 4,
+                    left: 20,
+                    bottom: 20,
+                  ),
+                  child: Text('Level : ${problem['level']}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xff767676),
+                      )),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget userHeader() {
+    return CupertinoPageScaffold(
+      child: Container(
+        padding: EdgeInsets.only(top: 20),
+        child: Text(
+          '사용자',
+          style: TextStyle(fontSize: 12, color: Color(0xff767676)),
+        ),
+      ),
+    );
+  }
+
+  Widget userCell(dynamic user, BuildContext context) {
+    return CupertinoPageScaffold(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Color(0xffefefef),
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+        ),
+        width: MediaQuery.of(context).size.width,
+        margin: EdgeInsets.only(top: 10),
+        child: Container(
+            padding: EdgeInsets.only(
+              top: 12,
+              bottom: 12,
+              left: 20,
+              right: 20,
+            ),
+            child: Text('${user['handle']}')),
+      ),
+    );
+  }
+
+  Widget tagHeader() {
+    return CupertinoPageScaffold(
+      child: Container(
+        padding: EdgeInsets.only(top: 20),
+        child: Text(
+          '태그',
+          style: TextStyle(fontSize: 12, color: Color(0xff767676)),
+        ),
+      ),
+    );
+  }
+
+  Widget tagCell(dynamic tag, BuildContext context) {
+    return CupertinoPageScaffold(
+      child: Container(
+        decoration: BoxDecoration(
+          color: Color(0xffefefef),
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+        ),
+        width: MediaQuery.of(context).size.width,
+        margin: EdgeInsets.only(top: 10),
+        child: Container(
+          padding: EdgeInsets.only(
+            top: 12,
+            bottom: 12,
+            left: 20,
+            right: 20,
+          ),
+          child: Text('${tag['key']} : ${tag['description']}'),
         ),
       ),
     );
