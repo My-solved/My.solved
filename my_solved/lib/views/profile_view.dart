@@ -162,7 +162,7 @@ extension ProfileViewExtension on ProfileView {
 
   SvgPicture tier(AsyncSnapshot<User> snapshot) {
     return SvgPicture.asset(
-        'lib/assets/16.svg',
+        'lib/assets/${snapshot.data?.tier}_.svg',
         width: 50,
         height: 50,
     );
