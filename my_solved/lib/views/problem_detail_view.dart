@@ -10,7 +10,9 @@ class ProblemDetailView extends StatelessWidget {
     var viewModel = Provider.of<ProblemDetailViewModel>(context);
 
     return CupertinoPageScaffold(
-      child: Text("Problem Detail"),
+      child: SafeArea(
+        child: Text("Problem Detail"),
+      ),
     );
   }
 }
