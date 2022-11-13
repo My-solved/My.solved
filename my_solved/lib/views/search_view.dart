@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:my_solved/pages/problem_detail_page.dart';
 import 'package:my_solved/view_models/search_view_model.dart';
 import 'package:provider/provider.dart';
 
@@ -99,6 +100,12 @@ extension SearchViewExtension on SearchView {
 
   Widget problemCell(dynamic problem, BuildContext context) {
     return CupertinoPageScaffold(
+        child: GestureDetector(
+      onTap: () => Navigator.of(context).push(
+        CupertinoPageRoute(
+          builder: (context) => ProblemDetailPage(problem['id']),
+        ),
+      ),
       child: Container(
         decoration: BoxDecoration(
           color: Color(0xffefefef),
@@ -130,11 +137,13 @@ extension SearchViewExtension on SearchView {
                     top: 12,
                     left: 20,
                   ),
-                  child: Text('맞은 사람 수 : ${problem['solved']}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xff767676),
-                      )),
+                  child: Text(
+                    '맞은 사람 수 : ${problem['solved']}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Color(0xff767676),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -146,18 +155,20 @@ extension SearchViewExtension on SearchView {
                     left: 20,
                     bottom: 20,
                   ),
-                  child: Text('Level : ${problem['level']}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xff767676),
-                      )),
+                  child: Text(
+                    'Level : ${problem['level']}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Color(0xff767676),
+                    ),
+                  ),
                 ),
               ],
             ),
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget userHeader() {
