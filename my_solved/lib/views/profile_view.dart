@@ -45,8 +45,8 @@ class ProfileView extends StatelessWidget {
                             ),
                             backgroundImage(snapshot),
                             profileImage(snapshot),
-                            tier(snapshot),
-                            userClass(snapshot),
+                            classes(snapshot),
+                            tiers(snapshot),
                             solvedCount(snapshot),
                             reverseRivalCount(snapshot),
                             rating(snapshot),
@@ -127,17 +127,6 @@ extension ProfileViewExtension on ProfileView {
     );
   }
 
-  Widget userClass(AsyncSnapshot<User> snapshot) {
-    return CupertinoPageScaffold(
-        child: Container(
-          padding: EdgeInsets.only(top: 20),
-          child: Text(
-            '유저의 클래스 단계: ${snapshot.data?.userClass}',
-          ),
-        )
-    );
-  }
-
   Widget handle(AsyncSnapshot<User> snapshot) {
     return CupertinoPageScaffold(
         child: Container(
@@ -160,11 +149,29 @@ extension ProfileViewExtension on ProfileView {
     );
   }
 
-  SvgPicture tier(AsyncSnapshot<User> snapshot) {
-    return SvgPicture.asset(
-        'lib/assets/${snapshot.data?.tier}_.svg',
-        width: 50,
-        height: 50,
+  Widget classes(AsyncSnapshot<User> snapshot) {
+    return CupertinoPageScaffold(
+        child: Container(
+          padding: EdgeInsets.only(top: 20),
+          child: SvgPicture.asset(
+            'lib/assets/classes/c${snapshot.data?.userClass}_.svg',
+            width: 50,
+            height: 50,
+          ),
+        )
+    );
+  }
+
+  Widget tiers(AsyncSnapshot<User> snapshot) {
+    return CupertinoPageScaffold(
+        child: Container(
+          padding: EdgeInsets.only(top: 20),
+          child: SvgPicture.asset(
+            'lib/assets/tiers/${snapshot.data?.tier}_.svg',
+            width: 50,
+            height: 50,
+          ),
+        )
     );
   }
 
@@ -255,7 +262,5 @@ extension ProfileViewExtension on ProfileView {
         )
     );
   }
-
-
 }
 
