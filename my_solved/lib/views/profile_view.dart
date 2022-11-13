@@ -45,6 +45,7 @@ class ProfileView extends StatelessWidget {
                             ),
                             backgroundImage(snapshot),
                             profileImage(snapshot),
+                            tier(snapshot),
                             userClass(snapshot),
                             solvedCount(snapshot),
                             reverseRivalCount(snapshot),
@@ -159,14 +160,11 @@ extension ProfileViewExtension on ProfileView {
     );
   }
 
-  Widget tier(AsyncSnapshot<User> snapshot) {
-    return CupertinoPageScaffold(
-        child: Container(
-          padding: EdgeInsets.only(top: 20),
-          child: Text(
-            '유저의 티어 단계: ${snapshot.data?.tier}',
-          ),
-        )
+  SvgPicture tier(AsyncSnapshot<User> snapshot) {
+    return SvgPicture.asset(
+        'lib/assets/16.svg',
+        width: 50,
+        height: 50,
     );
   }
 
