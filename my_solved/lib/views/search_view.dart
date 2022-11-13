@@ -103,7 +103,7 @@ extension SearchViewExtension on SearchView {
         child: GestureDetector(
       onTap: () => Navigator.of(context).push(
         CupertinoPageRoute(
-          builder: (context) => ProblemDetailPage(),
+          builder: (context) => ProblemDetailPage(problem['id']),
         ),
       ),
       child: Container(
