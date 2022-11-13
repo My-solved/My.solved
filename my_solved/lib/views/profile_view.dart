@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:my_solved/models/User.dart';
 import 'package:provider/provider.dart';
 import 'package:my_solved/view_models/profile_view_model.dart';
@@ -35,6 +36,7 @@ class ProfileView extends StatelessWidget {
                             reverseRivalCount(snapshot),
                             rating(snapshot),
                             rank(snapshot),
+                            zandi(snapshot),
                             exp(snapshot),
                             maxStreak(snapshot),
                           ],
@@ -170,6 +172,17 @@ extension ProfileViewExtension on ProfileView {
           child: Text(
             '유저의 랭크: ${snapshot.data?.rank.toString()}',
           ),
+        )
+    );
+  }
+
+  Widget zandi(AsyncSnapshot<User> snapshot) {
+    return CupertinoPageScaffold(
+        child: Container(
+          padding: EdgeInsets.only(top: 20),
+          child: SvgPicture.network(
+          'http://mazandi.herokuapp.com/api?handle=${snapshot.data?.handle}&theme=warm',
+          )
         )
     );
   }
