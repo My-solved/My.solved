@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:my_solved/model/search/suggestion.dart';
-import 'package:my_solved/provider/search/suggestion_api.dart';
+import 'package:my_solved/models/search/suggestion.dart';
+import 'package:my_solved/providers/search/suggestion_api.dart';
 
 class SearchViewModel with ChangeNotifier {
   String text = '';
