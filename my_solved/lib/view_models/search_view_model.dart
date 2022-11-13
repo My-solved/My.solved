@@ -5,7 +5,7 @@ import 'package:my_solved/providers/search/suggestion_api.dart';
 class SearchViewModel with ChangeNotifier {
   String text = '';
   bool isSubmitted = false;
-  late Future<SearchSuggestion> future;
+  Future<SearchSuggestion>? future;
 
   void textFieldChanged(String value) {
     text = value;
