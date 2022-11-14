@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:my_solved/models/User.dart';
 import 'package:provider/provider.dart';
 import 'package:my_solved/view_models/profile_view_model.dart';
@@ -22,24 +23,64 @@ class ProfileView extends StatelessWidget {
                   FutureBuilder<User>(
                     future: viewModel.future,
                     builder: (context, snapshot) {
-                      return Container(
+                      if(snapshot.hasData) {
+                        return Container(
                         padding: EdgeInsets.only(top: 20, left: 20, right: 20),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             titleHeader(),
+                            Container(
+                              padding: EdgeInsets.only(top: 40, left: 16, right: 16),
+                              child: CupertinoSearchTextField(
+                                placeholder: '유저 닉네임을 입력해주세요.',
+                                onChanged: (String value) {
+                                  viewModel.textFieldChanged(value);
+                                },
+                                onSubmitted: (String value) {
+                                  viewModel.textFieldChanged(value);
+                                  viewModel.textFieldSubmitted();
+                                },
+                              ),
+                            ),
                             backgroundImage(snapshot),
                             profileImage(snapshot),
-                            userClass(snapshot),
+                            classes(snapshot),
+                            tiers(snapshot),
                             solvedCount(snapshot),
                             reverseRivalCount(snapshot),
                             rating(snapshot),
                             rank(snapshot),
+                            zandi(snapshot),
                             exp(snapshot),
                             maxStreak(snapshot),
                           ],
                         ),
                       );
+                      } else {
+                        return Container(
+                          padding: EdgeInsets.only(top: 20, left: 20, right: 20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              titleHeader(),
+                              Container(
+                                padding: EdgeInsets.only(top: 40, left: 16, right: 16),
+                                child: CupertinoSearchTextField(
+                                  placeholder: '유저 닉네임을 입력해주세요.',
+                                  onChanged: (String value) {
+                                    viewModel.textFieldChanged(value);
+                                  },
+                                  onSubmitted: (String value) {
+                                    viewModel.textFieldChanged(value);
+                                    viewModel.textFieldSubmitted();
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }
                     },
                   ),
                 ],
@@ -78,20 +119,9 @@ extension ProfileViewExtension on ProfileView {
         child: Container(
           padding: EdgeInsets.only(top: 20),
           child: Image.network(
-            snapshot.data?.profileImageUrl?? '',
+            snapshot.data?.profileImageUrl?? 'https://static.solved.ac/misc/360x360/default_profile.png',
             width: 100,
             height: 100,
-          ),
-        )
-    );
-  }
-
-  Widget userClass(AsyncSnapshot<User> snapshot) {
-    return CupertinoPageScaffold(
-        child: Container(
-          padding: EdgeInsets.only(top: 20),
-          child: Text(
-            '유저의 클래스 단계: ${snapshot.data?.userClass}',
           ),
         )
     );
@@ -119,12 +149,27 @@ extension ProfileViewExtension on ProfileView {
     );
   }
 
-  Widget tier(AsyncSnapshot<User> snapshot) {
+  Widget classes(AsyncSnapshot<User> snapshot) {
     return CupertinoPageScaffold(
         child: Container(
           padding: EdgeInsets.only(top: 20),
-          child: Text(
-            '유저의 티어 단계: ${snapshot.data?.tier}',
+          child: SvgPicture.asset(
+            'lib/assets/classes/c${snapshot.data?.userClass}_.svg',
+            width: 50,
+            height: 50,
+          ),
+        )
+    );
+  }
+
+  Widget tiers(AsyncSnapshot<User> snapshot) {
+    return CupertinoPageScaffold(
+        child: Container(
+          padding: EdgeInsets.only(top: 20),
+          child: SvgPicture.asset(
+            'lib/assets/tiers/${snapshot.data?.tier}_.svg',
+            width: 50,
+            height: 50,
           ),
         )
     );
@@ -174,6 +219,17 @@ extension ProfileViewExtension on ProfileView {
     );
   }
 
+  Widget zandi(AsyncSnapshot<User> snapshot) {
+    return CupertinoPageScaffold(
+        child: Container(
+          padding: EdgeInsets.only(top: 20),
+          child: SvgPicture.network(
+          'http://mazandi.herokuapp.com/api?handle=${snapshot.data?.handle}&theme=warm',
+          )
+        )
+    );
+  }
+
   Widget maxStreak(AsyncSnapshot<User> snapshot) {
     return CupertinoPageScaffold(
         child: Container(
@@ -206,7 +262,5 @@ extension ProfileViewExtension on ProfileView {
         )
     );
   }
-
-
 }
 

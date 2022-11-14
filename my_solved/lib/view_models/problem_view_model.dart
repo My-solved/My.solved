@@ -5,7 +5,7 @@ import 'package:html/dom.dart' as dom;
 class ProblemViewModel with ChangeNotifier {
   String text = '';
   bool isSubmitted = false;
-  late Future<dom.Document> future;
+  Future<dom.Document>? future;
 
   void textFieldChanged(String value) {
     text = value;

@@ -36,6 +36,7 @@ dependencies:
   http: ^0.13.3
   provider: ^6.0.1
   html: ^0.15.1
+  flutter_svg: ^1.1.6
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -63,6 +64,9 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  assets:
+    - lib/assets/classes/
+    - lib/assets/tiers/
 
   # To add assets to your application, add an assets section, like this:
   # assets:
