@@ -1,3 +1,4 @@
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:my_solved/models/User.dart';
@@ -107,8 +108,10 @@ extension ProfileViewExtension on ProfileView {
     return CupertinoPageScaffold(
       child: Container(
         padding: EdgeInsets.only(top: 20),
-        child: Image.network(
+        child: ExtendedImage.network(
           snapshot.data?.background['backgroundImageUrl']?? '',
+          height: 200,
+          cache: true,
         ),
       )
     );
@@ -118,10 +121,11 @@ extension ProfileViewExtension on ProfileView {
     return CupertinoPageScaffold(
         child: Container(
           padding: EdgeInsets.only(top: 20),
-          child: Image.network(
+          child: ExtendedImage.network(
             snapshot.data?.profileImageUrl?? 'https://static.solved.ac/misc/360x360/default_profile.png',
             width: 100,
             height: 100,
+            cache: true,
           ),
         )
     );
