@@ -147,7 +147,7 @@ extension ProfileViewExtension on ProfileView {
         child: Container(
           padding: EdgeInsets.only(top: 20),
           child: Text(
-            '소속: ${snapshot.data?.bio}',
+            '소개말: ${snapshot.data?.bio}',
           ),
         )
     );
