@@ -21,10 +21,6 @@ class MainTabView extends StatelessWidget {
             icon: Icon(CupertinoIcons.search),
             label: 'Search',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.book_fill),
-            label: 'Problem',
-          ),
         ],
       ),
       tabBuilder: (BuildContext context, int index) {
