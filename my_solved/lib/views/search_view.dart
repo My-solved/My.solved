@@ -53,8 +53,12 @@ class SearchView extends StatelessWidget {
                     builder: ((context, snapshot) {
                       if (snapshot.hasData) {
                         return Container(
-                          padding:
-                              EdgeInsets.only(top: 20, left: 20, right: 20),
+                          padding: EdgeInsets.only(
+                            top: 20,
+                            left: 20,
+                            right: 20,
+                            bottom: 20,
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[

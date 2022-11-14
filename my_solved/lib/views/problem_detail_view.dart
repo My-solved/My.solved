@@ -11,6 +11,9 @@ class ProblemDetailView extends StatelessWidget {
     var viewModel = Provider.of<ProblemDetailViewModel>(context);
 
     return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text('${viewModel.problemId ?? 0}번'),
+      ),
       child: SafeArea(
         child: Align(
           alignment: Alignment.topLeft,
@@ -23,16 +26,19 @@ class ProblemDetailView extends StatelessWidget {
                     future: viewModel.future,
                     builder: (context, snapshot) {
                       return Container(
-                        padding: EdgeInsets.only(top: 20, left: 20, right: 20),
+                        padding: EdgeInsets.only(
+                            top: 20, left: 20, right: 20, bottom: 20),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             titleHeader(),
-                            titleContent(snapshot),
+                            titleContent(snapshot, context),
                             descriptionHeader(),
-                            descriptionContent(snapshot),
-                            inputContent(snapshot),
-                            outputContent(snapshot),
+                            descriptionContent(snapshot, context),
+                            inputHeader(),
+                            inputContent(snapshot, context),
+                            outputHeader(),
+                            outputContent(snapshot, context),
                           ],
                         ),
                       );
@@ -51,20 +57,31 @@ class ProblemDetailView extends StatelessWidget {
 extension ProblemDetailViewExtension on ProblemDetailView {
   Widget titleHeader() {
     return CupertinoPageScaffold(
-      child: Text(
-        '문제',
-        style: TextStyle(fontSize: 12, color: Color(0xff767676)),
+      child: Container(
+        child: Text(
+          '문제',
+          style: TextStyle(fontSize: 12, color: Color(0xff767676)),
+        ),
       ),
     );
   }
 
-  Widget titleContent(AsyncSnapshot<dom.Document> snapshot) {
+  Widget titleContent(
+      AsyncSnapshot<dom.Document> snapshot, BuildContext context) {
     return CupertinoPageScaffold(
       child: Container(
-        padding: EdgeInsets.only(top: 20),
-        child: Text(
-          snapshot.data?.getElementById('problem_title')?.text ?? '',
-          style: TextStyle(fontSize: 20),
+        padding: EdgeInsets.only(top: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Color(0xffefefef),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          padding: EdgeInsets.only(top: 10, right: 20, left: 20, bottom: 10),
+          width: MediaQuery.of(context).size.width,
+          child: Text(
+            snapshot.data?.getElementById('problem_title')?.text ?? '',
+            style: TextStyle(fontSize: 17),
+          ),
         ),
       ),
     );
@@ -72,41 +89,98 @@ extension ProblemDetailViewExtension on ProblemDetailView {
 
   Widget descriptionHeader() {
     return CupertinoPageScaffold(
-      child: Text(
-        '설명',
-        style: TextStyle(fontSize: 12, color: Color(0xff767676)),
-      ),
-    );
-  }
-
-  Widget descriptionContent(AsyncSnapshot<dom.Document> snapshot) {
-    return CupertinoPageScaffold(
       child: Container(
+        padding: EdgeInsets.only(top: 20),
         child: Text(
-          snapshot.data?.getElementById('problem_description')?.text ?? '',
-          style: TextStyle(fontSize: 17),
+          '설명',
+          style: TextStyle(fontSize: 12, color: Color(0xff767676)),
         ),
       ),
     );
   }
 
-  Widget inputContent(AsyncSnapshot<dom.Document> snapshot) {
+  Widget descriptionContent(
+      AsyncSnapshot<dom.Document> snapshot, BuildContext context) {
     return CupertinoPageScaffold(
       child: Container(
-        child: Text(
-          snapshot.data?.getElementById('problem_input')?.text ?? '',
-          style: TextStyle(fontSize: 17),
+        padding: EdgeInsets.only(top: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Color(0xffefefef),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          padding: EdgeInsets.only(top: 10, right: 20, left: 20, bottom: 10),
+          width: MediaQuery.of(context).size.width,
+          child: Text(
+            snapshot.data?.getElementById('problem_description')?.text ?? '',
+            style: TextStyle(fontSize: 14),
+          ),
         ),
       ),
     );
   }
 
-  Widget outputContent(AsyncSnapshot<dom.Document> snapshot) {
+  Widget inputHeader() {
     return CupertinoPageScaffold(
       child: Container(
+        padding: EdgeInsets.only(top: 20),
         child: Text(
-          snapshot.data?.getElementById('problem_output')?.text ?? '',
-          style: TextStyle(fontSize: 17),
+          '입력',
+          style: TextStyle(fontSize: 12, color: Color(0xff767676)),
+        ),
+      ),
+    );
+  }
+
+  Widget inputContent(
+      AsyncSnapshot<dom.Document> snapshot, BuildContext context) {
+    return CupertinoPageScaffold(
+      child: Container(
+        padding: EdgeInsets.only(top: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Color(0xffefefef),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          padding: EdgeInsets.only(top: 10, right: 20, left: 20, bottom: 10),
+          width: MediaQuery.of(context).size.width,
+          child: Text(
+            snapshot.data?.getElementById('problem_input')?.text ?? '',
+            style: TextStyle(fontSize: 14),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget outputHeader() {
+    return CupertinoPageScaffold(
+      child: Container(
+        padding: EdgeInsets.only(top: 20),
+        child: Text(
+          '출력',
+          style: TextStyle(fontSize: 12, color: Color(0xff767676)),
+        ),
+      ),
+    );
+  }
+
+  Widget outputContent(
+      AsyncSnapshot<dom.Document> snapshot, BuildContext context) {
+    return CupertinoPageScaffold(
+      child: Container(
+        padding: EdgeInsets.only(top: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Color(0xffefefef),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          padding: EdgeInsets.only(top: 10, right: 20, left: 20, bottom: 10),
+          width: MediaQuery.of(context).size.width,
+          child: Text(
+            snapshot.data?.getElementById('problem_output')?.text ?? '',
+            style: TextStyle(fontSize: 14),
+          ),
         ),
       ),
     );
