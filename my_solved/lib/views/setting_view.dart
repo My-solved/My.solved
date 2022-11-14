@@ -12,28 +12,51 @@ class SettingView extends StatelessWidget {
       ),
       child: SafeArea(
         child: Container(
-          padding: EdgeInsets.only(top: 10, right: 20, left: 20),
+          padding: EdgeInsets.only(top: 10, left: 20),
           child: Column(
             children: <Widget>[
               Row(
                 children: [
-                  Text('백준 ID'),
+                  Container(
+                    padding: EdgeInsets.only(top: 14, bottom: 14),
+                    child: Text('백준 ID'),
+                  ),
                 ],
               ),
               Row(
                 children: [
-                  Text('백준 ID'),
+                  Container(
+                    padding: EdgeInsets.only(top: 14, bottom: 14),
+                    child: Text('스트릭 테마'),
+                  ),
                 ],
               ),
               Row(
                 children: [
-                  Text('백준 ID'),
+                  Container(
+                    padding: EdgeInsets.only(top: 14, bottom: 14),
+                    child: Text('다크 모드'),
+                  ),
                 ],
               ),
-              Divider(),
+              Container(
+                padding: EdgeInsets.only(right: 20),
+                child: Divider(),
+              ),
               Row(
                 children: [
-                  Text('백준 ID'),
+                  Container(
+                    padding: EdgeInsets.only(top: 14, bottom: 14),
+                    child: Text('라이센스'),
+                  ),
+                  Spacer(),
+                  CupertinoButton(
+                    onPressed: () {},
+                    child: Icon(
+                      CupertinoIcons.right_chevron,
+                      color: CupertinoColors.black,
+                    ),
+                  )
                 ],
               ),
             ],
