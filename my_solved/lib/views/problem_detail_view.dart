@@ -11,6 +11,9 @@ class ProblemDetailView extends StatelessWidget {
     var viewModel = Provider.of<ProblemDetailViewModel>(context);
 
     return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        middle: Text('${viewModel.problemId ?? 0}번'),
+      ),
       child: SafeArea(
         child: Align(
           alignment: Alignment.topLeft,
@@ -23,7 +26,8 @@ class ProblemDetailView extends StatelessWidget {
                     future: viewModel.future,
                     builder: (context, snapshot) {
                       return Container(
-                        padding: EdgeInsets.only(top: 20, left: 20, right: 20),
+                        padding: EdgeInsets.only(
+                            top: 20, left: 20, right: 20, bottom: 20),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
