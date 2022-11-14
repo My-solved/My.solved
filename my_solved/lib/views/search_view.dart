@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:my_solved/pages/problem_detail_page.dart';
+import 'package:my_solved/pages/profile_detail_page.dart';
 import 'package:my_solved/view_models/search_view_model.dart';
 import 'package:provider/provider.dart';
 
@@ -104,74 +105,74 @@ extension SearchViewExtension on SearchView {
 
   Widget problemCell(dynamic problem, BuildContext context) {
     return CupertinoPageScaffold(
-        child: GestureDetector(
-      onTap: () => Navigator.of(context).push(
-        CupertinoPageRoute(
-          builder: (context) => ProblemDetailPage(problem['id']),
+      child: GestureDetector(
+        onTap: () => Navigator.of(context).push(
+          CupertinoPageRoute(
+            builder: (context) => ProblemDetailPage(problem['id']),
+          ),
         ),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Color(0xffefefef),
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-        ),
-        width: MediaQuery.of(context).size.width,
-        margin: EdgeInsets.only(top: 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Container(
-              padding: EdgeInsets.only(top: 20, left: 20),
-              child: Text('${problem['id']}번'),
-            ),
-            Container(
-              padding: EdgeInsets.only(
-                top: 10,
-                left: 20,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Color(0xffefefef),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          width: MediaQuery.of(context).size.width,
+          margin: EdgeInsets.only(top: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Container(
+                padding: EdgeInsets.only(top: 20, left: 20),
+                child: Text('${problem['id']}번'),
               ),
-              child: Text(
-                '${problem['title']}',
-                style: TextStyle(fontSize: 22),
+              Container(
+                padding: EdgeInsets.only(
+                  top: 10,
+                  left: 20,
+                ),
+                child: Text(
+                  '${problem['title']}',
+                  style: TextStyle(fontSize: 22),
+                ),
               ),
-            ),
-            Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.only(
-                    top: 12,
-                    left: 20,
-                  ),
-                  child: Text(
-                    '맞은 사람 수 : ${problem['solved']}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Color(0xff767676),
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.only(
+                      top: 12,
+                      left: 20,
+                    ),
+                    child: Text(
+                      '맞은 사람 수 : ${problem['solved']}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xff767676),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            Row(
-              children: [
-                Container(
-                  padding: EdgeInsets.only(
-                    top: 4,
-                    left: 20,
-                    bottom: 20,
-                  ),
-                  child: Text(
-                    'Level : ${problem['level']}',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Color(0xff767676),
+                ],
+              ),
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.only(
+                      top: 4,
+                      left: 20,
+                      bottom: 20,
+                    ),
+                    child: Text(
+                      'Level : ${problem['level']}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xff767676),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ],
+                ],
+              ),
+            ],
+          ),
         ),
-      ),
     ));
   }
 
@@ -189,21 +190,28 @@ extension SearchViewExtension on SearchView {
 
   Widget userCell(dynamic user, BuildContext context) {
     return CupertinoPageScaffold(
-      child: Container(
-        decoration: BoxDecoration(
-          color: Color(0xffefefef),
-          borderRadius: BorderRadius.all(Radius.circular(10)),
+      child: GestureDetector(
+        onTap: () => Navigator.of(context).push(
+          CupertinoPageRoute(
+            builder: (context) => ProfileDetailPage(user['handle']),
+          ),
         ),
-        width: MediaQuery.of(context).size.width,
-        margin: EdgeInsets.only(top: 10),
         child: Container(
-            padding: EdgeInsets.only(
-              top: 12,
-              bottom: 12,
-              left: 20,
-              right: 20,
-            ),
-            child: Text('${user['handle']}')),
+          decoration: BoxDecoration(
+            color: Color(0xffefefef),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          width: MediaQuery.of(context).size.width,
+          margin: EdgeInsets.only(top: 10),
+          child: Container(
+              padding: EdgeInsets.only(
+                top: 12,
+                bottom: 12,
+                left: 20,
+                right: 20,
+              ),
+              child: Text('${user['handle']}')),
+        ),
       ),
     );
   }
