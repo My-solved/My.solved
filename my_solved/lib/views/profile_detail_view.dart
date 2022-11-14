@@ -1,9 +1,9 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:my_solved/models/User.dart';
 import 'package:provider/provider.dart';
 
+import '../models/User.dart';
 import '../view_models/profile_detail_view_model.dart';
 
 class ProfileDetailView extends StatelessWidget {
@@ -20,34 +20,32 @@ class ProfileDetailView extends StatelessWidget {
       child: SafeArea(
         child: Align(
           alignment: Alignment.topLeft,
-          child: SafeArea(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Column(
-                children: [
-                  FutureBuilder<User>(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                FutureBuilder<User>(
                     future: viewModel.future,
                     builder: (context, snapshot) {
-                      if(snapshot.hasData) {
-                        return Container(
-                          padding: EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              titleHeader(),
-                              backgroundImage(snapshot),
-                              profileImage(snapshot),
-                              classes(snapshot),
-                              tiers(snapshot),
-                              solvedCount(snapshot),
-                              reverseRivalCount(snapshot),
-                              rating(snapshot),
-                              rank(snapshot),
-                              zandi(snapshot),
-                              exp(snapshot),
-                              maxStreak(snapshot),
-                            ],
-                          ),
+                      if (snapshot.hasData) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            profileHeader(context, snapshot),
+                            handle(snapshot),
+                            // 자기소개 bio(snapshot),
+                            organizations(snapshot),
+                            // 클래스 classes(snapshot),
+                            // 티어 tiers(snapshot),
+                            // 레이팅 rating(snapshot),
+                            // 푼 문제 수 solvedCount(snapshot),
+                            // 라이벌 수 reverseRivalCount(snapshot),
+                            // 랭크 rank(snapshot),
+                            zandi(snapshot),
+                            // 최대 연속 문제 해결일 수 maxStreak(snapshot),
+                            // 경험치 exp(snapshot),
+                          ],
                         );
                       } else {
                         return Container(
@@ -55,15 +53,14 @@ class ProfileDetailView extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              titleHeader(),
+                              profileHeader(context, snapshot),
                             ],
                           ),
                         );
                       }
-                    },
-                  ),
-                ],
-              ),
+                    }
+                )
+              ],
             ),
           ),
         ),
@@ -73,64 +70,98 @@ class ProfileDetailView extends StatelessWidget {
 }
 
 extension ProfileDetailViewExtension on ProfileDetailView {
-  Widget titleHeader() {
+  Widget profileHeader(BuildContext context, AsyncSnapshot<User> snapshot) {
     return CupertinoPageScaffold(
-      child: Text(
-        '프로필',
-        style: TextStyle(fontSize: 12, color: Color(0xff767676)),
+      child: Container(
+        child: Stack(
+          children: <Widget>[
+            Align(
+                alignment: Alignment.topLeft,
+                child: ExtendedImage.network(
+                  snapshot.data?.background['backgroundImageUrl']?? '',
+                  height: 200,
+                  cache: true,
+                  fit: BoxFit.cover,
+                )
+            ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Container(
+                  padding: EdgeInsets.only(top: 20),
+                  margin: EdgeInsets.only(top: 100, left: 20),
+                  child: ExtendedImage.network(
+                    snapshot.data?.profileImageUrl?? 'https://static.solved.ac/misc/360x360/default_profile.png',
+                    width: 100,
+                    height: 100,
+                    cache: true,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                Spacer(),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget backgroundImage(AsyncSnapshot<User> snapshot) {
-    return CupertinoPageScaffold(
-        child: Container(
-          padding: EdgeInsets.only(top: 20),
-          child: ExtendedImage.network(
-            snapshot.data?.background['backgroundImageUrl']?? '',
-            height: 200,
-            cache: true,
-          ),
-        )
-    );
-  }
-
-  Widget profileImage(AsyncSnapshot<User> snapshot) {
-    return CupertinoPageScaffold(
-        child: Container(
-          padding: EdgeInsets.only(top: 20),
-          child: ExtendedImage.network(
-            snapshot.data?.profileImageUrl?? 'https://static.solved.ac/misc/360x360/default_profile.png',
-            width: 100,
-            height: 100,
-            cache: true,
-          ),
-        )
-    );
-  }
-
+  // 닉네임
   Widget handle(AsyncSnapshot<User> snapshot) {
     return CupertinoPageScaffold(
-        child: Container(
-          padding: EdgeInsets.only(top: 20),
-          child: Text(
-            '닉네임: ${snapshot.data?.handle}',
-          ),
-        )
+      child: Container(
+        padding: EdgeInsets.only(top: 20, left: 20, right: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              snapshot.data?.handle?? '',
+              style: TextStyle(
+                fontSize: 25,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
+  // 소속
+  Widget organizations(AsyncSnapshot<User> snapshot) {
+    return CupertinoPageScaffold(
+      child: Container(
+        padding: EdgeInsets.only(top: 20, left: 20, right: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              snapshot.data?.organizations[0]['name']?? '',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 자기소개
   Widget bio(AsyncSnapshot<User> snapshot) {
     return CupertinoPageScaffold(
         child: Container(
           padding: EdgeInsets.only(top: 20),
           child: Text(
-            '소속: ${snapshot.data?.bio}',
+            snapshot.data?.bio?? '',
           ),
         )
     );
   }
 
+  // 클래스
   Widget classes(AsyncSnapshot<User> snapshot) {
     return CupertinoPageScaffold(
         child: Container(
@@ -144,6 +175,7 @@ extension ProfileDetailViewExtension on ProfileDetailView {
     );
   }
 
+  // 티어
   Widget tiers(AsyncSnapshot<User> snapshot) {
     return CupertinoPageScaffold(
         child: Container(
@@ -157,89 +189,98 @@ extension ProfileDetailViewExtension on ProfileDetailView {
     );
   }
 
+  // 레이팅
   Widget rating(AsyncSnapshot<User> snapshot) {
     return CupertinoPageScaffold(
         child: Container(
           padding: EdgeInsets.only(top: 20),
           child: Text(
-            '유저의 레이팅: ${snapshot.data?.rating}',
+            snapshot.data?.rating.toString()?? '',
           ),
         )
     );
   }
 
+  // 푼 문제 수
   Widget solvedCount(AsyncSnapshot<User> snapshot) {
     return CupertinoPageScaffold(
         child: Container(
           padding: EdgeInsets.only(top: 20),
           child: Text(
-            '유저가 푼 문제 수: ${snapshot.data?.solvedCount}',
+            snapshot.data?.solvedCount.toString()?? '',
           ),
         )
     );
   }
 
+  // 라이벌 수
   Widget reverseRivalCount(AsyncSnapshot<User> snapshot) {
     return CupertinoPageScaffold(
         child: Container(
           padding: EdgeInsets.only(top: 20),
           child: Text(
-            '유저의 라이벌 수: ${snapshot.data?.reverseRivalCount.toString()}',
+            snapshot.data?.reverseRivalCount.toString()?? '',
           ),
         )
     );
   }
 
+  // 랭크
   Widget rank(AsyncSnapshot<User> snapshot) {
     return CupertinoPageScaffold(
         child: Container(
           padding: EdgeInsets.only(top: 20),
           child: Text(
-            '유저의 랭크: ${snapshot.data?.rank.toString()}',
+            snapshot.data?.rank.toString()?? '',
           ),
         )
     );
   }
 
+  // 잔디
   Widget zandi(AsyncSnapshot<User> snapshot) {
     return CupertinoPageScaffold(
         child: Container(
             padding: EdgeInsets.only(top: 20),
             child: SvgPicture.network(
               'http://mazandi.herokuapp.com/api?handle=${snapshot.data?.handle}&theme=warm',
-            )
-        )
+            ),
+            alignment: Alignment.center,
+        ),
     );
   }
 
+  // 최대 연속 문제 해결일 수
   Widget maxStreak(AsyncSnapshot<User> snapshot) {
     return CupertinoPageScaffold(
         child: Container(
           padding: EdgeInsets.only(top: 20),
           child: Text(
-            '유저의 최대 스트릭: ${snapshot.data?.maxStreak}',
+            snapshot.data?.maxStreak.toString()?? '',
           ),
         )
     );
   }
 
+  // 경험치
   Widget exp(AsyncSnapshot<User> snapshot) {
     return CupertinoPageScaffold(
         child: Container(
           padding: EdgeInsets.only(top: 20),
           child: Text(
-            '유저의 경험치: ${snapshot.data?.exp}',
+            snapshot.data?.exp.toString()?? '',
           ),
         )
     );
   }
 
+  // 배지
   Widget badge(AsyncSnapshot<User> snapshot) {
     return CupertinoPageScaffold(
         child: Container(
           padding: EdgeInsets.only(top: 20),
           child: Text(
-            '유저의 뱃지: ${snapshot.data?.badge.toString()}',
+            snapshot.data?.badge.toString()?? '',
           ),
         )
     );

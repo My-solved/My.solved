@@ -6,7 +6,6 @@ import 'package:my_solved/view_models/home_view_model.dart';
 import 'package:provider/provider.dart';
 
 import '../models/User.dart';
-import 'dart:developer' as developer;
 
 class HomeView extends StatelessWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -162,7 +161,6 @@ extension HomeViewExtension on HomeView {
 
   // 자기소개
   Widget bio(AsyncSnapshot<User> snapshot) {
-    developer.log(snapshot.data?.bio?? '');
     return CupertinoPageScaffold(
         child: Container(
           padding: EdgeInsets.only(top: 20),
@@ -256,7 +254,8 @@ extension HomeViewExtension on HomeView {
             padding: EdgeInsets.only(top: 20),
             child: SvgPicture.network(
               'http://mazandi.herokuapp.com/api?handle=${snapshot.data?.handle}&theme=warm',
-            )
+            ),
+          alignment: Alignment.center,
         )
     );
   }
