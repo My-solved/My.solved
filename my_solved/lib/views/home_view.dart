@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:my_solved/pages/setting_page.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -50,7 +51,11 @@ extension HomeViewExtension on HomeView {
                 ),
                 Spacer(),
                 CupertinoButton(
-                  onPressed: () {},
+                  onPressed: () => Navigator.of(context).push(
+                    CupertinoPageRoute(
+                      builder: ((context) => SettingPage()),
+                    ),
+                  ),
                   child: Icon(
                     CupertinoIcons.gear_alt_fill,
                     color: CupertinoColors.white,
