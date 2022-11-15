@@ -1,4 +1,3 @@
-import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 
@@ -74,32 +73,8 @@ extension ProfileDetailViewExtension on ProfileDetailView {
     return CupertinoPageScaffold(
       child: Stack(
         children: <Widget>[
-          Align(
-              alignment: Alignment.topLeft,
-              child: ExtendedImage.network(
-                snapshot.data?.background['backgroundImageUrl']?? '',
-                height: 200,
-                cache: true,
-                fit: BoxFit.cover,
-              )
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                padding: EdgeInsets.only(top: 20),
-                margin: EdgeInsets.only(top: 100, left: 20),
-                child: ExtendedImage.network(
-                  snapshot.data?.profileImageUrl?? 'https://static.solved.ac/misc/360x360/default_profile.png',
-                  width: 100,
-                  height: 100,
-                  cache: true,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              Spacer(),
-            ],
-          ),
+          backgroundImage(snapshot),
+          profileImage(snapshot),
         ],
       ),
     );
