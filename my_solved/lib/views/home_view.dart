@@ -39,7 +39,7 @@ class HomeView extends StatelessWidget {
                             children: [
                               handle(snapshot),
                               Positioned(bottom: -5, left: 100, child: classes(snapshot)),
-                              Positioned(top: 20, child: organizations(snapshot)),
+                              Positioned(top: 42, child: organizations(snapshot)),
                               Positioned(top: 40, child: solvedCount(snapshot)),
                               Positioned(left: 100, top: 40, child: reverseRivalCount(snapshot)),
                               Positioned(left: 0, top: 90, child: zandi(snapshot)),

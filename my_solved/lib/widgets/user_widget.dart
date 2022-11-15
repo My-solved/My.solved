@@ -50,10 +50,12 @@ Widget handle(AsyncSnapshot<User> snapshot) {
 // 소속
 Widget organizations(AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        padding: EdgeInsets.only(top: 20),
-        child: RichText(
+    backgroundColor: Colors.transparent,
+    child: Stack(
+      clipBehavior: Clip.none,
+      children: [
+        SvgPicture.asset('lib/assets/icons/hat.svg', width: 15, height: 15,),
+        Positioned(top: -3, left: 18, child: RichText(
           text: TextSpan(
             children: [
               TextSpan(
@@ -65,7 +67,9 @@ Widget organizations(AsyncSnapshot<User> snapshot) {
             ],
           ),
         ),
-      )
+        )
+      ]
+    )
   );
 }
 
