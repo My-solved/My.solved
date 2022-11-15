@@ -19,12 +19,24 @@ Widget backgroundImage(AsyncSnapshot<User> snapshot) {
 Widget profileImage(AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
     backgroundColor: Colors.transparent,
-    child: ExtendedImage.network(
-      snapshot.data?.profileImageUrl?? 'https://static.solved.ac/misc/360x360/default_profile.png',
-      width: 100,
-      height: 100,
-      cache: true,
-      shape: BoxShape.circle,
+    child: Card(
+      elevation: 20,
+      shadowColor: Colors.yellow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(100),
+      ),
+      child: Container(
+        width: 100,
+        height: 100,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(100),
+          child: ExtendedImage.network(
+            snapshot.data?.profileImageUrl?? 'https://static.solved.ac/misc/360x360/default_profile.png',
+            cache: true,
+            fit: BoxFit.cover,
+          ),
+        ),
+      ),
     ),
   );
 }
@@ -141,7 +153,7 @@ Widget solvedCount(AsyncSnapshot<User> snapshot) {
             TextSpan(
               text: snapshot.data?.solvedCount.toString()?? '',
               style: TextStyle(
-                color: Colors.white,
+                color: Colors.grey,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -170,7 +182,7 @@ Widget reverseRivalCount(AsyncSnapshot<User> snapshot) {
               TextSpan(
                 text: snapshot.data?.reverseRivalCount.toString()?? '',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: Colors.grey,
                   fontWeight: FontWeight.bold,
                 ),
               ),

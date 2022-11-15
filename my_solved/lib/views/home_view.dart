@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:my_solved/pages/setting_page.dart';
 import 'package:my_solved/view_models/home_view_model.dart';
 import 'package:provider/provider.dart';
@@ -42,7 +43,15 @@ class HomeView extends StatelessWidget {
                               Positioned(top: 42, child: organizations(snapshot)),
                               Positioned(top: 40, child: solvedCount(snapshot)),
                               Positioned(left: 100, top: 40, child: reverseRivalCount(snapshot)),
-                              Positioned(left: 0, top: 90, child: zandi(snapshot)),
+                              Positioned(left: 0, top: 90, child: Card(
+                                shape: RoundedRectangleBorder(
+                                  side: BorderSide(color: Colors.white70, width: 1),
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                                shadowColor: Colors.yellow,
+                                elevation: 20,
+                                child: zandi(snapshot)),
+                              )
                             ],
                           )),
                           // 자기소개 bio(snapshot),
