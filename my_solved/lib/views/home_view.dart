@@ -35,36 +35,31 @@ class HomeView extends StatelessWidget {
                             alignment: Alignment.topCenter,
                             child: profileHeader(context, snapshot),
                           ),
-                          Positioned(left: 30, bottom: -110, child: Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              handle(snapshot),
-                              Positioned(bottom: -5, left: 100, child: classes(snapshot)),
-                              Positioned(top: 42, child: organizations(snapshot)),
-                              Positioned(top: 40, child: solvedCount(snapshot)),
-                              Positioned(left: 100, top: 40, child: reverseRivalCount(snapshot)),
-                              Positioned(left: 0, top: 90, child: Card(
-                                shape: RoundedRectangleBorder(
-                                  side: BorderSide(color: Colors.white70, width: 1),
-                                  borderRadius: BorderRadius.circular(10.0),
+                          Positioned(left: 30, bottom: -110, child:
+                            Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                handle(snapshot),
+                                Positioned(bottom: -5, right: -60, child: classes(snapshot)),
+                                Positioned(bottom: -40, child:
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      organizations(snapshot),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        children: [
+                                          solvedCount(snapshot),
+                                          reverseRivalCount(snapshot),
+                                        ],
+                                      ),
+                                    ],
+                                  )
                                 ),
-                                shadowColor: Colors.yellow,
-                                elevation: 20,
-                                child: zandi(snapshot)),
-                              )
-                            ],
-                          )),
-                          // 자기소개 bio(snapshot),
-                          // organizations(snapshot),
-                          // 클래스 classes(snapshot),
-                          // 티어 tiers(snapshot),
-                          // 레이팅 rating(snapshot),
-                          // 푼 문제 수 solvedCount(snapshot),
-                          // 라이벌 수 reverseRivalCount(snapshot),
-                          // 랭크 rank(snapshot),
-                          // zandi(snapshot),
-                          // 최대 연속 문제 해결일 수 maxStreak(snapshot),
-                          // 경험치 exp(snapshot),
+                                Positioned(left: 0, top: 90, child: zandi(snapshot)),
+                              ],
+                            )
+                          ),
                         ],
                       );
                     } else {

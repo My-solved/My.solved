@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/User.dart';
@@ -28,22 +29,38 @@ class ProfileDetailView extends StatelessWidget {
                   future: viewModel.future,
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      return Stack(
+                        clipBehavior: Clip.none,
                         children: <Widget>[
-                          profileHeader(context, snapshot),
-                          handle(snapshot),
-                          // 자기소개 bio(snapshot),
-                          organizations(snapshot),
-                          // 클래스 classes(snapshot),
-                          // 티어 tiers(snapshot),
-                          // 레이팅 rating(snapshot),
-                          // 푼 문제 수 solvedCount(snapshot),
-                          // 라이벌 수 reverseRivalCount(snapshot),
-                          // 랭크 rank(snapshot),
-                          zandi(snapshot),
-                          // 최대 연속 문제 해결일 수 maxStreak(snapshot),
-                          // 경험치 exp(snapshot),
+                          Align(
+                            alignment: Alignment.topCenter,
+                            child: profileHeader(context, snapshot),
+                          ),
+                          Positioned(left: 30, bottom: -110, child:
+                            Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                handle(snapshot),
+                                Positioned(bottom: -5, right: -60, child: classes(snapshot)),
+                                Positioned(bottom: -40, child:
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    children: [
+                                      organizations(snapshot),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        children: [
+                                          solvedCount(snapshot),
+                                          reverseRivalCount(snapshot),
+                                        ],
+                                      ),
+                                    ],
+                                  )
+                                ),
+                                Positioned(left: 0, top: 90, child: zandi(snapshot)),
+                              ],
+                            )
+                          ),
                         ],
                       );
                     } else {
@@ -72,9 +89,17 @@ extension ProfileDetailViewExtension on ProfileDetailView {
   Widget profileHeader(BuildContext context, AsyncSnapshot<User> snapshot) {
     return CupertinoPageScaffold(
       child: Stack(
+        clipBehavior: Clip.none,
         children: <Widget>[
           backgroundImage(snapshot),
-          profileImage(snapshot),
+          Positioned(left: 30, bottom: -50, child: Stack(
+              clipBehavior: Clip.none,
+              children: <Widget>[
+                profileImage(snapshot),
+                Positioned(left: 35, top: 60, child: tiers(snapshot)),
+              ]
+          ),
+          ),
         ],
       ),
     );
