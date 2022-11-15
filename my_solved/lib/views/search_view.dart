@@ -5,6 +5,8 @@ import 'package:my_solved/pages/profile_detail_page.dart';
 import 'package:my_solved/view_models/search_view_model.dart';
 import 'package:provider/provider.dart';
 
+import '../pages/tag_detail_page.dart';
+
 class SearchView extends StatelessWidget {
   const SearchView({Key? key}) : super(key: key);
 
@@ -230,23 +232,30 @@ extension SearchViewExtension on SearchView {
 
   Widget tagCell(dynamic tag, BuildContext context) {
     return CupertinoPageScaffold(
-      child: Container(
-        decoration: BoxDecoration(
-          color: Color(0xffefefef),
-          borderRadius: BorderRadius.all(Radius.circular(10)),
-        ),
-        width: MediaQuery.of(context).size.width,
-        margin: EdgeInsets.only(top: 10),
-        child: Container(
-          padding: EdgeInsets.only(
-            top: 12,
-            bottom: 12,
-            left: 20,
-            right: 20,
+      child: GestureDetector(
+        onTap: () => Navigator.of(context).push(
+          CupertinoPageRoute(
+            builder: (context) => TagDetailPage(tag['key']),
           ),
-          child: Text('${tag['key']} : ${tag['description']}'),
         ),
-      ),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Color(0xffefefef),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          width: MediaQuery.of(context).size.width,
+          margin: EdgeInsets.only(top: 10),
+          child: Container(
+            padding: EdgeInsets.only(
+              top: 12,
+              bottom: 12,
+              left: 20,
+              right: 20,
+            ),
+            child: Text('${tag['key']} : ${tag['description']}'),
+          ),
+        ),
+      )
     );
   }
 }

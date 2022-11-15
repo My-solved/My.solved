@@ -4,9 +4,9 @@ import 'package:http/http.dart' as http;
 
 import 'package:my_solved/models/search/problem.dart';
 
-Future<SearchProblem> searchProblem() async {
+Future<SearchProblem> searchProblem(String query) async {
   final response = await http
-      .get(Uri.parse('https://solved.ac/api/v3/search/suggestion?query=rsa'));
+      .get(Uri.parse('https://solved.ac/api/v3/search/problem?query=$query'));
   final statusCode = response.statusCode;
 
   if (statusCode == 200) {
