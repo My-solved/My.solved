@@ -25,7 +25,7 @@ Widget profileImage(AsyncSnapshot<User> snapshot) {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(100),
       ),
-      child: Container(
+      child: SizedBox(
         width: 100,
         height: 100,
         child: ClipRRect(
@@ -63,23 +63,27 @@ Widget handle(AsyncSnapshot<User> snapshot) {
 Widget organizations(AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
     backgroundColor: Colors.transparent,
-    child: Stack(
-      clipBehavior: Clip.none,
+    child: Row(
       children: [
         SvgPicture.asset('lib/assets/icons/hat.svg', width: 15, height: 15,),
-        Positioned(top: -3, left: 18, child: RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: snapshot.data!.organizations.isEmpty ? '소속 없음' : snapshot.data?.organizations[0]['name']?? '',
-                style: TextStyle(
-                  color: Colors.grey,
+        SizedBox(width: 5),
+        Container(
+          width: 180,
+          alignment: Alignment.centerLeft,
+          child: RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: snapshot.data!.organizations.isEmpty ? '소속 없음' : snapshot.data?.organizations[0]['name']?? '',
+                  style: TextStyle(
+                    color: Colors.grey,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
         )
+
       ]
     )
   );
@@ -132,12 +136,9 @@ Widget tiers(AsyncSnapshot<User> snapshot) {
 Widget rating(AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
     backgroundColor: Colors.transparent,
-    child: Container(
-      padding: EdgeInsets.only(top: 20),
-      child: Text(
-        snapshot.data?.rating.toString()?? '',
-      ),
-    )
+    child: Text(
+      snapshot.data?.rating.toString()?? '',
+    ),
   );
 }
 
@@ -146,7 +147,8 @@ Widget solvedCount(AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
     backgroundColor: Colors.transparent,
     child: Container(
-      padding: EdgeInsets.only(top: 20),
+      alignment: Alignment.centerLeft,
+      width: 100,
       child: RichText(
         text: TextSpan(
           children: [
@@ -167,35 +169,37 @@ Widget solvedCount(AsyncSnapshot<User> snapshot) {
         ),
       ),
     )
+
   );
 }
 
 // 라이벌 수
 Widget reverseRivalCount(AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        padding: EdgeInsets.only(top: 20),
-        child: RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: snapshot.data?.reverseRivalCount.toString()?? '',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontWeight: FontWeight.bold,
-                ),
+    backgroundColor: Colors.transparent,
+    child: Container(
+      alignment: Alignment.centerLeft,
+      width: 100,
+      child: RichText(
+        text: TextSpan(
+          children: [
+            TextSpan(
+              text: snapshot.data?.reverseRivalCount.toString()?? '',
+              style: TextStyle(
+                color: Colors.grey,
+                fontWeight: FontWeight.bold,
               ),
-              TextSpan(
-                text: '명의 라이벌',
-                style: TextStyle(
-                  color: Colors.grey,
-                ),
+            ),
+            TextSpan(
+              text: '명의 라이벌',
+              style: TextStyle(
+                color: Colors.grey,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      )
+      ),
+    )
   );
 }
 
@@ -216,11 +220,17 @@ Widget rank(AsyncSnapshot<User> snapshot) {
 Widget zandi(AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
     backgroundColor: Colors.transparent,
-    child: Container(
-      alignment: Alignment.center,
-      child: SvgPicture.network(
-        'http://mazandi.herokuapp.com/api?handle=${snapshot.data?.handle}&theme=warm',
+    child: Card(
+      shape: RoundedRectangleBorder(
+        side: BorderSide(color: Colors.white70, width: 1),
+        borderRadius: BorderRadius.circular(10.0),
       ),
+      shadowColor: Colors.yellow,
+      elevation: 20,
+      child: Container(
+        alignment: Alignment.center,
+        child: SvgPicture.network('http://mazandi.herokuapp.com/api?handle=${snapshot.data?.handle}&theme=warm',),
+      )
     )
   );
 }
