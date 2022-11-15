@@ -1,4 +1,3 @@
-import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:my_solved/pages/setting_page.dart';
 import 'package:my_solved/view_models/home_view_model.dart';
@@ -28,20 +27,33 @@ class HomeView extends StatelessWidget {
                   future: viewModel.future,
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      return Stack(
+                        clipBehavior: Clip.none,
                         children: <Widget>[
-                          profileHeader(context, snapshot),
-                          handle(snapshot),
+                          Align(
+                            alignment: Alignment.topCenter,
+                            child: profileHeader(context, snapshot),
+                          ),
+                          Positioned(left: 30, bottom: -110, child: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              handle(snapshot),
+                              Positioned(bottom: -5, left: 100, child: classes(snapshot)),
+                              Positioned(top: 20, child: organizations(snapshot)),
+                              Positioned(top: 40, child: solvedCount(snapshot)),
+                              Positioned(left: 100, top: 40, child: reverseRivalCount(snapshot)),
+                              Positioned(left: 0, top: 90, child: zandi(snapshot)),
+                            ],
+                          )),
                           // 자기소개 bio(snapshot),
-                          organizations(snapshot),
+                          // organizations(snapshot),
                           // 클래스 classes(snapshot),
                           // 티어 tiers(snapshot),
                           // 레이팅 rating(snapshot),
                           // 푼 문제 수 solvedCount(snapshot),
                           // 라이벌 수 reverseRivalCount(snapshot),
                           // 랭크 rank(snapshot),
-                          zandi(snapshot),
+                          // zandi(snapshot),
                           // 최대 연속 문제 해결일 수 maxStreak(snapshot),
                           // 경험치 exp(snapshot),
                         ],
@@ -72,30 +84,20 @@ extension HomeViewExtension on HomeView {
   Widget profileHeader(BuildContext context, AsyncSnapshot<User> snapshot) {
     return CupertinoPageScaffold(
       child: Stack(
+        clipBehavior: Clip.none,
         children: <Widget>[
-          Align(
-              alignment: Alignment.topLeft,
-              child: ExtendedImage.network(
-                snapshot.data?.background['backgroundImageUrl']?? '',
-                height: 200,
-                cache: true,
-                fit: BoxFit.cover,
-              )
-            ),
+          backgroundImage(snapshot),
+          Positioned(left: 30, bottom: -50, child: Stack(
+            clipBehavior: Clip.none,
+            children: <Widget>[
+              profileImage(snapshot),
+              Positioned(left: 35, top: 60, child: tiers(snapshot)),
+            ]
+          ),
+          ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Container(
-                padding: EdgeInsets.only(top: 20),
-                margin: EdgeInsets.only(top: 100, left: 20),
-                child: ExtendedImage.network(
-                  snapshot.data?.profileImageUrl?? 'https://static.solved.ac/misc/360x360/default_profile.png',
-                  width: 100,
-                  height: 100,
-                  cache: true,
-                  shape: BoxShape.circle,
-                ),
-              ),
               Spacer(),
               CupertinoButton(
                 onPressed: () => Navigator.of(context).push(
