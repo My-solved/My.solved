@@ -30,11 +30,11 @@ class HomeView extends StatelessWidget {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          // 배경 + 프로필
                           profileHeader(context, snapshot),
-                          // 패딩
                           SizedBox(height: 70),
-                          Container(padding: EdgeInsets.only(left: 30), child:
+                          Container(padding: EdgeInsets.only(
+                            left: MediaQuery.of(context).size.width * 0.05,
+                            right: MediaQuery.of(context).size.width * 0.1), child:
                             Column(
                               children: [
                                 handle(snapshot),
@@ -44,6 +44,8 @@ class HomeView extends StatelessWidget {
                                   children: [
                                     solvedCount(snapshot),
                                     reverseRivalCount(snapshot),
+                                    Spacer(),
+                                    //rating(snapshot),
                                   ],
                                 ),
                               ],

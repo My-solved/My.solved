@@ -136,6 +136,12 @@ Widget rating(AsyncSnapshot<User> snapshot) {
     backgroundColor: Colors.transparent,
     child: Text(
       snapshot.data?.rating.toString()?? '',
+      style: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+        fontStyle: FontStyle.italic,
+        color: Colors.grey,
+      ),
     ),
   );
 }
@@ -222,13 +228,51 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
       color: Colors.transparent,
       shadowColor: Colors.yellow,
       elevation: 15,
-      child: Container(
-        color: Colors.transparent,
-        alignment: Alignment.center,
-        child: SvgPicture.network('http://mazandi.herokuapp.com/api?handle=${snapshot.data?.handle}&theme=warm',
-          width: MediaQuery.of(context).size.width * 0.8,
-        ),
-      )
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+              color: Colors.white,
+            ),
+            width: MediaQuery.of(context).size.width * 0.82,
+            height: MediaQuery.of(context).size.width * 0.4,
+          ),
+          SvgPicture.network(
+            'http://mazandi.herokuapp.com/api?handle=${snapshot.data?.handle}&theme=warm',
+            width: MediaQuery.of(context).size.width * 0.8,
+            height: MediaQuery.of(context).size.width * 0.4,
+          ),
+          Positioned(
+            left: MediaQuery.of(context).size.width * 0.8 * 0.05,
+            bottom: MediaQuery.of(context).size.width * 0.4 * 0.78,
+            child: Container(
+              clipBehavior: Clip.none,
+              color: Colors.white,
+              width: MediaQuery.of(context).size.width * 0.8 * 0.4,
+              height: MediaQuery.of(context).size.width * 0.4 * 0.14,
+              child: Row(
+                children: [
+                  SvgPicture.asset('lib/assets/icons/rating.svg',
+                    color: Color(0xFFFBB758),
+                    width: MediaQuery.of(context).size.width * 0.4 * 0.10,
+                    height: MediaQuery.of(context).size.width * 0.4 * 0.10,
+                  ),
+                  SizedBox(width: 5),
+                  Text('Rating: ${snapshot.data?.rating}',
+                    style: TextStyle(
+                      fontSize: MediaQuery.of(context).size.width * 0.4 * 0.10,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFFBB758),
+                    ),
+                  ),
+                ],
+              )
+            ),
+          )
+        ],
+      ),
     )
   );
 }
