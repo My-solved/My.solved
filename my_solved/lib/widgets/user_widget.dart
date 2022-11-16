@@ -1,10 +1,10 @@
-// 닉네임
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../models/User.dart';
+import '../models/user/ProblemStats.dart';
 
 Widget backgroundImage(AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
@@ -44,7 +44,7 @@ Widget profileImage(AsyncSnapshot<User> snapshot) {
 Widget handle(AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
     backgroundColor: Colors.transparent,
-    child: Column(
+    child: Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Text(
@@ -54,6 +54,7 @@ Widget handle(AsyncSnapshot<User> snapshot) {
             fontWeight: FontWeight.bold,
           ),
         ),
+        classes(snapshot),
       ],
     ),
   );
@@ -106,14 +107,11 @@ Widget bio(AsyncSnapshot<User> snapshot) {
 Widget classes(AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
     backgroundColor: Colors.transparent,
-    child: Container(
-      padding: EdgeInsets.only(top: 20),
-      child: SvgPicture.asset(
+    child: SvgPicture.asset(
         'lib/assets/classes/c${snapshot.data?.userClass}_.svg',
         width: 50,
         height: 50,
-      ),
-    )
+    ),
   );
 }
 
@@ -217,19 +215,19 @@ Widget rank(AsyncSnapshot<User> snapshot) {
 }
 
 // 잔디
-Widget zandi(AsyncSnapshot<User> snapshot) {
+Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
     backgroundColor: Colors.transparent,
     child: Card(
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: Colors.white70, width: 1),
-        borderRadius: BorderRadius.circular(10.0),
-      ),
+      color: Colors.transparent,
       shadowColor: Colors.yellow,
-      elevation: 20,
+      elevation: 15,
       child: Container(
+        color: Colors.transparent,
         alignment: Alignment.center,
-        child: SvgPicture.network('http://mazandi.herokuapp.com/api?handle=${snapshot.data?.handle}&theme=warm',),
+        child: SvgPicture.network('http://mazandi.herokuapp.com/api?handle=${snapshot.data?.handle}&theme=warm',
+          width: MediaQuery.of(context).size.width * 0.8,
+        ),
       )
     )
   );
@@ -270,6 +268,40 @@ Widget badge(AsyncSnapshot<User> snapshot) {
       child: Text(
         snapshot.data?.badge.toString()?? '',
       ),
+    )
+  );
+}
+
+// QR
+Widget rowQR(int i, AsyncSnapshot<ProblemStats> snapshot) {
+  return CupertinoPageScaffold(
+    backgroundColor: Colors.transparent,
+    child: Row(
+      children: [
+        for(int j = 0; j < 10; j++)
+          SizedBox(
+            width: 20,
+            height: 20,
+            child: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.rectangle,
+                color: snapshot.data?.level == false? Colors.green: Colors.red,
+              ),
+            ),
+          ),
+      ],
+    ),
+  );
+}
+
+Widget genQR(AsyncSnapshot<ProblemStats> snapshot) {
+  return CupertinoPageScaffold(
+    backgroundColor: Colors.transparent,
+    child: Column(
+      children: [
+        for(int i = 0; i < 10; i++)
+          rowQR(i, snapshot),
+      ],
     )
   );
 }

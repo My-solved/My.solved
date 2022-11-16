@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:my_solved/pages/setting_page.dart';
 import 'package:my_solved/view_models/home_view_model.dart';
 import 'package:provider/provider.dart';
@@ -28,38 +27,37 @@ class HomeView extends StatelessWidget {
                   future: viewModel.future,
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
-                      return Stack(
-                        clipBehavior: Clip.none,
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          Align(
-                            alignment: Alignment.topCenter,
-                            child: profileHeader(context, snapshot),
-                          ),
-                          Positioned(left: 30, bottom: -110, child:
-                            Stack(
-                              clipBehavior: Clip.none,
+                          // 배경 + 프로필
+                          profileHeader(context, snapshot),
+                          // 패딩
+                          SizedBox(height: 70),
+                          Container(padding: EdgeInsets.only(left: 30), child:
+                            Column(
                               children: [
                                 handle(snapshot),
-                                Positioned(bottom: -5, right: -60, child: classes(snapshot)),
-                                Positioned(bottom: -40, child:
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      organizations(snapshot),
-                                      Row(
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        children: [
-                                          solvedCount(snapshot),
-                                          reverseRivalCount(snapshot),
-                                        ],
-                                      ),
-                                    ],
-                                  )
+                                organizations(snapshot),
+                                SizedBox(height: 5),
+                                Row(
+                                  children: [
+                                    solvedCount(snapshot),
+                                    reverseRivalCount(snapshot),
+                                  ],
                                 ),
-                                Positioned(left: 0, top: 90, child: zandi(snapshot)),
                               ],
-                            )
+                            ),
                           ),
+                          SizedBox(height: 20),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Spacer(),
+                              zandi(context, snapshot),
+                              Spacer(),
+                            ],
+                          )
                         ],
                       );
                     } else {
@@ -74,7 +72,13 @@ class HomeView extends StatelessWidget {
                       );
                     }
                   }
-                )
+                ),
+                // FutureBuilder<ProblemStats>(
+                //   future: viewModel.futurePS,
+                //   builder: (context, snapshot) {
+                //       return genQR(snapshot);
+                //   }
+                // ),
               ],
             ),
           ),
@@ -91,13 +95,14 @@ extension HomeViewExtension on HomeView {
         clipBehavior: Clip.none,
         children: <Widget>[
           backgroundImage(snapshot),
-          Positioned(left: 30, bottom: -50, child: Stack(
-            clipBehavior: Clip.none,
-            children: <Widget>[
-              profileImage(snapshot),
-              Positioned(left: 35, top: 60, child: tiers(snapshot)),
-            ]
-          ),
+          Positioned(left: 25, bottom: -50, child:
+            Stack(
+              clipBehavior: Clip.none,
+              children: <Widget>[
+                profileImage(snapshot),
+                Positioned(left: 35, top: 60, child: tiers(snapshot)),
+              ]
+            ),
           ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
