@@ -230,14 +230,13 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
       elevation: 15,
       child: Stack(
         clipBehavior: Clip.none,
+        alignment: Alignment.center,
         children: [
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
-              color: Colors.white,
-            ),
-            width: MediaQuery.of(context).size.width * 0.82,
+          SvgPicture.asset(
+            'lib/assets/zandi.svg',
+            width: MediaQuery.of(context).size.width * 0.8,
             height: MediaQuery.of(context).size.width * 0.4,
+            color: Colors.white,
           ),
           SvgPicture.network(
             'http://mazandi.herokuapp.com/api?handle=${snapshot.data?.handle}&theme=warm',

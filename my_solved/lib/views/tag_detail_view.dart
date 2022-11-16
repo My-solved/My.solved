@@ -74,75 +74,76 @@ extension TagDetailViewExtension on TagDetailView {
 
   Widget problemCell(dynamic problem, BuildContext context) {
     return CupertinoPageScaffold(
-        child: GestureDetector(
-          onTap: () => Navigator.of(context).push(
-            CupertinoPageRoute(
-              builder: (context) => ProblemDetailPage(problem['problemId']),
-            ),
+      child: GestureDetector(
+        onTap: () => Navigator.of(context).push(
+          CupertinoPageRoute(
+            builder: (context) => ProblemDetailPage(problem['problemId']),
           ),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Color(0xffefefef),
-              borderRadius: BorderRadius.all(Radius.circular(10)),
-            ),
-            width: MediaQuery.of(context).size.width,
-            margin: EdgeInsets.only(top: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Container(
-                  padding: EdgeInsets.only(top: 20, left: 20),
-                  child: Text('${problem['problemId']}번'),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Color(0xffefefef),
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+          width: MediaQuery.of(context).size.width,
+          margin: EdgeInsets.only(top: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Container(
+                padding: EdgeInsets.only(top: 20, left: 20),
+                child: Text('${problem['problemId']}번'),
+              ),
+              Container(
+                padding: EdgeInsets.only(
+                  top: 10,
+                  left: 20,
                 ),
-                Container(
-                  padding: EdgeInsets.only(
-                    top: 10,
-                    left: 20,
-                  ),
-                  child: Text(
-                    '${problem['titleKo']}',
-                    style: TextStyle(fontSize: 22),
-                  ),
+                child: Text(
+                  '${problem['titleKo']}',
+                  style: TextStyle(fontSize: 22),
                 ),
-                Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.only(
-                        top: 12,
-                        left: 20,
-                      ),
-                      child: Text(
-                        '평균 시도 : ${problem['averageTries']}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xff767676),
-                        ),
+              ),
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.only(
+                      top: 12,
+                      left: 20,
+                    ),
+                    child: Text(
+                      '평균 시도 : ${problem['averageTries']}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xff767676),
                       ),
                     ),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Container(
-                      padding: EdgeInsets.only(
-                        top: 4,
-                        left: 20,
-                        bottom: 20,
-                      ),
-                      child: Text(
-                        'Level : ${problem['level']}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xff767676),
-                        ),
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.only(
+                      top: 4,
+                      left: 20,
+                      bottom: 20,
+                    ),
+                    child: Text(
+                      'Level : ${problem['level']}',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xff767676),
                       ),
                     ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ));
+        ),
+      )
+    );
   }
 
   Widget userHeader() {

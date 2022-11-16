@@ -102,7 +102,7 @@ extension HomeViewExtension on HomeView {
               clipBehavior: Clip.none,
               children: <Widget>[
                 profileImage(snapshot),
-                Positioned(left: 35, top: 60, child: tiers(snapshot)),
+                Positioned(left: 38, top: 65, child: tiers(snapshot)),
               ]
             ),
           ),
