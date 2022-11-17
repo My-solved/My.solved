@@ -37,19 +37,19 @@ class ProfileDetailView extends StatelessWidget {
                           // 패딩
                           SizedBox(height: 70),
                           Container(padding: EdgeInsets.only(left: 30), child:
-                          Column(
-                            children: [
-                              handle(snapshot),
-                              organizations(snapshot),
-                              SizedBox(height: 5),
-                              Row(
-                                children: [
-                                  solvedCount(snapshot),
-                                  reverseRivalCount(snapshot),
-                                ],
-                              ),
-                            ],
-                          ),
+                            Column(
+                              children: [
+                                handle(snapshot),
+                                organizations(snapshot),
+                                SizedBox(height: 5),
+                                Row(
+                                  children: [
+                                    solvedCount(snapshot),
+                                    reverseRivalCount(snapshot),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                           SizedBox(height: 20),
                           Row(

@@ -222,57 +222,48 @@ Widget rank(AsyncSnapshot<User> snapshot) {
 
 // 잔디
 Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return CupertinoPageScaffold(
-    backgroundColor: Colors.transparent,
-    child: Card(
-      color: Colors.transparent,
-      shadowColor: Colors.yellow,
-      elevation: 15,
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.center,
-        children: [
-          SvgPicture.asset(
-            'lib/assets/zandi.svg',
-            width: MediaQuery.of(context).size.width * 0.8,
-            height: MediaQuery.of(context).size.width * 0.4,
-            color: Colors.white,
-          ),
-          SvgPicture.network(
-            'http://mazandi.herokuapp.com/api?handle=${snapshot.data?.handle}&theme=warm',
-            width: MediaQuery.of(context).size.width * 0.8,
-            height: MediaQuery.of(context).size.width * 0.4,
-          ),
-          Positioned(
-            left: MediaQuery.of(context).size.width * 0.8 * 0.05,
-            bottom: MediaQuery.of(context).size.width * 0.4 * 0.78,
-            child: Container(
-              clipBehavior: Clip.none,
-              color: Colors.white,
-              width: MediaQuery.of(context).size.width * 0.8 * 0.4,
-              height: MediaQuery.of(context).size.width * 0.4 * 0.14,
-              child: Row(
-                children: [
-                  SvgPicture.asset('lib/assets/icons/rating.svg',
-                    color: Color(0xFFFBB758),
-                    width: MediaQuery.of(context).size.width * 0.4 * 0.10,
-                    height: MediaQuery.of(context).size.width * 0.4 * 0.10,
-                  ),
-                  SizedBox(width: 5),
-                  Text('Rating: ${snapshot.data?.rating}',
-                    style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.width * 0.4 * 0.10,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFFBB758),
-                    ),
-                  ),
-                ],
-              )
-            ),
-          )
-        ],
+  return Stack(
+    clipBehavior: Clip.none,
+    alignment: Alignment.center,
+    children: [
+      SvgPicture.asset(
+        'lib/assets/zandi.svg',
+        width: MediaQuery.of(context).size.width * 0.8,
+        height: MediaQuery.of(context).size.width * 0.4,
       ),
-    )
+      SvgPicture.network(
+        'http://mazandi.herokuapp.com/api?handle=${snapshot.data?.handle}&theme=warm',
+        width: MediaQuery.of(context).size.width * 0.8,
+        height: MediaQuery.of(context).size.width * 0.4,
+      ),
+      Positioned(
+        left: MediaQuery.of(context).size.width * 0.8 * 0.05,
+        bottom: MediaQuery.of(context).size.width * 0.4 * 0.78,
+        child: Container(
+          clipBehavior: Clip.none,
+          color: Colors.white,
+          width: MediaQuery.of(context).size.width * 0.8 * 0.4,
+          height: MediaQuery.of(context).size.width * 0.4 * 0.14,
+          child: Row(
+            children: [
+              SvgPicture.asset('lib/assets/icons/rating.svg',
+                color: Color(0xFFFBB758),
+                width: MediaQuery.of(context).size.width * 0.4 * 0.10,
+                height: MediaQuery.of(context).size.width * 0.4 * 0.10,
+              ),
+              SizedBox(width: 5),
+              Text('Rating: ${snapshot.data?.rating}',
+                style: TextStyle(
+                  fontSize: MediaQuery.of(context).size.width * 0.4 * 0.10,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFFBB758),
+                ),
+              ),
+            ],
+          )
+        ),
+      )
+    ],
   );
 }
 
@@ -315,35 +306,28 @@ Widget badge(AsyncSnapshot<User> snapshot) {
   );
 }
 
-// QR
-Widget rowQR(int i, AsyncSnapshot<ProblemStats> snapshot) {
-  return CupertinoPageScaffold(
-    backgroundColor: Colors.transparent,
-    child: Row(
-      children: [
-        for(int j = 0; j < 10; j++)
-          SizedBox(
-            width: 20,
-            height: 20,
-            child: Container(
-              decoration: BoxDecoration(
-                shape: BoxShape.rectangle,
-                color: snapshot.data?.level == false? Colors.green: Colors.red,
-              ),
-            ),
-          ),
-      ],
-    ),
-  );
-}
-
+// QR 코드
 Widget genQR(AsyncSnapshot<ProblemStats> snapshot) {
   return CupertinoPageScaffold(
     backgroundColor: Colors.transparent,
     child: Column(
       children: [
         for(int i = 0; i < 10; i++)
-          rowQR(i, snapshot),
+          Row(
+            children: [
+              for(int j = 0; j < 10; j++)
+                SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.rectangle,
+                      color: snapshot.data?.level == false? Colors.green: Colors.red,
+                    ),
+                  ),
+                ),
+            ],
+          ),
       ],
     )
   );

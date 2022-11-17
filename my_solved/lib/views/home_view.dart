@@ -32,10 +32,12 @@ class HomeView extends StatelessWidget {
                         children: <Widget>[
                           profileHeader(context, snapshot),
                           SizedBox(height: 70),
-                          Container(padding: EdgeInsets.only(
-                            left: MediaQuery.of(context).size.width * 0.05,
-                            right: MediaQuery.of(context).size.width * 0.1), child:
-                            Column(
+                          Container(
+                            padding: EdgeInsets.only(
+                              left: MediaQuery.of(context).size.width * 0.05,
+                              right: MediaQuery.of(context).size.width * 0.1
+                            ),
+                            child: Column(
                               children: [
                                 handle(snapshot),
                                 organizations(snapshot),
@@ -45,9 +47,8 @@ class HomeView extends StatelessWidget {
                                     solvedCount(snapshot),
                                     reverseRivalCount(snapshot),
                                     Spacer(),
-                                    //rating(snapshot),
                                   ],
-                                ),
+                                )
                               ],
                             ),
                           ),
@@ -97,7 +98,7 @@ extension HomeViewExtension on HomeView {
         clipBehavior: Clip.none,
         children: <Widget>[
           backgroundImage(snapshot),
-          Positioned(left: 25, bottom: -50, child:
+          Positioned(left: 15, bottom: -50, child:
             Stack(
               clipBehavior: Clip.none,
               children: <Widget>[
