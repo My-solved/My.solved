@@ -14,11 +14,12 @@
 
 
 ## 스크린샷
-![](my_solved/lib/assets/screenshots/221119_home.png)
-![](my_solved/lib/assets/screenshots/221119_problem.png)
-![](my_solved/lib/assets/screenshots/221119_search.png)
-![](my_solved/lib/assets/screenshots/221119_search_1.png)
-![](my_solved/lib/assets/screenshots/221119_tag.png)
+![221119_home](https://user-images.githubusercontent.com/52066828/202795198-ea857bc5-5654-46e1-abd7-956e94b045f5.png)
+![221119_problem](https://user-images.githubusercontent.com/52066828/202795206-d590a6d7-e08b-46cc-bc89-bf1cae344cfc.png)
+![221119_search](https://user-images.githubusercontent.com/52066828/202795212-793fb73e-a849-44d0-94ab-a3c2e814ea4f.png)
+![221119_search_1](https://user-images.githubusercontent.com/52066828/202795215-abb147ac-2455-4f9a-9ca6-e104012d2e53.png)
+![221119_tag](https://user-images.githubusercontent.com/52066828/202795219-f0a24a78-736f-49b7-a4a7-931d4c8f216f.png)
+
 
 ## 영감을 주신 분들 
 @shiftpsh for [Solved.ac](https://solved.ac/).    
