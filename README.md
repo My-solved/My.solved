@@ -16,7 +16,7 @@
 ## 스크린샷
 
 
-## 영감을 주신 
+## 영감을 주신 분들 
 @shiftpsh for [Solved.ac](https://solved.ac/).    
 @RanolP for [Solved.ac unofficial-documentation](https://solvedac.github.io/unofficial-documentation/#/).    
 @mazassumnida for [mazandi](https://github.com/mazassumnida/mazandi).    
