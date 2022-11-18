@@ -21,8 +21,8 @@ Widget profileImage(AsyncSnapshot<User> snapshot) {
     backgroundColor: Colors.transparent,
     child: Card(
       elevation: 20,
-      shadowColor: Colors.yellow,
-      shape: RoundedRectangleBorder(
+      shadowColor: Color(0xFF000000 + levelColor(snapshot.data?.tier ?? 0)),
+  shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(100),
       ),
       child: SizedBox(
@@ -84,7 +84,6 @@ Widget organizations(AsyncSnapshot<User> snapshot) {
             ),
           ),
         )
-
       ]
     )
   );
@@ -152,7 +151,6 @@ Widget solvedCount(AsyncSnapshot<User> snapshot) {
     backgroundColor: Colors.transparent,
     child: Container(
       alignment: Alignment.centerLeft,
-      width: 100,
       child: RichText(
         text: TextSpan(
           children: [
@@ -183,7 +181,6 @@ Widget reverseRivalCount(AsyncSnapshot<User> snapshot) {
     backgroundColor: Colors.transparent,
     child: Container(
       alignment: Alignment.centerLeft,
-      width: 100,
       child: RichText(
         text: TextSpan(
           children: [
@@ -226,10 +223,15 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
     clipBehavior: Clip.none,
     alignment: Alignment.center,
     children: [
-      SvgPicture.asset(
-        'lib/assets/zandi.svg',
-        width: MediaQuery.of(context).size.width * 0.8,
-        height: MediaQuery.of(context).size.width * 0.4,
+      Card(
+        elevation: 20,
+        shadowColor: Color(0xFF000000 + levelColor(snapshot.data?.tier ?? 0)),
+        color: Colors.transparent,
+        child: SvgPicture.asset(
+          'lib/assets/zandi.svg',
+          width: MediaQuery.of(context).size.width * 0.8,
+          height: MediaQuery.of(context).size.width * 0.4,
+        ),
       ),
       SvgPicture.network(
         'http://mazandi.herokuapp.com/api?handle=${snapshot.data?.handle}&theme=warm',
@@ -238,7 +240,7 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
       ),
       Positioned(
         left: MediaQuery.of(context).size.width * 0.8 * 0.05,
-        bottom: MediaQuery.of(context).size.width * 0.4 * 0.78,
+        bottom: MediaQuery.of(context).size.width * 0.4 * 0.8,
         child: Container(
           clipBehavior: Clip.none,
           color: Colors.white,
@@ -247,16 +249,16 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
           child: Row(
             children: [
               SvgPicture.asset('lib/assets/icons/rating.svg',
-                color: Color(0xFFFBB758),
                 width: MediaQuery.of(context).size.width * 0.4 * 0.10,
                 height: MediaQuery.of(context).size.width * 0.4 * 0.10,
+                color: Color(0xFF000000 + levelColor(snapshot.data?.tier?? 0)),
               ),
               SizedBox(width: 5),
               Text('Rating: ${snapshot.data?.rating}',
                 style: TextStyle(
                   fontSize: MediaQuery.of(context).size.width * 0.4 * 0.10,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFFFBB758),
+                  color: Color(0xFF000000 + levelColor(snapshot.data?.tier ?? 0)),
                 ),
               ),
             ],
@@ -331,4 +333,31 @@ Widget genQR(AsyncSnapshot<ProblemStats> snapshot) {
       ],
     )
   );
+}
+
+int levelColor(int level) {
+  if(level == 0) {
+    return 0x2D2D2D;
+  } else if(level < 6) {
+    // bronze
+    return 0xA25B36;
+  } else if(level < 11) {
+    // silver
+    return 0x7B7574;
+  } else if(level < 16) {
+    // gold
+    return 0xFEBE70;
+  } else if(level < 21) {
+    // platinum
+    return 0x34E678;
+  } else if(level < 26) {
+    // diamond
+    return 0x3F8EEA;
+  } else if(level < 31) {
+    // ruby
+    return 0xE15C64;
+  } else {
+    // master
+    return 0xCB7CEF;
+  }
 }

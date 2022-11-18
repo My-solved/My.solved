@@ -31,14 +31,6 @@ class SettingView extends StatelessWidget {
                   ),
                 ],
               ),
-              Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.only(top: 14, bottom: 14),
-                    child: Text('다크 모드'),
-                  ),
-                ],
-              ),
               Container(
                 padding: EdgeInsets.only(right: 20),
                 child: Divider(),

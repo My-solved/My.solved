@@ -45,6 +45,7 @@ class ProfileDetailView extends StatelessWidget {
                                 Row(
                                   children: [
                                     solvedCount(snapshot),
+                                    SizedBox(width: 10),
                                     reverseRivalCount(snapshot),
                                   ],
                                 ),

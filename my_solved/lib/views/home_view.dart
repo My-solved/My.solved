@@ -45,8 +45,8 @@ class HomeView extends StatelessWidget {
                                 Row(
                                   children: [
                                     solvedCount(snapshot),
+                                    SizedBox(width: 10),
                                     reverseRivalCount(snapshot),
-                                    Spacer(),
                                   ],
                                 )
                               ],

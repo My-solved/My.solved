@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:my_solved/pages/problem_detail_page.dart';
 import 'package:my_solved/pages/profile_detail_page.dart';
 import 'package:my_solved/view_models/search_view_model.dart';
@@ -132,10 +133,22 @@ extension SearchViewExtension on SearchView {
                   top: 10,
                   left: 20,
                 ),
-                child: Text(
-                  '${problem['title']}',
-                  style: TextStyle(fontSize: 22),
-                ),
+                child: Row(
+                  children: [
+                    SvgPicture.asset(
+                      'lib/assets/tiers/${problem['level']}_.svg',
+                      width: 20,
+                      height: 20,
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Text(
+                      '${problem['title']}',
+                      style: TextStyle(fontSize: 22),
+                    ),
+                  ],
+                )
               ),
               Row(
                 children: [
@@ -161,13 +174,6 @@ extension SearchViewExtension on SearchView {
                       top: 4,
                       left: 20,
                       bottom: 20,
-                    ),
-                    child: Text(
-                      'Level : ${problem['level']}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xff767676),
-                      ),
                     ),
                   ),
                 ],
@@ -206,13 +212,26 @@ extension SearchViewExtension on SearchView {
           width: MediaQuery.of(context).size.width,
           margin: EdgeInsets.only(top: 10),
           child: Container(
-              padding: EdgeInsets.only(
-                top: 12,
-                bottom: 12,
-                left: 20,
-                right: 20,
-              ),
-              child: Text('${user['handle']}')),
+            padding: EdgeInsets.only(
+              top: 12,
+              bottom: 12,
+              left: 20,
+              right: 20,
+            ),
+            child: Row(
+              children: [
+                SvgPicture.asset(
+                  'lib/assets/tiers/${user['tier']}_.svg',
+                  width: 20,
+                  height: 20,
+                ),
+                SizedBox(
+                  width: 10,
+                ),
+                Text('${user['handle']}'),
+              ],
+            )
+          ),
         ),
       ),
     );
