@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:my_solved/pages/problem_detail_page.dart';
 import 'package:my_solved/pages/profile_detail_page.dart';
 import 'package:provider/provider.dart';
@@ -99,9 +100,20 @@ extension TagDetailViewExtension on TagDetailView {
                   top: 10,
                   left: 20,
                 ),
-                child: Text(
-                  '${problem['titleKo']}',
-                  style: TextStyle(fontSize: 22),
+                child: Row(
+                  children: [
+                    SvgPicture.asset(
+                      'lib/assets/tiers/${problem['level']}_.svg',
+                      width: 20,
+                      height: 20,
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Text(
+                      '${problem['titleKo']}',
+                      style: TextStyle(fontSize: 22),
+                    ),                  ],
                 ),
               ),
               Row(
