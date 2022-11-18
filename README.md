@@ -14,7 +14,11 @@
 
 
 ## 스크린샷
-
+![](my_solved/lib/assets/screenshots/221119_home.png)
+![](my_solved/lib/assets/screenshots/221119_problem.png)
+![](my_solved/lib/assets/screenshots/221119_search.png)
+![](my_solved/lib/assets/screenshots/221119_search_1.png)
+![](my_solved/lib/assets/screenshots/221119_tag.png)
 
 ## 영감을 주신 분들 
 @shiftpsh for [Solved.ac](https://solved.ac/).    
