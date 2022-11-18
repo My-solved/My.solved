@@ -115,7 +115,7 @@ extension SearchViewExtension on SearchView {
         ),
         child: Container(
           decoration: BoxDecoration(
-            color: Color(0xffefefef),
+            color: CupertinoTheme.of(context).barBackgroundColor,
             borderRadius: BorderRadius.all(Radius.circular(10)),
           ),
           width: MediaQuery.of(context).size.width,
@@ -200,7 +200,7 @@ extension SearchViewExtension on SearchView {
         ),
         child: Container(
           decoration: BoxDecoration(
-            color: Color(0xffefefef),
+            color: CupertinoTheme.of(context).barBackgroundColor,
             borderRadius: BorderRadius.all(Radius.circular(10)),
           ),
           width: MediaQuery.of(context).size.width,
@@ -240,7 +240,7 @@ extension SearchViewExtension on SearchView {
         ),
         child: Container(
           decoration: BoxDecoration(
-            color: Color(0xffefefef),
+            color: CupertinoTheme.of(context).barBackgroundColor,
             borderRadius: BorderRadius.all(Radius.circular(10)),
           ),
           width: MediaQuery.of(context).size.width,

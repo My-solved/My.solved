@@ -17,7 +17,7 @@ Widget titleContent(
       padding: EdgeInsets.only(top: 10),
       child: Container(
         decoration: BoxDecoration(
-          color: Color(0xffefefef),
+          color: CupertinoTheme.of(context).barBackgroundColor,
           borderRadius: BorderRadius.all(Radius.circular(10)),
         ),
         padding: EdgeInsets.only(top: 10, right: 20, left: 20, bottom: 10),
@@ -50,7 +50,7 @@ Widget descriptionContent(
       padding: EdgeInsets.only(top: 10),
       child: Container(
         decoration: BoxDecoration(
-          color: Color(0xffefefef),
+          color: CupertinoTheme.of(context).barBackgroundColor,
           borderRadius: BorderRadius.all(Radius.circular(10)),
         ),
         padding: EdgeInsets.only(top: 10, right: 20, left: 20, bottom: 10),
@@ -83,7 +83,7 @@ Widget inputContent(
       padding: EdgeInsets.only(top: 10),
       child: Container(
         decoration: BoxDecoration(
-          color: Color(0xffefefef),
+          color: CupertinoTheme.of(context).barBackgroundColor,
           borderRadius: BorderRadius.all(Radius.circular(10)),
         ),
         padding: EdgeInsets.only(top: 10, right: 20, left: 20, bottom: 10),
@@ -116,7 +116,7 @@ Widget outputContent(
       padding: EdgeInsets.only(top: 10),
       child: Container(
         decoration: BoxDecoration(
-          color: Color(0xffefefef),
+          color: CupertinoTheme.of(context).barBackgroundColor,
           borderRadius: BorderRadius.all(Radius.circular(10)),
         ),
         padding: EdgeInsets.only(top: 10, right: 20, left: 20, bottom: 10),
