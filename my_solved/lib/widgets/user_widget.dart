@@ -22,7 +22,7 @@ Widget profileImage(AsyncSnapshot<User> snapshot) {
     child: Card(
       elevation: 20,
       shadowColor: Color(0xFF000000 + levelColor(snapshot.data?.tier ?? 0)),
-  shape: RoundedRectangleBorder(
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(100),
       ),
       child: SizedBox(
@@ -54,6 +54,7 @@ Widget handle(AsyncSnapshot<User> snapshot) {
             fontWeight: FontWeight.bold,
           ),
         ),
+        //badge(snapshot),
         classes(snapshot),
       ],
     ),
@@ -104,13 +105,12 @@ Widget bio(AsyncSnapshot<User> snapshot) {
 
 // 클래스
 Widget classes(AsyncSnapshot<User> snapshot) {
-  return CupertinoPageScaffold(
-    backgroundColor: Colors.transparent,
-    child: SvgPicture.asset(
+  return snapshot.data!.rating >= 3200 ?
+  SvgPicture.asset('lib/assets/classes/c10g_.svg', width: 50, height: 50,) :
+  SvgPicture.asset(
         'lib/assets/classes/c${snapshot.data?.userClass}_.svg',
         width: 50,
         height: 50,
-    ),
   );
 }
 
@@ -297,14 +297,11 @@ Widget exp(AsyncSnapshot<User> snapshot) {
 
 // 배지
 Widget badge(AsyncSnapshot<User> snapshot) {
-  return CupertinoPageScaffold(
-    backgroundColor: Colors.transparent,
-    child: Container(
-      padding: EdgeInsets.only(top: 20),
-      child: Text(
-        snapshot.data?.badge.toString()?? '',
-      ),
-    )
+  return snapshot.data?.badge == null? SizedBox():
+    ExtendedImage.network(
+      snapshot.data?.badge['badgeImageUrl'],
+      width: 50,
+      height: 50,
   );
 }
 
