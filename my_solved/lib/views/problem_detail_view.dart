@@ -40,6 +40,10 @@ class ProblemDetailView extends StatelessWidget {
                             inputContent(snapshot, context),
                             outputHeader(),
                             outputContent(snapshot, context),
+                            sampleInputHeader(),
+                            sampleInputContent(snapshot, context),
+                            sampleOutputHeader(),
+                            sampleOutputContent(snapshot, context),
                           ],
                         ),
                       );
