@@ -61,7 +61,9 @@ Widget descriptionContent(
               '',
           style: {
             "body": Style(
+              color: CupertinoTheme.of(context).textTheme.textStyle.color,
               fontSize: FontSize(14),
+              fontFamily: 'NotoSansKR',
             ),
           },
         ),
@@ -100,7 +102,10 @@ Widget inputContent(
         width: MediaQuery.of(context).size.width,
         child: Text(
           snapshot.data?.getElementById('problem_input')?.text ?? '',
-          style: TextStyle(fontSize: 14),
+          style: TextStyle(
+            fontSize: 14,
+            fontFamily: 'SourceCodePro',
+          ),
         ),
       ),
     ),
@@ -204,7 +209,7 @@ Widget sampleOutputContent(
           snapshot.data?.getElementById('sample-output-1')?.text ?? '',
           style: TextStyle(
             fontSize: 14,
-            fontFamily: 'monospace',
+            fontFamily: 'SourceCodePro',
           ),
         ),
       ),
