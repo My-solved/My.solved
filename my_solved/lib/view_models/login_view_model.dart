@@ -21,12 +21,10 @@ class LoginViewModel with ChangeNotifier {
     Provider.of<UserName>(context, listen: false).setName(handle);
     future = userShow(handle);
     future!.then((value) {
-      Navigator.push(
+      Navigator.pushAndRemoveUntil(
         context,
-        CupertinoPageRoute(
-          builder: (context) => MainTabPage(),
-        ),
-      );
+        MaterialPageRoute(builder: (context) => MainTabPage()),
+        (route) => false);
     })
     .catchError((error) {
       return showToast();

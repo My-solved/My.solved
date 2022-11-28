@@ -12,14 +12,31 @@ class SettingView extends StatelessWidget {
       ),
       child: SafeArea(
         child: Container(
-          padding: EdgeInsets.only(top: 10, left: 20),
+          padding: EdgeInsets.only(top: 10, left: 20, right: 20),
           child: Column(
             children: <Widget>[
               Row(
                 children: [
                   Container(
                     padding: EdgeInsets.only(top: 14, bottom: 14),
-                    child: Text('백준 ID'),
+                    child: Text(
+                      '백준 ID',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: CupertinoTheme.of(context).textTheme.textStyle.color,
+                      ),
+                    ),
+                  ),
+                  Spacer(),
+                  Container(
+                    padding: EdgeInsets.only(top: 14, bottom: 14),
+                    child: Text(
+                      '백준 ID',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: CupertinoTheme.of(context).textTheme.textStyle.color,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -27,7 +44,24 @@ class SettingView extends StatelessWidget {
                 children: [
                   Container(
                     padding: EdgeInsets.only(top: 14, bottom: 14),
-                    child: Text('스트릭 테마'),
+                    child: Text(
+                      '스트릭 테마',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: CupertinoTheme.of(context).textTheme.textStyle.color,
+                      ),
+                    ),
+                  ),
+                  Spacer(),
+                  Container(
+                    padding: EdgeInsets.only(top: 14, bottom: 14),
+                    child: Text(
+                      '스트릭 테마',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: CupertinoTheme.of(context).textTheme.textStyle.color,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -39,14 +73,20 @@ class SettingView extends StatelessWidget {
                 children: [
                   Container(
                     padding: EdgeInsets.only(top: 14, bottom: 14),
-                    child: Text('라이센스'),
+                    child: Text(
+                      '라이센스',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: CupertinoTheme.of(context).textTheme.textStyle.color,
+                      ),
+                    ),
                   ),
                   Spacer(),
                   CupertinoButton(
                     onPressed: () {},
                     child: Icon(
                       CupertinoIcons.right_chevron,
-                      color: CupertinoColors.black,
+                      color: CupertinoTheme.of(context).textTheme.textStyle.color,
                     ),
                   )
                 ],
