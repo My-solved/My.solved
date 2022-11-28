@@ -39,14 +39,14 @@ class ProfileDetailView extends StatelessWidget {
                           Container(padding: EdgeInsets.only(left: 30), child:
                             Column(
                               children: [
-                                handle(snapshot),
-                                organizations(snapshot),
+                                handle(context, snapshot),
+                                organizations(context, snapshot),
                                 SizedBox(height: 5),
                                 Row(
                                   children: [
-                                    solvedCount(snapshot),
+                                    solvedCount(context, snapshot),
                                     SizedBox(width: 10),
-                                    reverseRivalCount(snapshot),
+                                    reverseRivalCount(context, snapshot),
                                   ],
                                 ),
                               ],
@@ -91,12 +91,12 @@ extension ProfileDetailViewExtension on ProfileDetailView {
       child: Stack(
         clipBehavior: Clip.none,
         children: <Widget>[
-          backgroundImage(snapshot),
+          backgroundImage(context, snapshot),
           Positioned(left: 25, bottom: -50, child: Stack(
               clipBehavior: Clip.none,
               children: <Widget>[
-                profileImage(snapshot),
-                Positioned(left: 38, top: 65, child: tiers(snapshot)),
+                profileImage(context, snapshot),
+                Positioned(left: 38, top: 65, child: tiers(context, snapshot)),
               ]
           ),
           ),

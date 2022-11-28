@@ -30,7 +30,9 @@ class SearchView extends StatelessWidget {
                     child: Text(
                       '문제 검색',
                       style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+                          TextStyle(
+                              color: CupertinoTheme.of(context).textTheme.textStyle.color,
+                              fontWeight: FontWeight.bold, fontSize: 24),
                     ),
                   ),
                 Container(
@@ -66,7 +68,7 @@ class SearchView extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              problemHeader(),
+                              problemHeader(context),
                               for (dynamic problem in snapshot.data!.problems)
                                 problemCell(problem, context),
                               userHeader(),
@@ -94,13 +96,16 @@ class SearchView extends StatelessWidget {
 }
 
 extension SearchViewExtension on SearchView {
-  Widget problemHeader() {
+  Widget problemHeader(BuildContext context) {
     return CupertinoPageScaffold(
       child: Container(
         padding: EdgeInsets.only(top: 20),
         child: Text(
           '문제',
-          style: TextStyle(fontSize: 12, color: Color(0xff767676)),
+          style: TextStyle(
+            fontSize: 12,
+            color: Color(0xff767676)
+          ),
         ),
       ),
     );
@@ -126,7 +131,13 @@ extension SearchViewExtension on SearchView {
             children: <Widget>[
               Container(
                 padding: EdgeInsets.only(top: 20, left: 20),
-                child: Text('${problem['id']}번'),
+                child: Text(
+                  '${problem['id']}번',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: CupertinoTheme.of(context).textTheme.textStyle.color,
+                  ),
+                ),
               ),
               Container(
                 padding: EdgeInsets.only(
@@ -145,7 +156,10 @@ extension SearchViewExtension on SearchView {
                     ),
                     Text(
                       '${problem['title']}',
-                      style: TextStyle(fontSize: 22),
+                      style: TextStyle(
+                          fontSize: 20,
+                          color: CupertinoTheme.of(context).textTheme.textStyle.color
+                      ),
                     ),
                   ],
                 )
@@ -228,7 +242,7 @@ extension SearchViewExtension on SearchView {
                 SizedBox(
                   width: 10,
                 ),
-                Text('${user['handle']}'),
+                Text('${user['handle']}', style: TextStyle(color: CupertinoTheme.of(context).textTheme.textStyle.color)),
               ],
             )
           ),
@@ -271,7 +285,11 @@ extension SearchViewExtension on SearchView {
               left: 20,
               right: 20,
             ),
-            child: Text('${tag['key']} : ${tag['description']}'),
+            child: Text(
+                '${tag['key']} : ${tag['description']}',
+                style: TextStyle(
+                    color: CupertinoTheme.of(context).textTheme.textStyle.color)
+            ),
           ),
         ),
       )

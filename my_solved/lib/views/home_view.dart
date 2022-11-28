@@ -4,6 +4,7 @@ import 'package:my_solved/view_models/home_view_model.dart';
 import 'package:provider/provider.dart';
 
 import '../models/User.dart';
+import '../providers/user/user_name.dart';
 import '../widgets/user_widget.dart';
 
 class HomeView extends StatelessWidget {
@@ -12,7 +13,8 @@ class HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var viewModel = Provider.of<HomeViewModel>(context);
-    viewModel.onInit();
+    String userName = Provider.of<UserName>(context).name;
+    viewModel.onInit(userName);
 
     return CupertinoPageScaffold(
       child: SafeArea(
@@ -39,14 +41,14 @@ class HomeView extends StatelessWidget {
                             ),
                             child: Column(
                               children: [
-                                handle(snapshot),
-                                organizations(snapshot),
+                                handle(context, snapshot),
+                                organizations(context, snapshot),
                                 SizedBox(height: 5),
                                 Row(
                                   children: [
-                                    solvedCount(snapshot),
+                                    solvedCount(context, snapshot),
                                     SizedBox(width: 10),
-                                    reverseRivalCount(snapshot),
+                                    reverseRivalCount(context, snapshot),
                                   ],
                                 )
                               ],
@@ -97,13 +99,13 @@ extension HomeViewExtension on HomeView {
       child: Stack(
         clipBehavior: Clip.none,
         children: <Widget>[
-          backgroundImage(snapshot),
+          backgroundImage(context, snapshot),
           Positioned(left: 15, bottom: -50, child:
             Stack(
               clipBehavior: Clip.none,
               children: <Widget>[
-                profileImage(snapshot),
-                Positioned(left: 38, top: 65, child: tiers(snapshot)),
+                profileImage(context, snapshot),
+                Positioned(left: 38, top: 65, child: tiers(context, snapshot)),
               ]
             ),
           ),
