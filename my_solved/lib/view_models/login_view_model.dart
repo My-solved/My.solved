@@ -36,7 +36,7 @@ class LoginViewModel with ChangeNotifier {
 
 void showToast() {
   Fluttertoast.showToast(
-      msg: "로그인 실패",
+      msg: "존재하지 않는 닉네임입니다.",
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
       timeInSecForIosWeb: 1,
