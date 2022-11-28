@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:my_solved/pages/main_tab_page.dart';
+import 'package:my_solved/pages/login_page.dart';
 
 void main() {
   runApp(CupertinoApp(
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     return CupertinoApp(
-      home: MainTabPage(),
+      home: LoginPage(),
     );
   }
 }
