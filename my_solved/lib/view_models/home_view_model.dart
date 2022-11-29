@@ -7,11 +7,10 @@ import '../providers/user/show_api.dart';
 import '../models/user/ProblemStats.dart';
 
 class HomeViewModel with ChangeNotifier {
-  String handle = 'w8385';
   Future<User>? future;
   Future<ProblemStats>? futurePS;
 
-  void onInit() {
+  void onInit(String handle) {
     future = userShow(handle);
     futurePS = userProblemStats(handle);
     notifyListeners();

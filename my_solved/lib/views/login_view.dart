@@ -20,7 +20,9 @@ class LoginView extends StatelessWidget {
                 padding: EdgeInsets.only(top: 100, left: 20, right: 20),
                 child: Text(
                   "로그인",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: CupertinoTheme.of(context).textTheme.textStyle.color,
+                      fontSize: 24, fontWeight: FontWeight.bold),
                 ),
               ),
               Container(
@@ -32,7 +34,7 @@ class LoginView extends StatelessWidget {
               ),
               Container(
                 decoration: BoxDecoration(
-                  color: Color(0xffefeff0),
+                  color: CupertinoTheme.of(context).barBackgroundColor,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 margin: EdgeInsets.only(top: 60, left: 20, right: 20),

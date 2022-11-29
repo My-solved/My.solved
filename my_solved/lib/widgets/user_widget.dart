@@ -6,7 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import '../models/User.dart';
 import '../models/user/ProblemStats.dart';
 
-Widget backgroundImage(AsyncSnapshot<User> snapshot) {
+Widget backgroundImage(BuildContext context, AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
     child: ExtendedImage.network(
       snapshot.data?.background['backgroundImageUrl']?? '',
@@ -16,7 +16,7 @@ Widget backgroundImage(AsyncSnapshot<User> snapshot) {
   );
 }
 
-Widget profileImage(AsyncSnapshot<User> snapshot) {
+Widget profileImage(BuildContext context, AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
     backgroundColor: Colors.transparent,
     child: Card(
@@ -41,7 +41,7 @@ Widget profileImage(AsyncSnapshot<User> snapshot) {
   );
 }
 
-Widget handle(AsyncSnapshot<User> snapshot) {
+Widget handle(BuildContext context, AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
     backgroundColor: Colors.transparent,
     child: Row(
@@ -50,19 +50,20 @@ Widget handle(AsyncSnapshot<User> snapshot) {
         Text(
           snapshot.data?.handle?? '',
           style: TextStyle(
+            color: CupertinoTheme.of(context).textTheme.textStyle.color,
             fontSize: 30,
             fontWeight: FontWeight.bold,
           ),
         ),
         //badge(snapshot),
-        classes(snapshot),
+        classes(context, snapshot),
       ],
     ),
   );
 }
 
 // 소속
-Widget organizations(AsyncSnapshot<User> snapshot) {
+Widget organizations(BuildContext context, AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
     backgroundColor: Colors.transparent,
     child: Row(
@@ -91,7 +92,7 @@ Widget organizations(AsyncSnapshot<User> snapshot) {
 }
 
 // 자기소개
-Widget bio(AsyncSnapshot<User> snapshot) {
+Widget bio(BuildContext context, AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
     backgroundColor: Colors.transparent,
     child: Container(
@@ -104,7 +105,7 @@ Widget bio(AsyncSnapshot<User> snapshot) {
 }
 
 // 클래스
-Widget classes(AsyncSnapshot<User> snapshot) {
+Widget classes(BuildContext context, AsyncSnapshot<User> snapshot) {
   return snapshot.data!.rating >= 3200 ?
   SvgPicture.asset('lib/assets/classes/c10g_.svg', width: 50, height: 50,) :
   SvgPicture.asset(
@@ -115,7 +116,7 @@ Widget classes(AsyncSnapshot<User> snapshot) {
 }
 
 // 티어
-Widget tiers(AsyncSnapshot<User> snapshot) {
+Widget tiers(BuildContext context, AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
     backgroundColor: Colors.transparent,
     child: Container(
@@ -130,7 +131,7 @@ Widget tiers(AsyncSnapshot<User> snapshot) {
 }
 
 // 레이팅
-Widget rating(AsyncSnapshot<User> snapshot) {
+Widget rating(BuildContext context, AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
     backgroundColor: Colors.transparent,
     child: Text(
@@ -146,7 +147,7 @@ Widget rating(AsyncSnapshot<User> snapshot) {
 }
 
 // 푼 문제 수
-Widget solvedCount(AsyncSnapshot<User> snapshot) {
+Widget solvedCount(BuildContext context, AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
     backgroundColor: Colors.transparent,
     child: Container(
@@ -176,7 +177,7 @@ Widget solvedCount(AsyncSnapshot<User> snapshot) {
 }
 
 // 라이벌 수
-Widget reverseRivalCount(AsyncSnapshot<User> snapshot) {
+Widget reverseRivalCount(BuildContext context, AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
     backgroundColor: Colors.transparent,
     child: Container(
@@ -205,7 +206,7 @@ Widget reverseRivalCount(AsyncSnapshot<User> snapshot) {
 }
 
 // 랭크
-Widget rank(AsyncSnapshot<User> snapshot) {
+Widget rank(BuildContext context, AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
     backgroundColor: Colors.transparent,
     child: Container(
@@ -270,7 +271,7 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
 }
 
 // 최대 연속 문제 해결일 수
-Widget maxStreak(AsyncSnapshot<User> snapshot) {
+Widget maxStreak(BuildContext context, AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
     backgroundColor: Colors.transparent,
     child: Container(
@@ -283,7 +284,7 @@ Widget maxStreak(AsyncSnapshot<User> snapshot) {
 }
 
 // 경험치
-Widget exp(AsyncSnapshot<User> snapshot) {
+Widget exp(BuildContext context, AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
     backgroundColor: Colors.transparent,
     child: Container(
@@ -296,7 +297,7 @@ Widget exp(AsyncSnapshot<User> snapshot) {
 }
 
 // 배지
-Widget badge(AsyncSnapshot<User> snapshot) {
+Widget badge(BuildContext context, AsyncSnapshot<User> snapshot) {
   return snapshot.data?.badge == null? SizedBox():
     ExtendedImage.network(
       snapshot.data?.badge['badgeImageUrl'],
