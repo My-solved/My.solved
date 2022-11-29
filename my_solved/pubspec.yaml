@@ -3,7 +3,7 @@ description: A new Flutter project.
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 1.0.0+10
+version: 1.0.0+11
 
 environment:
   sdk: '>=2.18.2 <3.0.0'
@@ -11,8 +11,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  shared_preferences: ^2.0.6
-  sqflite: ^2.0.0+3
   http: ^0.13.3
   provider: ^6.0.1
   html: ^0.15.1
@@ -21,6 +19,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   extended_image: ^6.3.2
   fluttertoast: ^8.1.1
+  flutter_secure_storage: ^6.1.0
 
 dev_dependencies:
   flutter_test:
@@ -52,4 +51,22 @@ fonts:
       - asset: lib/assets/fonts/SourceCodePro-Bold.ttf
         weight: 700
       - asset: lib/assets/fonts/SourceCodePro-Black.ttf
+        weight: 900
+  - family: Pretendard
+    fonts:
+      - asset: lib/assets/fonts/Pretendard-Thin.ttf
+        weight: 100
+      - asset: lib/assets/fonts/Pretendard-ExtraLight.ttf
+        weight: 200
+      - asset: lib/assets/fonts/Pretendard-Light.ttf
+        weight: 300
+      - asset: lib/assets/fonts/Pretendard-Regular.ttf
+        weight: 400
+      - asset: lib/assets/fonts/Pretendard-Medium.ttf
+        weight: 500
+      - asset: lib/assets/fonts/Pretendard-SemiBold.ttf
+        weight: 600
+      - asset: lib/assets/fonts/Pretendard-Bold.ttf
+        weight: 700
+      - asset: lib/assets/fonts/Pretendard-Black.ttf
         weight: 900

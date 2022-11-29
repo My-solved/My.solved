@@ -22,6 +22,13 @@ class MyApp extends StatelessWidget {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     return CupertinoApp(
       home: LoginPage(),
+      theme: CupertinoThemeData(
+        textTheme: CupertinoTextThemeData(
+          textStyle: TextStyle(
+            fontFamily: "Pretendard",
+          ),
+        )
+      ),
     );
   }
 }

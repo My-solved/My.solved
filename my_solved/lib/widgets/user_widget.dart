@@ -240,21 +240,22 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
         height: MediaQuery.of(context).size.width * 0.4,
       ),
       Positioned(
-        left: MediaQuery.of(context).size.width * 0.8 * 0.05,
+        left: MediaQuery.of(context).size.width * 0.8 * 0.065,
         bottom: MediaQuery.of(context).size.width * 0.4 * 0.8,
         child: Container(
           clipBehavior: Clip.none,
           color: Colors.white,
           width: MediaQuery.of(context).size.width * 0.8 * 0.4,
           height: MediaQuery.of(context).size.width * 0.4 * 0.14,
+          padding: EdgeInsets.only(left: 5),
           child: Row(
             children: [
-              SvgPicture.asset('lib/assets/icons/rating.svg',
-                width: MediaQuery.of(context).size.width * 0.4 * 0.10,
-                height: MediaQuery.of(context).size.width * 0.4 * 0.10,
-                color: Color(0xFF000000 + levelColor(snapshot.data?.tier?? 0)),
-              ),
-              SizedBox(width: 5),
+              // SvgPicture.asset('lib/assets/icons/rating.svg',
+              //   width: MediaQuery.of(context).size.width * 0.4 * 0.10,
+              //   height: MediaQuery.of(context).size.width * 0.4 * 0.10,
+              //   color: Color(0xFF000000 + levelColor(snapshot.data?.tier ?? 0)),
+              // ),
+              // SizedBox(width: 5),
               Text('Rating: ${snapshot.data?.rating}',
                 style: TextStyle(
                   fontSize: MediaQuery.of(context).size.width * 0.4 * 0.10,
