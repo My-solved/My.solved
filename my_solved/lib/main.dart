@@ -1,34 +1,60 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:my_solved/pages/login_page.dart';
+import 'package:my_solved/services/user_service.dart';
 import 'package:provider/provider.dart';
-import 'package:my_solved/providers/user/user_name.dart';
 
 void main() {
-  runApp(MultiProvider(
-      providers: [
-        ChangeNotifierProvider<UserName>(
-          create: (_) => UserName(),
-        ),
-      ],
-      child: MyApp()));
+  runApp(
+    ChangeNotifierProvider(
+      create: ((context) => UserService()),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
+
+//   @override
+//   State<StatefulWidget> createState() {
+//     return _MyApp();
+//   }
+// }
+
+// class _MyApp extends State<MyApp> {
+//   UserService userService = UserService();
 
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     return CupertinoApp(
-      home: LoginPage(),
-      theme: CupertinoThemeData(
-        textTheme: CupertinoTextThemeData(
-          textStyle: TextStyle(
-            fontFamily: "Pretendard",
-          ),
-        )
+      home: Consumer<UserService>(
+        builder: (context, value, child) {
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              switch (value.state) {
+                case UserState.loading:
+                  return Center(
+                    child: Text('Loading'),
+                  );
+                case UserState.unknown:
+                  return LoginPage();
+                case UserState.logedin:
+                  return Center(
+                    child: Text('LogedIn'),
+                  );
+              }
+            },
+          );
+        },
       ),
+      theme: CupertinoThemeData(
+          textTheme: CupertinoTextThemeData(
+        textStyle: TextStyle(
+          fontFamily: "Pretendard",
+        ),
+      )),
     );
   }
 }
