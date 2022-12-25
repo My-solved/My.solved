@@ -135,7 +135,7 @@ extension SearchViewExtension on SearchView {
                 '${problem['id']}번',
                 style: TextStyle(
                   fontSize: 16,
-                  color: CupertinoTheme.of(context).textTheme.textStyle.color,
+                  //color: CupertinoTheme.of(context).textTheme.textStyle.color,
                 ),
               ),
             ),
@@ -284,16 +284,16 @@ extension SearchViewExtension on SearchView {
         width: MediaQuery.of(context).size.width,
         margin: EdgeInsets.only(top: 10),
         child: Container(
-          padding: EdgeInsets.only(
-            top: 12,
-            bottom: 12,
-            left: 20,
-            right: 20,
-          ),
-          child: Text('${tag['key']} : ${tag['description']}',
-              style: TextStyle(
-                  color: CupertinoTheme.of(context).textTheme.textStyle.color)),
-        ),
+            padding: EdgeInsets.only(
+              top: 12,
+              bottom: 12,
+              left: 20,
+              right: 20,
+            ),
+            child: Text(
+              '${tag['key']} : ${tag['description']}',
+              //color: CupertinoTheme.of(context).textTheme.textStyle.color)),
+            )),
       ),
     ));
   }

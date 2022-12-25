@@ -1,17 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:my_solved/pages/login_page.dart';
-import 'package:provider/provider.dart';
 import 'package:my_solved/providers/user/user_name.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(MultiProvider(
-      providers: [
-        ChangeNotifierProvider<UserName>(
-          create: (_) => UserName(),
-        ),
-      ],
-      child: MyApp()));
+  runApp(MultiProvider(providers: [
+    ChangeNotifierProvider<UserName>(
+      create: (_) => UserName(),
+    ),
+  ], child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -23,12 +21,12 @@ class MyApp extends StatelessWidget {
     return CupertinoApp(
       home: LoginPage(),
       theme: CupertinoThemeData(
-        textTheme: CupertinoTextThemeData(
-          textStyle: TextStyle(
-            fontFamily: "Pretendard",
-          ),
-        )
-      ),
+          textTheme: CupertinoTextThemeData(
+        textStyle: TextStyle(
+          fontFamily: "Pretendard",
+          color: CupertinoColors.black,
+        ),
+      )),
     );
   }
 }

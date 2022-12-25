@@ -21,8 +21,9 @@ class LoginView extends StatelessWidget {
                 child: Text(
                   "로그인",
                   style: TextStyle(
-                      color: CupertinoTheme.of(context).textTheme.textStyle.color,
-                      fontSize: 24, fontWeight: FontWeight.bold),
+                      //color: CupertinoTheme.of(context).textTheme.textStyle.color,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold),
                 ),
               ),
               Container(

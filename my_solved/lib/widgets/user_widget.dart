@@ -54,7 +54,8 @@ Widget handle(BuildContext context, AsyncSnapshot<User> snapshot) {
         Text(
           snapshot.data?.handle ?? '',
           style: TextStyle(
-            color: CupertinoTheme.of(context).textTheme.textStyle.color,
+            color: CupertinoColors.black,
+            ////color: CupertinoTheme.of(context).textTheme.textStyle.color,
             fontSize: 30,
             fontWeight: FontWeight.bold,
           ),
