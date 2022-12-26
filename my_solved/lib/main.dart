@@ -16,15 +16,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-//   @override
-//   State<StatefulWidget> createState() {
-//     return _MyApp();
-//   }
-// }
-
-// class _MyApp extends State<MyApp> {
-//   UserService userService = UserService();
-
   @override
   Widget build(BuildContext context) {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);

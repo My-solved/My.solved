@@ -12,18 +12,20 @@ class UserService extends ChangeNotifier {
   UserState state = UserState.loading;
 
   UserService._privateConstructor() {
-    Future<String> futureName = fetchName();
-    futureName.then((name) {
-      _name = name;
-      print('name : ' + name);
-      if (_name == '') {
-        state = UserState.unknown;
-        print('unknown');
-      } else {
-        state = UserState.logedin;
-        print('logedin');
-      }
-      notifyListeners();
+    Future.delayed(Duration(milliseconds: 1000), () {
+      Future<String> futureName = fetchName();
+      futureName.then((name) {
+        _name = name;
+        print('name : ' + name);
+        if (_name == '') {
+          state = UserState.unknown;
+          print('unknown');
+        } else {
+          state = UserState.logedin;
+          print('logedin');
+        }
+        notifyListeners();
+      });
     });
     print('Private Constructor 호출');
   }
