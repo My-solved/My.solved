@@ -23,7 +23,7 @@ class SettingView extends StatelessWidget {
                       '백준 ID',
                       style: TextStyle(
                         fontSize: 16,
-                        color: CupertinoTheme.of(context).textTheme.textStyle.color,
+                        //color: CupertinoTheme.of(context).textTheme.textStyle.color,
                       ),
                     ),
                   ),
@@ -34,7 +34,7 @@ class SettingView extends StatelessWidget {
                       '백준 ID',
                       style: TextStyle(
                         fontSize: 16,
-                        color: CupertinoTheme.of(context).textTheme.textStyle.color,
+                        //color: CupertinoTheme.of(context).textTheme.textStyle.color,
                       ),
                     ),
                   ),
@@ -48,7 +48,7 @@ class SettingView extends StatelessWidget {
                       '스트릭 테마',
                       style: TextStyle(
                         fontSize: 16,
-                        color: CupertinoTheme.of(context).textTheme.textStyle.color,
+                        //color: CupertinoTheme.of(context).textTheme.textStyle.color,
                       ),
                     ),
                   ),
@@ -59,7 +59,7 @@ class SettingView extends StatelessWidget {
                       '스트릭 테마',
                       style: TextStyle(
                         fontSize: 16,
-                        color: CupertinoTheme.of(context).textTheme.textStyle.color,
+                        //color: CupertinoTheme.of(context).textTheme.textStyle.color,
                       ),
                     ),
                   ),
@@ -77,7 +77,7 @@ class SettingView extends StatelessWidget {
                       '라이센스',
                       style: TextStyle(
                         fontSize: 16,
-                        color: CupertinoTheme.of(context).textTheme.textStyle.color,
+                        //color: CupertinoTheme.of(context).textTheme.textStyle.color,
                       ),
                     ),
                   ),
@@ -86,7 +86,7 @@ class SettingView extends StatelessWidget {
                     onPressed: () {},
                     child: Icon(
                       CupertinoIcons.right_chevron,
-                      color: CupertinoTheme.of(context).textTheme.textStyle.color,
+                      //color: CupertinoTheme.of(context).textTheme.textStyle.color,
                     ),
                   )
                 ],

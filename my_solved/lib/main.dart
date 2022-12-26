@@ -41,11 +41,13 @@ class MyApp extends StatelessWidget {
         },
       ),
       theme: CupertinoThemeData(
+          brightness: Brightness.light,
           textTheme: CupertinoTextThemeData(
-        textStyle: TextStyle(
-          fontFamily: "Pretendard",
-        ),
-      )),
+            textStyle: TextStyle(
+              fontFamily: "Pretendard",
+              color: CupertinoColors.black,
+            ),
+          )),
     );
   }
 }

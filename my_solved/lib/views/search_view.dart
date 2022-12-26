@@ -29,10 +29,13 @@ class SearchView extends StatelessWidget {
                     padding: EdgeInsets.only(top: 40, left: 20, right: 20),
                     child: Text(
                       '문제 검색',
-                      style:
-                          TextStyle(
-                              color: CupertinoTheme.of(context).textTheme.textStyle.color,
-                              fontWeight: FontWeight.bold, fontSize: 24),
+                      style: TextStyle(
+                          color: CupertinoTheme.of(context)
+                              .textTheme
+                              .textStyle
+                              .color,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 24),
                     ),
                   ),
                 Container(
@@ -102,10 +105,7 @@ extension SearchViewExtension on SearchView {
         padding: EdgeInsets.only(top: 20),
         child: Text(
           '문제',
-          style: TextStyle(
-            fontSize: 12,
-            color: Color(0xff767676)
-          ),
+          style: TextStyle(fontSize: 12, color: Color(0xff767676)),
         ),
       ),
     );
@@ -113,33 +113,33 @@ extension SearchViewExtension on SearchView {
 
   Widget problemCell(dynamic problem, BuildContext context) {
     return CupertinoPageScaffold(
-      child: GestureDetector(
-        onTap: () => Navigator.of(context).push(
-          CupertinoPageRoute(
-            builder: (context) => ProblemDetailPage(problem['id']),
-          ),
+        child: GestureDetector(
+      onTap: () => Navigator.of(context).push(
+        CupertinoPageRoute(
+          builder: (context) => ProblemDetailPage(problem['id']),
         ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: CupertinoTheme.of(context).barBackgroundColor,
-            borderRadius: BorderRadius.all(Radius.circular(10)),
-          ),
-          width: MediaQuery.of(context).size.width,
-          margin: EdgeInsets.only(top: 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                padding: EdgeInsets.only(top: 20, left: 20),
-                child: Text(
-                  '${problem['id']}번',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: CupertinoTheme.of(context).textTheme.textStyle.color,
-                  ),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: CupertinoTheme.of(context).barBackgroundColor,
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+        ),
+        width: MediaQuery.of(context).size.width,
+        margin: EdgeInsets.only(top: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              padding: EdgeInsets.only(top: 20, left: 20),
+              child: Text(
+                '${problem['id']}번',
+                style: TextStyle(
+                  fontSize: 16,
+                  //color: CupertinoTheme.of(context).textTheme.textStyle.color,
                 ),
               ),
-              Container(
+            ),
+            Container(
                 padding: EdgeInsets.only(
                   top: 10,
                   left: 20,
@@ -147,7 +147,7 @@ extension SearchViewExtension on SearchView {
                 child: Row(
                   children: [
                     SvgPicture.asset(
-                      'lib/assets/tiers/${problem['level']}_.svg',
+                      'lib/assets/tiers/${problem['level']}.svg',
                       width: 20,
                       height: 20,
                     ),
@@ -158,43 +158,44 @@ extension SearchViewExtension on SearchView {
                       '${problem['title']}',
                       style: TextStyle(
                           fontSize: 20,
-                          color: CupertinoTheme.of(context).textTheme.textStyle.color
-                      ),
+                          color: CupertinoTheme.of(context)
+                              .textTheme
+                              .textStyle
+                              .color),
                     ),
                   ],
-                )
-              ),
-              Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.only(
-                      top: 12,
-                      left: 20,
-                    ),
-                    child: Text(
-                      '맞은 사람 수 : ${problem['solved']}',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xff767676),
-                      ),
+                )),
+            Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.only(
+                    top: 12,
+                    left: 20,
+                  ),
+                  child: Text(
+                    '맞은 사람 수 : ${problem['solved']}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Color(0xff767676),
                     ),
                   ),
-                ],
-              ),
-              Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.only(
-                      top: 4,
-                      left: 20,
-                      bottom: 20,
-                    ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.only(
+                    top: 4,
+                    left: 20,
+                    bottom: 20,
                   ),
-                ],
-              ),
-            ],
-          ),
+                ),
+              ],
+            ),
+          ],
         ),
+      ),
     ));
   }
 
@@ -226,26 +227,30 @@ extension SearchViewExtension on SearchView {
           width: MediaQuery.of(context).size.width,
           margin: EdgeInsets.only(top: 10),
           child: Container(
-            padding: EdgeInsets.only(
-              top: 12,
-              bottom: 12,
-              left: 20,
-              right: 20,
-            ),
-            child: Row(
-              children: [
-                SvgPicture.asset(
-                  'lib/assets/tiers/${user['tier']}_.svg',
-                  width: 20,
-                  height: 20,
-                ),
-                SizedBox(
-                  width: 10,
-                ),
-                Text('${user['handle']}', style: TextStyle(color: CupertinoTheme.of(context).textTheme.textStyle.color)),
-              ],
-            )
-          ),
+              padding: EdgeInsets.only(
+                top: 12,
+                bottom: 12,
+                left: 20,
+                right: 20,
+              ),
+              child: Row(
+                children: [
+                  SvgPicture.asset(
+                    'lib/assets/tiers/${user['tier']}.svg',
+                    width: 20,
+                    height: 20,
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Text('${user['handle']}',
+                      style: TextStyle(
+                          color: CupertinoTheme.of(context)
+                              .textTheme
+                              .textStyle
+                              .color)),
+                ],
+              )),
         ),
       ),
     );
@@ -265,20 +270,20 @@ extension SearchViewExtension on SearchView {
 
   Widget tagCell(dynamic tag, BuildContext context) {
     return CupertinoPageScaffold(
-      child: GestureDetector(
-        onTap: () => Navigator.of(context).push(
-          CupertinoPageRoute(
-            builder: (context) => TagDetailPage(tag['key']),
-          ),
+        child: GestureDetector(
+      onTap: () => Navigator.of(context).push(
+        CupertinoPageRoute(
+          builder: (context) => TagDetailPage(tag['key']),
         ),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: CupertinoTheme.of(context).barBackgroundColor,
+          borderRadius: BorderRadius.all(Radius.circular(10)),
+        ),
+        width: MediaQuery.of(context).size.width,
+        margin: EdgeInsets.only(top: 10),
         child: Container(
-          decoration: BoxDecoration(
-            color: CupertinoTheme.of(context).barBackgroundColor,
-            borderRadius: BorderRadius.all(Radius.circular(10)),
-          ),
-          width: MediaQuery.of(context).size.width,
-          margin: EdgeInsets.only(top: 10),
-          child: Container(
             padding: EdgeInsets.only(
               top: 12,
               bottom: 12,
@@ -286,13 +291,10 @@ extension SearchViewExtension on SearchView {
               right: 20,
             ),
             child: Text(
-                '${tag['key']} : ${tag['description']}',
-                style: TextStyle(
-                    color: CupertinoTheme.of(context).textTheme.textStyle.color)
-            ),
-          ),
-        ),
-      )
-    );
+              '${tag['key']} : ${tag['description']}',
+              //color: CupertinoTheme.of(context).textTheme.textStyle.color)),
+            )),
+      ),
+    ));
   }
 }

@@ -26,9 +26,9 @@ Widget titleContent(
         child: Text(
           snapshot.data?.getElementById('problem_title')?.text ?? '',
           style: TextStyle(
-              fontSize: 17,
-              color: CupertinoTheme.of(context).textTheme.textStyle.color,
-        ),
+            fontSize: 17,
+            //color: CupertinoTheme.of(context).textTheme.textStyle.color,
+          ),
         ),
       ),
     ),
@@ -60,11 +60,12 @@ Widget descriptionContent(
         padding: EdgeInsets.only(top: 10, right: 10, left: 10, bottom: 10),
         width: MediaQuery.of(context).size.width,
         child: Html(
-          data: snapshot.data?.getElementById('problem_description')?.innerHtml ??
-              '',
+          data:
+              snapshot.data?.getElementById('problem_description')?.innerHtml ??
+                  '',
           style: {
             "body": Style(
-              color: CupertinoTheme.of(context).textTheme.textStyle.color,
+              //color: CupertinoTheme.of(context).textTheme.textStyle.color,
               fontSize: FontSize(14),
               fontFamily: 'NotoSansKR',
             ),
@@ -106,7 +107,7 @@ Widget inputContent(
         child: Text(
           snapshot.data?.getElementById('problem_input')?.text ?? '',
           style: TextStyle(
-            color: CupertinoTheme.of(context).textTheme.textStyle.color,
+            //color: CupertinoTheme.of(context).textTheme.textStyle.color,
             fontSize: 14,
             fontFamily: 'SourceCodePro',
           ),
@@ -143,9 +144,8 @@ Widget outputContent(
         child: Text(
           snapshot.data?.getElementById('problem_output')?.text ?? '',
           style: TextStyle(
-            color: CupertinoTheme.of(context).textTheme.textStyle.color,
-            fontSize: 14
-          ),
+              //color: CupertinoTheme.of(context).textTheme.textStyle.color,
+              fontSize: 14),
         ),
       ),
     ),
@@ -179,7 +179,7 @@ Widget sampleInputContent(
         child: Text(
           snapshot.data?.getElementById('sample-input-1')?.text ?? '',
           style: TextStyle(
-            color: CupertinoTheme.of(context).textTheme.textStyle.color,
+            //color: CupertinoTheme.of(context).textTheme.textStyle.color,
             fontSize: 14,
             fontFamily: 'monospace',
           ),
@@ -216,7 +216,7 @@ Widget sampleOutputContent(
         child: Text(
           snapshot.data?.getElementById('sample-output-1')?.text ?? '',
           style: TextStyle(
-            color: CupertinoTheme.of(context).textTheme.textStyle.color,
+            //color: CupertinoTheme.of(context).textTheme.textStyle.color,
             fontSize: 14,
             fontFamily: 'SourceCodePro',
           ),
