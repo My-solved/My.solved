@@ -19,101 +19,108 @@ class HomeView extends StatelessWidget {
 
     return CupertinoPageScaffold(
       child: SafeArea(
-        child: Align(
-          alignment: Alignment.topLeft,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                FutureBuilder<User>(
-                    future: viewModel.future,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            profileHeader(context, snapshot),
-                            SizedBox(height: 70),
-                            Container(
-                              padding: EdgeInsets.only(
-                                  left:
-                                      MediaQuery.of(context).size.width * 0.05,
-                                  right:
-                                      MediaQuery.of(context).size.width * 0.1),
-                              child: Column(
-                                children: [
-                                  handle(context, snapshot),
-                                  organizations(context, snapshot),
-                                  SizedBox(height: 5),
-                                  Row(
-                                    children: [
-                                      solvedCount(context, snapshot),
-                                      SizedBox(width: 10),
-                                      reverseRivalCount(context, snapshot),
-                                    ],
-                                  )
-                                ],
-                              ),
-                            ),
-                            SizedBox(height: 20),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Spacer(),
-                                zandi(context, snapshot),
-                                Spacer(),
-                              ],
-                            ),
-                          ],
-                        );
-                      } else {
-                        return Container(
-                          padding:
-                              EdgeInsets.only(top: 20, left: 20, right: 20),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              profileHeader(context, snapshot),
-                            ],
-                          ),
-                        );
-                      }
-                    }),
-                FutureBuilder<dom.Document>(
-                  future: viewModel.futureTop,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Column(
+            children: <Widget>[
+              // UserWidget
+              FutureBuilder<User>(
+                  future: viewModel.future,
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       return Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
+                        children: <Widget>[
+                          profileHeader(context, snapshot),
+                          // organizations(context, snapshot),
+                          SizedBox(height: 20),
+                          Row(
+                            children: [
+                              Spacer(),
+                              solvedCount(context, snapshot),
+                              SizedBox(width: 20),
+                              voteCount(context, snapshot),
+                              SizedBox(width: 20),
+                              reverseRivalCount(context, snapshot),
+                              SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.1),
+                            ],
+                          ),
                           SizedBox(height: 20),
                           Container(
-                            color: CupertinoColors.white,
                             padding: EdgeInsets.only(
                                 left: MediaQuery.of(context).size.width * 0.05,
                                 right: MediaQuery.of(context).size.width * 0.1),
-                            child: top100(context, snapshot),
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    handle(context, snapshot),
+                                    badge(context, snapshot),
+                                    classes(context, snapshot),
+                                    Spacer(),
+                                  ],
+                                ),
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: bio(context, snapshot),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: 20),
+                          Row(
+                            children: [
+                              Spacer(),
+                              zandi(context, snapshot),
+                              Spacer(),
+                            ],
+                          ),
+                          // top100
+                          FutureBuilder<dom.Document>(
+                            future: viewModel.futureTop,
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                return Container(
+                                  padding: EdgeInsets.only(
+                                      left: MediaQuery.of(context).size.width *
+                                          0.04,
+                                      top: 10,
+                                      right: MediaQuery.of(context).size.width *
+                                          0.04),
+                                  alignment: Alignment.center,
+                                  child: top100(context, snapshot),
+                                );
+                              } else if (snapshot.hasError) {
+                                return Text("asdfsadfasd",
+                                    style: TextStyle(
+                                        color: CupertinoColors.destructiveRed));
+                              }
+                              return CupertinoActivityIndicator();
+                            },
                           ),
                         ],
                       );
-                    } else if (snapshot.hasError) {
-                      return Text("asdfsadfasd",
-                          style:
-                              TextStyle(color: CupertinoColors.destructiveRed));
+                    } else {
+                      return Container(
+                        padding: EdgeInsets.only(top: 20, left: 20, right: 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            profileHeader(context, snapshot),
+                          ],
+                        ),
+                      );
                     }
-                    return CupertinoActivityIndicator();
-                  },
-                ),
+                  }),
 
-                // FutureBuilder<List<ProblemStats>>(
-                //   future: viewModel.futurePS,
-                //   builder: (context, snapshot) {
-                //       return genQR(snapshot);
-                //   }
-                // ),
-              ],
-            ),
+              // FutureBuilder<List<ProblemStats>>(
+              //   future: viewModel.futurePS,
+              //   builder: (context, snapshot) {
+              //       return genQR(snapshot);
+              //   }
+              // ),
+            ],
           ),
         ),
       ),
