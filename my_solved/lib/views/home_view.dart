@@ -1,7 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:html/dom.dart' as dom;
 import 'package:my_solved/pages/setting_page.dart';
 import 'package:my_solved/view_models/home_view_model.dart';
@@ -96,51 +93,7 @@ class HomeView extends StatelessWidget {
                             padding: EdgeInsets.only(
                                 left: MediaQuery.of(context).size.width * 0.05,
                                 right: MediaQuery.of(context).size.width * 0.1),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Html(
-                                  data: snapshot.data!.body!
-                                      .getElementsByClassName('css-5vptc8')[0]
-                                      .innerHtml,
-                                ),
-                                SizedBox(height: 10),
-                                for (var i = 0; i < 10; i++)
-                                  Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        for (var j = 1; j <= 10; j++)
-                                          Container(
-                                            margin: EdgeInsets.only(
-                                              right: MediaQuery.of(context)
-                                                      .size
-                                                      .width *
-                                                  0.03,
-                                              top: MediaQuery.of(context)
-                                                      .size
-                                                      .width *
-                                                  0.03,
-                                            ),
-                                            child: SvgPicture.asset(
-                                                snapshot.data!.body!
-                                                    .getElementsByClassName(
-                                                        'css-1wnvjz2')[10 *
-                                                            i +
-                                                        j]
-                                                    .getElementsByTagName('img')
-                                                    .first
-                                                    .attributes['src']
-                                                    .toString()
-                                                    .replaceAll(
-                                                        'https://static.solved.ac/tier_small/',
-                                                        'lib/assets/tiers/'),
-                                                width: 20,
-                                                height: 20),
-                                          )
-                                      ]),
-                              ],
-                            ),
+                            child: top100(context, snapshot),
                           ),
                         ],
                       );

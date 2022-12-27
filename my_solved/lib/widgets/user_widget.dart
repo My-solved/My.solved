@@ -13,10 +13,10 @@ import '../models/user/ProblemStats.dart';
 Widget backgroundImage(BuildContext context, AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
       child: ExtendedImage.network(
-    snapshot.data?.background['backgroundImageUrl'] ?? '',
-    cache: true,
-    fit: BoxFit.fitWidth,
-  ));
+        snapshot.data?.background['backgroundImageUrl'] ?? '',
+        cache: true,
+        fit: BoxFit.fitWidth,
+      ));
 }
 
 Widget profileImage(BuildContext context, AsyncSnapshot<User> snapshot) {
@@ -115,15 +115,15 @@ Widget bio(BuildContext context, AsyncSnapshot<User> snapshot) {
 Widget classes(BuildContext context, AsyncSnapshot<User> snapshot) {
   return snapshot.data!.rating >= 3200
       ? SvgPicture.asset(
-          'lib/assets/classes/c10g.svg',
-          width: 50,
-          height: 50,
-        )
+    'lib/assets/classes/c10g.svg',
+    width: 50,
+    height: 50,
+  )
       : SvgPicture.asset(
-          'lib/assets/classes/c${snapshot.data?.userClass}.svg',
-          width: 50,
-          height: 50,
-        );
+    'lib/assets/classes/c${snapshot.data?.userClass}.svg',
+    width: 50,
+    height: 50,
+  );
 }
 
 // 티어
@@ -236,23 +236,48 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
         color: Colors.transparent,
         child: SvgPicture.asset(
           'lib/assets/zandi.svg',
-          width: MediaQuery.of(context).size.width * 0.8,
-          height: MediaQuery.of(context).size.width * 0.4,
+          width: MediaQuery
+              .of(context)
+              .size
+              .width * 0.8,
+          height: MediaQuery
+              .of(context)
+              .size
+              .width * 0.4,
         ),
       ),
       SvgPicture.network(
-        'http://mazandi.herokuapp.com/api?handle=${snapshot.data?.handle}&theme=warm',
-        width: MediaQuery.of(context).size.width * 0.8,
-        height: MediaQuery.of(context).size.width * 0.4,
+        'http://mazandi.herokuapp.com/api?handle=${snapshot.data
+            ?.handle}&theme=warm',
+        width: MediaQuery
+            .of(context)
+            .size
+            .width * 0.8,
+        height: MediaQuery
+            .of(context)
+            .size
+            .width * 0.4,
       ),
       Positioned(
-        left: MediaQuery.of(context).size.width * 0.8 * 0.065,
-        bottom: MediaQuery.of(context).size.width * 0.4 * 0.8,
+        left: MediaQuery
+            .of(context)
+            .size
+            .width * 0.8 * 0.065,
+        bottom: MediaQuery
+            .of(context)
+            .size
+            .width * 0.4 * 0.8,
         child: Container(
             clipBehavior: Clip.none,
             color: Colors.white,
-            width: MediaQuery.of(context).size.width * 0.8 * 0.4,
-            height: MediaQuery.of(context).size.width * 0.4 * 0.14,
+            width: MediaQuery
+                .of(context)
+                .size
+                .width * 0.8 * 0.4,
+            height: MediaQuery
+                .of(context)
+                .size
+                .width * 0.4 * 0.14,
             padding: EdgeInsets.only(left: 5),
             child: Row(
               children: [
@@ -265,7 +290,10 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
                 Text(
                   'Rating: ${snapshot.data?.rating}',
                   style: TextStyle(
-                    fontSize: MediaQuery.of(context).size.width * 0.4 * 0.10,
+                    fontSize: MediaQuery
+                        .of(context)
+                        .size
+                        .width * 0.4 * 0.10,
                     fontWeight: FontWeight.bold,
                     color: Color(
                         0xFF000000 + levelColor(snapshot.data?.tier ?? 0)),
@@ -307,10 +335,10 @@ Widget badge(BuildContext context, AsyncSnapshot<User> snapshot) {
   return snapshot.data?.badge == null
       ? SizedBox()
       : ExtendedImage.network(
-          snapshot.data?.badge['badgeImageUrl'],
-          width: 50,
-          height: 50,
-        );
+    snapshot.data?.badge['badgeImageUrl'],
+    width: 50,
+    height: 50,
+  );
 }
 
 // QR 코드
@@ -343,13 +371,87 @@ Widget genQR(AsyncSnapshot<ProblemStats> snapshot) {
 
 Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
   developer.log(
-      snapshot.data?.getElementsByClassName('css-1948bce')[0].innerHtml ?? '');
-  return Html(
-      data: snapshot.data?.body
-              ?.getElementsByClassName('css-zi8sic')[0]
-              .getElementsByTagName('img')
-              .toString() ??
-          '');
+      snapshot.data
+          ?.getElementsByClassName('css-1wnvjz2')[0]
+          .getElementsByTagName('img')
+          .first
+          .attributes['src']
+          .toString() ??
+          '',
+      name: 'top100');
+  return Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Html(
+        data: snapshot.data!.body!
+            .getElementsByClassName('css-5vptc8')[0]
+            .innerHtml,
+      ),
+      SizedBox(height: 10),
+      // 프로필 뱃지가 있을 때
+      if (snapshot.data!.body!
+          .getElementsByClassName('css-1wnvjz2')[0]
+          .getElementsByTagName('img')
+          .first
+          .attributes['src'].toString().contains('profile_badge'))
+        for (var i = 0; i < 10; i++)
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            for (var j = 1; j <= 10; j++)
+              Container(
+                margin: EdgeInsets.only(
+                  right: MediaQuery
+                      .of(context)
+                      .size
+                      .width * 0.03,
+                  top: MediaQuery
+                      .of(context)
+                      .size
+                      .width * 0.03,
+                ),
+                child: SvgPicture.asset(
+                    snapshot.data!.body!
+                        .getElementsByClassName('css-1wnvjz2')[10 * i + j]
+                        .getElementsByTagName('img')
+                        .first
+                        .attributes['src']
+                        .toString()
+                        .replaceAll('https://static.solved.ac/tier_small/',
+                        'lib/assets/tiers/'),
+                    width: 20,
+                    height: 20),
+              )
+          ])
+      // 프로필 뱃지가 없을 때
+      else
+        for (var i = 0; i < 10; i++)
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            for (var j = 0; j < 10; j++)
+              Container(
+                margin: EdgeInsets.only(
+                  right: MediaQuery
+                      .of(context)
+                      .size
+                      .width * 0.03,
+                  top: MediaQuery
+                      .of(context)
+                      .size
+                      .width * 0.03,
+                ),
+                child: SvgPicture.asset(
+                    snapshot.data!.body!
+                        .getElementsByClassName('css-1wnvjz2')[10 * i + j]
+                        .getElementsByTagName('img')
+                        .first
+                        .attributes['src']
+                        .toString()
+                        .replaceAll('https://static.solved.ac/tier_small/',
+                        'lib/assets/tiers/'),
+                    width: 20,
+                    height: 20),
+              )
+          ])
+    ],
+  );
 }
 
 int levelColor(int level) {
