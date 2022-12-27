@@ -30,37 +30,80 @@ class ProfileDetailView extends StatelessWidget {
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
                         return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            // 배경 + 프로필
                             profileHeader(context, snapshot),
-                            // 패딩
-                            SizedBox(height: 70),
+                            // organizations(context, snapshot),
+                            SizedBox(height: 20),
+                            Row(
+                              children: [
+                                Spacer(),
+                                solvedCount(context, snapshot),
+                                SizedBox(width: 20),
+                                voteCount(context, snapshot),
+                                SizedBox(width: 20),
+                                reverseRivalCount(context, snapshot),
+                                SizedBox(
+                                    width: MediaQuery.of(context).size.width *
+                                        0.1),
+                              ],
+                            ),
+                            SizedBox(height: 20),
                             Container(
-                              padding: EdgeInsets.only(left: 30),
+                              padding: EdgeInsets.only(
+                                  left:
+                                      MediaQuery.of(context).size.width * 0.05,
+                                  right:
+                                      MediaQuery.of(context).size.width * 0.1),
                               child: Column(
                                 children: [
-                                  handle(context, snapshot),
-                                  organizations(context, snapshot),
-                                  SizedBox(height: 5),
                                   Row(
                                     children: [
-                                      solvedCount(context, snapshot),
-                                      SizedBox(width: 10),
-                                      reverseRivalCount(context, snapshot),
+                                      handle(context, snapshot),
+                                      badge(context, snapshot),
+                                      classes(context, snapshot),
+                                      Spacer(),
                                     ],
+                                  ),
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: bio(context, snapshot),
                                   ),
                                 ],
                               ),
                             ),
                             SizedBox(height: 20),
                             Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Spacer(),
                                 zandi(context, snapshot),
                                 Spacer(),
                               ],
+                            ),
+                            // top100
+                            FutureBuilder<dom.Document>(
+                              future: viewModel.futureTop,
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
+                                  return Container(
+                                    padding: EdgeInsets.only(
+                                        left:
+                                            MediaQuery.of(context).size.width *
+                                                0.04,
+                                        top: 10,
+                                        right:
+                                            MediaQuery.of(context).size.width *
+                                                0.04),
+                                    alignment: Alignment.center,
+                                    child: top100(context, snapshot),
+                                  );
+                                } else if (snapshot.hasError) {
+                                  return Text("asdfsadfasd",
+                                      style: TextStyle(
+                                          color:
+                                              CupertinoColors.destructiveRed));
+                                }
+                                return CupertinoActivityIndicator();
+                              },
                             ),
                           ],
                         );
@@ -75,24 +118,6 @@ class ProfileDetailView extends StatelessWidget {
                             ],
                           ),
                         );
-                      }
-                    }),
-                FutureBuilder<dom.Document>(
-                    future: viewModel.futureTop,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Container(
-                              padding:
-                                  EdgeInsets.only(left: 30, right: 30, top: 20),
-                              child: top100(context, snapshot),
-                            ),
-                          ],
-                        );
-                      } else {
-                        return Container();
                       }
                     }),
               ],

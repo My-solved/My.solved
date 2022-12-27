@@ -101,9 +101,13 @@ Widget organizations(BuildContext context, AsyncSnapshot<User> snapshot) {
 
 // 자기소개
 Widget bio(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return Text(
-    snapshot.data?.bio ?? '',
-  );
+  return snapshot.data?.bio?.isEmpty ?? true
+      ? SizedBox(
+          height: 1,
+        )
+      : Text(
+          snapshot.data?.bio ?? '',
+        );
 }
 
 // 클래스
@@ -254,7 +258,6 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
         child: SvgPicture.asset(
           'lib/assets/zandi.svg',
           width: MediaQuery.of(context).size.width * 0.9,
-          height: MediaQuery.of(context).size.width * 0.4,
         ),
       ),
       SvgPicture.network(
@@ -263,7 +266,7 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
       ),
       Positioned(
         left: MediaQuery.of(context).size.width * 0.8 * 0.06,
-        bottom: MediaQuery.of(context).size.width * 0.4 * 0.85,
+        bottom: MediaQuery.of(context).size.width * 0.4 * 0.88,
         child: Container(
             clipBehavior: Clip.none,
             color: Colors.white,
@@ -292,7 +295,7 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
             )),
       ),
       Positioned(
-        left: MediaQuery.of(context).size.width * 0.55,
+        left: MediaQuery.of(context).size.width * 0.56,
         bottom: MediaQuery.of(context).size.width * 0.4 * 0.85,
         child: Container(
           clipBehavior: Clip.none,
