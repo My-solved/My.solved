@@ -33,21 +33,21 @@ class ProfileDetailView extends StatelessWidget {
                           children: <Widget>[
                             profileHeader(context, snapshot),
                             // organizations(context, snapshot),
-                            SizedBox(height: 20),
-                            Row(
-                              children: [
-                                Spacer(),
-                                solvedCount(context, snapshot),
-                                SizedBox(width: 20),
-                                voteCount(context, snapshot),
-                                SizedBox(width: 20),
-                                reverseRivalCount(context, snapshot),
-                                SizedBox(
-                                    width: MediaQuery.of(context).size.width *
-                                        0.1),
-                              ],
-                            ),
-                            SizedBox(height: 20),
+                            SizedBox(height: 25),
+                            Row(children: [
+                              SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.4),
+                              solvedCount(context, snapshot),
+                              Spacer(),
+                              voteCount(context, snapshot),
+                              Spacer(),
+                              reverseRivalCount(context, snapshot),
+                              SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.1),
+                            ]),
+                            SizedBox(height: 25),
                             Container(
                               padding: EdgeInsets.only(
                                   left:
@@ -59,8 +59,6 @@ class ProfileDetailView extends StatelessWidget {
                                   Row(
                                     children: [
                                       handle(context, snapshot),
-                                      badge(context, snapshot),
-                                      classes(context, snapshot),
                                       Spacer(),
                                     ],
                                   ),
@@ -71,14 +69,18 @@ class ProfileDetailView extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            SizedBox(height: 20),
-                            Row(
-                              children: [
-                                Spacer(),
-                                zandi(context, snapshot),
-                                Spacer(),
-                              ],
-                            ),
+                            SizedBox(height: 5),
+                            Row(children: [
+                              SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.04),
+                              badge(context, snapshot),
+                              classes(context, snapshot),
+                            ]),
+                            SizedBox(height: 5),
+
+                            zandi(context, snapshot),
+
                             // top100
                             FutureBuilder<dom.Document>(
                               future: viewModel.futureTop,

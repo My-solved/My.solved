@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:html/dom.dart' as dom;
 import 'package:my_solved/pages/setting_page.dart';
 import 'package:my_solved/view_models/home_view_model.dart';
@@ -32,21 +33,19 @@ class HomeView extends StatelessWidget {
                         children: <Widget>[
                           profileHeader(context, snapshot),
                           // organizations(context, snapshot),
-                          SizedBox(height: 20),
-                          Row(
-                            children: [
-                              Spacer(),
-                              solvedCount(context, snapshot),
-                              SizedBox(width: 20),
-                              voteCount(context, snapshot),
-                              SizedBox(width: 20),
-                              reverseRivalCount(context, snapshot),
-                              SizedBox(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.1),
-                            ],
-                          ),
-                          SizedBox(height: 20),
+                          SizedBox(height: 25),
+                          Row(children: [
+                            SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.4),
+                            solvedCount(context, snapshot),
+                            Spacer(),
+                            voteCount(context, snapshot),
+                            Spacer(),
+                            reverseRivalCount(context, snapshot),
+                            SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.1),
+                          ]),
+                          SizedBox(height: 25),
                           Container(
                             padding: EdgeInsets.only(
                                 left: MediaQuery.of(context).size.width * 0.05,
@@ -56,8 +55,6 @@ class HomeView extends StatelessWidget {
                                 Row(
                                   children: [
                                     handle(context, snapshot),
-                                    badge(context, snapshot),
-                                    classes(context, snapshot),
                                     Spacer(),
                                   ],
                                 ),
@@ -68,14 +65,19 @@ class HomeView extends StatelessWidget {
                               ],
                             ),
                           ),
-                          SizedBox(height: 20),
-                          Row(
-                            children: [
-                              Spacer(),
-                              zandi(context, snapshot),
-                              Spacer(),
-                            ],
-                          ),
+
+                          SizedBox(height: 5),
+                          Row(children: [
+                            SizedBox(
+                                width:
+                                    MediaQuery.of(context).size.width * 0.04),
+                            badge(context, snapshot),
+                            classes(context, snapshot),
+                          ]),
+                          SizedBox(height: 5),
+
+                          zandi(context, snapshot),
+
                           // top100
                           FutureBuilder<dom.Document>(
                             future: viewModel.futureTop,

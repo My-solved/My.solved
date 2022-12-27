@@ -167,6 +167,7 @@ Widget solvedCount(BuildContext context, AsyncSnapshot<User> snapshot) {
               snapshot.data?.solvedCount.toString() ?? '',
               style: TextStyle(
                 color: Colors.black,
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -174,6 +175,7 @@ Widget solvedCount(BuildContext context, AsyncSnapshot<User> snapshot) {
               '문제 해결',
               style: TextStyle(
                 color: Colors.grey,
+                fontSize: 14,
               ),
             ),
           ],
@@ -193,6 +195,7 @@ Widget voteCount(BuildContext context, AsyncSnapshot<User> snapshot) {
               snapshot.data?.voteCount.toString() ?? '',
               style: TextStyle(
                 color: Colors.black,
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -200,6 +203,7 @@ Widget voteCount(BuildContext context, AsyncSnapshot<User> snapshot) {
               '기여',
               style: TextStyle(
                 color: Colors.grey,
+                fontSize: 14,
               ),
             ),
           ],
@@ -219,6 +223,7 @@ Widget reverseRivalCount(BuildContext context, AsyncSnapshot<User> snapshot) {
               snapshot.data?.reverseRivalCount.toString() ?? '',
               style: TextStyle(
                 color: Colors.black,
+                fontSize: 15,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -226,6 +231,7 @@ Widget reverseRivalCount(BuildContext context, AsyncSnapshot<User> snapshot) {
               '라이벌',
               style: TextStyle(
                 color: Colors.grey,
+                fontSize: 14,
               ),
             ),
           ],
@@ -266,12 +272,12 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
       ),
       Positioned(
         left: MediaQuery.of(context).size.width * 0.8 * 0.06,
-        bottom: MediaQuery.of(context).size.width * 0.4 * 0.88,
+        bottom: MediaQuery.of(context).size.width * 0.4 * 0.87,
         child: Container(
             clipBehavior: Clip.none,
             color: Colors.white,
-            width: MediaQuery.of(context).size.width * 0.8 * 0.4,
-            height: MediaQuery.of(context).size.width * 0.4 * 0.14,
+            width: MediaQuery.of(context).size.width * 0.84,
+            height: MediaQuery.of(context).size.width * 0.4 * 0.15,
             padding: EdgeInsets.only(left: 5),
             child: Row(
               children: [
@@ -294,17 +300,6 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
               ],
             )),
       ),
-      Positioned(
-        left: MediaQuery.of(context).size.width * 0.56,
-        bottom: MediaQuery.of(context).size.width * 0.4 * 0.85,
-        child: Container(
-          clipBehavior: Clip.none,
-          color: Colors.white,
-          width: MediaQuery.of(context).size.width * 0.8 * 0.4,
-          height: MediaQuery.of(context).size.width * 0.4 * 0.14,
-          padding: EdgeInsets.only(left: 5),
-        ),
-      )
     ],
   );
 }
