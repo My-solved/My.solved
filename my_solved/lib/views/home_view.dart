@@ -33,86 +33,58 @@ class HomeView extends StatelessWidget {
                         children: <Widget>[
                           profileHeader(context, snapshot),
                           // organizations(context, snapshot),
-                          SizedBox(height: 25),
-                          Row(children: [
-                            SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.4),
-                            solvedCount(context, snapshot),
-                            Spacer(),
-                            voteCount(context, snapshot),
-                            Spacer(),
-                            reverseRivalCount(context, snapshot),
-                            SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.1),
-                          ]),
-                          SizedBox(height: 25),
                           Container(
                             padding: EdgeInsets.only(
                                 left: MediaQuery.of(context).size.width * 0.05,
-                                right: MediaQuery.of(context).size.width * 0.1),
+                                right:
+                                    MediaQuery.of(context).size.width * 0.05),
                             child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Row(
+                                SizedBox(
+                                    height: MediaQuery.of(context).size.width *
+                                        0.18),
+                                SizedBox(
+                                  height: 20,
+                                ),
+                                Wrap(
+                                  direction: Axis.horizontal,
                                   children: [
                                     handle(context, snapshot),
-                                    Spacer(),
+                                    Wrap(
+                                      direction: Axis.horizontal,
+                                      children: [
+                                        badge(context, snapshot),
+                                        classes(context, snapshot),
+                                      ],
+                                    )
                                   ],
                                 ),
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: bio(context, snapshot),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                zandi(context, snapshot),
+                                FutureBuilder<dom.Document>(
+                                  future: viewModel.futureTop,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasData) {
+                                      return top100(context, snapshot);
+                                    } else if (snapshot.hasError) {
+                                      return Text("asdfsadfasd",
+                                          style: TextStyle(
+                                              color: CupertinoColors
+                                                  .destructiveRed));
+                                    }
+                                    return CupertinoActivityIndicator();
+                                  },
                                 ),
                               ],
                             ),
                           ),
-
-                          SizedBox(height: 5),
-                          Row(children: [
-                            SizedBox(
-                                width:
-                                    MediaQuery.of(context).size.width * 0.04),
-                            badge(context, snapshot),
-                            classes(context, snapshot),
-                          ]),
-                          SizedBox(height: 5),
-
-                          zandi(context, snapshot),
-
-                          // top100
-                          FutureBuilder<dom.Document>(
-                            future: viewModel.futureTop,
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                return Container(
-                                  padding: EdgeInsets.only(
-                                      left: MediaQuery.of(context).size.width *
-                                          0.04,
-                                      top: 10,
-                                      right: MediaQuery.of(context).size.width *
-                                          0.04),
-                                  alignment: Alignment.center,
-                                  child: top100(context, snapshot),
-                                );
-                              } else if (snapshot.hasError) {
-                                return Text("asdfsadfasd",
-                                    style: TextStyle(
-                                        color: CupertinoColors.destructiveRed));
-                              }
-                              return CupertinoActivityIndicator();
-                            },
-                          ),
                         ],
                       );
                     } else {
-                      return Container(
-                        padding: EdgeInsets.only(top: 20, left: 20, right: 20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            profileHeader(context, snapshot),
-                          ],
-                        ),
-                      );
+                      return profileHeader(context, snapshot);
                     }
                   }),
 
@@ -138,11 +110,24 @@ extension HomeViewExtension on HomeView {
         children: <Widget>[
           backgroundImage(context, snapshot),
           Positioned(
-            left: 15,
+            left: MediaQuery.of(context).size.width * 0.05,
             bottom: -50,
             child: Stack(clipBehavior: Clip.none, children: <Widget>[
               profileImage(context, snapshot),
               Positioned(left: 38, top: 65, child: tiers(context, snapshot)),
+              Positioned(
+                  left: MediaQuery.of(context).size.width * 0.4,
+                  top: MediaQuery.of(context).size.height * 0.12,
+                  child: Row(
+                    children: [
+                      solvedCount(context, snapshot),
+                      SizedBox(width: MediaQuery.of(context).size.width * 0.1),
+                      voteCount(context, snapshot),
+                      SizedBox(width: MediaQuery.of(context).size.width * 0.1),
+                      reverseRivalCount(context, snapshot),
+                      SizedBox(width: MediaQuery.of(context).size.width * 0.1),
+                    ],
+                  ))
             ]),
           ),
           Row(

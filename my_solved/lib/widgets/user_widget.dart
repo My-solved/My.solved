@@ -46,24 +46,19 @@ Widget profileImage(BuildContext context, AsyncSnapshot<User> snapshot) {
 }
 
 Widget handle(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return CupertinoPageScaffold(
-    backgroundColor: Colors.transparent,
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          snapshot.data?.handle ?? '',
-          style: TextStyle(
-            color: CupertinoColors.black,
-            // color: CupertinoTheme.of(context).textTheme.textStyle.color,
-            fontSize: 30,
-            fontWeight: FontWeight.bold,
-          ),
+  return Column(
+    children: [
+      Text(
+        snapshot.data?.handle ?? '',
+        style: TextStyle(
+          color: CupertinoColors.black,
+          // color: CupertinoTheme.of(context).textTheme.textStyle.color,
+          fontSize: 30,
+          fontWeight: FontWeight.bold,
         ),
-        // badge(context, snapshot),
-        // classes(context, snapshot),
-      ],
-    ),
+      ),
+      bio(context, snapshot),
+    ],
   );
 }
 
@@ -112,17 +107,11 @@ Widget bio(BuildContext context, AsyncSnapshot<User> snapshot) {
 
 // 클래스
 Widget classes(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return snapshot.data!.rating >= 3200
-      ? SvgPicture.asset(
-          'lib/assets/classes/c10g.svg',
-          width: 50,
-          height: 50,
-        )
-      : SvgPicture.asset(
-          'lib/assets/classes/c${snapshot.data?.userClass}.svg',
-          width: 50,
-          height: 50,
-        );
+  return SvgPicture.asset(
+    'lib/assets/classes/c${snapshot.data?.userClass}.svg',
+    width: 50,
+    height: 50,
+  );
 }
 
 // 티어
@@ -167,12 +156,12 @@ Widget solvedCount(BuildContext context, AsyncSnapshot<User> snapshot) {
               snapshot.data?.solvedCount.toString() ?? '',
               style: TextStyle(
                 color: Colors.black,
-                fontSize: 15,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
             Text(
-              '문제 해결',
+              '해결',
               style: TextStyle(
                 color: Colors.grey,
                 fontSize: 14,
@@ -195,7 +184,7 @@ Widget voteCount(BuildContext context, AsyncSnapshot<User> snapshot) {
               snapshot.data?.voteCount.toString() ?? '',
               style: TextStyle(
                 color: Colors.black,
-                fontSize: 15,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -223,7 +212,7 @@ Widget reverseRivalCount(BuildContext context, AsyncSnapshot<User> snapshot) {
               snapshot.data?.reverseRivalCount.toString() ?? '',
               style: TextStyle(
                 color: Colors.black,
-                fontSize: 15,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -254,31 +243,22 @@ Widget rank(BuildContext context, AsyncSnapshot<User> snapshot) {
 // 잔디
 Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
   return Stack(
-    clipBehavior: Clip.none,
-    alignment: Alignment.center,
     children: [
-      Card(
-        elevation: 10,
-        // shadowColor: Color(0xFF000000 + levelColor(snapshot.data?.tier ?? 0)),
-        color: Colors.transparent,
-        child: SvgPicture.asset(
-          'lib/assets/zandi.svg',
-          width: MediaQuery.of(context).size.width * 0.9,
-        ),
+      SvgPicture.asset(
+        'lib/assets/zandi.svg',
+        width: MediaQuery.of(context).size.width,
       ),
       SvgPicture.network(
         'http://mazandi.herokuapp.com/api?handle=${snapshot.data?.handle}&theme=warm',
-        width: MediaQuery.of(context).size.width * 0.9,
+        width: MediaQuery.of(context).size.width,
       ),
       Positioned(
-        left: MediaQuery.of(context).size.width * 0.8 * 0.06,
-        bottom: MediaQuery.of(context).size.width * 0.4 * 0.87,
+        left: MediaQuery.of(context).size.width * 0.8 * 0.07,
+        bottom: MediaQuery.of(context).size.width * 0.4 * 0.91,
         child: Container(
-            clipBehavior: Clip.none,
             color: Colors.white,
-            width: MediaQuery.of(context).size.width * 0.84,
+            width: MediaQuery.of(context).size.width * 0.82,
             height: MediaQuery.of(context).size.width * 0.4 * 0.15,
-            padding: EdgeInsets.only(left: 5),
             child: Row(
               children: [
                 SvgPicture.asset(
@@ -388,19 +368,19 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
               .toString() ??
           '',
       name: 'top100');
-  return Card(
-    elevation: 10,
-    clipBehavior: Clip.none,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(12),
+  return Container(
+    width: MediaQuery.of(context).size.width,
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(color: Colors.grey, width: 0.1),
     ),
     child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         SizedBox(height: 10),
         // AC RATING
         Padding(
-          padding: EdgeInsets.only(left: 10),
+          padding:
+              EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.05),
           child: Html(
             data: snapshot.data!.body!
                     .getElementsByClassName('css-5vptc8')[0]
