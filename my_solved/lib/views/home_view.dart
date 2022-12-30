@@ -42,8 +42,8 @@ class HomeView extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 SizedBox(
-                                    height: MediaQuery.of(context).size.width *
-                                        0.18),
+                                    height: MediaQuery.of(context).size.height *
+                                        0.09),
                                 SizedBox(
                                   height: 20,
                                 ),
