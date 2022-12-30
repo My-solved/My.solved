@@ -20,25 +20,22 @@ Widget backgroundImage(BuildContext context, AsyncSnapshot<User> snapshot) {
 }
 
 Widget profileImage(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return CupertinoPageScaffold(
-    backgroundColor: Colors.transparent,
-    child: Card(
-      elevation: 20,
-      shadowColor: Color(0xFF000000 + levelColor(snapshot.data?.tier ?? 0)),
-      shape: RoundedRectangleBorder(
+  return Card(
+    elevation: 20,
+    shadowColor: Color(0xFF000000 + levelColor(snapshot.data?.tier ?? 0)),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(100),
+    ),
+    child: SizedBox(
+      width: 100,
+      height: 100,
+      child: ClipRRect(
         borderRadius: BorderRadius.circular(100),
-      ),
-      child: SizedBox(
-        width: 100,
-        height: 100,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(100),
-          child: ExtendedImage.network(
-            snapshot.data?.profileImageUrl ??
-                'https://static.solved.ac/misc/360x360/default_profile.png',
-            cache: true,
-            fit: BoxFit.cover,
-          ),
+        child: ExtendedImage.network(
+          snapshot.data?.profileImageUrl ??
+              'https://static.solved.ac/misc/360x360/default_profile.png',
+          cache: true,
+          fit: BoxFit.cover,
         ),
       ),
     ),
@@ -47,6 +44,7 @@ Widget profileImage(BuildContext context, AsyncSnapshot<User> snapshot) {
 
 Widget handle(BuildContext context, AsyncSnapshot<User> snapshot) {
   return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       Text(
         snapshot.data?.handle ?? '',
@@ -372,7 +370,7 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
     width: MediaQuery.of(context).size.width,
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(10),
-      border: Border.all(color: Colors.grey, width: 0.1),
+      border: Border.all(color: Colors.grey, width: 0.5),
     ),
     child: Column(
       children: [

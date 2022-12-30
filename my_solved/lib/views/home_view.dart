@@ -114,12 +114,13 @@ extension HomeViewExtension on HomeView {
             bottom: -50,
             child: Stack(clipBehavior: Clip.none, children: <Widget>[
               profileImage(context, snapshot),
-              Positioned(left: 38, top: 65, child: tiers(context, snapshot)),
               Positioned(
-                  left: MediaQuery.of(context).size.width * 0.4,
-                  top: MediaQuery.of(context).size.height * 0.12,
+                  left: 38,
+                  top: 65,
                   child: Row(
                     children: [
+                      tiers(context, snapshot),
+                      SizedBox(width: MediaQuery.of(context).size.width * 0.2),
                       solvedCount(context, snapshot),
                       SizedBox(width: MediaQuery.of(context).size.width * 0.1),
                       voteCount(context, snapshot),
@@ -127,7 +128,7 @@ extension HomeViewExtension on HomeView {
                       reverseRivalCount(context, snapshot),
                       SizedBox(width: MediaQuery.of(context).size.width * 0.1),
                     ],
-                  ))
+                  )),
             ]),
           ),
           Row(
