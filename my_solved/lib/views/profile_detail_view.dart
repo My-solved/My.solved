@@ -39,9 +39,7 @@ class ProfileDetailView extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                SizedBox(
-                                    height: MediaQuery.of(context).size.height *
-                                        0.11),
+                                SizedBox(height: 80),
                                 Wrap(
                                   direction: Axis.horizontal,
                                   children: [

@@ -358,14 +358,14 @@ Widget genQR(AsyncSnapshot<ProblemStats> snapshot) {
 
 Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
   developer.log(
-      snapshot.data
-              ?.getElementsByClassName('css-1wnvjz2')[0]
-              .getElementsByTagName('img')
-              .first
-              .attributes['src']
-              .toString() ??
+      snapshot.data?.getElementsByClassName('css-1wnvjz2').length.toString() ??
           '',
       name: 'top100');
+
+  int length = snapshot.data?.getElementsByClassName('css-1wnvjz2').length ?? 0;
+  if (100 < length) length = 100;
+  length = length - 9;
+
   return Container(
     width: MediaQuery.of(context).size.width,
     decoration: BoxDecoration(
@@ -395,9 +395,11 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
             .attributes['src']
             .toString()
             .contains('profile_badge'))
-          for (var i = 0; i < 10; i++)
+          for (var i = 0; i < length / 10; i++)
             Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              for (var j = 1; j <= 10; j++)
+              for (var j = 1;
+                  i == length / 10 - 1 ? j < length % 10 : j <= 10;
+                  j++)
                 Container(
                   margin: EdgeInsets.only(
                     right: MediaQuery.of(context).size.width * 0.03,
@@ -420,9 +422,9 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
             ])
         // 프로필 뱃지가 없을 때
         else
-          for (var i = 0; i < 10; i++)
+          for (var i = 0; i < length / 10; i++)
             Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              for (var j = 0; j < 10; j++)
+              for (var j = 0; i == (length / 10).floor() ? j < 4 : j <= 10; j++)
                 Container(
                   margin: EdgeInsets.only(
                     right: MediaQuery.of(context).size.width * 0.03,
