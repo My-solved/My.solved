@@ -14,6 +14,7 @@ class HomeViewModel with ChangeNotifier {
   Future<dom.Document>? futureTop;
 
   void onInit(String handle) {
+    print(handle);
     future = userShow(handle);
     // futurePS = userProblemStats(handle);
     futureTop = profileTop100(handle);

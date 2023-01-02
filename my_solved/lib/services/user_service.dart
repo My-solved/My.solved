@@ -14,6 +14,7 @@ class UserService extends ChangeNotifier {
   UserService._privateConstructor() {
     Future<String> futureName = fetchName();
     futureName.then((name) {
+      print(name);
       _name = name;
       if (_name == '') {
         state = UserState.unknown;
@@ -31,5 +32,13 @@ class UserService extends ChangeNotifier {
   Future<String> fetchName() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('username') ?? '';
+  }
+
+  void setUserName(String name) {
+    _name = name;
+  }
+
+  String fetchUserName() {
+    return _name;
   }
 }

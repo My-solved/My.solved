@@ -4,6 +4,7 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:html/dom.dart' as dom;
 import 'package:my_solved/pages/setting_page.dart';
+import 'package:my_solved/services/user_service.dart';
 import 'package:my_solved/view_models/home_view_model.dart';
 import 'package:provider/provider.dart';
 
@@ -17,7 +18,8 @@ class HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var viewModel = Provider.of<HomeViewModel>(context);
-    String userName = Provider.of<UserName>(context).name;
+    String userName = UserService().fetchUserName();
+    print(userName);
     viewModel.onInit(userName);
 
     return CupertinoPageScaffold(

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:my_solved/pages/home_page.dart';
 import 'package:my_solved/pages/login_page.dart';
 import 'package:my_solved/providers/user/user_name.dart';
 import 'package:my_solved/services/user_service.dart';
@@ -36,21 +37,21 @@ class MyApp extends StatelessWidget {
                     return LoginPage();
                   case UserState.logedin:
                     return Center(
-                      child: Text('LogedIn'),
+                      child: HomePage(),
                     );
                 }
               },
             );
           },
         ),
-        // theme: CupertinoThemeData(
-        //     brightness: Brightness.light,
-        //     textTheme: CupertinoTextThemeData(
-        //       textStyle: TextStyle(
-        //         fontFamily: "Pretendard",
-        //         color: CupertinoColors.black,
-        //       ),
-        //     )),
+        theme: CupertinoThemeData(
+            brightness: Brightness.light,
+            textTheme: CupertinoTextThemeData(
+              textStyle: TextStyle(
+                fontFamily: "Pretendard",
+                color: CupertinoColors.black,
+              ),
+            )),
       ),
     );
   }
