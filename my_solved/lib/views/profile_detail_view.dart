@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:html/dom.dart' as dom;
 import 'package:provider/provider.dart';
 
 import '../models/User.dart';
@@ -18,66 +18,66 @@ class ProfileDetailView extends StatelessWidget {
         middle: Text(viewModel.handle),
       ),
       child: SafeArea(
-        child: Align(
-          alignment: Alignment.topLeft,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                FutureBuilder<User>(
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              FutureBuilder<User>(
                   future: viewModel.future,
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          // 배경 + 프로필
                           profileHeader(context, snapshot),
-                          // 패딩
-                          SizedBox(height: 70),
-                          Container(padding: EdgeInsets.only(left: 30), child:
-                            Column(
+                          // organizations(context, snapshot),
+                          Container(
+                            padding: EdgeInsets.only(
+                                left: MediaQuery.of(context).size.width * 0.05,
+                                right:
+                                    MediaQuery.of(context).size.width * 0.05),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                handle(context, snapshot),
-                                organizations(context, snapshot),
-                                SizedBox(height: 5),
-                                Row(
+                                SizedBox(height: 80),
+                                Wrap(
+                                  direction: Axis.horizontal,
                                   children: [
-                                    solvedCount(context, snapshot),
-                                    SizedBox(width: 10),
-                                    reverseRivalCount(context, snapshot),
+                                    handle(context, snapshot),
+                                    Wrap(
+                                      direction: Axis.horizontal,
+                                      children: [
+                                        badge(context, snapshot),
+                                        classes(context, snapshot),
+                                      ],
+                                    )
                                   ],
+                                ),
+                                zandi(context, snapshot),
+                                FutureBuilder<dom.Document>(
+                                  future: viewModel.futureTop,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasData) {
+                                      return top100(context, snapshot);
+                                    } else if (snapshot.hasError) {
+                                      return Text("asdfsadfasd",
+                                          style: TextStyle(
+                                              color: CupertinoColors
+                                                  .destructiveRed));
+                                    }
+                                    return CupertinoActivityIndicator();
+                                  },
                                 ),
                               ],
                             ),
                           ),
-                          SizedBox(height: 20),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Spacer(),
-                              zandi(context, snapshot),
-                              Spacer(),
-                            ],
-                          )
                         ],
                       );
                     } else {
-                      return Container(
-                        padding: EdgeInsets.only(top: 20, left: 20, right: 20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            profileHeader(context, snapshot),
-                          ],
-                        ),
-                      );
+                      return profileHeader(context, snapshot);
                     }
-                  }
-                )
-              ],
-            ),
+                  }),
+            ],
           ),
         ),
       ),
@@ -92,17 +92,30 @@ extension ProfileDetailViewExtension on ProfileDetailView {
         clipBehavior: Clip.none,
         children: <Widget>[
           backgroundImage(context, snapshot),
-          Positioned(left: 25, bottom: -50, child: Stack(
-              clipBehavior: Clip.none,
-              children: <Widget>[
-                profileImage(context, snapshot),
-                Positioned(left: 38, top: 65, child: tiers(context, snapshot)),
-              ]
-          ),
+          Positioned(
+            left: MediaQuery.of(context).size.width * 0.05,
+            bottom: -50,
+            child: Stack(clipBehavior: Clip.none, children: <Widget>[
+              profileImage(context, snapshot),
+              Positioned(
+                  left: 38,
+                  top: 65,
+                  child: Row(
+                    children: [
+                      tiers(context, snapshot),
+                      SizedBox(width: MediaQuery.of(context).size.width * 0.2),
+                      solvedCount(context, snapshot),
+                      SizedBox(width: MediaQuery.of(context).size.width * 0.1),
+                      voteCount(context, snapshot),
+                      SizedBox(width: MediaQuery.of(context).size.width * 0.1),
+                      reverseRivalCount(context, snapshot),
+                      SizedBox(width: MediaQuery.of(context).size.width * 0.1),
+                    ],
+                  )),
+            ]),
           ),
         ],
       ),
     );
   }
 }
-

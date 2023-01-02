@@ -20,25 +20,22 @@ Widget backgroundImage(BuildContext context, AsyncSnapshot<User> snapshot) {
 }
 
 Widget profileImage(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return CupertinoPageScaffold(
-    backgroundColor: Colors.transparent,
-    child: Card(
-      elevation: 20,
-      shadowColor: Color(0xFF000000 + levelColor(snapshot.data?.tier ?? 0)),
-      shape: RoundedRectangleBorder(
+  return Card(
+    elevation: 20,
+    shadowColor: Color(0xFF000000 + levelColor(snapshot.data?.tier ?? 0)),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(100),
+    ),
+    child: SizedBox(
+      width: 100,
+      height: 100,
+      child: ClipRRect(
         borderRadius: BorderRadius.circular(100),
-      ),
-      child: SizedBox(
-        width: 100,
-        height: 100,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(100),
-          child: ExtendedImage.network(
-            snapshot.data?.profileImageUrl ??
-                'https://static.solved.ac/misc/360x360/default_profile.png',
-            cache: true,
-            fit: BoxFit.cover,
-          ),
+        child: ExtendedImage.network(
+          snapshot.data?.profileImageUrl ??
+              'https://static.solved.ac/misc/360x360/default_profile.png',
+          cache: true,
+          fit: BoxFit.cover,
         ),
       ),
     ),
@@ -46,24 +43,20 @@ Widget profileImage(BuildContext context, AsyncSnapshot<User> snapshot) {
 }
 
 Widget handle(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return CupertinoPageScaffold(
-    backgroundColor: Colors.transparent,
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          snapshot.data?.handle ?? '',
-          style: TextStyle(
-            color: CupertinoColors.black,
-            ////color: CupertinoTheme.of(context).textTheme.textStyle.color,
-            fontSize: 30,
-            fontWeight: FontWeight.bold,
-          ),
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        snapshot.data?.handle ?? '',
+        style: TextStyle(
+          color: CupertinoColors.black,
+          // color: CupertinoTheme.of(context).textTheme.textStyle.color,
+          fontSize: 30,
+          fontWeight: FontWeight.bold,
         ),
-        //badge(snapshot),
-        classes(context, snapshot),
-      ],
-    ),
+      ),
+      bio(context, snapshot),
+    ],
   );
 }
 
@@ -101,29 +94,22 @@ Widget organizations(BuildContext context, AsyncSnapshot<User> snapshot) {
 
 // 자기소개
 Widget bio(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return CupertinoPageScaffold(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        padding: EdgeInsets.only(top: 20),
-        child: Text(
+  return snapshot.data?.bio?.isEmpty ?? true
+      ? SizedBox(
+          height: 1,
+        )
+      : Text(
           snapshot.data?.bio ?? '',
-        ),
-      ));
+        );
 }
 
 // 클래스
 Widget classes(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return snapshot.data!.rating >= 3200
-      ? SvgPicture.asset(
-          'lib/assets/classes/c10g.svg',
-          width: 50,
-          height: 50,
-        )
-      : SvgPicture.asset(
-          'lib/assets/classes/c${snapshot.data?.userClass}.svg',
-          width: 50,
-          height: 50,
-        );
+  return SvgPicture.asset(
+    'lib/assets/classes/c${snapshot.data?.userClass}.svg',
+    width: 50,
+    height: 50,
+  );
 }
 
 // 티어
@@ -162,24 +148,52 @@ Widget solvedCount(BuildContext context, AsyncSnapshot<User> snapshot) {
       backgroundColor: Colors.transparent,
       child: Container(
         alignment: Alignment.centerLeft,
-        child: RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: snapshot.data?.solvedCount.toString() ?? '',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontWeight: FontWeight.bold,
-                ),
+        child: Column(
+          children: [
+            Text(
+              snapshot.data?.solvedCount.toString() ?? '',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
-              TextSpan(
-                text: '문제 해결',
-                style: TextStyle(
-                  color: Colors.grey,
-                ),
+            ),
+            Text(
+              '해결',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 14,
               ),
-            ],
-          ),
+            ),
+          ],
+        ),
+      ));
+}
+
+// 기여 수
+Widget voteCount(BuildContext context, AsyncSnapshot<User> snapshot) {
+  return CupertinoPageScaffold(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        alignment: Alignment.centerLeft,
+        child: Column(
+          children: [
+            Text(
+              snapshot.data?.voteCount.toString() ?? '',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              '기여',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 14,
+              ),
+            ),
+          ],
         ),
       ));
 }
@@ -190,24 +204,24 @@ Widget reverseRivalCount(BuildContext context, AsyncSnapshot<User> snapshot) {
       backgroundColor: Colors.transparent,
       child: Container(
         alignment: Alignment.centerLeft,
-        child: RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: snapshot.data?.reverseRivalCount.toString() ?? '',
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontWeight: FontWeight.bold,
-                ),
+        child: Column(
+          children: [
+            Text(
+              snapshot.data?.reverseRivalCount.toString() ?? '',
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
               ),
-              TextSpan(
-                text: '명의 라이벌',
-                style: TextStyle(
-                  color: Colors.grey,
-                ),
+            ),
+            Text(
+              '라이벌',
+              style: TextStyle(
+                color: Colors.grey,
+                fontSize: 14,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ));
 }
@@ -227,53 +241,43 @@ Widget rank(BuildContext context, AsyncSnapshot<User> snapshot) {
 // 잔디
 Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
   return Stack(
-    clipBehavior: Clip.none,
-    alignment: Alignment.center,
     children: [
-      Card(
-        elevation: 20,
-        shadowColor: Color(0xFF000000 + levelColor(snapshot.data?.tier ?? 0)),
-        color: Colors.transparent,
-        child: SvgPicture.asset(
-          'lib/assets/zandi.svg',
-          width: MediaQuery.of(context).size.width * 0.8,
-          height: MediaQuery.of(context).size.width * 0.4,
-        ),
+      SvgPicture.asset(
+        'lib/assets/zandi.svg',
+        width: MediaQuery.of(context).size.width,
       ),
       SvgPicture.network(
         'http://mazandi.herokuapp.com/api?handle=${snapshot.data?.handle}&theme=warm',
-        width: MediaQuery.of(context).size.width * 0.8,
-        height: MediaQuery.of(context).size.width * 0.4,
+        width: MediaQuery.of(context).size.width,
       ),
       Positioned(
-        left: MediaQuery.of(context).size.width * 0.8 * 0.065,
-        bottom: MediaQuery.of(context).size.width * 0.4 * 0.8,
+        left: MediaQuery.of(context).size.width * 0.8 * 0.07,
+        bottom: MediaQuery.of(context).size.width * 0.4 * 0.91,
         child: Container(
-            clipBehavior: Clip.none,
             color: Colors.white,
-            width: MediaQuery.of(context).size.width * 0.8 * 0.4,
-            height: MediaQuery.of(context).size.width * 0.4 * 0.14,
-            padding: EdgeInsets.only(left: 5),
+            width: MediaQuery.of(context).size.width * 0.82,
+            height: MediaQuery.of(context).size.width * 0.4 * 0.15,
             child: Row(
               children: [
-                // SvgPicture.asset('lib/assets/icons/rating.svg',
-                //   width: MediaQuery.of(context).size.width * 0.4 * 0.10,
-                //   height: MediaQuery.of(context).size.width * 0.4 * 0.10,
-                //   color: Color(0xFF000000 + levelColor(snapshot.data?.tier ?? 0)),
-                // ),
-                // SizedBox(width: 5),
+                SvgPicture.asset(
+                  'lib/assets/icons/streak.svg',
+                  width: MediaQuery.of(context).size.width * 0.4 * 0.10,
+                  height: MediaQuery.of(context).size.width * 0.4 * 0.10,
+                  color: CupertinoColors.black,
+                ),
+                SizedBox(width: 5),
                 Text(
-                  'Rating: ${snapshot.data?.rating}',
+                  // 'Rating: ${snapshot.data?.rating}',
+                  '스트릭',
                   style: TextStyle(
                     fontSize: MediaQuery.of(context).size.width * 0.4 * 0.10,
                     fontWeight: FontWeight.bold,
-                    color: Color(
-                        0xFF000000 + levelColor(snapshot.data?.tier ?? 0)),
+                    color: CupertinoColors.black,
                   ),
                 ),
               ],
             )),
-      )
+      ),
     ],
   );
 }
@@ -310,6 +314,17 @@ Widget badge(BuildContext context, AsyncSnapshot<User> snapshot) {
           snapshot.data?.badge['badgeImageUrl'],
           width: 50,
           height: 50,
+          cache: true,
+          loadStateChanged: (ExtendedImageState state) {
+            switch (state.extendedImageLoadState) {
+              case LoadState.loading:
+                return CupertinoActivityIndicator();
+              case LoadState.completed:
+                return null;
+              case LoadState.failed:
+                return Icon(Icons.error);
+            }
+          },
         );
 }
 
@@ -343,13 +358,95 @@ Widget genQR(AsyncSnapshot<ProblemStats> snapshot) {
 
 Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
   developer.log(
-      snapshot.data?.getElementsByClassName('css-1948bce')[0].innerHtml ?? '');
-  return Html(
-      data: snapshot.data?.body
-              ?.getElementsByClassName('css-zi8sic')[0]
-              .getElementsByTagName('img')
-              .toString() ??
-          '');
+      snapshot.data?.getElementsByClassName('css-1wnvjz2').length.toString() ??
+          '',
+      name: 'top100');
+
+  int length = snapshot.data?.getElementsByClassName('css-1wnvjz2').length ?? 0;
+  if (100 < length) length = 100;
+  length = length - 9;
+
+  return Container(
+    width: MediaQuery.of(context).size.width,
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(color: Colors.grey, width: 0.5),
+    ),
+    child: Column(
+      children: [
+        SizedBox(height: 10),
+        // AC RATING
+        Padding(
+          padding:
+              EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.05),
+          child: Html(
+            data: snapshot.data!.body!
+                    .getElementsByClassName('css-5vptc8')[0]
+                    .innerHtml ??
+                '',
+          ),
+        ),
+
+        // 프로필 뱃지가 있을 때
+        if (snapshot.data!.body!
+            .getElementsByClassName('css-1wnvjz2')[0]
+            .getElementsByTagName('img')
+            .first
+            .attributes['src']
+            .toString()
+            .contains('profile_badge'))
+          for (var i = 0; i < length / 10; i++)
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              for (var j = 1;
+                  i == length / 10 - 1 ? j < length % 10 : j <= 10;
+                  j++)
+                Container(
+                  margin: EdgeInsets.only(
+                    right: MediaQuery.of(context).size.width * 0.03,
+                    top: MediaQuery.of(context).size.width * 0.03,
+                  ),
+                  child: SvgPicture.asset(
+                      snapshot.data!.body!
+                              .getElementsByClassName('css-1wnvjz2')[10 * i + j]
+                              .getElementsByTagName('img')
+                              .first
+                              .attributes['src']
+                              .toString()
+                              .replaceAll(
+                                  'https://static.solved.ac/tier_small/',
+                                  'lib/assets/tiers/') ??
+                          '',
+                      width: 20,
+                      height: 20),
+                )
+            ])
+        // 프로필 뱃지가 없을 때
+        else
+          for (var i = 0; i < length / 10; i++)
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+              for (var j = 0; i == (length / 10).floor() ? j < 4 : j <= 10; j++)
+                Container(
+                  margin: EdgeInsets.only(
+                    right: MediaQuery.of(context).size.width * 0.03,
+                    top: MediaQuery.of(context).size.width * 0.03,
+                  ),
+                  child: SvgPicture.asset(
+                      snapshot.data!.body!
+                          .getElementsByClassName('css-1wnvjz2')[10 * i + j]
+                          .getElementsByTagName('img')
+                          .first
+                          .attributes['src']
+                          .toString()
+                          .replaceAll('https://static.solved.ac/tier_small/',
+                              'lib/assets/tiers/'),
+                      width: 20,
+                      height: 20),
+                )
+            ]),
+        SizedBox(height: 20),
+      ],
+    ),
+  );
 }
 
 int levelColor(int level) {
