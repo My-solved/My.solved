@@ -21,12 +21,12 @@ class LoginViewModel with ChangeNotifier {
     Provider.of<UserName>(context, listen: false).setName(handle);
     future = userShow(handle);
     future!.then((value) {
+      print(value);
       Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => MainTabPage()),
-        (route) => false);
-    })
-    .catchError((error) {
+          context,
+          MaterialPageRoute(builder: (context) => MainTabPage()),
+          (route) => false);
+    }).catchError((error) {
       return showToast();
     });
   }
@@ -40,6 +40,5 @@ void showToast() {
       timeInSecForIosWeb: 1,
       backgroundColor: Colors.green,
       textColor: Colors.white,
-      fontSize: 16.0
-  );
+      fontSize: 16.0);
 }

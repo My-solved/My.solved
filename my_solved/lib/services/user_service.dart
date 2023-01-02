@@ -14,6 +14,7 @@ class UserService extends ChangeNotifier {
   UserService._privateConstructor() {
     Future<String> futureName = fetchName();
     futureName.then((name) {
+      print(name);
       _name = name;
       if (_name == '') {
         state = UserState.unknown;
