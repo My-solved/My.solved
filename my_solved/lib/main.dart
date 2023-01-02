@@ -1,9 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:my_solved/pages/home_page.dart';
 import 'package:my_solved/pages/login_page.dart';
 import 'package:my_solved/pages/main_tab_page.dart';
-import 'package:my_solved/providers/user/user_name.dart';
 import 'package:my_solved/services/user_service.dart';
 import 'package:provider/provider.dart';
 
@@ -22,7 +20,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: ((context) => UserService()),
         ),
-        ChangeNotifierProvider(create: ((context) => UserName())),
+        ChangeNotifierProvider(create: ((context) => UserService())),
       ],
       child: CupertinoApp(
         home: Consumer<UserService>(

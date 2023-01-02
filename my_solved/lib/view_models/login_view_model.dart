@@ -1,8 +1,6 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:my_solved/pages/main_tab_page.dart';
-import 'package:my_solved/providers/user/user_name.dart';
 import 'package:my_solved/services/user_service.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,7 +19,7 @@ class LoginViewModel with ChangeNotifier {
 
   void onTapLoginButton(BuildContext context) {
     UserService().setUserName(handle);
-    Provider.of<UserName>(context, listen: false).setName(handle);
+    Provider.of<UserService>(context, listen: false).setUserName(handle);
     future = userShow(handle);
     future!.then((value) {
       saveName();
@@ -30,7 +28,7 @@ class LoginViewModel with ChangeNotifier {
           MaterialPageRoute(builder: (context) => MainTabPage()),
           (route) => false);
     }).catchError((error) {
-      return showToast();
+      showToast();
     });
   }
 
