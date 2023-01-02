@@ -33,4 +33,12 @@ class UserService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('username') ?? '';
   }
+
+  void setUserName(String name) {
+    _name = name;
+  }
+
+  String fetchUserName() {
+    return _name;
+  }
 }
