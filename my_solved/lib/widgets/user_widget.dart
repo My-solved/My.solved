@@ -260,7 +260,7 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
                   'lib/assets/icons/streak.svg',
                   width: MediaQuery.of(context).size.width * 0.4 * 0.10,
                   height: MediaQuery.of(context).size.width * 0.4 * 0.10,
-                  color: CupertinoColors.black,
+                  color: Colors.black54,
                 ),
                 SizedBox(width: 5),
                 Text(
@@ -268,10 +268,13 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
                   '스트릭',
                   style: TextStyle(
                     fontSize: MediaQuery.of(context).size.width * 0.4 * 0.10,
-                    fontWeight: FontWeight.bold,
-                    color: CupertinoColors.black,
+                    // fontWeight: FontWeight.bold,
+                    color: Colors.black54,
                   ),
                 ),
+                Spacer(),
+                maxStreak(context, snapshot),
+                SizedBox(width: MediaQuery.of(context).size.width * 0.4 * 0.1),
               ],
             )),
       ),
@@ -281,14 +284,14 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
 
 // 최대 연속 문제 해결일 수
 Widget maxStreak(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return CupertinoPageScaffold(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        padding: EdgeInsets.only(top: 20),
-        child: Text(
-          snapshot.data?.maxStreak.toString() ?? '',
-        ),
-      ));
+  return Text(
+    '최장 ${snapshot.data?.maxStreak.toString()}일',
+    style: TextStyle(
+      fontSize: MediaQuery.of(context).size.width * 0.4 * 0.1,
+      // fontWeight: FontWeight.bold,
+      color: Colors.black54,
+    ),
+  );
 }
 
 // 경험치
@@ -346,20 +349,27 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
     child: Column(
       children: [
         SizedBox(height: 10),
+
         // AC RATING
         Padding(
           padding:
-              EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.05),
+              EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.04),
           child: Html(
             data: snapshot.data!.body!
                 .getElementsByClassName('css-5vptc8')[0]
                 .innerHtml,
+            style: {
+              'html': Style(
+                  // fontSize: FontSize(16),
+                  ),
+            },
           ),
         ),
 
         for (var i = 0; i < 10; i++)
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            for (var j = 0; j < 10; j++) top100Box(idx + 10 * i + j, snapshot)
+            for (var j = 0; j < 10; j++)
+              top100Box(idx + 10 * i + j, context, snapshot),
           ]),
         SizedBox(height: 20),
       ],
@@ -367,7 +377,8 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
   );
 }
 
-Widget top100Box(int idx, AsyncSnapshot<dom.Document> snapshot) {
+Widget top100Box(
+    int idx, BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
   try {
     if (snapshot.data!.body!
         .getElementsByClassName('css-1wnvjz2')[idx]
@@ -377,7 +388,7 @@ Widget top100Box(int idx, AsyncSnapshot<dom.Document> snapshot) {
         .toString()
         .contains('https://static.solved.ac/tier_small/')) {
       return Container(
-          margin: EdgeInsets.all(8),
+          margin: EdgeInsets.all(MediaQuery.of(context).size.width * 0.02),
           child: SvgPicture.asset(
               snapshot.data!.body!
                   .getElementsByClassName('css-1wnvjz2')[idx]
@@ -387,7 +398,7 @@ Widget top100Box(int idx, AsyncSnapshot<dom.Document> snapshot) {
                   .toString()
                   .replaceAll('https://static.solved.ac/tier_small/',
                       'lib/assets/tiers/'),
-              height: 20));
+              width: MediaQuery.of(context).size.width * 0.041));
     } else {
       return SizedBox.shrink();
     }

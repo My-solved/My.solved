@@ -66,9 +66,14 @@ class HomeView extends StatelessWidget {
                                   future: viewModel.futureTop,
                                   builder: (context, snapshot) {
                                     if (snapshot.hasData) {
-                                      return top100(context, snapshot);
+                                      return Column(
+                                        children: [
+                                          top100(context, snapshot),
+                                        ],
+                                      );
                                     } else if (snapshot.hasError) {
-                                      return Text("asdfsadfasd",
+                                      return Text(
+                                          "home_view.dart: ${snapshot.error}",
                                           style: TextStyle(
                                               color: CupertinoColors
                                                   .destructiveRed));
