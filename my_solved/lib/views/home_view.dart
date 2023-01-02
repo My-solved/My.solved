@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:html/dom.dart' as dom;
 import 'package:my_solved/pages/setting_page.dart';
 import 'package:my_solved/services/user_service.dart';
@@ -7,7 +6,6 @@ import 'package:my_solved/view_models/home_view_model.dart';
 import 'package:provider/provider.dart';
 
 import '../models/User.dart';
-import '../providers/user/user_name.dart';
 import '../widgets/user_widget.dart';
 
 class HomeView extends StatelessWidget {
@@ -87,13 +85,6 @@ class HomeView extends StatelessWidget {
                       return profileHeader(context, snapshot);
                     }
                   }),
-
-              // FutureBuilder<List<ProblemStats>>(
-              //   future: viewModel.futurePS,
-              //   builder: (context, snapshot) {
-              //       return genQR(snapshot);
-              //   }
-              // ),
             ],
           ),
         ),

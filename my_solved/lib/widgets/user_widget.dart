@@ -8,7 +8,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:html/dom.dart' as dom;
 
 import '../models/User.dart';
-import '../models/user/ProblemStats.dart';
 
 Widget backgroundImage(BuildContext context, AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
@@ -328,34 +327,6 @@ Widget badge(BuildContext context, AsyncSnapshot<User> snapshot) {
         );
 }
 
-// QR 코드
-Widget genQR(AsyncSnapshot<ProblemStats> snapshot) {
-  return CupertinoPageScaffold(
-      backgroundColor: Colors.transparent,
-      child: Column(
-        children: [
-          for (int i = 0; i < 10; i++)
-            Row(
-              children: [
-                for (int j = 0; j < 10; j++)
-                  SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.rectangle,
-                        color: snapshot.data?.level == false
-                            ? Colors.green
-                            : Colors.red,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-        ],
-      ));
-}
-
 Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
   developer.log(
       snapshot.data?.getElementsByClassName('css-1wnvjz2').length.toString() ??
@@ -381,9 +352,8 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
               EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.05),
           child: Html(
             data: snapshot.data!.body!
-                    .getElementsByClassName('css-5vptc8')[0]
-                    .innerHtml ??
-                '',
+                .getElementsByClassName('css-5vptc8')[0]
+                .innerHtml,
           ),
         ),
 
@@ -407,15 +377,13 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
                   ),
                   child: SvgPicture.asset(
                       snapshot.data!.body!
-                              .getElementsByClassName('css-1wnvjz2')[10 * i + j]
-                              .getElementsByTagName('img')
-                              .first
-                              .attributes['src']
-                              .toString()
-                              .replaceAll(
-                                  'https://static.solved.ac/tier_small/',
-                                  'lib/assets/tiers/') ??
-                          '',
+                          .getElementsByClassName('css-1wnvjz2')[10 * i + j]
+                          .getElementsByTagName('img')
+                          .first
+                          .attributes['src']
+                          .toString()
+                          .replaceAll('https://static.solved.ac/tier_small/',
+                              'lib/assets/tiers/'),
                       width: 20,
                       height: 20),
                 )
