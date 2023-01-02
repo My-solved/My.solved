@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:html/dom.dart' as dom;
+import 'package:my_solved/services/user_service.dart';
 
 import '../models/User.dart';
 
@@ -235,23 +236,38 @@ Widget rank(BuildContext context, AsyncSnapshot<User> snapshot) {
       ));
 }
 
+// 잔디 테마
+String zandiUrl(String handle) {
+  int zandiTheme = UserService().getZandiTheme();
+  String theme = '';
+  if (zandiTheme == 0) {
+    theme = 'warm';
+  } else if (zandiTheme == 1) {
+    theme = 'cold';
+  } else if (zandiTheme == 2) {
+    theme = 'dark';
+  }
+  return 'http://mazandi.herokuapp.com/api?handle=$handle&theme=$theme';
+}
+
 // 잔디
 Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
+  int zandiTheme = UserService().getZandiTheme();
   return Stack(
     children: [
       SvgPicture.asset(
-        'lib/assets/zandi.svg',
+        zandiTheme == 2 ? 'lib/assets/zandi_dark.svg' : 'lib/assets/zandi.svg',
         width: MediaQuery.of(context).size.width,
       ),
       SvgPicture.network(
-        'http://mazandi.herokuapp.com/api?handle=${snapshot.data?.handle}&theme=warm',
+        zandiUrl(snapshot.data?.handle ?? ''),
         width: MediaQuery.of(context).size.width,
       ),
       Positioned(
         left: MediaQuery.of(context).size.width * 0.8 * 0.07,
         bottom: MediaQuery.of(context).size.width * 0.4 * 0.91,
         child: Container(
-            color: Colors.white,
+            color: zandiTheme == 2 ? Color(0xFF3f3f3f) : Colors.white,
             width: MediaQuery.of(context).size.width * 0.82,
             height: MediaQuery.of(context).size.width * 0.4 * 0.15,
             child: Row(
@@ -260,7 +276,7 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
                   'lib/assets/icons/streak.svg',
                   width: MediaQuery.of(context).size.width * 0.4 * 0.10,
                   height: MediaQuery.of(context).size.width * 0.4 * 0.10,
-                  color: Colors.black54,
+                  color: zandiTheme == 2 ? Colors.white : Colors.black54,
                 ),
                 SizedBox(width: 5),
                 Text(
@@ -269,7 +285,7 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
                   style: TextStyle(
                     fontSize: MediaQuery.of(context).size.width * 0.4 * 0.10,
                     // fontWeight: FontWeight.bold,
-                    color: Colors.black54,
+                    color: zandiTheme == 2 ? Colors.white : Colors.black54,
                   ),
                 ),
                 Spacer(),
@@ -284,12 +300,13 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
 
 // 최대 연속 문제 해결일 수
 Widget maxStreak(BuildContext context, AsyncSnapshot<User> snapshot) {
+  int zandiTheme = UserService().getZandiTheme();
   return Text(
     '최장 ${snapshot.data?.maxStreak.toString()}일',
     style: TextStyle(
       fontSize: MediaQuery.of(context).size.width * 0.4 * 0.1,
       // fontWeight: FontWeight.bold,
-      color: Colors.black54,
+      color: zandiTheme == 2 ? Colors.white : Colors.black54,
     ),
   );
 }

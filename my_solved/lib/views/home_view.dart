@@ -14,8 +14,7 @@ class HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var viewModel = Provider.of<HomeViewModel>(context);
-    String userName = UserService().fetchUserName();
-    print(userName);
+    String userName = UserService().getUserName();
     viewModel.onInit(userName);
 
     return CupertinoPageScaffold(

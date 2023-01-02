@@ -1,8 +1,25 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import '../services/user_service.dart';
+
+const zandiTheme = ['warm', 'cold', 'dark'];
+
 class SettingView extends StatelessWidget {
   const SettingView({Key? key}) : super(key: key);
+
+  Color zandiColor(int theme) {
+    switch (theme) {
+      case 0:
+        return Color(0xFFfa8b5a);
+      case 1:
+        return Color(0xFF06CBE5);
+      case 2:
+        return Color(0xFF3f3f3f);
+      default:
+        return Color(0xff11ce3c);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +48,7 @@ class SettingView extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.only(top: 14, bottom: 14),
                     child: Text(
-                      '백준 ID',
+                      UserService().getUserName(),
                       style: TextStyle(
                         fontSize: 16,
                         //color: CupertinoTheme.of(context).textTheme.textStyle.color,
@@ -45,7 +62,7 @@ class SettingView extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.only(top: 14, bottom: 14),
                     child: Text(
-                      '스트릭 테마',
+                      '스트릭 테마 변경',
                       style: TextStyle(
                         fontSize: 16,
                         //color: CupertinoTheme.of(context).textTheme.textStyle.color,
@@ -54,14 +71,37 @@ class SettingView extends StatelessWidget {
                   ),
                   Spacer(),
                   Container(
-                    padding: EdgeInsets.only(top: 14, bottom: 14),
-                    child: Text(
-                      '스트릭 테마',
-                      style: TextStyle(
-                        fontSize: 16,
-                        //color: CupertinoTheme.of(context).textTheme.textStyle.color,
-                      ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      color: zandiColor(UserService().getZandiTheme()),
                     ),
+                    width: 100,
+                    child: CupertinoButton(
+                        padding: EdgeInsets.all(0),
+                        child: Text(zandiTheme[UserService().getZandiTheme()],
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: CupertinoColors.white,
+                            )),
+                        onPressed: () async {
+                          await showCupertinoModalPopup(
+                            context: context,
+                            builder: (context) => SizedBox(
+                                height: 250.0,
+                                child: CupertinoPicker(
+                                  itemExtent: 30.0,
+                                  scrollController: FixedExtentScrollController(
+                                      initialItem:
+                                          UserService().getZandiTheme()),
+                                  onSelectedItemChanged: (int index) {
+                                    UserService().setZandiTheme(index);
+                                  },
+                                  children: ['warm', 'cold', 'dark']
+                                      .map((e) => Text(e))
+                                      .toList(),
+                                )),
+                          );
+                        }),
                   ),
                 ],
               ),

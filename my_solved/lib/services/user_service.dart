@@ -9,12 +9,12 @@ class UserService extends ChangeNotifier {
   // 싱글톤으로 사용하기 위해, 인스턴스를 선언했습니다.
   static final UserService _instance = UserService._privateConstructor();
   String _name = '';
+  int _zandiTheme = 0;
   UserState state = UserState.loading;
 
   UserService._privateConstructor() {
-    Future<String> futureName = fetchName();
+    Future<String> futureName = fetchUserName();
     futureName.then((name) {
-      print(name);
       _name = name;
       if (_name == '') {
         state = UserState.unknown;
@@ -23,22 +23,44 @@ class UserService extends ChangeNotifier {
       }
       notifyListeners();
     });
+    print(_name);
+
+    Future<int> futureZandiTheme = fetchZandiTheme();
+    futureZandiTheme.then((zandiTheme) {
+      _zandiTheme = zandiTheme;
+      notifyListeners();
+    });
   }
 
   factory UserService() {
     return _instance;
   }
 
-  Future<String> fetchName() async {
+  Future<String> fetchUserName() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('username') ?? '';
+  }
+
+  Future<int> fetchZandiTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('zandi_theme') ?? 0;
   }
 
   void setUserName(String name) {
     _name = name;
   }
 
-  String fetchUserName() {
+  void setZandiTheme(int zandiTheme) async {
+    _zandiTheme = zandiTheme;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setInt('zandi_theme', zandiTheme);
+  }
+
+  String getUserName() {
     return _name;
+  }
+
+  int getZandiTheme() {
+    return _zandiTheme;
   }
 }
