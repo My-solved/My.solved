@@ -3,7 +3,7 @@ import 'package:html/dom.dart' as dom;
 
 import '../models/User.dart';
 import '../providers/solvedac/profile.dart';
-import '../providers/user/show_api.dart'as dom;
+import '../providers/user/show_api.dart';
 
 class HomeViewModel with ChangeNotifier {
   Future<User>? future;

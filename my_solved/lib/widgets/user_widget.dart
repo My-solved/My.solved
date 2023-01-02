@@ -1,5 +1,3 @@
-import 'dart:developer' as developer;
-
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -328,14 +326,16 @@ Widget badge(BuildContext context, AsyncSnapshot<User> snapshot) {
 }
 
 Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
-  developer.log(
-      snapshot.data?.getElementsByClassName('css-1wnvjz2').length.toString() ??
-          '',
-      name: 'top100');
-
-  int length = snapshot.data?.getElementsByClassName('css-1wnvjz2').length ?? 0;
-  if (100 < length) length = 100;
-  length = length - 9;
+  int idx = 0;
+  if (snapshot.data!.body!
+      .getElementsByClassName('css-1wnvjz2')[0]
+      .getElementsByTagName('img')
+      .first
+      .attributes['src']
+      .toString()
+      .contains('profile_badge')) {
+    idx = 1;
+  }
 
   return Container(
     width: MediaQuery.of(context).size.width,
@@ -357,64 +357,43 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
           ),
         ),
 
-        // 프로필 뱃지가 있을 때
-        if (snapshot.data!.body!
-            .getElementsByClassName('css-1wnvjz2')[0]
-            .getElementsByTagName('img')
-            .first
-            .attributes['src']
-            .toString()
-            .contains('profile_badge'))
-          for (var i = 0; i < length / 10; i++)
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              for (var j = 1;
-                  i == length / 10 - 1 ? j < length % 10 : j <= 10;
-                  j++)
-                Container(
-                  margin: EdgeInsets.only(
-                    right: MediaQuery.of(context).size.width * 0.03,
-                    top: MediaQuery.of(context).size.width * 0.03,
-                  ),
-                  child: SvgPicture.asset(
-                      snapshot.data!.body!
-                          .getElementsByClassName('css-1wnvjz2')[10 * i + j]
-                          .getElementsByTagName('img')
-                          .first
-                          .attributes['src']
-                          .toString()
-                          .replaceAll('https://static.solved.ac/tier_small/',
-                              'lib/assets/tiers/'),
-                      width: 20,
-                      height: 20),
-                )
-            ])
-        // 프로필 뱃지가 없을 때
-        else
-          for (var i = 0; i < length / 10; i++)
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-              for (var j = 0; i == (length / 10).floor() ? j < 4 : j <= 10; j++)
-                Container(
-                  margin: EdgeInsets.only(
-                    right: MediaQuery.of(context).size.width * 0.03,
-                    top: MediaQuery.of(context).size.width * 0.03,
-                  ),
-                  child: SvgPicture.asset(
-                      snapshot.data!.body!
-                          .getElementsByClassName('css-1wnvjz2')[10 * i + j]
-                          .getElementsByTagName('img')
-                          .first
-                          .attributes['src']
-                          .toString()
-                          .replaceAll('https://static.solved.ac/tier_small/',
-                              'lib/assets/tiers/'),
-                      width: 20,
-                      height: 20),
-                )
-            ]),
+        for (var i = 0; i < 10; i++)
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+            for (var j = 0; j < 10; j++) top100Box(idx + 10 * i + j, snapshot)
+          ]),
         SizedBox(height: 20),
       ],
     ),
   );
+}
+
+Widget top100Box(int idx, AsyncSnapshot<dom.Document> snapshot) {
+  try {
+    if (snapshot.data!.body!
+        .getElementsByClassName('css-1wnvjz2')[idx]
+        .getElementsByTagName('img')
+        .first
+        .attributes['src']
+        .toString()
+        .contains('https://static.solved.ac/tier_small/')) {
+      return Container(
+          margin: EdgeInsets.all(8),
+          child: SvgPicture.asset(
+              snapshot.data!.body!
+                  .getElementsByClassName('css-1wnvjz2')[idx]
+                  .getElementsByTagName('img')
+                  .first
+                  .attributes['src']
+                  .toString()
+                  .replaceAll('https://static.solved.ac/tier_small/',
+                      'lib/assets/tiers/'),
+              height: 20));
+    } else {
+      return SizedBox.shrink();
+    }
+  } catch (e) {
+    return SizedBox.shrink();
+  }
 }
 
 int levelColor(int level) {
