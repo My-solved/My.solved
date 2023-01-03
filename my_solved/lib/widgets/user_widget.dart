@@ -418,6 +418,26 @@ Widget top100Header(String rating, String tier, String rank, String percent,
     }
   }
 
+  Widget masterHandle(String rating, BuildContext context) {
+    return ShaderMask(
+      shaderCallback: (rect) {
+        return LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF7cf9ff), Color(0xFFb491ff), Color(0xFFff7ca8)],
+        ).createShader(Rect.fromLTRB(0, 0, rect.width, rect.height));
+      },
+      blendMode: BlendMode.srcATop,
+      child: Text(
+        'Master ${int.parse(rating)}',
+        style: TextStyle(
+          fontSize: MediaQuery.of(context).size.width * 0.4 * 0.14,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
   return Container(
     padding: EdgeInsets.only(
       left: MediaQuery.of(context).size.width * 0.4 * 0.15,
@@ -447,26 +467,32 @@ Widget top100Header(String rating, String tier, String rank, String percent,
                 ),
               ],
             ),
-            Row(
-              children: [
-                Text(tier,
-                    style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.width * 0.4 * 0.14,
-                      fontFamily: 'Pretendard-Medium',
-                      color: ratingColor(int.parse(rating)),
-                    )),
-                SizedBox(width: 5),
-                Text(
-                  rating,
-                  style: TextStyle(
-                    fontSize: MediaQuery.of(context).size.width * 0.4 * 0.14,
-                    fontFamily: 'Pretendard-Regular',
-                    fontWeight: FontWeight.bold,
-                    color: ratingColor(int.parse(rating)),
-                  ),
-                ),
-              ],
-            ),
+            int.parse(rating) < 3000
+                ? Row(
+                    children: [
+                      Text(tier,
+                          style: TextStyle(
+                            fontSize:
+                                MediaQuery.of(context).size.width * 0.4 * 0.14,
+                            fontFamily: 'Pretendard',
+                            color: ratingColor(int.parse(rating)),
+                          )),
+                      SizedBox(
+                        width: 5,
+                      ),
+                      Text(
+                        rating,
+                        style: TextStyle(
+                          fontSize:
+                              MediaQuery.of(context).size.width * 0.4 * 0.14,
+                          fontFamily: 'Pretendard-Regular',
+                          fontWeight: FontWeight.bold,
+                          color: ratingColor(int.parse(rating)),
+                        ),
+                      ),
+                    ],
+                  )
+                : masterHandle(rating, context),
           ],
         ),
         Spacer(),
