@@ -571,14 +571,16 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
         Wrap(
           direction: Axis.horizontal,
           alignment: WrapAlignment.start,
+          clipBehavior: Clip.none,
           children: [
             for (var i = 0; i < count; i++)
               ExtendedImage.network(
-                snapshot.data!.items[i]['badgeImageUrl'],
+                snapshot.data!.items[i]['badgeImageUrl']
+                    .toString()
+                    .replaceAll('profile_badge/', 'profile_badge/120x120/'),
                 width: MediaQuery.of(context).size.width * 0.13,
                 fit: BoxFit.cover,
                 cache: true,
-                shape: BoxShape.circle,
                 loadStateChanged: (ExtendedImageState state) {
                   switch (state.extendedImageLoadState) {
                     case LoadState.loading:
