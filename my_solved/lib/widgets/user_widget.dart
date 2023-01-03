@@ -151,7 +151,7 @@ Widget solvedCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           snapshot.data?.solvedCount.toString() ?? '',
           style: TextStyle(
             color: Colors.black,
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -159,7 +159,7 @@ Widget solvedCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           '해결',
           style: TextStyle(
             color: Colors.grey,
-            fontSize: 14,
+            fontSize: 13,
           ),
         ),
       ],
@@ -178,7 +178,7 @@ Widget voteCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           snapshot.data?.voteCount.toString() ?? '',
           style: TextStyle(
             color: Colors.black,
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -186,7 +186,7 @@ Widget voteCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           '기여',
           style: TextStyle(
             color: Colors.grey,
-            fontSize: 14,
+            fontSize: 13,
           ),
         ),
       ],
@@ -205,7 +205,7 @@ Widget reverseRivalCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           snapshot.data?.reverseRivalCount.toString() ?? '',
           style: TextStyle(
             color: Colors.black,
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -213,7 +213,7 @@ Widget reverseRivalCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           '라이벌',
           style: TextStyle(
             color: Colors.grey,
-            fontSize: 14,
+            fontSize: 13,
           ),
         ),
       ],
@@ -405,7 +405,6 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
 Widget top100Header(String rating, String tier, String rank, String percent,
     BuildContext context) {
   int rankNum = int.parse(rank.replaceAll(',', '').split('#')[1]);
-  print(rankNum);
 
   Color rankBoxColor(int rankNum) {
     if (rankNum == 1) {

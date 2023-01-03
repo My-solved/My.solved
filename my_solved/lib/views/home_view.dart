@@ -137,7 +137,7 @@ extension HomeViewExtension on HomeView {
                   child: Row(
                     children: [
                       tiers(context, snapshot),
-                      SizedBox(width: MediaQuery.of(context).size.width * 0.12),
+                      SizedBox(width: MediaQuery.of(context).size.width * 0.13),
                       solvedCount(context, snapshot),
                       voteCount(context, snapshot),
                       reverseRivalCount(context, snapshot),
