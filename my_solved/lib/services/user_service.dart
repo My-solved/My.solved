@@ -23,7 +23,6 @@ class UserService extends ChangeNotifier {
       }
       notifyListeners();
     });
-    print(_name);
 
     Future<int> futureZandiTheme = fetchZandiTheme();
     futureZandiTheme.then((zandiTheme) {

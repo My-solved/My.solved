@@ -3,6 +3,7 @@ import 'package:html/dom.dart' as dom;
 import 'package:provider/provider.dart';
 
 import '../models/User.dart';
+import '../models/user/Badges.dart';
 import '../view_models/profile_detail_view_model.dart';
 import '../widgets/user_widget.dart';
 
@@ -67,6 +68,27 @@ class ProfileDetailView extends StatelessWidget {
                                     }
                                     return CupertinoActivityIndicator();
                                   },
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                FutureBuilder<Badges>(
+                                  future: viewModel.futureBadges,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasData) {
+                                      return badges(context, snapshot);
+                                    } else if (snapshot.hasError) {
+                                      return Text(
+                                          "home_view.dart: ${snapshot.error}",
+                                          style: TextStyle(
+                                              color: CupertinoColors
+                                                  .destructiveRed));
+                                    }
+                                    return CupertinoActivityIndicator();
+                                  },
+                                ),
+                                SizedBox(
+                                  height: 10,
                                 ),
                               ],
                             ),

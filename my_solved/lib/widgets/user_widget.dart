@@ -1,12 +1,12 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:html/dom.dart' as dom;
 import 'package:my_solved/services/user_service.dart';
 
 import '../models/User.dart';
+import '../models/user/Badges.dart';
 
 Widget backgroundImage(BuildContext context, AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
@@ -357,10 +357,30 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
     idx = 1;
   }
 
-  int rating = int.parse(snapshot.data!.body!
+  // 레이팅
+  String rating = snapshot.data!.body!
       .getElementsByClassName('css-5vptc8')[0]
       .getElementsByTagName('span')[1]
-      .text);
+      .text;
+
+  // 티어
+  String tier = snapshot.data!.body!
+      .getElementsByClassName('css-5vptc8')[0]
+      .getElementsByTagName('span')[0]
+      .innerHtml
+      .toString();
+
+  // 등수
+  String rank = snapshot.data!.body!
+      .getElementsByClassName('css-1nvk81z')[0]
+      .getElementsByTagName('b')[0]
+      .text;
+
+  // 전체 백분율
+  String percent = snapshot.data!.body!
+      .getElementsByClassName('css-1nvk81z')[0]
+      .getElementsByTagName('small')[0]
+      .text;
 
   return Container(
     width: MediaQuery.of(context).size.width,
@@ -371,30 +391,98 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
     child: Column(
       children: [
         SizedBox(height: 10),
-
-        // AC RATING
-        Padding(
-          padding:
-              EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.04),
-          child: Html(
-            data: snapshot.data!.body!
-                .getElementsByClassName('css-5vptc8')[0]
-                .innerHtml,
-            style: {
-              'span': Style(
-                color: ratingColor(rating),
-                backgroundColor: Colors.transparent,
-              ),
-            },
-          ),
-        ),
-
+        top100Header(rating, tier, rank, percent, context),
+        SizedBox(height: 10),
         for (var i = 0; i < 10; i++)
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             for (var j = 0; j < 10; j++)
               top100Box(idx + 10 * i + j, context, snapshot),
           ]),
         SizedBox(height: 20),
+      ],
+    ),
+  );
+}
+
+Widget top100Header(String rating, String tier, String rank, String percent,
+    BuildContext context) {
+  return Container(
+    padding: EdgeInsets.only(
+      left: MediaQuery.of(context).size.width * 0.4 * 0.15,
+      top: MediaQuery.of(context).size.width * 0.4 * 0.05,
+      right: MediaQuery.of(context).size.width * 0.4 * 0.15,
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                SvgPicture.asset('lib/assets/icons/rating.svg',
+                    color: Colors.black54,
+                    width: MediaQuery.of(context).size.width * 0.4 * 0.1),
+                SizedBox(
+                  width: 5,
+                ),
+                Text(
+                  '레이팅',
+                  style: TextStyle(
+                    fontSize: MediaQuery.of(context).size.width * 0.4 * 0.1,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                Text(tier,
+                    style: TextStyle(
+                      fontSize: MediaQuery.of(context).size.width * 0.4 * 0.14,
+                      fontFamily: 'Pretendard-Medium',
+                      color: ratingColor(int.parse(rating)),
+                    )),
+                SizedBox(width: 5),
+                Text(
+                  rating,
+                  style: TextStyle(
+                    fontSize: MediaQuery.of(context).size.width * 0.4 * 0.14,
+                    fontFamily: 'Pretendard-Regular',
+                    fontWeight: FontWeight.bold,
+                    color: ratingColor(int.parse(rating)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        Spacer(),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(100),
+            color: Colors.black12,
+          ),
+          padding: EdgeInsets.only(left: 20, right: 20, top: 5, bottom: 5),
+          child: Column(children: [
+            Text(
+              rank,
+              style: TextStyle(
+                fontSize: MediaQuery.of(context).size.width * 0.4 * 0.11,
+                fontFamily: 'Pretendard-Bold',
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+            Text(
+              percent,
+              style: TextStyle(
+                fontSize: MediaQuery.of(context).size.width * 0.4 * 0.08,
+                color: Colors.black,
+              ),
+            ),
+          ]),
+        )
       ],
     ),
   );
@@ -411,7 +499,9 @@ Widget top100Box(
         .toString()
         .contains('https://static.solved.ac/tier_small/')) {
       return Container(
-          margin: EdgeInsets.all(MediaQuery.of(context).size.width * 0.02),
+          margin: EdgeInsets.all(
+            MediaQuery.of(context).size.width * 0.02,
+          ),
           child: SvgPicture.asset(
               snapshot.data!.body!
                   .getElementsByClassName('css-1wnvjz2')[idx]
@@ -428,6 +518,86 @@ Widget top100Box(
   } catch (e) {
     return SizedBox.shrink();
   }
+}
+
+Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
+  int count = snapshot.data!.count;
+
+  return Container(
+      width: MediaQuery.of(context).size.width,
+      padding: EdgeInsets.only(
+        left: MediaQuery.of(context).size.width * 0.05,
+        right: MediaQuery.of(context).size.width * 0.05,
+      ),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey, width: 0.5),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        SizedBox(height: 10),
+        Row(
+          children: [
+            SvgPicture.asset('lib/assets/icons/badge.svg',
+                color: Colors.black54,
+                width: MediaQuery.of(context).size.width * 0.05),
+            SizedBox(width: 5),
+            Text(
+              '뱃지',
+              style: TextStyle(
+                fontSize: MediaQuery.of(context).size.width * 0.04,
+                color: Colors.black54,
+              ),
+            ),
+          ],
+        ),
+        RichText(
+            text: TextSpan(children: [
+          TextSpan(
+              text: count.toString(),
+              style: TextStyle(
+                fontSize: MediaQuery.of(context).size.width * 0.05,
+                fontFamily: 'Pretendard-Bold',
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              )),
+          TextSpan(
+              text: '개',
+              style: TextStyle(
+                fontSize: MediaQuery.of(context).size.width * 0.05,
+                fontFamily: 'Pretendard-Regular',
+                color: Colors.black,
+              )),
+        ])),
+        Wrap(
+          direction: Axis.horizontal,
+          alignment: WrapAlignment.start,
+          children: [
+            for (var i = 0; i < count; i++)
+              ExtendedImage.network(
+                snapshot.data!.items[i]['badgeImageUrl'],
+                width: MediaQuery.of(context).size.width * 0.13,
+                fit: BoxFit.cover,
+                cache: true,
+                shape: BoxShape.circle,
+                loadStateChanged: (ExtendedImageState state) {
+                  switch (state.extendedImageLoadState) {
+                    case LoadState.loading:
+                      return Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    case LoadState.completed:
+                      return null;
+                    case LoadState.failed:
+                      return Center(
+                        child: Icon(Icons.error),
+                      );
+                  }
+                },
+              ),
+          ],
+        ),
+        SizedBox(height: 10),
+      ]));
 }
 
 Color levelColor(int level) {
@@ -458,7 +628,7 @@ Color levelColor(int level) {
 }
 
 Color ratingColor(int rating) {
-  if (rating < 31) {
+  if (rating < 30) {
     return Color(0xFF2D2D2D);
   } else if (rating < 200) {
     // bronze

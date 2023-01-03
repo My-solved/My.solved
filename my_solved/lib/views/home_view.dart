@@ -6,6 +6,7 @@ import 'package:my_solved/view_models/home_view_model.dart';
 import 'package:provider/provider.dart';
 
 import '../models/User.dart';
+import '../models/user/Badges.dart';
 import '../widgets/user_widget.dart';
 
 class HomeView extends StatelessWidget {
@@ -79,6 +80,27 @@ class HomeView extends StatelessWidget {
                                     }
                                     return CupertinoActivityIndicator();
                                   },
+                                ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                FutureBuilder<Badges>(
+                                  future: viewModel.futureBadges,
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasData) {
+                                      return badges(context, snapshot);
+                                    } else if (snapshot.hasError) {
+                                      return Text(
+                                          "home_view.dart: ${snapshot.error}",
+                                          style: TextStyle(
+                                              color: CupertinoColors
+                                                  .destructiveRed));
+                                    }
+                                    return CupertinoActivityIndicator();
+                                  },
+                                ),
+                                SizedBox(
+                                  height: 10,
                                 ),
                               ],
                             ),
