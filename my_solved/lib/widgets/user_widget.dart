@@ -328,7 +328,8 @@ Widget badge(BuildContext context, AsyncSnapshot<User> snapshot) {
   return snapshot.data?.badge == null
       ? SizedBox()
       : ExtendedImage.network(
-          snapshot.data?.badge['badgeImageUrl'],
+          snapshot.data?.badge['badgeImageUrl']
+              .replaceAll('profile_badge/', 'profile_badge/120x120/'),
           width: 50,
           height: 50,
           cache: true,
