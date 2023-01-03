@@ -142,86 +142,83 @@ Widget rating(BuildContext context, AsyncSnapshot<User> snapshot) {
 
 // 푼 문제 수
 Widget solvedCount(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return CupertinoPageScaffold(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        alignment: Alignment.centerLeft,
-        child: Column(
-          children: [
-            Text(
-              snapshot.data?.solvedCount.toString() ?? '',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              '해결',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
-              ),
-            ),
-          ],
+  return Container(
+    width: MediaQuery.of(context).size.width / 5,
+    clipBehavior: Clip.none,
+    child: Column(
+      children: [
+        Text(
+          snapshot.data?.solvedCount.toString() ?? '',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-      ));
+        Text(
+          '해결',
+          style: TextStyle(
+            color: Colors.grey,
+            fontSize: 14,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // 기여 수
 Widget voteCount(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return CupertinoPageScaffold(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        alignment: Alignment.centerLeft,
-        child: Column(
-          children: [
-            Text(
-              snapshot.data?.voteCount.toString() ?? '',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              '기여',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
-              ),
-            ),
-          ],
+  return Container(
+    width: MediaQuery.of(context).size.width / 5,
+    clipBehavior: Clip.none,
+    child: Column(
+      children: [
+        Text(
+          snapshot.data?.voteCount.toString() ?? '',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-      ));
+        Text(
+          '기여',
+          style: TextStyle(
+            color: Colors.grey,
+            fontSize: 14,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // 라이벌 수
 Widget reverseRivalCount(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return CupertinoPageScaffold(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        alignment: Alignment.centerLeft,
-        child: Column(
-          children: [
-            Text(
-              snapshot.data?.reverseRivalCount.toString() ?? '',
-              style: TextStyle(
-                color: Colors.black,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              '라이벌',
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
-              ),
-            ),
-          ],
+  return Container(
+    width: MediaQuery.of(context).size.width / 5,
+    clipBehavior: Clip.none,
+    child: Column(
+      children: [
+        Text(
+          snapshot.data?.reverseRivalCount.toString() ?? '',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-      ));
+        Text(
+          '라이벌',
+          style: TextStyle(
+            color: Colors.grey,
+            fontSize: 14,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 // 랭크
@@ -407,6 +404,21 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
 
 Widget top100Header(String rating, String tier, String rank, String percent,
     BuildContext context) {
+  int rankNum = int.parse(rank.replaceAll(',', '').split('#')[1]);
+  print(rankNum);
+
+  Color rankBoxColor(int rankNum) {
+    if (rankNum == 1) {
+      return Color(0xFFFFB028);
+    } else if (rankNum < 11) {
+      return Color(0xFF435F7A);
+    } else if (rankNum < 101) {
+      return Color(0xFFAD5600);
+    } else {
+      return Color(0xFFDDDFE0);
+    }
+  }
+
   return Container(
     padding: EdgeInsets.only(
       left: MediaQuery.of(context).size.width * 0.4 * 0.15,
@@ -462,7 +474,7 @@ Widget top100Header(String rating, String tier, String rank, String percent,
         Container(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(100),
-            color: Colors.black12,
+            color: rankBoxColor(rankNum),
           ),
           padding: EdgeInsets.only(left: 20, right: 20, top: 5, bottom: 5),
           child: Column(children: [
@@ -472,14 +484,16 @@ Widget top100Header(String rating, String tier, String rank, String percent,
                 fontSize: MediaQuery.of(context).size.width * 0.4 * 0.11,
                 fontFamily: 'Pretendard-Bold',
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
+                color:
+                    rankNum == 1 || 100 < rankNum ? Colors.black : Colors.white,
               ),
             ),
             Text(
               percent,
               style: TextStyle(
                 fontSize: MediaQuery.of(context).size.width * 0.4 * 0.08,
-                color: Colors.black,
+                color:
+                    rankNum == 1 || 100 < rankNum ? Colors.black : Colors.white,
               ),
             ),
           ]),

@@ -125,11 +125,9 @@ extension ProfileDetailViewExtension on ProfileDetailView {
                   child: Row(
                     children: [
                       tiers(context, snapshot),
-                      SizedBox(width: MediaQuery.of(context).size.width * 0.2),
+                      SizedBox(width: MediaQuery.of(context).size.width * 0.12),
                       solvedCount(context, snapshot),
-                      SizedBox(width: MediaQuery.of(context).size.width * 0.1),
                       voteCount(context, snapshot),
-                      SizedBox(width: MediaQuery.of(context).size.width * 0.1),
                       reverseRivalCount(context, snapshot),
                       SizedBox(width: MediaQuery.of(context).size.width * 0.1),
                     ],
