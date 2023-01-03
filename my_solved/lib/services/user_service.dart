@@ -46,8 +46,10 @@ class UserService extends ChangeNotifier {
     return prefs.getInt('zandi_theme') ?? 0;
   }
 
-  void setUserName(String name) {
+  void setUserName(String name) async {
     _name = name;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('username', name);
   }
 
   void setZandiTheme(int zandiTheme) async {
