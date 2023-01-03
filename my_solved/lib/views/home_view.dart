@@ -14,6 +14,7 @@ class HomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var viewModel = Provider.of<HomeViewModel>(context);
+    UserService().setUserName('jhnah917');
     String userName = UserService().getUserName();
     viewModel.onInit(userName);
 
