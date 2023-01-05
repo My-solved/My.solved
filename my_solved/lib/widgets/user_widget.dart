@@ -7,6 +7,8 @@ import 'package:my_solved/services/user_service.dart';
 
 import '../models/User.dart';
 import '../models/user/Badges.dart';
+import '../models/user/Grass.dart';
+import '../widgets/ImageShadow.dart';
 
 Widget backgroundImage(BuildContext context, AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
@@ -52,6 +54,9 @@ Widget handle(BuildContext context, AsyncSnapshot<User> snapshot) {
           fontSize: 30,
           fontWeight: FontWeight.bold,
         ),
+      ),
+      SizedBox(
+        height: 5,
       ),
       bio(context, snapshot),
     ],
@@ -103,8 +108,17 @@ Widget bio(BuildContext context, AsyncSnapshot<User> snapshot) {
 
 // 클래스
 Widget classes(BuildContext context, AsyncSnapshot<User> snapshot) {
+  String userClass = snapshot.data?.userClass.toString() ?? '';
+  if (snapshot.data?.classDecoration == "silver") {
+    userClass += 's';
+  } else if (snapshot.data?.classDecoration == "gold") {
+    userClass += 'g';
+  }
+  print('user $userClass');
+  print('user ${snapshot.data?.classDecoration}');
+
   return SvgPicture.asset(
-    'lib/assets/classes/c${snapshot.data?.userClass}.svg',
+    'lib/assets/classes/c$userClass.svg',
     width: 50,
     height: 50,
   );
@@ -308,6 +322,19 @@ Widget maxStreak(BuildContext context, AsyncSnapshot<User> snapshot) {
   );
 }
 
+// 현재 연속 문제 해결일 수
+Widget currentStreak(BuildContext context, AsyncSnapshot<Grass> snapshot) {
+  int zandiTheme = UserService().getZandiTheme();
+  return Text(
+    '현재 ${snapshot.data?.currentStreak}일',
+    style: TextStyle(
+      fontSize: MediaQuery.of(context).size.width * 0.4 * 0.1,
+      // fontWeight: FontWeight.bold,
+      color: zandiTheme == 2 ? Colors.white : Colors.black54,
+    ),
+  );
+}
+
 // 경험치
 Widget exp(BuildContext context, AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
@@ -324,23 +351,25 @@ Widget exp(BuildContext context, AsyncSnapshot<User> snapshot) {
 Widget badge(BuildContext context, AsyncSnapshot<User> snapshot) {
   return snapshot.data?.badge == null
       ? SizedBox()
-      : ExtendedImage.network(
-          snapshot.data?.badge['badgeImageUrl']
-              .replaceAll('profile_badge/', 'profile_badge/120x120/'),
-          width: 50,
-          height: 50,
-          cache: true,
-          loadStateChanged: (ExtendedImageState state) {
-            switch (state.extendedImageLoadState) {
-              case LoadState.loading:
-                return CupertinoActivityIndicator();
-              case LoadState.completed:
-                return null;
-              case LoadState.failed:
-                return Icon(Icons.error);
-            }
-          },
-        );
+      : ImageShadow(
+          opacity: 0.2,
+          child: ExtendedImage.network(
+            snapshot.data?.badge['badgeImageUrl']
+                .replaceAll('profile_badge/', 'profile_badge/120x120/'),
+            width: 50,
+            height: 50,
+            cache: true,
+            loadStateChanged: (ExtendedImageState state) {
+              switch (state.extendedImageLoadState) {
+                case LoadState.loading:
+                  return CupertinoActivityIndicator();
+                case LoadState.completed:
+                  return null;
+                case LoadState.failed:
+                  return Icon(Icons.error);
+              }
+            },
+          ));
 }
 
 Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
@@ -466,6 +495,9 @@ Widget top100Header(String rating, String tier, String rank, String percent,
                   ),
                 ),
               ],
+            ),
+            SizedBox(
+              height: 5,
             ),
             int.parse(rating) < 3000
                 ? Row(
@@ -608,34 +640,37 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
                 color: Colors.black,
               )),
         ])),
+        SizedBox(height: 5),
         Wrap(
           direction: Axis.horizontal,
           alignment: WrapAlignment.start,
           clipBehavior: Clip.none,
           children: [
             for (var i = 0; i < count; i++)
-              ExtendedImage.network(
-                snapshot.data!.items[i]['badgeImageUrl']
-                    .toString()
-                    .replaceAll('profile_badge/', 'profile_badge/120x120/'),
-                width: MediaQuery.of(context).size.width * 0.13,
-                fit: BoxFit.cover,
-                cache: true,
-                loadStateChanged: (ExtendedImageState state) {
-                  switch (state.extendedImageLoadState) {
-                    case LoadState.loading:
-                      return Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    case LoadState.completed:
-                      return null;
-                    case LoadState.failed:
-                      return Center(
-                        child: Icon(Icons.error),
-                      );
-                  }
-                },
-              ),
+              ImageShadow(
+                  opacity: 0.2,
+                  child: ExtendedImage.network(
+                    snapshot.data!.items[i]['badgeImageUrl']
+                        .toString()
+                        .replaceAll('profile_badge/', 'profile_badge/120x120/'),
+                    width: MediaQuery.of(context).size.width * 0.13,
+                    fit: BoxFit.cover,
+                    cache: true,
+                    loadStateChanged: (ExtendedImageState state) {
+                      switch (state.extendedImageLoadState) {
+                        case LoadState.loading:
+                          return Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        case LoadState.completed:
+                          return null;
+                        case LoadState.failed:
+                          return Center(
+                            child: Icon(Icons.error),
+                          );
+                      }
+                    },
+                  )),
           ],
         ),
         SizedBox(height: 10),

@@ -54,6 +54,7 @@ class ProfileDetailView extends StatelessWidget {
                                     )
                                   ],
                                 ),
+                                SizedBox(height: 5),
                                 zandi(context, snapshot),
                                 FutureBuilder<dom.Document>(
                                   future: viewModel.futureTop,

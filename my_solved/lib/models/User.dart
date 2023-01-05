@@ -8,7 +8,7 @@ class User {
   final int solvedCount;
   final int voteCount;
   final int userClass;
-  final String? classDecorations;
+  final String? classDecoration;
   final int tier;
   final int rating;
   final int ratingByProblemsSum;
@@ -32,7 +32,7 @@ class User {
     required this.solvedCount,
     required this.voteCount,
     required this.userClass,
-    required this.classDecorations,
+    required this.classDecoration,
     required this.tier,
     required this.rating,
     required this.ratingByProblemsSum,
@@ -58,7 +58,7 @@ class User {
       solvedCount: json['solvedCount'],
       voteCount: json['voteCount'],
       userClass: json['class'],
-      classDecorations: json['classDecorations'],
+      classDecoration: json['classDecoration'],
       tier: json['tier'],
       rating: json['rating'],
       ratingByProblemsSum: json['ratingByProblemsSum'],
