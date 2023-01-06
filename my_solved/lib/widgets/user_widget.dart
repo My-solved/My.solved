@@ -287,7 +287,7 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
                   'lib/assets/icons/streak.svg',
                   width: MediaQuery.of(context).size.width * 0.4 * 0.10,
                   height: MediaQuery.of(context).size.width * 0.4 * 0.10,
-                  color: zandiTheme == 2 ? Colors.white : Colors.black54,
+                  color: zandiTheme == 2 ? Colors.white : Color(0xff8a8f95),
                 ),
                 SizedBox(width: 5),
                 Text(
@@ -296,7 +296,7 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
                   style: TextStyle(
                     fontSize: MediaQuery.of(context).size.width * 0.4 * 0.10,
                     // fontWeight: FontWeight.bold,
-                    color: zandiTheme == 2 ? Colors.white : Colors.black54,
+                    color: zandiTheme == 2 ? Colors.white : Color(0xff8a8f95),
                   ),
                 ),
                 Spacer(),
@@ -317,7 +317,7 @@ Widget maxStreak(BuildContext context, AsyncSnapshot<User> snapshot) {
     style: TextStyle(
       fontSize: MediaQuery.of(context).size.width * 0.4 * 0.1,
       // fontWeight: FontWeight.bold,
-      color: zandiTheme == 2 ? Colors.white : Colors.black54,
+      color: zandiTheme == 2 ? Colors.white : Color(0xff8a8f95),
     ),
   );
 }
@@ -330,7 +330,7 @@ Widget currentStreak(BuildContext context, AsyncSnapshot<Grass> snapshot) {
     style: TextStyle(
       fontSize: MediaQuery.of(context).size.width * 0.4 * 0.1,
       // fontWeight: FontWeight.bold,
-      color: zandiTheme == 2 ? Colors.white : Colors.black54,
+      color: zandiTheme == 2 ? Colors.white : Color(0xff8a8f95),
     ),
   );
 }
@@ -460,7 +460,7 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
               Row(
                 children: [
                   SvgPicture.asset('lib/assets/icons/rating.svg',
-                      color: Colors.black54,
+                      color: Color(0xff8a8f95),
                       width: MediaQuery.of(context).size.width * 0.4 * 0.1),
                   SizedBox(
                     width: 5,
@@ -469,7 +469,7 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
                     '레이팅',
                     style: TextStyle(
                       fontSize: MediaQuery.of(context).size.width * 0.4 * 0.1,
-                      color: Colors.black54,
+                      color: Color(0xff8a8f95),
                     ),
                   ),
                 ],
@@ -695,7 +695,7 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
               children: [
                 SvgPicture.asset('lib/assets/icons/badge.svg',
                     width: MediaQuery.of(context).size.width * 0.4 * 0.1,
-                    color: Colors.black54),
+                    color: Color(0xff8a8f95)),
                 SizedBox(
                   width: 2,
                 ),
@@ -704,7 +704,7 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
                   style: TextStyle(
                     fontSize: MediaQuery.of(context).size.width * 0.4 * 0.09,
                     fontFamily: 'Pretendard-Regular',
-                    color: Colors.black54,
+                    color: Color(0xff8a8f95),
                   ),
                 )
               ],
@@ -734,7 +734,7 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
               children: [
                 SvgPicture.asset('lib/assets/icons/badge.svg',
                     width: MediaQuery.of(context).size.width * 0.4 * 0.1,
-                    color: Colors.black54),
+                    color: Color(0xff8a8f95)),
                 SizedBox(
                   width: 2,
                 ),
@@ -743,7 +743,7 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
                   style: TextStyle(
                     fontSize: MediaQuery.of(context).size.width * 0.4 * 0.09,
                     fontFamily: 'Pretendard-Regular',
-                    color: Colors.black54,
+                    color: Color(0xff8a8f95),
                   ),
                 )
               ],
@@ -772,7 +772,7 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
               children: [
                 SvgPicture.asset('lib/assets/icons/badge.svg',
                     width: MediaQuery.of(context).size.width * 0.4 * 0.1,
-                    color: Colors.black54),
+                    color: Color(0xff8a8f95)),
                 SizedBox(
                   width: 2,
                 ),
@@ -781,7 +781,7 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
                   style: TextStyle(
                     fontSize: MediaQuery.of(context).size.width * 0.4 * 0.09,
                     fontFamily: 'Pretendard-Regular',
-                    color: Colors.black54,
+                    color: Color(0xff8a8f95),
                   ),
                 )
               ],
@@ -832,14 +832,14 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
         Row(
           children: [
             SvgPicture.asset('lib/assets/icons/badge.svg',
-                color: Colors.black54,
+                color: Color(0xff8a8f95),
                 width: MediaQuery.of(context).size.width * 0.05),
             SizedBox(width: 5),
             Text(
               '뱃지',
               style: TextStyle(
                 fontSize: MediaQuery.of(context).size.width * 0.04,
-                color: Colors.black54,
+                color: Color(0xff8a8f95),
               ),
             ),
           ],
