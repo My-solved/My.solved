@@ -719,7 +719,7 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
   }
 
   Widget badgeEvents(BuildContext context, AsyncSnapshot<Badges> snapshot) {
-    if (achievements.isEmpty) {
+    if (events.isEmpty) {
       return SizedBox.shrink();
     }
     return Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
@@ -758,7 +758,7 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
   }
 
   Widget badgeContests(BuildContext context, AsyncSnapshot<Badges> snapshot) {
-    if (achievements.isEmpty) {
+    if (contests.isEmpty) {
       return SizedBox.shrink();
     }
     return Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
