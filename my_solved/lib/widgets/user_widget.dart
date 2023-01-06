@@ -409,6 +409,167 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
       .getElementsByTagName('small')[0]
       .text;
 
+  Widget top100Header(String rating, String tier, String rank, String percent,
+      BuildContext context) {
+    int rankNum = int.parse(rank.replaceAll(',', '').split('#')[1]);
+
+    Color rankBoxColor(int rankNum) {
+      if (rankNum == 1) {
+        return Color(0xFFFFB028);
+      } else if (rankNum < 11) {
+        return Color(0xFF435F7A);
+      } else if (rankNum < 101) {
+        return Color(0xFFAD5600);
+      } else {
+        return Color(0xFFDDDFE0);
+      }
+    }
+
+    Widget masterHandle(String rating, BuildContext context) {
+      return ShaderMask(
+        shaderCallback: (rect) {
+          return LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF7cf9ff), Color(0xFFb491ff), Color(0xFFff7ca8)],
+          ).createShader(Rect.fromLTRB(0, 0, rect.width, rect.height));
+        },
+        blendMode: BlendMode.srcATop,
+        child: Text(
+          'Master ${int.parse(rating)}',
+          style: TextStyle(
+            fontSize: MediaQuery.of(context).size.width * 0.4 * 0.14,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      padding: EdgeInsets.only(
+        left: MediaQuery.of(context).size.width * 0.4 * 0.15,
+        top: MediaQuery.of(context).size.width * 0.4 * 0.05,
+        right: MediaQuery.of(context).size.width * 0.4 * 0.15,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  SvgPicture.asset('lib/assets/icons/rating.svg',
+                      color: Colors.black54,
+                      width: MediaQuery.of(context).size.width * 0.4 * 0.1),
+                  SizedBox(
+                    width: 5,
+                  ),
+                  Text(
+                    '레이팅',
+                    style: TextStyle(
+                      fontSize: MediaQuery.of(context).size.width * 0.4 * 0.1,
+                      color: Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
+              int.parse(rating) < 3000
+                  ? Row(
+                      children: [
+                        Text(tier,
+                            style: TextStyle(
+                              fontSize: MediaQuery.of(context).size.width *
+                                  0.4 *
+                                  0.14,
+                              fontFamily: 'Pretendard',
+                              color: ratingColor(int.parse(rating)),
+                            )),
+                        SizedBox(
+                          width: 5,
+                        ),
+                        Text(
+                          rating,
+                          style: TextStyle(
+                            fontSize:
+                                MediaQuery.of(context).size.width * 0.4 * 0.14,
+                            fontFamily: 'Pretendard',
+                            fontWeight: FontWeight.bold,
+                            color: ratingColor(int.parse(rating)),
+                          ),
+                        ),
+                      ],
+                    )
+                  : masterHandle(rating, context),
+            ],
+          ),
+          Spacer(),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(100),
+              color: rankBoxColor(rankNum),
+            ),
+            padding: EdgeInsets.only(left: 20, right: 20, top: 5, bottom: 5),
+            child: Column(children: [
+              Text(
+                rank,
+                style: TextStyle(
+                  fontSize: MediaQuery.of(context).size.width * 0.4 * 0.11,
+                  fontFamily: 'Pretendard-Bold',
+                  fontWeight: FontWeight.bold,
+                  color: rankNum == 1 || 100 < rankNum
+                      ? Colors.black
+                      : Colors.white,
+                ),
+              ),
+              Text(
+                percent,
+                style: TextStyle(
+                  fontSize: MediaQuery.of(context).size.width * 0.4 * 0.08,
+                  color: rankNum == 1 || 100 < rankNum
+                      ? Colors.black
+                      : Colors.white,
+                ),
+              ),
+            ]),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget top100Box(
+      int idx, BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
+    try {
+      if (snapshot.data!.body!
+          .getElementsByClassName('css-1wnvjz2')[idx]
+          .getElementsByTagName('img')
+          .first
+          .attributes['src']
+          .toString()
+          .contains('https://static.solved.ac/tier_small/')) {
+        return Container(
+            margin: EdgeInsets.all(
+              MediaQuery.of(context).size.width * 0.02,
+            ),
+            child: SvgPicture.asset(
+                snapshot.data!.body!
+                    .getElementsByClassName('css-1wnvjz2')[idx]
+                    .getElementsByTagName('img')
+                    .first
+                    .attributes['src']
+                    .toString()
+                    .replaceAll('https://static.solved.ac/tier_small/',
+                        'lib/assets/tiers/'),
+                width: MediaQuery.of(context).size.width * 0.041));
+      } else {
+        return SizedBox.shrink();
+      }
+    } catch (e) {
+      return SizedBox.shrink();
+    }
+  }
+
   return Container(
     width: MediaQuery.of(context).size.width,
     decoration: BoxDecoration(
@@ -431,166 +592,230 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
   );
 }
 
-Widget top100Header(String rating, String tier, String rank, String percent,
-    BuildContext context) {
-  int rankNum = int.parse(rank.replaceAll(',', '').split('#')[1]);
+Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
+  int count = snapshot.data!.count;
 
-  Color rankBoxColor(int rankNum) {
-    if (rankNum == 1) {
-      return Color(0xFFFFB028);
-    } else if (rankNum < 11) {
-      return Color(0xFF435F7A);
-    } else if (rankNum < 101) {
-      return Color(0xFFAD5600);
-    } else {
-      return Color(0xFFDDDFE0);
+  List<dynamic> achievements = [];
+  List<dynamic> events = [];
+  List<dynamic> contests = [];
+
+  for (int i = 0; i < count; i++) {
+    if (snapshot.data!.items[i]['badgeCategory'] == 'achievement') {
+      achievements.add(snapshot.data!.items[i]);
+    } else if (snapshot.data!.items[i]['badgeCategory'] == 'event') {
+      events.add(snapshot.data!.items[i]);
+    } else if (snapshot.data!.items[i]['badgeCategory'] == 'contest') {
+      contests.add(snapshot.data!.items[i]);
     }
   }
 
-  Widget masterHandle(String rating, BuildContext context) {
-    return ShaderMask(
-      shaderCallback: (rect) {
-        return LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF7cf9ff), Color(0xFFb491ff), Color(0xFFff7ca8)],
-        ).createShader(Rect.fromLTRB(0, 0, rect.width, rect.height));
-      },
-      blendMode: BlendMode.srcATop,
-      child: Text(
-        'Master ${int.parse(rating)}',
-        style: TextStyle(
-          fontSize: MediaQuery.of(context).size.width * 0.4 * 0.14,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
+  Widget badgeTier(BuildContext context, dynamic badge, int idx) {
+    String tier = badge['badgeTier'];
+    Color tierColor = Colors.white;
+    if (tier == 'bronze') {
+      tierColor = Color(0xffad5600);
+    } else if (tier == 'silver') {
+      tierColor = Color(0xff435f7a);
+    } else if (tier == 'gold') {
+      tierColor = Color(0xffec9a00);
+    }
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        ImageShadow(
+            opacity: 0.2,
+            child: ExtendedImage.network(
+              'https://static.solved.ac/profile_badge/120x120/${badge['badgeId']}.png',
+              width: MediaQuery.of(context).size.width * 0.13,
+              fit: BoxFit.cover,
+              cache: true,
+              loadStateChanged: (ExtendedImageState state) {
+                switch (state.extendedImageLoadState) {
+                  case LoadState.loading:
+                    return Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  case LoadState.completed:
+                    return null;
+                  case LoadState.failed:
+                    return Center(
+                      child: Icon(Icons.error),
+                    );
+                }
+              },
+            )),
+        Positioned(
+            bottom: -5,
+            right: -1,
+            child: Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.02,
+                height: MediaQuery.of(context).size.width * 0.02,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                alignment: Alignment.center,
+                child: Container(
+                  width: MediaQuery.of(context).size.width * 0.014,
+                  height: MediaQuery.of(context).size.width * 0.014,
+                  decoration: BoxDecoration(
+                    color: tierColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            )),
+      ],
     );
   }
 
-  return Container(
-    padding: EdgeInsets.only(
-      left: MediaQuery.of(context).size.width * 0.4 * 0.15,
-      top: MediaQuery.of(context).size.width * 0.4 * 0.05,
-      right: MediaQuery.of(context).size.width * 0.4 * 0.15,
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                SvgPicture.asset('lib/assets/icons/rating.svg',
-                    color: Colors.black54,
-                    width: MediaQuery.of(context).size.width * 0.4 * 0.1),
-                SizedBox(
-                  width: 5,
-                ),
-                Text(
-                  '레이팅',
-                  style: TextStyle(
-                    fontSize: MediaQuery.of(context).size.width * 0.4 * 0.1,
-                    color: Colors.black54,
-                  ),
-                ),
-              ],
-            ),
-            int.parse(rating) < 3000
-                ? Row(
-                    children: [
-                      Text(tier,
-                          style: TextStyle(
-                            fontSize:
-                                MediaQuery.of(context).size.width * 0.4 * 0.14,
-                            fontFamily: 'Pretendard-Regular',
-                            color: ratingColor(int.parse(rating)),
-                          )),
-                      SizedBox(
-                        width: 5,
-                      ),
-                      Text(
-                        rating,
-                        style: TextStyle(
-                          fontSize:
-                              MediaQuery.of(context).size.width * 0.4 * 0.14,
-                          fontFamily: 'Pretendard-Regular',
-                          fontWeight: FontWeight.bold,
-                          color: ratingColor(int.parse(rating)),
-                        ),
-                      ),
-                    ],
-                  )
-                : masterHandle(rating, context),
-          ],
-        ),
-        Spacer(),
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(100),
-            color: rankBoxColor(rankNum),
-          ),
-          padding: EdgeInsets.only(left: 20, right: 20, top: 5, bottom: 5),
-          child: Column(children: [
-            Text(
-              rank,
-              style: TextStyle(
-                fontSize: MediaQuery.of(context).size.width * 0.4 * 0.11,
-                fontFamily: 'Pretendard-Bold',
-                fontWeight: FontWeight.bold,
-                color:
-                    rankNum == 1 || 100 < rankNum ? Colors.black : Colors.white,
-              ),
-            ),
-            Text(
-              percent,
-              style: TextStyle(
-                fontSize: MediaQuery.of(context).size.width * 0.4 * 0.08,
-                color:
-                    rankNum == 1 || 100 < rankNum ? Colors.black : Colors.white,
-              ),
-            ),
-          ]),
-        )
-      ],
-    ),
-  );
-}
-
-Widget top100Box(
-    int idx, BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
-  try {
-    if (snapshot.data!.body!
-        .getElementsByClassName('css-1wnvjz2')[idx]
-        .getElementsByTagName('img')
-        .first
-        .attributes['src']
-        .toString()
-        .contains('https://static.solved.ac/tier_small/')) {
-      return Container(
-          margin: EdgeInsets.all(
-            MediaQuery.of(context).size.width * 0.02,
-          ),
-          child: SvgPicture.asset(
-              snapshot.data!.body!
-                  .getElementsByClassName('css-1wnvjz2')[idx]
-                  .getElementsByTagName('img')
-                  .first
-                  .attributes['src']
-                  .toString()
-                  .replaceAll('https://static.solved.ac/tier_small/',
-                      'lib/assets/tiers/'),
-              width: MediaQuery.of(context).size.width * 0.041));
-    } else {
+  Widget badgeAchievements(
+      BuildContext context, AsyncSnapshot<Badges> snapshot) {
+    if (achievements.isEmpty) {
       return SizedBox.shrink();
     }
-  } catch (e) {
-    return SizedBox.shrink();
+    return Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
+      SizedBox(
+        width: MediaQuery.of(context).size.width * 0.4 * 0.65,
+        height: MediaQuery.of(context).size.width * 0.4 * 0.2,
+        child: Container(
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.grey, width: 0.5),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SvgPicture.asset('lib/assets/icons/badge.svg',
+                    width: MediaQuery.of(context).size.width * 0.4 * 0.1,
+                    color: Colors.black54),
+                SizedBox(
+                  width: 2,
+                ),
+                Text(
+                  '도전과제',
+                  style: TextStyle(
+                    fontSize: MediaQuery.of(context).size.width * 0.4 * 0.09,
+                    fontFamily: 'Pretendard-Regular',
+                    color: Colors.black54,
+                  ),
+                )
+              ],
+            )),
+      ),
+      for (var i = 0; i < achievements.length; i++)
+        badgeTier(context, achievements[i], i),
+    ]);
   }
-}
 
-Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
-  int count = snapshot.data!.count;
+  Widget badgeEvents(BuildContext context, AsyncSnapshot<Badges> snapshot) {
+    if (achievements.isEmpty) {
+      return SizedBox.shrink();
+    }
+    return Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
+      SizedBox(
+        width: MediaQuery.of(context).size.width * 0.4 * 0.65,
+        height: MediaQuery.of(context).size.width * 0.4 * 0.2,
+        child: Container(
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.grey, width: 0.5),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SvgPicture.asset('lib/assets/icons/badge.svg',
+                    width: MediaQuery.of(context).size.width * 0.4 * 0.1,
+                    color: Colors.black54),
+                SizedBox(
+                  width: 2,
+                ),
+                Text(
+                  '이벤트',
+                  style: TextStyle(
+                    fontSize: MediaQuery.of(context).size.width * 0.4 * 0.09,
+                    fontFamily: 'Pretendard-Regular',
+                    color: Colors.black54,
+                  ),
+                )
+              ],
+            )),
+      ),
+      for (var i = 0; i < events.length; i++) badgeTier(context, events[i], i),
+    ]);
+  }
+
+  Widget badgeContests(BuildContext context, AsyncSnapshot<Badges> snapshot) {
+    if (achievements.isEmpty) {
+      return SizedBox.shrink();
+    }
+    return Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
+      SizedBox(
+        width: MediaQuery.of(context).size.width * 0.4 * 0.65,
+        height: MediaQuery.of(context).size.width * 0.4 * 0.2,
+        child: Container(
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.grey, width: 0.5),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SvgPicture.asset('lib/assets/icons/badge.svg',
+                    width: MediaQuery.of(context).size.width * 0.4 * 0.1,
+                    color: Colors.black54),
+                SizedBox(
+                  width: 2,
+                ),
+                Text(
+                  '대회',
+                  style: TextStyle(
+                    fontSize: MediaQuery.of(context).size.width * 0.4 * 0.09,
+                    fontFamily: 'Pretendard-Regular',
+                    color: Colors.black54,
+                  ),
+                )
+              ],
+            )),
+      ),
+      for (var i = 0; i < contests.length; i++)
+        Stack(
+          children: [
+            ImageShadow(
+                opacity: 0.2,
+                child: ExtendedImage.network(
+                  'https://static.solved.ac/profile_badge/120x120/${contests[i]['badgeId']}.png',
+                  width: MediaQuery.of(context).size.width * 0.13,
+                  fit: BoxFit.cover,
+                  cache: true,
+                  loadStateChanged: (ExtendedImageState state) {
+                    switch (state.extendedImageLoadState) {
+                      case LoadState.loading:
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      case LoadState.completed:
+                        return null;
+                      case LoadState.failed:
+                        return Center(
+                          child: Icon(Icons.error),
+                        );
+                    }
+                  },
+                )),
+          ],
+        ),
+    ]);
+  }
 
   return Container(
       width: MediaQuery.of(context).size.width,
@@ -638,38 +863,11 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
               )),
         ])),
         SizedBox(height: 5),
-        Wrap(
-          direction: Axis.horizontal,
-          alignment: WrapAlignment.start,
-          clipBehavior: Clip.none,
-          children: [
-            for (var i = 0; i < count; i++)
-              ImageShadow(
-                  opacity: 0.2,
-                  child: ExtendedImage.network(
-                    snapshot.data!.items[i]['badgeImageUrl']
-                        .toString()
-                        .replaceAll('profile_badge/', 'profile_badge/120x120/'),
-                    width: MediaQuery.of(context).size.width * 0.13,
-                    fit: BoxFit.cover,
-                    cache: true,
-                    loadStateChanged: (ExtendedImageState state) {
-                      switch (state.extendedImageLoadState) {
-                        case LoadState.loading:
-                          return Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        case LoadState.completed:
-                          return null;
-                        case LoadState.failed:
-                          return Center(
-                            child: Icon(Icons.error),
-                          );
-                      }
-                    },
-                  )),
-          ],
-        ),
+        badgeAchievements(context, snapshot),
+        SizedBox(height: 5),
+        badgeEvents(context, snapshot),
+        SizedBox(height: 5),
+        badgeContests(context, snapshot),
         SizedBox(height: 10),
       ]));
 }
@@ -688,7 +886,7 @@ Color levelColor(int level) {
     return Color(0xFFFEBE70);
   } else if (level < 21) {
     // platinum
-    return Color(0xFF34E678);
+    return Color(0xff00c78b);
   } else if (level < 26) {
     // diamond
     return Color(0xFF3F8EEA);
@@ -715,7 +913,7 @@ Color ratingColor(int rating) {
     return Color(0xFFFEBE70);
   } else if (rating < 2200) {
     // platinum
-    return Color(0xFF34E678);
+    return Color(0xff00c78b);
   } else if (rating < 2700) {
     // diamond
     return Color(0xFF3F8EEA);
