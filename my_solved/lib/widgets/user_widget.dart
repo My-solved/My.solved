@@ -2,7 +2,7 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:html/dom.dart' as dom;
+import 'package:my_solved/models/user/Top_100.dart';
 import 'package:my_solved/services/user_service.dart';
 
 import '../models/User.dart';
@@ -114,8 +114,6 @@ Widget classes(BuildContext context, AsyncSnapshot<User> snapshot) {
   } else if (snapshot.data?.classDecoration == "gold") {
     userClass += 'g';
   }
-  print('user $userClass');
-  print('user ${snapshot.data?.classDecoration}');
 
   return SvgPicture.asset(
     'lib/assets/classes/c$userClass.svg',
@@ -372,47 +370,82 @@ Widget badge(BuildContext context, AsyncSnapshot<User> snapshot) {
           ));
 }
 
-Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
-  int idx = 0;
-  if (!snapshot.data!.body!
-      .getElementsByClassName('css-1wnvjz2')[0]
-      .getElementsByTagName('img')
-      .first
-      .attributes['src']
-      .toString()
-      .contains('tier')) {
-    idx = 1;
+Widget top100(
+    BuildContext context, AsyncSnapshot<Top_100> snapshot, User? user) {
+  int rating = user?.rating ?? 0;
+  int tier = user?.tier ?? 0;
+  int rank = user?.rank ?? 0;
+  int count = snapshot.data!.count;
+
+  String tierStr(int tier) {
+    if (tier == 1) {
+      return 'Bronze V';
+    } else if (tier == 2) {
+      return 'Bronze IV';
+    } else if (tier == 3) {
+      return 'Bronze III';
+    } else if (tier == 4) {
+      return 'Bronze II';
+    } else if (tier == 5) {
+      return 'Bronze I';
+    } else if (tier == 6) {
+      return 'Silver V';
+    } else if (tier == 7) {
+      return 'Silver IV';
+    } else if (tier == 8) {
+      return 'Silver III';
+    } else if (tier == 9) {
+      return 'Silver II';
+    } else if (tier == 10) {
+      return 'Silver I';
+    } else if (tier == 11) {
+      return 'Gold V';
+    } else if (tier == 12) {
+      return 'Gold IV';
+    } else if (tier == 13) {
+      return 'Gold III';
+    } else if (tier == 14) {
+      return 'Gold II';
+    } else if (tier == 15) {
+      return 'Gold I';
+    } else if (tier == 16) {
+      return 'Platinum V';
+    } else if (tier == 17) {
+      return 'Platinum IV';
+    } else if (tier == 18) {
+      return 'Platinum III';
+    } else if (tier == 19) {
+      return 'Platinum II';
+    } else if (tier == 20) {
+      return 'Platinum I';
+    } else if (tier == 21) {
+      return 'Diamond V';
+    } else if (tier == 22) {
+      return 'Diamond IV';
+    } else if (tier == 23) {
+      return 'Diamond III';
+    } else if (tier == 24) {
+      return 'Diamond II';
+    } else if (tier == 25) {
+      return 'Diamond I';
+    } else if (tier == 26) {
+      return 'Ruby V';
+    } else if (tier == 27) {
+      return 'Ruby IV';
+    } else if (tier == 28) {
+      return 'Ruby III';
+    } else if (tier == 29) {
+      return 'Ruby II';
+    } else if (tier == 30) {
+      return 'Ruby I';
+    } else if (tier == 31) {
+      return 'Master';
+    } else {
+      return 'Unrated';
+    }
   }
 
-  // 레이팅
-  String rating = snapshot.data!.body!
-      .getElementsByClassName('css-5vptc8')[0]
-      .getElementsByTagName('span')[1]
-      .text;
-
-  // 티어
-  String tier = snapshot.data!.body!
-      .getElementsByClassName('css-5vptc8')[0]
-      .getElementsByTagName('span')[0]
-      .innerHtml
-      .toString();
-
-  // 등수
-  String rank = snapshot.data!.body!
-      .getElementsByClassName('css-1nvk81z')[0]
-      .getElementsByTagName('b')[0]
-      .text;
-
-  // 전체 백분율
-  String percent = snapshot.data!.body!
-      .getElementsByClassName('css-1nvk81z')[0]
-      .getElementsByTagName('small')[0]
-      .text;
-
-  Widget top100Header(String rating, String tier, String rank, String percent,
-      BuildContext context) {
-    int rankNum = int.parse(rank.replaceAll(',', '').split('#')[1]);
-
+  Widget top100Header(int rating, int tier, int rank, BuildContext context) {
     Color rankBoxColor(int rankNum) {
       if (rankNum == 1) {
         return Color(0xFFFFB028);
@@ -425,7 +458,7 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
       }
     }
 
-    Widget masterHandle(String rating, BuildContext context) {
+    Widget masterHandle(int rating, BuildContext context) {
       return ShaderMask(
         shaderCallback: (rect) {
           return LinearGradient(
@@ -436,7 +469,7 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
         },
         blendMode: BlendMode.srcATop,
         child: Text(
-          'Master ${int.parse(rating)}',
+          'Master $rating',
           style: TextStyle(
             fontSize: MediaQuery.of(context).size.width * 0.4 * 0.14,
             fontWeight: FontWeight.bold,
@@ -474,29 +507,26 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
                   ),
                 ],
               ),
-              int.parse(rating) < 3000
+              rating < 3000
                   ? Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text(tier,
+                        Text('${tierStr(tier)} ',
                             style: TextStyle(
                               fontSize: MediaQuery.of(context).size.width *
                                   0.4 *
                                   0.14,
                               fontFamily: 'Pretendard',
-                              color: ratingColor(int.parse(rating)),
+                              color: ratingColor(rating),
                             )),
-                        SizedBox(
-                          width: 5,
-                        ),
                         Text(
-                          rating,
+                          rating.toString(),
                           style: TextStyle(
                             fontSize:
                                 MediaQuery.of(context).size.width * 0.4 * 0.14,
                             fontFamily: 'Pretendard-ExtraBold',
                             fontWeight: FontWeight.bold,
-                            color: ratingColor(int.parse(rating)),
+                            color: ratingColor(rating),
                           ),
                         ),
                       ],
@@ -508,67 +538,33 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(100),
-              color: rankBoxColor(rankNum),
+              color: rankBoxColor(rank),
             ),
-            padding: EdgeInsets.only(left: 20, right: 20, top: 5, bottom: 5),
-            child: Column(children: [
-              Text(
-                rank,
-                style: TextStyle(
-                  fontSize: MediaQuery.of(context).size.width * 0.4 * 0.11,
-                  fontFamily: 'Pretendard-Regular',
-                  fontWeight: FontWeight.bold,
-                  color: rankNum == 1 || 100 < rankNum
-                      ? Colors.black
-                      : Colors.white,
-                ),
+            padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
+            child: Text(
+              rank < 1000
+                  ? '#$rank'
+                  : '#${(rank / 1000).floor()},${rank % 1000}',
+              style: TextStyle(
+                fontSize: MediaQuery.of(context).size.width * 0.4 * 0.11,
+                fontFamily: 'Pretendard-Regular',
+                fontWeight: FontWeight.bold,
+                color: rank == 1 || 100 < rank ? Colors.black : Colors.white,
               ),
-              Text(
-                percent,
-                style: TextStyle(
-                  fontSize: MediaQuery.of(context).size.width * 0.4 * 0.08,
-                  color: rankNum == 1 || 100 < rankNum
-                      ? Colors.black
-                      : Colors.white,
-                ),
-              ),
-            ]),
+            ),
           )
         ],
       ),
     );
   }
 
-  Widget top100Box(
-      int idx, BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
-    try {
-      if (snapshot.data!.body!
-          .getElementsByClassName('css-1wnvjz2')[idx]
-          .getElementsByTagName('img')
-          .first
-          .attributes['src']
-          .toString()
-          .contains('https://static.solved.ac/tier_small/')) {
-        return Container(
-            margin: EdgeInsets.all(
-              MediaQuery.of(context).size.width * 0.02,
-            ),
-            child: SvgPicture.asset(
-                snapshot.data!.body!
-                    .getElementsByClassName('css-1wnvjz2')[idx]
-                    .getElementsByTagName('img')
-                    .first
-                    .attributes['src']
-                    .toString()
-                    .replaceAll('https://static.solved.ac/tier_small/',
-                        'lib/assets/tiers/'),
-                width: MediaQuery.of(context).size.width * 0.041));
-      } else {
-        return SizedBox.shrink();
-      }
-    } catch (e) {
-      return SizedBox.shrink();
-    }
+  Widget top100Box(BuildContext context, dynamic cur) {
+    return Container(
+        margin: EdgeInsets.all(
+          MediaQuery.of(context).size.width * 0.02,
+        ),
+        child: SvgPicture.asset('lib/assets/tiers/${cur['level']}.svg',
+            width: MediaQuery.of(context).size.width * 0.041));
   }
 
   return Container(
@@ -579,15 +575,22 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
     ),
     child: Column(
       children: [
-        SizedBox(height: 10),
-        top100Header(rating, tier, rank, percent, context),
-        SizedBox(height: 10),
-        for (var i = 0; i < 10; i++)
+        SizedBox(height: 5),
+        top100Header(rating, tier, rank, context),
+        SizedBox(height: 5),
+        for (var i = 0; i < count / 10 - 1; i++)
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             for (var j = 0; j < 10; j++)
-              top100Box(idx + 10 * i + j, context, snapshot),
+              top100Box(context, snapshot.data!.items[i * 10 + j]),
           ]),
-        SizedBox(height: 20),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            for (var i = 0; i < count % 10; i++)
+              top100Box(context, snapshot.data!.items[count - count % 10 + i]),
+          ],
+        ),
+        SizedBox(height: 10),
       ],
     ),
   );
@@ -597,12 +600,15 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
   int count = snapshot.data!.count;
 
   List<dynamic> achievements = [];
+  List<dynamic> seasons = [];
   List<dynamic> events = [];
   List<dynamic> contests = [];
 
   for (int i = 0; i < count; i++) {
     if (snapshot.data!.items[i]['badgeCategory'] == 'achievement') {
       achievements.add(snapshot.data!.items[i]);
+    } else if (snapshot.data!.items[i]['badgeCategory'] == 'season') {
+      seasons.add(snapshot.data!.items[i]);
     } else if (snapshot.data!.items[i]['badgeCategory'] == 'event') {
       events.add(snapshot.data!.items[i]);
     } else if (snapshot.data!.items[i]['badgeCategory'] == 'contest') {
@@ -704,7 +710,7 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
                   width: 2,
                 ),
                 Text(
-                  '도전과제',
+                  '업적',
                   style: TextStyle(
                     fontSize: MediaQuery.of(context).size.width * 0.4 * 0.08,
                     fontFamily: 'Pretendard-Regular',
@@ -719,7 +725,48 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
     ]);
   }
 
+  Widget badgeSeasons(BuildContext context, AsyncSnapshot<Badges> snapshot) {
+    if (seasons.isEmpty) {
+      return SizedBox.shrink();
+    }
+    return Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
+      SizedBox(
+        width: MediaQuery.of(context).size.width * 0.4 * 0.65,
+        height: MediaQuery.of(context).size.width * 0.4 * 0.2,
+        child: Container(
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(100),
+              border: Border.all(color: Color(0xff8a8f95), width: 0.5),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                SvgPicture.asset('lib/assets/icons/badge.svg',
+                    width: MediaQuery.of(context).size.width * 0.4 * 0.1,
+                    color: Color(0xff8a8f95)),
+                SizedBox(
+                  width: 2,
+                ),
+                Text(
+                  '시즌',
+                  style: TextStyle(
+                    fontSize: MediaQuery.of(context).size.width * 0.4 * 0.08,
+                    fontFamily: 'Pretendard-Regular',
+                    color: Color(0xff8a8f95),
+                  ),
+                )
+              ],
+            )),
+      ),
+      for (var i = 0; i < seasons.length; i++)
+        badgeTier(context, seasons[i], i),
+    ]);
+  }
+
   Widget badgeEvents(BuildContext context, AsyncSnapshot<Badges> snapshot) {
+    print(events);
     if (events.isEmpty) {
       return SizedBox.shrink();
     }
@@ -870,6 +917,8 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
         ])),
         SizedBox(height: 10),
         badgeAchievements(context, snapshot),
+        SizedBox(height: 10),
+        badgeSeasons(context, snapshot),
         SizedBox(height: 10),
         badgeEvents(context, snapshot),
         SizedBox(height: 10),

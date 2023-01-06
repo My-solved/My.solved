@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:html/dom.dart' as dom;
+import 'package:my_solved/models/user/Top_100.dart';
 import 'package:provider/provider.dart';
 
 import '../models/User.dart';
@@ -13,6 +13,7 @@ class ProfileDetailView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var viewModel = Provider.of<ProfileDetailViewModel>(context);
+    User? user;
 
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
@@ -28,6 +29,7 @@ class ProfileDetailView extends StatelessWidget {
                   future: viewModel.future,
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
+                      user = snapshot.data;
                       return Column(
                         children: <Widget>[
                           profileHeader(context, snapshot),
@@ -56,11 +58,11 @@ class ProfileDetailView extends StatelessWidget {
                                 ),
                                 SizedBox(height: 5),
                                 zandi(context, snapshot),
-                                FutureBuilder<dom.Document>(
+                                FutureBuilder<Top_100>(
                                   future: viewModel.futureTop,
                                   builder: (context, snapshot) {
                                     if (snapshot.hasData) {
-                                      return top100(context, snapshot);
+                                      return top100(context, snapshot, user);
                                     } else if (snapshot.hasError) {
                                       return Text("asdfsadfasd",
                                           style: TextStyle(

@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:html/dom.dart' as dom;
+import 'package:my_solved/models/user/Top_100.dart';
 import 'package:my_solved/pages/setting_page.dart';
 import 'package:my_solved/services/user_service.dart';
 import 'package:my_solved/view_models/home_view_model.dart';
@@ -18,6 +18,8 @@ class HomeView extends StatelessWidget {
     String userName = UserService().getUserName();
     viewModel.onInit(userName);
 
+    late User? user;
+
     return CupertinoPageScaffold(
       child: SafeArea(
         child: SingleChildScrollView(
@@ -29,6 +31,7 @@ class HomeView extends StatelessWidget {
                   future: viewModel.future,
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
+                      user = snapshot.data;
                       return Column(
                         children: <Widget>[
                           profileHeader(context, snapshot),
@@ -62,13 +65,13 @@ class HomeView extends StatelessWidget {
                                   height: 10,
                                 ),
                                 zandi(context, snapshot),
-                                FutureBuilder<dom.Document>(
+                                FutureBuilder<Top_100>(
                                   future: viewModel.futureTop,
                                   builder: (context, snapshot) {
                                     if (snapshot.hasData) {
                                       return Column(
                                         children: [
-                                          top100(context, snapshot),
+                                          top100(context, snapshot, user),
                                         ],
                                       );
                                     } else if (snapshot.hasError) {
