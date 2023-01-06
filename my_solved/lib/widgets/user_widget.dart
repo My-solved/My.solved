@@ -374,13 +374,13 @@ Widget badge(BuildContext context, AsyncSnapshot<User> snapshot) {
 
 Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
   int idx = 0;
-  if (snapshot.data!.body!
+  if (!snapshot.data!.body!
       .getElementsByClassName('css-1wnvjz2')[0]
       .getElementsByTagName('img')
       .first
       .attributes['src']
       .toString()
-      .contains('profile_badge')) {
+      .contains('tier')) {
     idx = 1;
   }
 
@@ -618,6 +618,8 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
       tierColor = Color(0xff435f7a);
     } else if (tier == 'gold') {
       tierColor = Color(0xffec9a00);
+    } else if (tier == 'master') {
+      tierColor = Color(0xffff99d8);
     }
 
     return Stack(
