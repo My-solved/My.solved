@@ -69,5 +69,7 @@ fonts:
         weight: 600
       - asset: lib/assets/fonts/Pretendard-Bold.ttf
         weight: 700
+      - asset: lib/assets/fonts/Pretendard-ExtraBold.ttf
+        weight: 800
       - asset: lib/assets/fonts/Pretendard-Black.ttf
         weight: 900

@@ -476,6 +476,7 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
               ),
               int.parse(rating) < 3000
                   ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(tier,
                             style: TextStyle(
@@ -493,7 +494,7 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
                           style: TextStyle(
                             fontSize:
                                 MediaQuery.of(context).size.width * 0.4 * 0.14,
-                            fontFamily: 'Pretendard',
+                            fontFamily: 'Pretendard-ExtraBold',
                             fontWeight: FontWeight.bold,
                             color: ratingColor(int.parse(rating)),
                           ),
@@ -515,7 +516,7 @@ Widget top100(BuildContext context, AsyncSnapshot<dom.Document> snapshot) {
                 rank,
                 style: TextStyle(
                   fontSize: MediaQuery.of(context).size.width * 0.4 * 0.11,
-                  fontFamily: 'Pretendard-Bold',
+                  fontFamily: 'Pretendard-Regular',
                   fontWeight: FontWeight.bold,
                   color: rankNum == 1 || 100 < rankNum
                       ? Colors.black
@@ -882,25 +883,25 @@ Color levelColor(int level) {
     return Color(0xFF2D2D2D);
   } else if (level < 6) {
     // bronze
-    return Color(0xFFA25B36);
+    return Color(0xffad5600);
   } else if (level < 11) {
     // silver
-    return Color(0xFF7B7574);
+    return Color(0xFF425E79);
   } else if (level < 16) {
     // gold
-    return Color(0xFFFEBE70);
+    return Color(0xffec9a00);
   } else if (level < 21) {
     // platinum
     return Color(0xff00c78b);
   } else if (level < 26) {
     // diamond
-    return Color(0xFF3F8EEA);
+    return Color(0xff00b4fc);
   } else if (level < 31) {
     // ruby
-    return Color(0xFFE15C64);
+    return Color(0xffff0062);
   } else {
     // master
-    return Color(0xFFCB7CEF);
+    return Color(0xffB491FF);
   }
 }
 
@@ -909,24 +910,24 @@ Color ratingColor(int rating) {
     return Color(0xFF2D2D2D);
   } else if (rating < 200) {
     // bronze
-    return Color(0xFFA25B36);
+    return Color(0xffad5600);
   } else if (rating < 800) {
     // silver
-    return Color(0xFF7B7574);
+    return Color(0xFF425E79);
   } else if (rating < 1600) {
     // gold
-    return Color(0xFFFEBE70);
+    return Color(0xffec9a00);
   } else if (rating < 2200) {
     // platinum
     return Color(0xff00c78b);
   } else if (rating < 2700) {
     // diamond
-    return Color(0xFF3F8EEA);
+    return Color(0xff00b4fc);
   } else if (rating < 3000) {
     // ruby
-    return Color(0xFFE15C64);
+    return Color(0xffff0062);
   } else {
     // master
-    return Color(0xFFCB7CEF);
+    return Color(0xffB491FF);
   }
 }
