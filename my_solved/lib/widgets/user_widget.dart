@@ -496,9 +496,6 @@ Widget top100Header(String rating, String tier, String rank, String percent,
                 ),
               ],
             ),
-            SizedBox(
-              height: 5,
-            ),
             int.parse(rating) < 3000
                 ? Row(
                     children: [
@@ -506,7 +503,7 @@ Widget top100Header(String rating, String tier, String rank, String percent,
                           style: TextStyle(
                             fontSize:
                                 MediaQuery.of(context).size.width * 0.4 * 0.14,
-                            fontFamily: 'Pretendard',
+                            fontFamily: 'Pretendard-Regular',
                             color: ratingColor(int.parse(rating)),
                           )),
                       SizedBox(
