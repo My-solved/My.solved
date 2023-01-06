@@ -687,11 +687,12 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
         child: Container(
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.grey, width: 0.5),
+              borderRadius: BorderRadius.circular(100),
+              border: Border.all(color: Color(0xff8a8f95), width: 0.5),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 SvgPicture.asset('lib/assets/icons/badge.svg',
                     width: MediaQuery.of(context).size.width * 0.4 * 0.1,
@@ -702,7 +703,7 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
                 Text(
                   '도전과제',
                   style: TextStyle(
-                    fontSize: MediaQuery.of(context).size.width * 0.4 * 0.09,
+                    fontSize: MediaQuery.of(context).size.width * 0.4 * 0.08,
                     fontFamily: 'Pretendard-Regular',
                     color: Color(0xff8a8f95),
                   ),
@@ -726,11 +727,12 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
         child: Container(
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.grey, width: 0.5),
+              borderRadius: BorderRadius.circular(100),
+              border: Border.all(color: Color(0xff8a8f95), width: 0.5),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 SvgPicture.asset('lib/assets/icons/badge.svg',
                     width: MediaQuery.of(context).size.width * 0.4 * 0.1,
@@ -741,7 +743,7 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
                 Text(
                   '이벤트',
                   style: TextStyle(
-                    fontSize: MediaQuery.of(context).size.width * 0.4 * 0.09,
+                    fontSize: MediaQuery.of(context).size.width * 0.4 * 0.08,
                     fontFamily: 'Pretendard-Regular',
                     color: Color(0xff8a8f95),
                   ),
@@ -764,11 +766,12 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
         child: Container(
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.grey, width: 0.5),
+              borderRadius: BorderRadius.circular(100),
+              border: Border.all(color: Color(0xff8a8f95), width: 0.5),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 SvgPicture.asset('lib/assets/icons/badge.svg',
                     width: MediaQuery.of(context).size.width * 0.4 * 0.1,
@@ -779,7 +782,7 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
                 Text(
                   '대회',
                   style: TextStyle(
-                    fontSize: MediaQuery.of(context).size.width * 0.4 * 0.09,
+                    fontSize: MediaQuery.of(context).size.width * 0.4 * 0.08,
                     fontFamily: 'Pretendard-Regular',
                     color: Color(0xff8a8f95),
                   ),
@@ -822,13 +825,13 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
       padding: EdgeInsets.only(
         left: MediaQuery.of(context).size.width * 0.05,
         right: MediaQuery.of(context).size.width * 0.05,
+        top: MediaQuery.of(context).size.width * 0.05,
       ),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: Colors.grey, width: 0.5),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        SizedBox(height: 10),
         Row(
           children: [
             SvgPicture.asset('lib/assets/icons/badge.svg',
@@ -850,7 +853,7 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
               text: count.toString(),
               style: TextStyle(
                 fontSize: MediaQuery.of(context).size.width * 0.05,
-                fontFamily: 'Pretendard-Bold',
+                fontFamily: 'Pretendard-Regular',
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               )),
@@ -858,15 +861,15 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
               text: '개',
               style: TextStyle(
                 fontSize: MediaQuery.of(context).size.width * 0.05,
-                fontFamily: 'Pretendard-Regular',
+                fontFamily: 'Pretendard',
                 color: Colors.black,
               )),
         ])),
-        SizedBox(height: 5),
+        SizedBox(height: 10),
         badgeAchievements(context, snapshot),
-        SizedBox(height: 5),
+        SizedBox(height: 10),
         badgeEvents(context, snapshot),
-        SizedBox(height: 5),
+        SizedBox(height: 10),
         badgeContests(context, snapshot),
         SizedBox(height: 10),
       ]));
