@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:my_solved/models/user/Top_100.dart';
 import 'package:my_solved/services/user_service.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../models/User.dart';
 import '../models/user/Badges.dart';
@@ -163,7 +164,7 @@ Widget solvedCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           snapshot.data?.solvedCount.toString() ?? '',
           style: TextStyle(
             color: Colors.black,
-            fontSize: MediaQuery.of(context).size.width * 0.05,
+            fontSize: MediaQuery.of(context).size.width * 0.048,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -171,7 +172,7 @@ Widget solvedCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           '해결',
           style: TextStyle(
             color: Colors.grey,
-            fontSize: MediaQuery.of(context).size.width * 0.04,
+            fontSize: MediaQuery.of(context).size.width * 0.038,
           ),
         ),
       ],
@@ -190,7 +191,7 @@ Widget voteCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           snapshot.data?.voteCount.toString() ?? '',
           style: TextStyle(
             color: Colors.black,
-            fontSize: MediaQuery.of(context).size.width * 0.05,
+            fontSize: MediaQuery.of(context).size.width * 0.048,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -198,7 +199,7 @@ Widget voteCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           '기여',
           style: TextStyle(
             color: Colors.grey,
-            fontSize: MediaQuery.of(context).size.width * 0.04,
+            fontSize: MediaQuery.of(context).size.width * 0.038,
           ),
         ),
       ],
@@ -217,7 +218,7 @@ Widget reverseRivalCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           snapshot.data?.reverseRivalCount.toString() ?? '',
           style: TextStyle(
             color: Colors.black,
-            fontSize: MediaQuery.of(context).size.width * 0.05,
+            fontSize: MediaQuery.of(context).size.width * 0.048,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -225,7 +226,7 @@ Widget reverseRivalCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           '라이벌',
           style: TextStyle(
             color: Colors.grey,
-            fontSize: MediaQuery.of(context).size.width * 0.04,
+            fontSize: MediaQuery.of(context).size.width * 0.038,
           ),
         ),
       ],
@@ -559,12 +560,22 @@ Widget top100(
   }
 
   Widget top100Box(BuildContext context, dynamic cur) {
-    return Container(
-        margin: EdgeInsets.all(
-          MediaQuery.of(context).size.width * 0.015,
-        ),
-        child: SvgPicture.asset('lib/assets/tiers/${cur['level']}.svg',
-            width: MediaQuery.of(context).size.width * 0.041));
+    return CupertinoButton(
+        padding: EdgeInsets.zero,
+        color: Colors.white,
+        onPressed: () {
+          launchUrlString(
+              'https://www.acmicpc.net/problem/${cur['problemId']}');
+        },
+        child: Tooltip(
+            message: cur['titleKo'],
+            textStyle: TextStyle(
+              fontSize: MediaQuery.of(context).size.width * 0.4 * 0.1,
+              fontFamily: 'Pretendard-Regular',
+              color: Colors.white,
+            ),
+            child: SvgPicture.asset('lib/assets/tiers/${cur['level']}.svg',
+                width: MediaQuery.of(context).size.width * 0.041)));
   }
 
   return Container(
@@ -769,7 +780,6 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
   }
 
   Widget badgeEvents(BuildContext context, AsyncSnapshot<Badges> snapshot) {
-    print(events);
     if (events.isEmpty) {
       return SizedBox.shrink();
     }
