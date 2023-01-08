@@ -163,7 +163,7 @@ Widget solvedCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           snapshot.data?.solvedCount.toString() ?? '',
           style: TextStyle(
             color: Colors.black,
-            fontSize: 15,
+            fontSize: MediaQuery.of(context).size.width * 0.05,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -171,7 +171,7 @@ Widget solvedCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           '해결',
           style: TextStyle(
             color: Colors.grey,
-            fontSize: 13,
+            fontSize: MediaQuery.of(context).size.width * 0.04,
           ),
         ),
       ],
@@ -190,7 +190,7 @@ Widget voteCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           snapshot.data?.voteCount.toString() ?? '',
           style: TextStyle(
             color: Colors.black,
-            fontSize: 15,
+            fontSize: MediaQuery.of(context).size.width * 0.05,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -198,7 +198,7 @@ Widget voteCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           '기여',
           style: TextStyle(
             color: Colors.grey,
-            fontSize: 13,
+            fontSize: MediaQuery.of(context).size.width * 0.04,
           ),
         ),
       ],
@@ -217,7 +217,7 @@ Widget reverseRivalCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           snapshot.data?.reverseRivalCount.toString() ?? '',
           style: TextStyle(
             color: Colors.black,
-            fontSize: 15,
+            fontSize: MediaQuery.of(context).size.width * 0.05,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -225,7 +225,7 @@ Widget reverseRivalCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           '라이벌',
           style: TextStyle(
             color: Colors.grey,
-            fontSize: 13,
+            fontSize: MediaQuery.of(context).size.width * 0.04,
           ),
         ),
       ],
@@ -480,9 +480,9 @@ Widget top100(
 
     return Container(
       padding: EdgeInsets.only(
-        left: MediaQuery.of(context).size.width * 0.4 * 0.15,
+        left: MediaQuery.of(context).size.width * 0.015,
         top: MediaQuery.of(context).size.width * 0.4 * 0.05,
-        right: MediaQuery.of(context).size.width * 0.4 * 0.15,
+        right: MediaQuery.of(context).size.width * 0.015,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -561,7 +561,7 @@ Widget top100(
   Widget top100Box(BuildContext context, dynamic cur) {
     return Container(
         margin: EdgeInsets.all(
-          MediaQuery.of(context).size.width * 0.02,
+          MediaQuery.of(context).size.width * 0.015,
         ),
         child: SvgPicture.asset('lib/assets/tiers/${cur['level']}.svg',
             width: MediaQuery.of(context).size.width * 0.041));
@@ -569,6 +569,10 @@ Widget top100(
 
   return Container(
     width: MediaQuery.of(context).size.width,
+    padding: EdgeInsets.only(
+      left: MediaQuery.of(context).size.width * 0.04,
+      right: MediaQuery.of(context).size.width * 0.04,
+    ),
     decoration: BoxDecoration(
       borderRadius: BorderRadius.circular(10),
       border: Border.all(color: Colors.grey, width: 0.5),
@@ -578,18 +582,17 @@ Widget top100(
         SizedBox(height: 5),
         top100Header(rating, tier, rank, context),
         SizedBox(height: 5),
-        for (var i = 0; i < count / 10 - 1; i++)
-          Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            for (var j = 0; j < 10; j++)
-              top100Box(context, snapshot.data!.items[i * 10 + j]),
-          ]),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            for (var i = 0; i < count % 10; i++)
-              top100Box(context, snapshot.data!.items[count - count % 10 + i]),
-          ],
-        ),
+        GridView.builder(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 10,
+              childAspectRatio: 1,
+            ),
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: count,
+            itemBuilder: (BuildContext context, int index) {
+              return top100Box(context, snapshot.data!.items[index]);
+            }),
         SizedBox(height: 10),
       ],
     ),
