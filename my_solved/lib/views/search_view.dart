@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:my_solved/pages/problem_detail_page.dart';
 import 'package:my_solved/pages/profile_detail_page.dart';
 import 'package:my_solved/view_models/search_view_model.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../pages/tag_detail_page.dart';
 
@@ -114,11 +114,14 @@ extension SearchViewExtension on SearchView {
   Widget problemCell(dynamic problem, BuildContext context) {
     return CupertinoPageScaffold(
         child: GestureDetector(
-      onTap: () => Navigator.of(context).push(
-        CupertinoPageRoute(
-          builder: (context) => ProblemDetailPage(problem['id']),
-        ),
-      ),
+      onTap: () {
+        launchUrlString('https://www.acmicpc.net/problem/${problem['id']}');
+      },
+      // onTap: () => Navigator.of(context).push(
+      //   CupertinoPageRoute(
+      //     builder: (context) => ProblemDetailPage(problem['id']),
+      //   ),
+      // ),
       child: Container(
         decoration: BoxDecoration(
           color: CupertinoTheme.of(context).barBackgroundColor,
