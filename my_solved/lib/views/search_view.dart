@@ -115,7 +115,8 @@ extension SearchViewExtension on SearchView {
     return CupertinoPageScaffold(
         child: GestureDetector(
       onTap: () {
-        launchUrlString('https://www.acmicpc.net/problem/${problem['id']}');
+        launchUrlString('https://www.acmicpc.net/problem/${problem['id']}',
+            mode: LaunchMode.externalApplication);
       },
       // onTap: () => Navigator.of(context).push(
       //   CupertinoPageRoute(
