@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../models/User.dart';
 import '../models/user/Badges.dart';
+import '../models/user/TagRatings.dart';
 import '../view_models/profile_detail_view_model.dart';
 import '../widgets/user_widget.dart';
 
@@ -90,6 +91,24 @@ class ProfileDetailView extends StatelessWidget {
                                     return CupertinoActivityIndicator();
                                   },
                                 ),
+                                SizedBox(
+                                  height: 10,
+                                ),
+                                FutureBuilder<List<TagRatings>>(
+                                    future: viewModel.futureTagRatings,
+                                    builder: (context, snapshot) {
+                                      if (snapshot.hasData) {
+                                        return tagChart(
+                                            context, snapshot, user!);
+                                      } else if (snapshot.hasError) {
+                                        return Text(
+                                            "home_view.dart: ${snapshot.error}",
+                                            style: TextStyle(
+                                                color: CupertinoColors
+                                                    .destructiveRed));
+                                      }
+                                      return CupertinoActivityIndicator();
+                                    }),
                                 SizedBox(
                                   height: 10,
                                 ),

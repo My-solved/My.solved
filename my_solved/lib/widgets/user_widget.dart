@@ -1,7 +1,11 @@
+import 'dart:math';
+
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_radar_chart/flutter_radar_chart.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:my_solved/models/user/TagRatings.dart';
 import 'package:my_solved/models/user/Top_100.dart';
 import 'package:my_solved/services/user_service.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -727,8 +731,8 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
     }
     return Container(
         margin: EdgeInsets.only(
-            top: MediaQuery.of(context).size.width * 0.4 * 0.1,
-            bottom: MediaQuery.of(context).size.width * 0.4 * 0.1),
+            top: MediaQuery.of(context).size.width * 0.4 * 0.05,
+            bottom: MediaQuery.of(context).size.width * 0.4 * 0.05),
         child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
           SizedBox(
             width: MediaQuery.of(context).size.width * 0.4 * 0.65,
@@ -761,17 +765,20 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
                   ],
                 )),
           ),
-          GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 6,
-                childAspectRatio: 1,
-              ),
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: achievements.length,
-              itemBuilder: (BuildContext context, int index) {
-                return badgeTier(context, achievements[index], index);
-              }),
+          for (int i = 0; i < achievements.length; i++)
+            badgeTier(context, achievements[i], i),
+
+          // GridView.builder(
+          //     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          //       crossAxisCount: 6,
+          //       childAspectRatio: 1,
+          //     ),
+          //     shrinkWrap: true,
+          //     physics: NeverScrollableScrollPhysics(),
+          //     itemCount: achievements.length,
+          //     itemBuilder: (BuildContext context, int index) {
+          //       return badgeTier(context, achievements[index], index);
+          //     }),
         ]));
   }
 
@@ -781,8 +788,8 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
     }
     return Container(
         margin: EdgeInsets.only(
-            top: MediaQuery.of(context).size.width * 0.4 * 0.1,
-            bottom: MediaQuery.of(context).size.width * 0.4 * 0.1),
+            top: MediaQuery.of(context).size.width * 0.4 * 0.05,
+            bottom: MediaQuery.of(context).size.width * 0.4 * 0.05),
         child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
           SizedBox(
             width: MediaQuery.of(context).size.width * 0.4 * 0.65,
@@ -815,17 +822,19 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
                   ],
                 )),
           ),
-          GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 6,
-                childAspectRatio: 1,
-              ),
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: seasons.length,
-              itemBuilder: (BuildContext context, int index) {
-                return badgeTier(context, seasons[index], index);
-              }),
+          for (int i = 0; i < seasons.length; i++)
+            badgeTier(context, seasons[i], i),
+          // GridView.builder(
+          //     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          //       crossAxisCount: 6,
+          //       childAspectRatio: 1,
+          //     ),
+          //     shrinkWrap: true,
+          //     physics: NeverScrollableScrollPhysics(),
+          //     itemCount: seasons.length,
+          //     itemBuilder: (BuildContext context, int index) {
+          //       return badgeTier(context, seasons[index], index);
+          //     }),
         ]));
   }
 
@@ -835,8 +844,8 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
     }
     return Container(
         margin: EdgeInsets.only(
-            top: MediaQuery.of(context).size.width * 0.4 * 0.1,
-            bottom: MediaQuery.of(context).size.width * 0.4 * 0.1),
+            top: MediaQuery.of(context).size.width * 0.4 * 0.05,
+            bottom: MediaQuery.of(context).size.width * 0.4 * 0.05),
         child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
           SizedBox(
             width: MediaQuery.of(context).size.width * 0.4 * 0.65,
@@ -869,17 +878,19 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
                   ],
                 )),
           ),
-          GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 6,
-                childAspectRatio: 1,
-              ),
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: events.length,
-              itemBuilder: (BuildContext context, int index) {
-                return badgeTier(context, events[index], index);
-              }),
+          for (int i = 0; i < events.length; i++)
+            badgeTier(context, events[i], i),
+          // GridView.builder(
+          //     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          //       crossAxisCount: 6,
+          //       childAspectRatio: 1,
+          //     ),
+          //     shrinkWrap: true,
+          //     physics: NeverScrollableScrollPhysics(),
+          //     itemCount: events.length,
+          //     itemBuilder: (BuildContext context, int index) {
+          //       return badgeTier(context, events[index], index);
+          //     }),
         ]));
   }
 
@@ -889,8 +900,8 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
     }
     return Container(
         margin: EdgeInsets.only(
-            top: MediaQuery.of(context).size.width * 0.4 * 0.1,
-            bottom: MediaQuery.of(context).size.width * 0.4 * 0.1),
+            top: MediaQuery.of(context).size.width * 0.4 * 0.05,
+            bottom: MediaQuery.of(context).size.width * 0.4 * 0.05),
         child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
           SizedBox(
             width: MediaQuery.of(context).size.width * 0.4 * 0.65,
@@ -923,62 +934,64 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
                   ],
                 )),
           ),
-          GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 6,
-                childAspectRatio: 1,
-              ),
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: contests.length,
-              itemBuilder: (BuildContext context, int index) {
-                return Tooltip(
-                  textAlign: TextAlign.start,
-                  richMessage: TextSpan(children: [
-                    TextSpan(
-                        text: '${contests[index]['displayName']}\n',
-                        style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width * 0.04,
-                          fontFamily: 'Pretendard-Regular',
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        )),
-                    TextSpan(
-                        text: '${contests[index]['displayDescription']}',
-                        style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width * 0.04,
-                          fontFamily: 'Pretendard',
-                          color: Colors.white,
-                        )),
-                  ]),
-                  child: Stack(
-                    children: [
-                      ImageShadow(
-                          opacity: 0.2,
-                          child: ExtendedImage.network(
-                            'https://static.solved.ac/profile_badge/120x120/${contests[index]['badgeId']}.png',
-                            width: MediaQuery.of(context).size.width * 0.13,
-                            fit: BoxFit.cover,
-                            cache: true,
-                            loadStateChanged: (ExtendedImageState state) {
-                              switch (state.extendedImageLoadState) {
-                                case LoadState.loading:
-                                  return Center(
-                                    child: CircularProgressIndicator(),
-                                  );
-                                case LoadState.completed:
-                                  return null;
-                                case LoadState.failed:
-                                  return Center(
-                                    child: Icon(Icons.error),
-                                  );
-                              }
-                            },
-                          )),
-                    ],
-                  ),
-                );
-              }),
+          for (int i = 0; i < contests.length; i++)
+            badgeTier(context, contests[i], i),
+          // GridView.builder(
+          //     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          //       crossAxisCount: 6,
+          //       childAspectRatio: 1,
+          //     ),
+          //     shrinkWrap: true,
+          //     physics: NeverScrollableScrollPhysics(),
+          //     itemCount: contests.length,
+          //     itemBuilder: (BuildContext context, int index) {
+          //       return Tooltip(
+          //         textAlign: TextAlign.start,
+          //         richMessage: TextSpan(children: [
+          //           TextSpan(
+          //               text: '${contests[index]['displayName']}\n',
+          //               style: TextStyle(
+          //                 fontSize: MediaQuery.of(context).size.width * 0.04,
+          //                 fontFamily: 'Pretendard-Regular',
+          //                 fontWeight: FontWeight.bold,
+          //                 color: Colors.white,
+          //               )),
+          //           TextSpan(
+          //               text: '${contests[index]['displayDescription']}',
+          //               style: TextStyle(
+          //                 fontSize: MediaQuery.of(context).size.width * 0.04,
+          //                 fontFamily: 'Pretendard',
+          //                 color: Colors.white,
+          //               )),
+          //         ]),
+          //         child: Stack(
+          //           children: [
+          //             ImageShadow(
+          //                 opacity: 0.2,
+          //                 child: ExtendedImage.network(
+          //                   'https://static.solved.ac/profile_badge/120x120/${contests[index]['badgeId']}.png',
+          //                   width: MediaQuery.of(context).size.width * 0.13,
+          //                   fit: BoxFit.cover,
+          //                   cache: true,
+          //                   loadStateChanged: (ExtendedImageState state) {
+          //                     switch (state.extendedImageLoadState) {
+          //                       case LoadState.loading:
+          //                         return Center(
+          //                           child: CircularProgressIndicator(),
+          //                         );
+          //                       case LoadState.completed:
+          //                         return null;
+          //                       case LoadState.failed:
+          //                         return Center(
+          //                           child: Icon(Icons.error),
+          //                         );
+          //                     }
+          //                   },
+          //                 )),
+          //           ],
+          //         ),
+          //       );
+          //     }),
         ]));
   }
 
@@ -1034,6 +1047,160 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
       ]));
 }
 
+Widget tagChart(
+    BuildContext context, AsyncSnapshot<List<TagRatings>> snapshot, User user) {
+  List<TagRatings>? tags = snapshot.data;
+  tags?.sort((a, b) => b.rating.compareTo(a.rating));
+
+  List<int> ticks = [];
+  List<String> features = [];
+  List<List<num>> data = [[]];
+
+  int? length = min(8, snapshot.data?.length ?? 0);
+  int maxTick = 0;
+  for (var i = 0; i < length; i++) {
+    features.add(snapshot.data?[i].tag['key'] ?? '');
+    data[0].add(snapshot.data?[i].rating ?? 0);
+    maxTick = max(maxTick, data[0][i].toInt());
+  }
+  maxTick = (maxTick + 500) ~/ 500 * 500;
+  while (maxTick > 0) {
+    ticks.add(maxTick);
+    maxTick -= 500;
+  }
+  print(ticks);
+
+  return Container(
+      width: MediaQuery.of(context).size.width,
+      padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.05),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey, width: 0.5),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(
+          children: [
+            SvgPicture.asset('lib/assets/icons/tag.svg',
+                color: Color(0xff8a8f95),
+                width: MediaQuery.of(context).size.width * 0.05),
+            SizedBox(width: 5),
+            Text(
+              '태그 분포',
+              style: TextStyle(
+                fontSize: MediaQuery.of(context).size.width * 0.04,
+                color: Color(0xff8a8f95),
+              ),
+            ),
+          ],
+        ),
+        Container(
+          color: Colors.white,
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.width * 0.6,
+          child: RadarChart(
+            ticks: ticks.reversed.toList(),
+            features: features,
+            data: data,
+            outlineColor: Color(0xff8a8f95),
+            featuresTextStyle: TextStyle(
+              fontSize: MediaQuery.of(context).size.width * 0.03,
+              color: Colors.black,
+            ),
+            graphColors: [ratingColor(user.rating)],
+          ),
+        ),
+        SizedBox(height: 10),
+        Row(
+          children: [
+            Text(
+              '태그',
+              style: TextStyle(
+                fontSize: MediaQuery.of(context).size.width * 0.04,
+                color: Color(0xff8a8f95),
+              ),
+            ),
+            Spacer(),
+            Spacer(),
+            Text(
+              '문제',
+              style: TextStyle(
+                fontSize: MediaQuery.of(context).size.width * 0.04,
+                color: Color(0xff8a8f95),
+              ),
+            ),
+            Spacer(),
+            Text(
+              '레이팅',
+              style: TextStyle(
+                fontSize: MediaQuery.of(context).size.width * 0.04,
+                color: Color(0xff8a8f95),
+              ),
+            ),
+          ],
+        ),
+        Divider(
+          color: Colors.grey,
+          thickness: 0.5,
+        ),
+        ListView.separated(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemBuilder: (BuildContext context, int index) {
+              return Container(
+                clipBehavior: Clip.none,
+                width: MediaQuery.of(context).size.width,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: MediaQuery.of(context).size.width * 0.44,
+                      child: Text(
+                        tags?[index].tag['key'] ?? '',
+                        style: TextStyle(
+                          fontSize: MediaQuery.of(context).size.width * 0.04,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: MediaQuery.of(context).size.width * 0.2,
+                      child: Text(
+                        tags?[index].rating.toString() ?? '',
+                        style: TextStyle(
+                          fontSize: MediaQuery.of(context).size.width * 0.04,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ),
+                    Spacer(),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SvgPicture.asset(
+                          'lib/assets/tiers/${ratingToTier(tags![index].rating)}.svg',
+                          width: MediaQuery.of(context).size.width * 0.04,
+                        ),
+                        SizedBox(width: 2),
+                        Text(
+                          tags[index].rating.toString(),
+                          style: TextStyle(
+                            fontSize: MediaQuery.of(context).size.width * 0.04,
+                            color: ratingColor(tags[index].rating),
+                          ),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              );
+            },
+            separatorBuilder: (BuildContext context, int index) {
+              return Divider();
+            },
+            itemCount: length),
+      ]));
+}
+
 Color levelColor(int level) {
   if (level == 0) {
     return Color(0xFF2D2D2D);
@@ -1085,5 +1252,73 @@ Color ratingColor(int rating) {
   } else {
     // master
     return Color(0xffB491FF);
+  }
+}
+
+int ratingToTier(int rating) {
+  if (3000 <= rating) {
+    return 31;
+  } else if (2950 <= rating) {
+    return 30;
+  } else if (2900 <= rating) {
+    return 29;
+  } else if (2850 <= rating) {
+    return 28;
+  } else if (2800 <= rating) {
+    return 27;
+  } else if (2700 <= rating) {
+    return 26;
+  } else if (2600 <= rating) {
+    return 25;
+  } else if (2500 <= rating) {
+    return 24;
+  } else if (2400 <= rating) {
+    return 23;
+  } else if (2300 <= rating) {
+    return 22;
+  } else if (2200 <= rating) {
+    return 21;
+  } else if (2100 <= rating) {
+    return 20;
+  } else if (2000 <= rating) {
+    return 19;
+  } else if (1900 <= rating) {
+    return 18;
+  } else if (1750 <= rating) {
+    return 17;
+  } else if (1600 <= rating) {
+    return 16;
+  } else if (1400 <= rating) {
+    return 15;
+  } else if (1250 <= rating) {
+    return 14;
+  } else if (1100 <= rating) {
+    return 13;
+  } else if (950 <= rating) {
+    return 12;
+  } else if (800 <= rating) {
+    return 11;
+  } else if (650 <= rating) {
+    return 10;
+  } else if (500 <= rating) {
+    return 9;
+  } else if (400 <= rating) {
+    return 8;
+  } else if (300 <= rating) {
+    return 7;
+  } else if (200 <= rating) {
+    return 6;
+  } else if (150 <= rating) {
+    return 5;
+  } else if (120 <= rating) {
+    return 4;
+  } else if (90 <= rating) {
+    return 3;
+  } else if (60 <= rating) {
+    return 2;
+  } else if (30 <= rating) {
+    return 1;
+  } else {
+    return 0;
   }
 }

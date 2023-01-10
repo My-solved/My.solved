@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:my_solved/models/user/TagRatings.dart';
 import 'package:my_solved/models/user/Top_100.dart';
 import 'package:my_solved/pages/setting_page.dart';
 import 'package:my_solved/services/user_service.dart';
@@ -69,11 +70,7 @@ class HomeView extends StatelessWidget {
                                   future: viewModel.futureTop,
                                   builder: (context, snapshot) {
                                     if (snapshot.hasData) {
-                                      return Column(
-                                        children: [
-                                          top100(context, snapshot, user),
-                                        ],
-                                      );
+                                      return top100(context, snapshot, user);
                                     } else if (snapshot.hasError) {
                                       return Text(
                                           "home_view.dart: ${snapshot.error}",
@@ -103,7 +100,25 @@ class HomeView extends StatelessWidget {
                                   },
                                 ),
                                 SizedBox(
-                                  height: 50,
+                                  height: 10,
+                                ),
+                                FutureBuilder<List<TagRatings>>(
+                                    future: viewModel.futureTagRatings,
+                                    builder: (context, snapshot) {
+                                      if (snapshot.hasData) {
+                                        return tagChart(
+                                            context, snapshot, user!);
+                                      } else if (snapshot.hasError) {
+                                        return Text(
+                                            "home_view.dart: ${snapshot.error}",
+                                            style: TextStyle(
+                                                color: CupertinoColors
+                                                    .destructiveRed));
+                                      }
+                                      return CupertinoActivityIndicator();
+                                    }),
+                                SizedBox(
+                                  height: 10,
                                 ),
                               ],
                             ),
