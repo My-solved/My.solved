@@ -18,7 +18,11 @@ import '../widgets/ImageShadow.dart';
 Widget backgroundImage(BuildContext context, AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
       child: ExtendedImage.network(
-    snapshot.data?.background['backgroundImageUrl'] ?? '',
+    UserService().getIllust()
+        ? snapshot.data?.background['backgroundImageUrl'] ?? ''
+        : snapshot.data?.background['fallbackBackgroundImageUrl'] ??
+            snapshot.data?.background['backgroundImageUrl'] ??
+            '',
     cache: true,
     fit: BoxFit.fitWidth,
   ));
@@ -1165,7 +1169,7 @@ Widget tagChart(
                     Container(
                       width: MediaQuery.of(context).size.width * 0.2,
                       child: Text(
-                        tags?[index].rating.toString() ?? '',
+                        tags?[index].solvedCount.toString() ?? '',
                         style: TextStyle(
                           fontSize: MediaQuery.of(context).size.width * 0.04,
                           color: Colors.black,

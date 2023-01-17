@@ -23,6 +23,8 @@ class SettingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isIllust = UserService().getIllust();
+
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
         middle: Text('설정'),
@@ -102,6 +104,33 @@ class SettingView extends StatelessWidget {
                                 )),
                           );
                         }),
+                  ),
+                ],
+              ),
+              Container(
+                padding: EdgeInsets.only(right: 20),
+                child: Divider(),
+              ),
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.only(top: 14, bottom: 14),
+                    child: Text(
+                      '일러스트 배경 보기',
+                      style: TextStyle(
+                        fontSize: 16,
+                        //color: CupertinoTheme.of(context).textTheme.textStyle.color,
+                      ),
+                    ),
+                  ),
+                  Spacer(),
+                  CupertinoSwitch(
+                    value: isIllust,
+                    // setState 필요
+                    onChanged: (value) {
+                      isIllust = !isIllust;
+                      UserService().setIllust(isIllust);
+                    },
                   ),
                 ],
               ),

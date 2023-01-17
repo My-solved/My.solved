@@ -10,6 +10,7 @@ class UserService extends ChangeNotifier {
   static final UserService _instance = UserService._privateConstructor();
   String _name = '';
   int _zandiTheme = 0;
+  bool _isIllust = true;
   UserState state = UserState.loading;
 
   UserService._privateConstructor() {
@@ -29,6 +30,12 @@ class UserService extends ChangeNotifier {
       _zandiTheme = zandiTheme;
       notifyListeners();
     });
+
+    Future<bool> futureIllust = fetchIllust();
+    futureIllust.then((isIllust) {
+      _isIllust = isIllust;
+      notifyListeners();
+    });
   }
 
   factory UserService() {
@@ -45,6 +52,11 @@ class UserService extends ChangeNotifier {
     return prefs.getInt('zandi_theme') ?? 0;
   }
 
+  Future<bool> fetchIllust() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('isIllust') ?? true;
+  }
+
   void setUserName(String name) async {
     _name = name;
     final prefs = await SharedPreferences.getInstance();
@@ -57,11 +69,21 @@ class UserService extends ChangeNotifier {
     prefs.setInt('zandi_theme', zandiTheme);
   }
 
+  void setIllust(bool isIllust) async {
+    _isIllust = isIllust;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('isIllust', isIllust);
+  }
+
   String getUserName() {
     return _name;
   }
 
   int getZandiTheme() {
     return _zandiTheme;
+  }
+
+  bool getIllust() {
+    return _isIllust;
   }
 }
