@@ -1,4 +1,7 @@
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:my_solved/extensions/color_extension.dart';
 import 'package:my_solved/models/user/Top_100.dart';
 import 'package:my_solved/services/network_service.dart';
 import 'package:my_solved/services/user_service.dart';
@@ -6,10 +9,6 @@ import 'package:my_solved/views/setting_view.dart';
 import 'package:provider/provider.dart';
 
 import '../models/User.dart';
-import '../widgets/user_widget.dart';
-import 'package:my_solved/extensions/color_extension.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:extended_image/extended_image.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -38,19 +37,24 @@ class _HomeViewState extends State<HomeView> {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: <Widget>[
-                        profileImage(context, snapshot),
+                        _profileImage(context, snapshot),
                         profileInformation(userService.name, context, snapshot),
                         streak(context, snapshot),
                         // badge(context),
                         FutureBuilder(
-                          future: networkService.requestBadges(userService.name),
+                          future:
+                              networkService.requestBadges(userService.name),
                           builder: (context, builder) {
                             if (snapshot.hasData) {
                               return _badge(context);
                             } else if (snapshot.hasError) {
-                              return Center(child: Text('Error'),);
+                              return Center(
+                                child: Text('Error'),
+                              );
                             } else {
-                              return Center(child: CupertinoActivityIndicator(),);
+                              return Center(
+                                child: CupertinoActivityIndicator(),
+                              );
                             }
                           },
                         ),
@@ -58,9 +62,13 @@ class _HomeViewState extends State<HomeView> {
                       ],
                     );
                   } else if (snapshot.hasError) {
-                    return Center(child: Text('Error'),);
+                    return Center(
+                      child: Text('Error'),
+                    );
                   } else {
-                    return Center(child: CupertinoActivityIndicator(),);
+                    return Center(
+                      child: CupertinoActivityIndicator(),
+                    );
                   }
                 },
               ),
@@ -73,7 +81,7 @@ class _HomeViewState extends State<HomeView> {
 }
 
 extension _HomeStateExtension on _HomeViewState {
-  Widget profileImage(BuildContext context, AsyncSnapshot<User> snapshot) {
+  Widget _profileImage(BuildContext context, AsyncSnapshot<User> snapshot) {
     return Stack(
       clipBehavior: Clip.none,
       children: <Widget>[
@@ -136,7 +144,8 @@ extension _HomeStateExtension on _HomeViewState {
     );
   }
 
-  Widget profileInformation(String name, BuildContext context, AsyncSnapshot<User> snapshot) {
+  Widget profileInformation(
+      String name, BuildContext context, AsyncSnapshot<User> snapshot) {
     return Container(
       margin: EdgeInsets.only(top: 50),
       padding: EdgeInsets.all(20),
@@ -150,7 +159,9 @@ extension _HomeStateExtension on _HomeViewState {
           SizedBox(height: 8),
           Text(
             // snapshot.data?.bio ?? '자기소개를 설정하지 않았습니다.',
-            snapshot.data?.bio == '' ? '자기소개를 설정하지 않았습니다.' : snapshot.data?.bio ?? '자기소개를 설정하지 않았습니다.',
+            snapshot.data?.bio == ''
+                ? '자기소개를 설정하지 않았습니다.'
+                : snapshot.data?.bio ?? '자기소개를 설정하지 않았습니다.',
             style: TextStyle(
                 fontSize: 14, color: CupertinoTheme.of(context).fontGray),
           ),
@@ -288,7 +299,9 @@ extension _HomeStateExtension on _HomeViewState {
                     color: CupertinoTheme.of(context).fontGray,
                   ),
                 ),
-                SizedBox(height: 10,),
+                SizedBox(
+                  height: 10,
+                ),
                 Row(
                   children: <Widget>[
                     Text('전체 수'),
@@ -296,7 +309,9 @@ extension _HomeStateExtension on _HomeViewState {
                     Text((snapshot.data?.items.length ?? 0).toString() + '개'),
                   ],
                 ),
-                Wrap(direction: Axis.horizontal,)
+                Wrap(
+                  direction: Axis.horizontal,
+                )
               ],
             ),
           );
