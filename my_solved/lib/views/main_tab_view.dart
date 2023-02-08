@@ -1,32 +1,32 @@
 import 'package:flutter/cupertino.dart';
-import 'package:provider/provider.dart';
-import 'package:my_solved/view_models/main_tab_view_model.dart';
+import 'package:my_solved/extensions/color_extension.dart';
+import 'package:my_solved/views/home_view.dart';
+import 'package:my_solved/views/search_view.dart';
 
 class MainTabView extends StatelessWidget {
-  const MainTabView({Key? key}) : super(key: key);
+  MainTabView({Key? key}) : super(key: key);
+
+  final List<Widget> options = <Widget>[
+    const HomeView(),
+    const SearchView(),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    var viewModel = Provider.of<MainTabViewModel>(context);
-
     return CupertinoTabScaffold(
       tabBar: CupertinoTabBar(
-        activeColor: Color(0xff11ce3c),
+        activeColor: CupertinoTheme.of(context).main,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.house_fill),
-            label: 'Home',
-          ),
+              icon: Icon(CupertinoIcons.house_fill), label: 'Home'),
           BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.search),
-            label: 'Search',
-          ),
+              icon: Icon(CupertinoIcons.search), label: 'Search'),
         ],
       ),
       tabBuilder: (BuildContext context, int index) {
         return CupertinoTabView(
           builder: (BuildContext context) {
-            return viewModel.widgetOptions[index];
+            return options[index];
           },
         );
       },

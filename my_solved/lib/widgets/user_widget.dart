@@ -18,7 +18,7 @@ import '../widgets/ImageShadow.dart';
 Widget backgroundImage(BuildContext context, AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(
       child: ExtendedImage.network(
-    UserService().getIllust()
+    UserService().isOnIllustration
         ? snapshot.data?.background['backgroundImageUrl'] ?? ''
         : snapshot.data?.background['fallbackBackgroundImageUrl'] ??
             snapshot.data?.background['backgroundImageUrl'] ??
@@ -256,7 +256,7 @@ Widget rank(BuildContext context, AsyncSnapshot<User> snapshot) {
 
 // 잔디 테마
 String zandiUrl(String handle) {
-  int zandiTheme = UserService().getZandiTheme();
+  int zandiTheme = UserService().streakTheme;
   String theme = '';
   if (zandiTheme == 0) {
     theme = 'warm';
@@ -270,7 +270,7 @@ String zandiUrl(String handle) {
 
 // 잔디
 Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
-  int zandiTheme = UserService().getZandiTheme();
+  int zandiTheme = UserService().streakTheme;
   return Stack(
     children: [
       SvgPicture.asset(
@@ -318,7 +318,7 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
 
 // 최대 연속 문제 해결일 수
 Widget maxStreak(BuildContext context, AsyncSnapshot<User> snapshot) {
-  int zandiTheme = UserService().getZandiTheme();
+  int zandiTheme = UserService().streakTheme;
   return Text(
     '최장 ${snapshot.data?.maxStreak.toString()}일',
     style: TextStyle(
@@ -331,7 +331,7 @@ Widget maxStreak(BuildContext context, AsyncSnapshot<User> snapshot) {
 
 // 현재 연속 문제 해결일 수
 Widget currentStreak(BuildContext context, AsyncSnapshot<Grass> snapshot) {
-  int zandiTheme = UserService().getZandiTheme();
+  int zandiTheme = UserService().streakTheme;
   return Text(
     '현재 ${snapshot.data?.currentStreak}일',
     style: TextStyle(

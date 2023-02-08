@@ -18,7 +18,6 @@ dependencies:
   flutter_svg: ^0.22.0
   cupertino_icons: ^1.0.2
   extended_image: ^6.3.2
-  fluttertoast: ^8.1.1
   flutter_secure_storage: ^6.1.0
   shared_preferences: ^2.0.15
   url_launcher: ^6.1.7
