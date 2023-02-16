@@ -35,10 +35,14 @@ class PageRouterState extends State<PageRouter> {
     return ChangeNotifierProvider(
       create: (_) => UserService(),
       child: CupertinoPageScaffold(
-        child: Consumer<UserService>(
-          builder: (context, provider, child) =>
-              route(Provider.of<UserService>(context).state),
-        ),
+        child: CupertinoApp(
+            home: Consumer<UserService>(
+              builder: (context, provider, child) =>
+                  route(Provider.of<UserService>(context).state),
+            ),
+            theme: const CupertinoThemeData(
+              brightness: Brightness.light,
+            )),
       ),
     );
   }

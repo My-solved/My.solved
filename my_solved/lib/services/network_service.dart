@@ -8,6 +8,8 @@ import 'package:my_solved/models/user/Badges.dart';
 import 'package:my_solved/models/user/Grass.dart';
 import 'package:my_solved/models/user/Top_100.dart';
 
+import '../models/user/TagRatings.dart';
+
 class NetworkService {
   static final NetworkService _instance = NetworkService._privateConstructor();
 
@@ -18,9 +20,9 @@ class NetworkService {
   }
 
   // Request for Home
-  Future<User> requestUser(String name) async {
+  Future<User> requestUser(String handle) async {
     final response = await http
-        .get(Uri.parse("https://solved.ac/api/v3/user/show?handle=$name"));
+        .get(Uri.parse("https://solved.ac/api/v3/user/show?handle=$handle"));
     final statusCode = response.statusCode;
 
     if (statusCode == 200) {
@@ -31,10 +33,10 @@ class NetworkService {
     }
   }
 
-  Future<Badges> requestBadges(String name) async {
+  Future<Badges> requestBadges(String handle) async {
     final response = await http.get(
         Uri.parse(
-            "https://solved.ac/api/v3/user/available_badges?handle=$name"),
+            "https://solved.ac/api/v3/user/available_badges?handle=$handle"),
         headers: {'x-solvedac-language': 'ko'});
     final statusCode = response.statusCode;
 
@@ -46,9 +48,9 @@ class NetworkService {
     }
   }
 
-  Future<Grass> requestStreak(String name) async {
+  Future<Grass> requestStreak(String handle) async {
     final response = await http.get(Uri.parse(
-        "https://solved.ac/api/v3/user/grass?handle=$name&topic=today-solved"));
+        "https://solved.ac/api/v3/user/grass?handle=$handle&topic=today-solved"));
     final statusCode = response.statusCode;
 
     if (statusCode == 200) {
@@ -59,9 +61,9 @@ class NetworkService {
     }
   }
 
-  Future<Top_100> requestTop100(String name) async {
+  Future<Top_100> requestTop100(String handle) async {
     final response = await http
-        .get(Uri.parse("https://solved.ac/api/v3/user/top_100?handle=$name"));
+        .get(Uri.parse("https://solved.ac/api/v3/user/top_100?handle=$handle"));
     final statusCode = response.statusCode;
 
     if (statusCode == 200) {
@@ -72,13 +74,31 @@ class NetworkService {
     }
   }
 
-  // Request for Search
-  Future<SearchSuggestion> requestSearch(String query) async {
-    final response = await http.get(Uri.parse("https://solved.ac/api/v3/search/suggestion?query=$query"));
+  Future<List<TagRatings>> requestTagRatings(String handle) async {
+    final response = await http.get(
+        Uri.parse("https://solved.ac/api/v3/user/tag_ratings?handle=$handle"));
     final statusCode = response.statusCode;
 
     if (statusCode == 200) {
-      SearchSuggestion search = SearchSuggestion.fromJson(jsonDecode(response.body));
+      List<TagRatings> tagRatings =
+      json.decode(response.body).map<TagRatings>((json) {
+        return TagRatings.fromJson(json);
+      }).toList();
+      return tagRatings;
+    } else {
+      throw Exception('Failed to load');
+    }
+  }
+
+  // Request for Search
+  Future<SearchSuggestion> requestSearch(String query) async {
+    final response = await http.get(
+        Uri.parse("https://solved.ac/api/v3/search/suggestion?query=$query"));
+    final statusCode = response.statusCode;
+
+    if (statusCode == 200) {
+      SearchSuggestion search = SearchSuggestion.fromJson(
+          jsonDecode(response.body));
       return search;
     } else {
       throw Exception('Fail to load');

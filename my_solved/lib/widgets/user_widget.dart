@@ -31,7 +31,7 @@ Widget backgroundImage(BuildContext context, AsyncSnapshot<User> snapshot) {
 Widget profileImage(BuildContext context, AsyncSnapshot<User> snapshot) {
   return Card(
     elevation: 20,
-    shadowColor: levelColor(snapshot.data?.tier ?? 0),
+    shadowColor: levelColor(snapshot.data!.tier),
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(100),
     ),
@@ -44,7 +44,6 @@ Widget profileImage(BuildContext context, AsyncSnapshot<User> snapshot) {
           snapshot.data?.profileImageUrl ??
               'https://static.solved.ac/misc/360x360/default_profile.png',
           cache: true,
-          fit: BoxFit.cover,
         ),
       ),
     ),
@@ -52,23 +51,14 @@ Widget profileImage(BuildContext context, AsyncSnapshot<User> snapshot) {
 }
 
 Widget handle(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        snapshot.data?.handle ?? '',
-        style: TextStyle(
-          color: CupertinoColors.black,
-          // color: CupertinoTheme.of(context).textTheme.textStyle.color,
-          fontSize: 30,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      SizedBox(
-        height: 5,
-      ),
-      bio(context, snapshot),
-    ],
+  return Text(
+    snapshot.data?.handle ?? '',
+    style: TextStyle(
+      color: CupertinoColors.black,
+      // color: CupertinoTheme.of(context).textTheme.textStyle.color,
+      fontSize: 30,
+      fontWeight: FontWeight.bold,
+    ),
   );
 }
 
@@ -124,11 +114,18 @@ Widget classes(BuildContext context, AsyncSnapshot<User> snapshot) {
     userClass += 'g';
   }
 
-  return SvgPicture.asset(
-    'lib/assets/classes/c$userClass.svg',
-    width: 50,
-    height: 50,
-  );
+  return CupertinoButton(
+      padding: EdgeInsets.zero,
+      color: Colors.transparent,
+      onPressed: () {
+        launchUrlString('https://solved.ac/class/$userClass',
+            mode: LaunchMode.externalApplication);
+      },
+      child: SvgPicture.asset(
+        'lib/assets/classes/c$userClass.svg',
+        width: 50,
+        height: 50,
+      ));
 }
 
 // 티어
@@ -172,7 +169,7 @@ Widget solvedCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           snapshot.data?.solvedCount.toString() ?? '',
           style: TextStyle(
             color: Colors.black,
-            fontSize: MediaQuery.of(context).size.width * 0.048,
+            fontSize: MediaQuery.of(context).size.width * 0.04,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -180,7 +177,7 @@ Widget solvedCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           '해결',
           style: TextStyle(
             color: Colors.grey,
-            fontSize: MediaQuery.of(context).size.width * 0.038,
+            fontSize: MediaQuery.of(context).size.width * 0.04,
           ),
         ),
       ],
@@ -199,7 +196,7 @@ Widget voteCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           snapshot.data?.voteCount.toString() ?? '',
           style: TextStyle(
             color: Colors.black,
-            fontSize: MediaQuery.of(context).size.width * 0.048,
+            fontSize: MediaQuery.of(context).size.width * 0.04,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -207,7 +204,7 @@ Widget voteCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           '기여',
           style: TextStyle(
             color: Colors.grey,
-            fontSize: MediaQuery.of(context).size.width * 0.038,
+            fontSize: MediaQuery.of(context).size.width * 0.04,
           ),
         ),
       ],
@@ -226,7 +223,7 @@ Widget reverseRivalCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           snapshot.data?.reverseRivalCount.toString() ?? '',
           style: TextStyle(
             color: Colors.black,
-            fontSize: MediaQuery.of(context).size.width * 0.048,
+            fontSize: MediaQuery.of(context).size.width * 0.04,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -234,7 +231,7 @@ Widget reverseRivalCount(BuildContext context, AsyncSnapshot<User> snapshot) {
           '라이벌',
           style: TextStyle(
             color: Colors.grey,
-            fontSize: MediaQuery.of(context).size.width * 0.038,
+            fontSize: MediaQuery.of(context).size.width * 0.04,
           ),
         ),
       ],
@@ -570,7 +567,7 @@ Widget top100(
   Widget top100Box(BuildContext context, dynamic cur) {
     return CupertinoButton(
         padding: EdgeInsets.zero,
-        color: Colors.white,
+        color: Colors.transparent,
         onPressed: () {
           launchUrlString('https://www.acmicpc.net/problem/${cur['problemId']}',
               mode: LaunchMode.externalApplication);
@@ -642,6 +639,7 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
 
   Widget badgeTier(BuildContext context, dynamic badge, int idx) {
     String tier = badge['badgeTier'];
+    bool isContest = badge['badgeCategory'] == 'contest';
     Color tierColor = Colors.white;
     if (tier == 'bronze') {
       tierColor = Color(0xffad5600);
@@ -655,6 +653,7 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
 
     return Tooltip(
       textAlign: TextAlign.start,
+      preferBelow: false,
       richMessage: TextSpan(children: [
         TextSpan(
             text: '${badge['displayName']}\n',
@@ -697,32 +696,34 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
                   }
                 },
               )),
-          Positioned(
-              bottom: -5,
-              right: -1,
-              child: Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(100),
-                ),
-                child: Container(
-                  width: MediaQuery.of(context).size.width * 0.02,
-                  height: MediaQuery.of(context).size.width * 0.02,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: Container(
-                    width: MediaQuery.of(context).size.width * 0.014,
-                    height: MediaQuery.of(context).size.width * 0.014,
-                    decoration: BoxDecoration(
-                      color: tierColor,
-                      shape: BoxShape.circle,
+          isContest
+              ? SizedBox.shrink()
+              : Positioned(
+                  bottom: -5,
+                  right: -1,
+                  child: Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(100),
                     ),
-                  ),
-                ),
-              )),
+                    child: Container(
+                      width: MediaQuery.of(context).size.width * 0.02,
+                      height: MediaQuery.of(context).size.width * 0.02,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      alignment: Alignment.center,
+                      child: Container(
+                        width: MediaQuery.of(context).size.width * 0.014,
+                        height: MediaQuery.of(context).size.width * 0.014,
+                        decoration: BoxDecoration(
+                          color: tierColor,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  )),
         ],
       ),
     );
@@ -1051,8 +1052,8 @@ Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
       ]));
 }
 
-Widget tagChart(
-    BuildContext context, AsyncSnapshot<List<TagRatings>> snapshot, User user) {
+Widget tagChart(BuildContext context, AsyncSnapshot<List<TagRatings>> snapshot,
+    AsyncSnapshot<User> user) {
   List<TagRatings>? tags = snapshot.data;
   tags?.sort((a, b) => b.rating.compareTo(a.rating));
 
@@ -1110,7 +1111,7 @@ Widget tagChart(
               fontSize: MediaQuery.of(context).size.width * 0.03,
               color: Colors.black,
             ),
-            graphColors: [ratingColor(user.rating)],
+            graphColors: [ratingColor(user.data?.rating ?? 0)],
           ),
         ),
         SizedBox(height: 10),
