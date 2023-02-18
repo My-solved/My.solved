@@ -20,17 +20,11 @@ class _SettingViewState extends State<SettingView> {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        leading: GestureDetector(
-          child: Icon(
-            CupertinoIcons.back,
-            color: CupertinoColors.label,
-          ),
-          onTap: () => Navigator.of(context).pop(),
+        leading: CupertinoNavigationBarBackButton(
+          color: CupertinoColors.label,
+          onPressed: () => Navigator.of(context).pop(),
         ),
-        middle: Text(
-          '설정',
-          style: TextStyle(fontWeight: FontWeight.normal),
-        ),
+        middle: Text('설정'),
       ),
       child: SafeArea(
         child: Container(

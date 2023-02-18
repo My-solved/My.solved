@@ -9,9 +9,9 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../models/User.dart';
-import '../models/user/Badges.dart';
-import '../models/user/TagRatings.dart';
-import '../models/user/Top_100.dart';
+import '../models/user/badges.dart';
+import '../models/user/tag_ratings.dart';
+import '../models/user/top_100.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
@@ -408,7 +408,7 @@ extension _HomeStateExtension on _HomeViewState {
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           return Container(
-            margin: EdgeInsets.only(top: 10),
+            margin: EdgeInsets.only(top: 10, bottom: 20),
             padding: EdgeInsets.symmetric(
                 horizontal: MediaQuery.of(context).size.width * 0.05),
             child: tagChart(context, snapshot, userSnapshot),

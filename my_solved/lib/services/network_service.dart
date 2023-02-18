@@ -4,11 +4,11 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:my_solved/models/User.dart';
 import 'package:my_solved/models/search/suggestion.dart';
-import 'package:my_solved/models/user/Badges.dart';
-import 'package:my_solved/models/user/Grass.dart';
-import 'package:my_solved/models/user/Top_100.dart';
+import 'package:my_solved/models/user/badges.dart';
+import 'package:my_solved/models/user/grass.dart';
+import 'package:my_solved/models/user/top_100.dart';
 
-import '../models/user/TagRatings.dart';
+import '../models/user/tag_ratings.dart';
 
 class NetworkService {
   static final NetworkService _instance = NetworkService._privateConstructor();

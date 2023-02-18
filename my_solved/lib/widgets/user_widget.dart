@@ -5,14 +5,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_radar_chart/flutter_radar_chart.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:my_solved/models/user/TagRatings.dart';
-import 'package:my_solved/models/user/Top_100.dart';
+import 'package:my_solved/models/user/tag_ratings.dart';
+import 'package:my_solved/models/user/top_100.dart';
 import 'package:my_solved/services/user_service.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../models/User.dart';
-import '../models/user/Badges.dart';
-import '../models/user/Grass.dart';
+import '../models/user/badges.dart';
+import '../models/user/grass.dart';
 import '../widgets/ImageShadow.dart';
 
 Widget backgroundImage(BuildContext context, AsyncSnapshot<User> snapshot) {
