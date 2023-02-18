@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:my_solved/extensions/color_extension.dart';
 import 'package:my_solved/models/search/suggestion.dart';
 import 'package:my_solved/services/network_service.dart';
@@ -60,9 +61,22 @@ class _SearchViewState extends State<SearchView> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          '${problem['id']}번',
-                                          style: TextStyle(fontSize: 16),
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            SvgPicture.asset(
+                                              'lib/assets/tiers/${problem['level'].toString()}.svg',
+                                              height: 18,
+                                            ),
+                                            const SizedBox(
+                                              width: 5,
+                                            ),
+                                            Text(
+                                              '${problem['id']}번',
+                                              style: TextStyle(fontSize: 16),
+                                            ),
+                                          ],
                                         ),
                                         // SizedBox(
                                         //   height: 10,
