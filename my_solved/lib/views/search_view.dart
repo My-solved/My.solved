@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:my_solved/extensions/color_extension.dart';
 import 'package:my_solved/models/search/suggestion.dart';
 import 'package:my_solved/services/network_service.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class SearchView extends StatefulWidget {
   const SearchView({Key? key}) : super(key: key);
@@ -27,8 +28,7 @@ class _SearchViewState extends State<SearchView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                if (!isSubmitted)
-                  header(),
+                if (!isSubmitted) header(),
                 searchBar(),
                 if (isSubmitted)
                   FutureBuilder(
@@ -38,80 +38,87 @@ class _SearchViewState extends State<SearchView> {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
-                            if (snapshot.data!.problems.length > 0)
+                            if (snapshot.data!.problems.isNotEmpty)
                               problemHeader(context),
                             for (dynamic problem in snapshot.data!.problems)
-                              Container(
-                                decoration: BoxDecoration(
-                                    color: CupertinoTheme.of(context)
-                                        .backgroundGray,
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(10))),
-                                margin: const EdgeInsets.only(top: 10),
-                                padding: const EdgeInsets.all(20),
-                                width: MediaQuery.of(context).size.width,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      '${problem['id']}번',
-                                      style: TextStyle(fontSize: 16),
+                              CupertinoButton(
+                                  onPressed: () async {
+                                    String url =
+                                        'https://acmicpc.net/problem/${problem['id']}';
+                                    launchUrlString(url);
+                                  },
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                        color: CupertinoTheme.of(context)
+                                            .backgroundGray,
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(10))),
+                                    // margin: const EdgeInsets.only(top: 10),
+                                    padding: const EdgeInsets.all(20),
+                                    width: MediaQuery.of(context).size.width,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '${problem['id']}번',
+                                          style: TextStyle(fontSize: 16),
+                                        ),
+                                        // SizedBox(
+                                        //   height: 10,
+                                        // ),
+                                        Text(
+                                          '${problem['title']}',
+                                          style: TextStyle(fontSize: 20),
+                                        ),
+                                        // SizedBox(
+                                        //   height: 12,
+                                        // ),
+                                        // Text(
+                                        //   '맞은 사람 수: ${problem['solved']}',
+                                        //   style: TextStyle(
+                                        //     fontSize: 14,
+                                        //     color: CupertinoTheme.of(context)
+                                        //         .fontGray,
+                                        //   ),
+                                        // ),
+                                        // SizedBox(
+                                        //   height: 4,
+                                        // ),
+                                        // Text(
+                                        //   'Level: ${problem['level']}',
+                                        //   style: TextStyle(
+                                        //     fontSize: 14,
+                                        //     color: CupertinoTheme.of(context)
+                                        //         .fontGray,
+                                        //   ),
+                                        // ),
+                                        // SizedBox(
+                                        //   height: 4,
+                                        // ),
+                                        // Text(
+                                        //   '평균 시도 횟수:',
+                                        //   style: TextStyle(
+                                        //     fontSize: 14,
+                                        //     color: CupertinoTheme.of(context)
+                                        //         .fontGray,
+                                        //   ),
+                                        // ),
+                                        // SizedBox(
+                                        //   height: 4,
+                                        // ),
+                                        // Text(
+                                        //   '태그:',
+                                        //   style: TextStyle(
+                                        //     fontSize: 14,
+                                        //     color: CupertinoTheme.of(context)
+                                        //         .fontGray,
+                                        //   ),
+                                        // ),
+                                      ],
                                     ),
-                                    SizedBox(
-                                      height: 10,
-                                    ),
-                                    Text(
-                                      '${problem['title']}',
-                                      style: TextStyle(fontSize: 20),
-                                    ),
-                                    SizedBox(
-                                      height: 12,
-                                    ),
-                                    Text(
-                                      '맞은 사람 수: ${problem['solved']}',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color:
-                                        CupertinoTheme.of(context).fontGray,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      height: 4,
-                                    ),
-                                    Text(
-                                      'Level: ${problem['level']}',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color:
-                                        CupertinoTheme.of(context).fontGray,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      height: 4,
-                                    ),
-                                    Text(
-                                      '평균 시도 횟수:',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color:
-                                        CupertinoTheme.of(context).fontGray,
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      height: 4,
-                                    ),
-                                    Text(
-                                      '태그:',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color:
-                                        CupertinoTheme.of(context).fontGray,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            if (snapshot.data!.users.length > 0)
+                                  )),
+                            if (snapshot.data!.users.isNotEmpty)
                               userHeader(context),
                             for (dynamic user in snapshot.data?.users ?? [])
                               Container(
@@ -129,28 +136,37 @@ class _SearchViewState extends State<SearchView> {
                                   style: TextStyle(fontSize: 14),
                                 ),
                               ),
-                            if (snapshot.data!.tags.length > 0)
+                            if (snapshot.data!.tags.isNotEmpty)
                               tagHeader(context),
                             for (dynamic tag in snapshot.data?.tags ?? [])
-                              Container(
-                                decoration: BoxDecoration(
-                                    color: CupertinoTheme.of(context)
-                                        .backgroundGray,
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(10))),
-                                margin: const EdgeInsets.only(top: 10),
-                                padding: const EdgeInsets.only(
-                                    top: 12, right: 20, bottom: 12, left: 20),
-                                width: MediaQuery.of(context).size.width,
-                                child: Text(
-                                  '${tag['key']}:${tag['description']}',
-                                  style: TextStyle(fontSize: 14),
+                              CupertinoButton(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                      color: CupertinoTheme.of(context)
+                                          .backgroundGray,
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(10))),
+                                  margin: const EdgeInsets.only(top: 10),
+                                  padding: const EdgeInsets.only(
+                                      top: 12, right: 20, bottom: 12, left: 20),
+                                  width: MediaQuery.of(context).size.width,
+                                  child: Text(
+                                    '${tag['key']}:${tag['description']}',
+                                    style: TextStyle(fontSize: 14),
+                                  ),
                                 ),
-                              ),
+                                onPressed: () async {
+                                  String url =
+                                      'https://solved.ac/search?query=%23${tag['key']}';
+                                  launchUrlString(url);
+                                },
+                              )
                           ],
                         );
                       } else if (snapshot.hasError) {
-                        return Center(child: Text('Error'),);
+                        return Center(
+                          child: Text('Error'),
+                        );
                       } else {
                         return Center(child: CupertinoActivityIndicator());
                       }
@@ -202,7 +218,7 @@ extension _SearchStateExtension on _SearchViewState {
       child: Text(
         '문제',
         style:
-        TextStyle(fontSize: 12, color: CupertinoTheme.of(context).fontGray),
+            TextStyle(fontSize: 12, color: CupertinoTheme.of(context).fontGray),
       ),
     );
   }
@@ -212,7 +228,8 @@ extension _SearchStateExtension on _SearchViewState {
       margin: const EdgeInsets.only(top: 20),
       child: Text(
         '사용자',
-        style: TextStyle(fontSize: 12, color: CupertinoTheme.of(context).fontGray),
+        style:
+            TextStyle(fontSize: 12, color: CupertinoTheme.of(context).fontGray),
       ),
     );
   }
@@ -222,7 +239,8 @@ extension _SearchStateExtension on _SearchViewState {
       margin: EdgeInsets.only(top: 20),
       child: Text(
         '태그',
-        style: TextStyle(fontSize: 12, color: CupertinoTheme.of(context).fontGray),
+        style:
+            TextStyle(fontSize: 12, color: CupertinoTheme.of(context).fontGray),
       ),
     );
   }
