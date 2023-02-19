@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:my_solved/models/User.dart';
+import 'package:my_solved/models/search/object.dart';
 import 'package:my_solved/models/search/suggestion.dart';
 import 'package:my_solved/models/user/badges.dart';
 import 'package:my_solved/models/user/grass.dart';
@@ -81,7 +82,7 @@ class NetworkService {
 
     if (statusCode == 200) {
       List<TagRatings> tagRatings =
-      json.decode(response.body).map<TagRatings>((json) {
+          json.decode(response.body).map<TagRatings>((json) {
         return TagRatings.fromJson(json);
       }).toList();
       return tagRatings;
@@ -91,14 +92,72 @@ class NetworkService {
   }
 
   // Request for Search
-  Future<SearchSuggestion> requestSearch(String query) async {
+  Future<SearchSuggestion> requestSearchSuggestion(String query) async {
     final response = await http.get(
         Uri.parse("https://solved.ac/api/v3/search/suggestion?query=$query"));
     final statusCode = response.statusCode;
 
     if (statusCode == 200) {
-      SearchSuggestion search = SearchSuggestion.fromJson(
-          jsonDecode(response.body));
+      SearchSuggestion search =
+          SearchSuggestion.fromJson(jsonDecode(response.body));
+      return search;
+    } else {
+      throw Exception('Fail to load');
+    }
+  }
+
+  // 문제 검색
+  Future<SearchObject> requestSearchProblem(
+      String query, int? page, String? sort, String? direction) async {
+    String url = "https://solved.ac/api/v3/search/problem?query=$query";
+    if (page != null) {
+      url += "&page=$page";
+    }
+    if (sort != null) {
+      url += "&sort=$sort";
+    }
+    if (direction != null) {
+      url += "&direction=$direction";
+    }
+    final response = await http.get(Uri.parse(url));
+    final statusCode = response.statusCode;
+
+    if (statusCode == 200) {
+      SearchObject search = SearchObject.fromJson(jsonDecode(response.body));
+      return search;
+    } else {
+      throw Exception('Fail to load');
+    }
+  }
+
+  // 사용자 검색
+  Future<SearchObject> requestSearchUser(String query, int? page) async {
+    String url = "https://solved.ac/api/v3/search/user?query=$query";
+    if (page != null) {
+      url += "&page=$page";
+    }
+    final response = await http.get(Uri.parse(url));
+    final statusCode = response.statusCode;
+
+    if (statusCode == 200) {
+      SearchObject search = SearchObject.fromJson(jsonDecode(response.body));
+      return search;
+    } else {
+      throw Exception('Fail to load');
+    }
+  }
+
+  // 태그 검색
+  Future<SearchObject> requestSearchTag(String query, int? page) async {
+    String url = "https://solved.ac/api/v3/search/tag?query=$query";
+    if (page != null) {
+      url += "&page=$page";
+    }
+    final response = await http.get(Uri.parse(url));
+    final statusCode = response.statusCode;
+
+    if (statusCode == 200) {
+      SearchObject search = SearchObject.fromJson(jsonDecode(response.body));
       return search;
     } else {
       throw Exception('Fail to load');
