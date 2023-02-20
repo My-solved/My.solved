@@ -3,7 +3,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:my_solved/extensions/color_extension.dart';
 import 'package:my_solved/models/search/suggestion.dart';
 import 'package:my_solved/services/network_service.dart';
+import 'package:my_solved/services/user_service.dart';
 import 'package:my_solved/views/user_view.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class SearchView extends StatefulWidget {
@@ -60,7 +62,10 @@ class _SearchViewState extends State<SearchView> {
                                   onPressed: () async {
                                     String url =
                                         'https://acmicpc.net/problem/${problem['id']}';
-                                    launchUrlString(url);
+                                    launchUrlString(
+                                      url,
+                                      mode: LaunchMode.externalApplication,
+                                    );
                                   },
                                   child: Column(
                                     crossAxisAlignment:
@@ -70,12 +75,24 @@ class _SearchViewState extends State<SearchView> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.end,
                                         children: [
-                                          SvgPicture.asset(
-                                            'lib/assets/tiers/${problem['level'].toString()}.svg',
-                                            height: 18,
+                                          Consumer<UserService>(
+                                            builder:
+                                                (context, userService, child) =>
+                                                    userService.showTierIcon
+                                                        ? SvgPicture.asset(
+                                                            'lib/assets/tiers/${problem['level'].toString()}.svg',
+                                                            height: 18,
+                                                          )
+                                                        : SizedBox.shrink(),
                                           ),
-                                          const SizedBox(
-                                            width: 5,
+                                          Consumer<UserService>(
+                                            builder:
+                                                (context, userService, child) =>
+                                                    userService.showTierIcon
+                                                        ? const SizedBox(
+                                                            width: 5,
+                                                          )
+                                                        : SizedBox.shrink(),
                                           ),
                                           Text(
                                             '${problem['id']}번',
@@ -152,15 +169,16 @@ class _SearchViewState extends State<SearchView> {
                                 child: CupertinoButton(
                                   alignment: Alignment.centerLeft,
                                   padding: EdgeInsets.only(left: 20),
-                                  child:  Text(
+                                  child: Text(
                                     '${user['handle']}',
                                     style: TextStyle(fontSize: 14),
                                   ),
-                                  onPressed: () => Navigator.of(context).push(
-                                    CupertinoPageRoute(builder: (BuildContext context) {
+                                  onPressed: () => Navigator.of(context)
+                                      .push(CupertinoPageRoute(
+                                    builder: (BuildContext context) {
                                       return UserView(username: user['handle']);
-                                    },)
-                                  ),
+                                    },
+                                  )),
                                 ),
                               ),
                             if (snapshot.data!.tags.isNotEmpty)
@@ -184,7 +202,10 @@ class _SearchViewState extends State<SearchView> {
                                   onPressed: () async {
                                     String url =
                                         'https://solved.ac/search?query=%23${tag['key']}';
-                                    launchUrlString(url);
+                                    launchUrlString(
+                                      url,
+                                      mode: LaunchMode.externalApplication,
+                                    );
                                   },
                                 ),
                               ),
@@ -231,7 +252,7 @@ extension _SearchStateExtension on _SearchViewState {
         },
         onSubmitted: (text) {
           setState(() {
-            future = networkService.requestSearch(input);
+            future = networkService.requestSearchSuggestion(input);
             isSubmitted = true;
           });
         },

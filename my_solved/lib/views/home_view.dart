@@ -35,8 +35,8 @@ class _HomeViewState extends State<HomeView> {
                       zandi(context, snapshot),
                       top100(context, snapshot,
                           networkService.requestTop100(handle)),
-                      badges(context, networkService.requestBadges(handle)),
                       tagChart(context, snapshot),
+                      badges(context, networkService.requestBadges(handle)),
                     ],
                   );
                 } else if (snapshot.hasError) {

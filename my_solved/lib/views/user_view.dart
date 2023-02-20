@@ -43,8 +43,8 @@ class _UserViewState extends State<UserView> {
                     zandi(context, snapshot),
                     top100(context, snapshot,
                         networkService.requestTop100(username)),
-                    badges(context, networkService.requestBadges(username)),
                     tagChart(context, snapshot),
+                    badges(context, networkService.requestBadges(username)),
                   ],
                 );
               } else if (snapshot.hasError) {

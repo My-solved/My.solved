@@ -73,13 +73,19 @@ Widget profileDetail(BuildContext context, AsyncSnapshot<User> snapshot) {
         SizedBox(height: 15),
         Wrap(
           alignment: WrapAlignment.start,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             handle(context, snapshot),
             badge(context, snapshot),
             classes(context, snapshot),
           ],
         ),
+        snapshot.data!.bio!.isNotEmpty
+            ? SizedBox(height: 5)
+            : SizedBox.shrink(),
         bio(context, snapshot),
+        SizedBox(height: 5),
+        organizations(context, snapshot),
       ],
     ),
   );
@@ -126,8 +132,7 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
                         // 'Rating: ${snapshot.data?.rating}',
                         '스트릭',
                         style: TextStyle(
-                          fontSize:
-                              MediaQuery.of(context).size.width * 0.4 * 0.10,
+                          fontSize: MediaQuery.of(context).size.width * 0.035,
                           // fontWeight: FontWeight.bold,
                           color: zandiTheme == 2
                               ? Colors.white
@@ -271,14 +276,14 @@ Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
                 children: [
                   SvgPicture.asset('lib/assets/icons/rating.svg',
                       color: Color(0xff8a8f95),
-                      width: MediaQuery.of(context).size.width * 0.4 * 0.1),
+                      width: MediaQuery.of(context).size.width * 0.04),
                   SizedBox(
                     width: 5,
                   ),
                   Text(
                     '레이팅',
                     style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.width * 0.4 * 0.1,
+                      fontSize: MediaQuery.of(context).size.width * 0.035,
                       color: Color(0xff8a8f95),
                     ),
                   ),
@@ -321,7 +326,7 @@ Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
             child: Text(
               rank < 1000
                   ? '#$rank'
-                  : '#${(rank / 1000).floor()},${rank % 1000}',
+                  : '#${(rank / 1000).floor()},${(rank % 1000).toString().padLeft(3).replaceAll(' ', '0')}',
               style: TextStyle(
                 fontSize: MediaQuery.of(context).size.width * 0.4 * 0.11,
                 fontFamily: 'Pretendard-Regular',
@@ -438,81 +443,87 @@ Widget badges(BuildContext context, Future<Badges> future) {
           }
 
           return Tooltip(
-            textAlign: TextAlign.start,
-            preferBelow: false,
-            richMessage: TextSpan(children: [
-              TextSpan(
-                  text: '${badge['displayName']}\n',
-                  style: TextStyle(
-                    fontSize: MediaQuery.of(context).size.width * 0.04,
-                    fontFamily: 'Pretendard-Regular',
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  )),
-              TextSpan(
-                  text: '${badge['displayDescription']}',
-                  style: TextStyle(
-                    fontSize: MediaQuery.of(context).size.width * 0.04,
-                    fontFamily: 'Pretendard',
-                    color: Colors.white,
-                  )),
-            ]),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                ImageShadow(
-                    opacity: 0.2,
-                    child: ExtendedImage.network(
-                      'https://static.solved.ac/profile_badge/120x120/${badge['badgeId']}.png',
-                      width: MediaQuery.of(context).size.width * 0.13,
-                      fit: BoxFit.cover,
-                      cache: true,
-                      loadStateChanged: (ExtendedImageState state) {
-                        switch (state.extendedImageLoadState) {
-                          case LoadState.loading:
-                            return Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          case LoadState.completed:
-                            return null;
-                          case LoadState.failed:
-                            return Center(
-                              child: Icon(Icons.error),
-                            );
-                        }
-                      },
+              textAlign: TextAlign.start,
+              preferBelow: false,
+              richMessage: TextSpan(children: [
+                TextSpan(
+                    text: '${badge['displayName']}\n',
+                    style: TextStyle(
+                      fontSize: MediaQuery.of(context).size.width * 0.04,
+                      fontFamily: 'Pretendard-Regular',
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     )),
-                isContest
-                    ? SizedBox.shrink()
-                    : Positioned(
-                        bottom: -5,
-                        right: -1,
-                        child: Card(
-                          elevation: 2,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(100),
-                          ),
-                          child: Container(
-                            width: MediaQuery.of(context).size.width * 0.02,
-                            height: MediaQuery.of(context).size.width * 0.02,
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            alignment: Alignment.center,
-                            child: Container(
-                              width: MediaQuery.of(context).size.width * 0.014,
-                              height: MediaQuery.of(context).size.width * 0.014,
-                              decoration: BoxDecoration(
-                                color: tierColor,
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                          ),
+                TextSpan(
+                    text: '${badge['displayDescription']}',
+                    style: TextStyle(
+                      fontSize: MediaQuery.of(context).size.width * 0.04,
+                      fontFamily: 'Pretendard',
+                      color: Colors.white,
+                    )),
+              ]),
+              child: Container(
+                margin:
+                    EdgeInsets.all(MediaQuery.of(context).size.width * 0.01),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    ImageShadow(
+                        opacity: 0.2,
+                        child: ExtendedImage.network(
+                          'https://static.solved.ac/profile_badge/120x120/${badge['badgeId']}.png',
+                          width: MediaQuery.of(context).size.width * 0.11,
+                          fit: BoxFit.cover,
+                          cache: true,
+                          loadStateChanged: (ExtendedImageState state) {
+                            switch (state.extendedImageLoadState) {
+                              case LoadState.loading:
+                                return Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              case LoadState.completed:
+                                return null;
+                              case LoadState.failed:
+                                return Center(
+                                  child: Icon(Icons.error),
+                                );
+                            }
+                          },
                         )),
-              ],
-            ),
-          );
+                    isContest
+                        ? SizedBox.shrink()
+                        : Positioned(
+                            bottom: -5,
+                            right: -1,
+                            child: Card(
+                              elevation: 2,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              child: Container(
+                                width: MediaQuery.of(context).size.width * 0.02,
+                                height:
+                                    MediaQuery.of(context).size.width * 0.02,
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                ),
+                                alignment: Alignment.center,
+                                child: Container(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.014,
+                                  height:
+                                      MediaQuery.of(context).size.width * 0.014,
+                                  decoration: BoxDecoration(
+                                    color: tierColor,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ),
+                            )),
+                  ],
+                ),
+              ));
         }
 
         Widget badgeAchievements(
@@ -724,64 +735,62 @@ Widget badges(BuildContext context, Future<Badges> future) {
         }
 
         return Container(
-            margin: EdgeInsets.only(top: 10),
-            padding: EdgeInsets.symmetric(
-                horizontal: MediaQuery.of(context).size.width * 0.05),
-            child: Container(
-                width: MediaQuery.of(context).size.width,
-                padding: EdgeInsets.only(
-                  left: MediaQuery.of(context).size.width * 0.05,
-                  right: MediaQuery.of(context).size.width * 0.05,
-                  top: MediaQuery.of(context).size.width * 0.05,
-                ),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.grey, width: 0.5),
-                ),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          SvgPicture.asset('lib/assets/icons/badge.svg',
-                              color: Color(0xff8a8f95),
-                              width: MediaQuery.of(context).size.width * 0.05),
-                          SizedBox(width: 5),
-                          Text(
-                            '뱃지',
-                            style: TextStyle(
-                              fontSize:
-                                  MediaQuery.of(context).size.width * 0.04,
-                              color: Color(0xff8a8f95),
-                            ),
-                          ),
-                        ],
-                      ),
-                      RichText(
-                          text: TextSpan(children: [
-                        TextSpan(
-                            text: count.toString(),
-                            style: TextStyle(
-                              fontSize:
-                                  MediaQuery.of(context).size.width * 0.05,
-                              fontFamily: 'Pretendard-Regular',
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            )),
-                        TextSpan(
-                            text: '개',
-                            style: TextStyle(
-                              fontSize:
-                                  MediaQuery.of(context).size.width * 0.05,
-                              fontFamily: 'Pretendard',
-                              color: Colors.black,
-                            )),
-                      ])),
-                      badgeAchievements(context, snapshot),
-                      badgeSeasons(context, snapshot),
-                      badgeEvents(context, snapshot),
-                      badgeContests(context, snapshot),
-                    ])));
+            width: MediaQuery.of(context).size.width,
+            margin: EdgeInsets.only(
+              left: MediaQuery.of(context).size.width * 0.05,
+              right: MediaQuery.of(context).size.width * 0.05,
+              top: 10,
+              bottom: 20,
+            ),
+            padding: EdgeInsets.only(
+              left: MediaQuery.of(context).size.width * 0.05,
+              right: MediaQuery.of(context).size.width * 0.05,
+              top: MediaQuery.of(context).size.width * 0.05,
+            ),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey, width: 0.5),
+            ),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(
+                children: [
+                  SvgPicture.asset('lib/assets/icons/badge.svg',
+                      color: Color(0xff8a8f95),
+                      width: MediaQuery.of(context).size.width * 0.04),
+                  SizedBox(width: 5),
+                  Text(
+                    '뱃지',
+                    style: TextStyle(
+                      fontSize: MediaQuery.of(context).size.width * 0.035,
+                      color: Color(0xff8a8f95),
+                    ),
+                  ),
+                ],
+              ),
+              RichText(
+                  text: TextSpan(children: [
+                TextSpan(
+                    text: count.toString(),
+                    style: TextStyle(
+                      fontSize: MediaQuery.of(context).size.width * 0.05,
+                      fontFamily: 'Pretendard-Regular',
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    )),
+                TextSpan(
+                    text: '개',
+                    style: TextStyle(
+                      fontSize: MediaQuery.of(context).size.width * 0.05,
+                      fontFamily: 'Pretendard',
+                      color: Colors.black,
+                    )),
+              ])),
+              badgeAchievements(context, snapshot),
+              badgeSeasons(context, snapshot),
+              badgeEvents(context, snapshot),
+              badgeContests(context, snapshot),
+            ]));
       } else {
         return CupertinoActivityIndicator();
       }
@@ -790,38 +799,48 @@ Widget badges(BuildContext context, Future<Badges> future) {
 }
 
 Widget backgroundImage(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return CupertinoPageScaffold(
-      child: ExtendedImage.network(
-    UserService().isOnIllustration
-        ? snapshot.data?.background['backgroundImageUrl'] ?? ''
-        : snapshot.data?.background['fallbackBackgroundImageUrl'] ??
-            snapshot.data?.background['backgroundImageUrl'] ??
-            '',
-    cache: true,
-    fit: BoxFit.fitWidth,
-  ));
+  return Consumer<UserService>(builder: (context, provider, child) {
+    bool isIllustration = provider.isIllustration;
+    return CupertinoPageScaffold(
+        child: ExtendedImage.network(
+      isIllustration
+          ? snapshot.data?.background['backgroundImageUrl'] ?? ''
+          : snapshot.data?.background['fallbackBackgroundImageUrl'] ??
+              snapshot.data?.background['backgroundImageUrl'] ??
+              '',
+      cache: true,
+      fit: BoxFit.fitWidth,
+    ));
+  });
 }
 
 Widget profileImage(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return Card(
-    elevation: 20,
-    shadowColor: levelColor(snapshot.data!.tier),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(100),
-    ),
-    child: SizedBox(
+  return Container(
       width: 100,
       height: 100,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(100),
-        child: ExtendedImage.network(
-          snapshot.data?.profileImageUrl ??
-              'https://static.solved.ac/misc/360x360/default_profile.png',
-          cache: true,
-        ),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: ratingColor(snapshot.data?.rating ?? 0).withOpacity(0.5),
+            spreadRadius: 1,
+            blurRadius: 10,
+            offset: Offset(0, 5), // changes position of shadow
+          ),
+        ],
       ),
-    ),
-  );
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          ClipOval(
+              child: ExtendedImage.network(
+            snapshot.data?.profileImageUrl ?? '',
+            cache: true,
+            fit: BoxFit.cover,
+          )),
+          Positioned(bottom: -20, left: 35, child: tiers(context, snapshot))
+        ],
+      ));
 }
 
 Widget tagChart(BuildContext context, AsyncSnapshot<User> userSnapshot) {
@@ -851,7 +870,7 @@ Widget tagChart(BuildContext context, AsyncSnapshot<User> userSnapshot) {
       }
       if (snapshot.hasData) {
         return Container(
-          margin: EdgeInsets.only(top: 10, bottom: 20),
+          margin: EdgeInsets.only(top: 10),
           padding: EdgeInsets.symmetric(
               horizontal: MediaQuery.of(context).size.width * 0.05),
           child: Container(
@@ -868,12 +887,12 @@ Widget tagChart(BuildContext context, AsyncSnapshot<User> userSnapshot) {
                       children: [
                         SvgPicture.asset('lib/assets/icons/tag.svg',
                             color: Color(0xff8a8f95),
-                            width: MediaQuery.of(context).size.width * 0.05),
+                            width: MediaQuery.of(context).size.width * 0.04),
                         SizedBox(width: 5),
                         Text(
                           '태그 분포',
                           style: TextStyle(
-                            fontSize: MediaQuery.of(context).size.width * 0.04,
+                            fontSize: MediaQuery.of(context).size.width * 0.035,
                             color: Color(0xff8a8f95),
                           ),
                         ),
@@ -982,6 +1001,7 @@ Widget tagChart(BuildContext context, AsyncSnapshot<User> userSnapshot) {
                                       child: Text(
                                         tags[index].rating.toString(),
                                         style: TextStyle(
+                                          fontWeight: FontWeight.bold,
                                           fontSize: MediaQuery.of(context)
                                                   .size
                                                   .width *
@@ -1028,42 +1048,114 @@ Widget handle(BuildContext context, AsyncSnapshot<User> snapshot) {
 
 // 소속
 Widget organizations(BuildContext context, AsyncSnapshot<User> snapshot) {
+  List<dynamic> companies = [];
+  List<dynamic> schools = [];
+  List<dynamic> communities = [];
+  for (var i = 0; i < snapshot.data!.organizations.length; i++) {
+    if (snapshot.data!.organizations[i]['type'] == 'community') {
+      communities.add(snapshot.data!.organizations[i]['name']);
+    } else if (snapshot.data!.organizations[i]['type'] == 'company') {
+      companies.add(snapshot.data!.organizations[i]['name']);
+    } else {
+      schools.add(snapshot.data!.organizations[i]['name']);
+    }
+  }
+
   return CupertinoPageScaffold(
       backgroundColor: Colors.transparent,
-      child: Row(children: [
-        SvgPicture.asset(
-          'lib/assets/icons/hat.svg',
-          width: 15,
-          height: 15,
-        ),
-        SizedBox(width: 5),
-        Container(
-          width: 180,
-          alignment: Alignment.centerLeft,
-          child: RichText(
+      child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
+        companies.isEmpty
+            ? SizedBox.shrink()
+            : Container(
+                margin: EdgeInsets.only(right: 5),
+                child: SvgPicture.asset(
+                  'lib/assets/icons/company.svg',
+                  color: Colors.grey,
+                  width: 15,
+                  height: 15,
+                ),
+              ),
+        for (var i = 0; i < companies.length; i++)
+          RichText(
             text: TextSpan(
               children: [
+                (0 < i) ? TextSpan(text: ", ") : TextSpan(),
                 TextSpan(
-                  text: snapshot.data!.organizations.isEmpty
-                      ? '소속 없음'
-                      : snapshot.data?.organizations[0]['name'] ?? '',
-                  style: TextStyle(
-                    color: Colors.grey,
-                  ),
+                  text: companies[i],
                 ),
               ],
+              style: TextStyle(
+                color: Colors.grey,
+              ),
             ),
           ),
-        )
+        companies.isNotEmpty && (schools.isNotEmpty || communities.isNotEmpty)
+            ? SizedBox(
+                width: 5,
+              )
+            : SizedBox.shrink(),
+        schools.isEmpty
+            ? SizedBox.shrink()
+            : Container(
+                margin: EdgeInsets.only(right: 5),
+                child: SvgPicture.asset(
+                  'lib/assets/icons/school.svg',
+                  color: Colors.grey,
+                  width: 15,
+                  height: 15,
+                ),
+              ),
+        for (var i = 0; i < schools.length; i++)
+          RichText(
+            text: TextSpan(
+              children: [
+                (0 < i) ? TextSpan(text: ", ") : TextSpan(),
+                TextSpan(
+                  text: schools[i],
+                ),
+              ],
+              style: TextStyle(
+                color: Colors.grey,
+              ),
+            ),
+          ),
+        (companies.isNotEmpty || schools.isNotEmpty) && communities.isNotEmpty
+            ? SizedBox.shrink()
+            : SizedBox(
+                width: 5,
+              ),
+        communities.isEmpty
+            ? SizedBox.shrink()
+            : Container(
+                margin: EdgeInsets.only(right: 5),
+                child: SvgPicture.asset(
+                  'lib/assets/icons/community.svg',
+                  color: Colors.grey,
+                  width: 15,
+                  height: 15,
+                ),
+              ),
+        for (var i = 0; i < communities.length; i++)
+          RichText(
+            text: TextSpan(
+              children: [
+                (0 < i) ? TextSpan(text: ", ") : TextSpan(),
+                TextSpan(
+                  text: communities[i],
+                ),
+              ],
+              style: TextStyle(
+                color: Colors.grey,
+              ),
+            ),
+          ),
       ]));
 }
 
 // 자기소개
 Widget bio(BuildContext context, AsyncSnapshot<User> snapshot) {
   return snapshot.data?.bio?.isEmpty ?? true
-      ? SizedBox(
-          height: 1,
-        )
+      ? SizedBox.shrink()
       : Text(
           snapshot.data?.bio ?? '',
         );
@@ -1315,7 +1407,7 @@ Color levelColor(int level) {
     return Color(0xffff0062);
   } else {
     // master
-    return Color(0xffB491FF);
+    return Color(0xffb300e0);
   }
 }
 
@@ -1342,7 +1434,7 @@ Color ratingColor(int rating) {
     return Color(0xffff0062);
   } else {
     // master
-    return Color(0xffB491FF);
+    return Color(0xffb300e0);
   }
 }
 
