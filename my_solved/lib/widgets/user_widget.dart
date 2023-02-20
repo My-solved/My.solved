@@ -441,89 +441,104 @@ Widget badges(BuildContext context, Future<Badges> future) {
           } else if (tier == 'master') {
             tierColor = Color(0xffff99d8);
           }
-
-          return Tooltip(
-              textAlign: TextAlign.start,
-              preferBelow: false,
-              richMessage: TextSpan(children: [
-                TextSpan(
-                    text: '${badge['displayName']}\n',
-                    style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.width * 0.04,
-                      fontFamily: 'Pretendard-Regular',
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    )),
-                TextSpan(
-                    text: '${badge['displayDescription']}',
-                    style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.width * 0.04,
-                      fontFamily: 'Pretendard',
-                      color: Colors.white,
-                    )),
-              ]),
-              child: Container(
-                margin:
-                    EdgeInsets.all(MediaQuery.of(context).size.width * 0.01),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    ImageShadow(
-                        opacity: 0.2,
-                        child: ExtendedImage.network(
-                          'https://static.solved.ac/profile_badge/120x120/${badge['badgeId']}.png',
-                          width: MediaQuery.of(context).size.width * 0.11,
-                          fit: BoxFit.cover,
-                          cache: true,
-                          loadStateChanged: (ExtendedImageState state) {
-                            switch (state.extendedImageLoadState) {
-                              case LoadState.loading:
-                                return Center(
-                                  child: CircularProgressIndicator(),
-                                );
-                              case LoadState.completed:
-                                return null;
-                              case LoadState.failed:
-                                return Center(
-                                  child: Icon(Icons.error),
-                                );
-                            }
-                          },
-                        )),
-                    isContest
-                        ? SizedBox.shrink()
-                        : Positioned(
-                            bottom: -5,
-                            right: -1,
-                            child: Card(
-                              elevation: 2,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(100),
-                              ),
-                              child: Container(
-                                width: MediaQuery.of(context).size.width * 0.02,
-                                height:
-                                    MediaQuery.of(context).size.width * 0.02,
-                                decoration: const BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                ),
-                                alignment: Alignment.center,
-                                child: Container(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.014,
-                                  height:
-                                      MediaQuery.of(context).size.width * 0.014,
-                                  decoration: BoxDecoration(
-                                    color: tierColor,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                              ),
-                            )),
-                  ],
-                ),
-              ));
+          return badge == null
+              ? SizedBox()
+              : Container(
+                  margin:
+                      EdgeInsets.all(MediaQuery.of(context).size.width * 0.015),
+                  child: Tooltip(
+                    preferBelow: false,
+                    richMessage: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: badge['displayName'],
+                          style: TextStyle(
+                            fontSize:
+                                MediaQuery.of(context).size.width * 0.4 * 0.1,
+                            fontFamily: 'Pretendard-Regular',
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        TextSpan(text: '\n'),
+                        TextSpan(
+                          text: badge['displayDescription'],
+                          style: TextStyle(
+                            fontSize:
+                                MediaQuery.of(context).size.width * 0.4 * 0.1,
+                            fontFamily: 'Pretendard-Regular',
+                            color: Colors.white,
+                          ),
+                        )
+                      ],
+                    ),
+                    child: ImageShadow(
+                      opacity: 0.2,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          ImageShadow(
+                              opacity: 0.2,
+                              child: ExtendedImage.network(
+                                'https://static.solved.ac/profile_badge/120x120/${badge['badgeId']}.png',
+                                width: MediaQuery.of(context).size.width * 0.1,
+                                fit: BoxFit.cover,
+                                cache: true,
+                                loadStateChanged: (ExtendedImageState state) {
+                                  switch (state.extendedImageLoadState) {
+                                    case LoadState.loading:
+                                      return Center(
+                                        child: CircularProgressIndicator(),
+                                      );
+                                    case LoadState.completed:
+                                      return null;
+                                    case LoadState.failed:
+                                      return Center(
+                                        child: Icon(Icons.error),
+                                      );
+                                  }
+                                },
+                              )),
+                          isContest
+                              ? SizedBox.shrink()
+                              : Positioned(
+                                  bottom: -5,
+                                  right: -1,
+                                  child: Card(
+                                    elevation: 2,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(100),
+                                    ),
+                                    child: Container(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.02,
+                                      height:
+                                          MediaQuery.of(context).size.width *
+                                              0.02,
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Container(
+                                        width:
+                                            MediaQuery.of(context).size.width *
+                                                0.014,
+                                        height:
+                                            MediaQuery.of(context).size.width *
+                                                0.014,
+                                        decoration: BoxDecoration(
+                                          color: tierColor,
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                    ),
+                                  )),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
         }
 
         Widget badgeAchievements(
@@ -834,7 +849,8 @@ Widget profileImage(BuildContext context, AsyncSnapshot<User> snapshot) {
         children: [
           ClipOval(
               child: ExtendedImage.network(
-            snapshot.data?.profileImageUrl ?? '',
+            snapshot.data?.profileImageUrl ??
+                'https://static.solved.ac/misc/360x360/default_profile.png',
             cache: true,
             fit: BoxFit.cover,
           )),
@@ -1176,7 +1192,7 @@ Widget classes(BuildContext context, AsyncSnapshot<User> snapshot) {
       padding: EdgeInsets.zero,
       color: Colors.transparent,
       onPressed: () {
-        launchUrlString('https://solved.ac/class/$userClass',
+        launchUrlString('https://solved.ac/class',
             mode: LaunchMode.externalApplication);
       },
       child: SvgPicture.asset(
@@ -1363,26 +1379,100 @@ Widget exp(BuildContext context, AsyncSnapshot<User> snapshot) {
 
 // 배지
 Widget badge(BuildContext context, AsyncSnapshot<User> snapshot) {
+  String tier = snapshot.data!.badge['badgeTier'];
+  bool isContest = snapshot.data!.badge['badgeCategory'] == 'contest';
+  Color tierColor = Colors.white;
+  if (tier == 'bronze') {
+    tierColor = Color(0xffad5600);
+  } else if (tier == 'silver') {
+    tierColor = Color(0xff435f7a);
+  } else if (tier == 'gold') {
+    tierColor = Color(0xffec9a00);
+  } else if (tier == 'master') {
+    tierColor = Color(0xffff99d8);
+  }
   return snapshot.data?.badge == null
       ? SizedBox()
       : ImageShadow(
           opacity: 0.2,
-          child: ExtendedImage.network(
-            snapshot.data?.badge['badgeImageUrl']
-                .replaceAll('profile_badge/', 'profile_badge/120x120/'),
-            width: 50,
-            height: 50,
-            cache: true,
-            loadStateChanged: (ExtendedImageState state) {
-              switch (state.extendedImageLoadState) {
-                case LoadState.loading:
-                  return CupertinoActivityIndicator();
-                case LoadState.completed:
-                  return null;
-                case LoadState.failed:
-                  return Icon(Icons.error);
-              }
-            },
+          child: Tooltip(
+            richMessage: TextSpan(
+              children: [
+                TextSpan(
+                  text: snapshot.data!.badge['displayName'],
+                  style: TextStyle(
+                    fontSize: MediaQuery.of(context).size.width * 0.4 * 0.1,
+                    fontFamily: 'Pretendard-Regular',
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                TextSpan(text: '\n'),
+                TextSpan(
+                  text: snapshot.data!.badge['displayDescription'],
+                  style: TextStyle(
+                    fontSize: MediaQuery.of(context).size.width * 0.4 * 0.1,
+                    fontFamily: 'Pretendard-Regular',
+                    color: Colors.white,
+                  ),
+                )
+              ],
+            ),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                ImageShadow(
+                    opacity: 0.2,
+                    child: ExtendedImage.network(
+                      'https://static.solved.ac/profile_badge/120x120/${snapshot.data!.badge['badgeId']}.png',
+                      width: MediaQuery.of(context).size.width * 0.11,
+                      fit: BoxFit.cover,
+                      cache: true,
+                      loadStateChanged: (ExtendedImageState state) {
+                        switch (state.extendedImageLoadState) {
+                          case LoadState.loading:
+                            return Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          case LoadState.completed:
+                            return null;
+                          case LoadState.failed:
+                            return Center(
+                              child: Icon(Icons.error),
+                            );
+                        }
+                      },
+                    )),
+                isContest
+                    ? SizedBox.shrink()
+                    : Positioned(
+                        bottom: -5,
+                        right: -1,
+                        child: Card(
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.02,
+                            height: MediaQuery.of(context).size.width * 0.02,
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: Alignment.center,
+                            child: Container(
+                              width: MediaQuery.of(context).size.width * 0.014,
+                              height: MediaQuery.of(context).size.width * 0.014,
+                              decoration: BoxDecoration(
+                                color: tierColor,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                        )),
+              ],
+            ),
           ));
 }
 
