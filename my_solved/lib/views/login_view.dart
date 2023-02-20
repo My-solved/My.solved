@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
-import 'package:my_solved/services/user_service.dart';
-import 'package:my_solved/main.dart';
 import 'package:my_solved/extensions/color_extension.dart';
+import 'package:my_solved/main.dart';
+import 'package:my_solved/services/user_service.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({Key? key}) : super(key: key);
@@ -17,13 +17,14 @@ class _LoginViewState extends State<LoginView> {
   @override
   Widget build(BuildContext context) {
     PageRouterState? parent =
-    context.findAncestorStateOfType<PageRouterState>();
+        context.findAncestorStateOfType<PageRouterState>();
 
     return CupertinoPageScaffold(
+      resizeToAvoidBottomInset: false,
       child: SafeArea(
         child: Container(
           padding:
-          const EdgeInsets.only(top: 100, right: 20, left: 20, bottom: 20),
+              const EdgeInsets.only(top: 100, right: 20, left: 20, bottom: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
@@ -51,7 +52,8 @@ extension _LoginStateExtension on _LoginViewState {
           margin: const EdgeInsets.only(top: 8),
           child: Text(
             '백준 아이디와 비밀번호로 로그인해주세요.',
-            style: TextStyle(fontSize: 14, color: CupertinoTheme.of(context).fontGray),
+            style: TextStyle(
+                fontSize: 14, color: CupertinoTheme.of(context).fontGray),
           ),
         ),
       ],

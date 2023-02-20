@@ -14,6 +14,7 @@ class MainTabView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CupertinoTabScaffold(
+      resizeToAvoidBottomInset: false,
       tabBar: CupertinoTabBar(
         activeColor: CupertinoTheme.of(context).main,
         items: const <BottomNavigationBarItem>[
