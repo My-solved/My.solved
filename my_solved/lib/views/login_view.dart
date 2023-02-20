@@ -1,67 +1,96 @@
 import 'package:flutter/cupertino.dart';
-import 'package:my_solved/view_models/login_view_model.dart';
-import 'package:provider/provider.dart';
+import 'package:my_solved/extensions/color_extension.dart';
+import 'package:my_solved/main.dart';
+import 'package:my_solved/services/user_service.dart';
 
-class LoginView extends StatelessWidget {
+class LoginView extends StatefulWidget {
   const LoginView({Key? key}) : super(key: key);
 
   @override
+  _LoginViewState createState() => _LoginViewState();
+}
+
+class _LoginViewState extends State<LoginView> {
+  UserService userService = UserService();
+  String input = '';
+
+  @override
   Widget build(BuildContext context) {
-    var viewModel = Provider.of<LoginViewModel>(context);
+    PageRouterState? parent =
+        context.findAncestorStateOfType<PageRouterState>();
 
     return CupertinoPageScaffold(
+      resizeToAvoidBottomInset: false,
       child: SafeArea(
-        child: Align(
-          alignment: Alignment.topLeft,
+        child: Container(
+          padding:
+              const EdgeInsets.only(top: 100, right: 20, left: 20, bottom: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Container(
-                padding: EdgeInsets.only(top: 100, left: 20, right: 20),
-                child: Text(
-                  "로그인",
-                  style: TextStyle(
-                      //color: CupertinoTheme.of(context).textTheme.textStyle.color,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold),
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.only(top: 8, left: 20, right: 20),
-                child: Text(
-                  "백준 닉네임을 입력해주세요",
-                  style: TextStyle(fontSize: 14, color: Color(0xff767676)),
-                ),
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  color: CupertinoTheme.of(context).barBackgroundColor,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                margin: EdgeInsets.only(top: 60, left: 20, right: 20),
-                padding:
-                    EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 10),
-                child: CupertinoTextField.borderless(
-                  placeholder: "닉네임을 입력해주세요.",
-                  onChanged: (value) {
-                    viewModel.textFieldChanged(value);
-                  },
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.only(top: 20, left: 20, right: 20),
-                width: MediaQuery.of(context).size.width,
-                child: CupertinoButton(
-                  color: Color(0xff11ce3c),
-                  onPressed: () {
-                    viewModel.onTapLoginButton(context);
-                  },
-                  child: Text("로그인"),
-                ),
-              ),
+              header(),
+              userNameTextField(),
+              loginButton(parent),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+extension _LoginStateExtension on _LoginViewState {
+  Widget header() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        const Text(
+          '로그인',
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        ),
+        Container(
+          margin: const EdgeInsets.only(top: 8),
+          child: Text(
+            '백준 아이디와 비밀번호로 로그인해주세요.',
+            style: TextStyle(
+                fontSize: 14, color: CupertinoTheme.of(context).fontGray),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget userNameTextField() {
+    return Container(
+      margin: const EdgeInsets.only(top: 60),
+      decoration: BoxDecoration(
+        color: CupertinoTheme.of(context).backgroundGray,
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
+      ),
+      child: CupertinoTextField.borderless(
+        padding: const EdgeInsets.all(20),
+        placeholder: '닉네임을 입력해주세요.',
+        onChanged: (text) {
+          input = text;
+        },
+      ),
+    );
+  }
+
+  Widget loginButton(PageRouterState? parent) {
+    return Container(
+      padding: const EdgeInsets.only(top: 20),
+      width: MediaQuery.of(context).size.width,
+      child: CupertinoButton(
+        padding: const EdgeInsets.all(20),
+        color: CupertinoTheme.of(context).main,
+        onPressed: () {
+          userService.setUserName(input);
+          parent?.setState(() {
+            userService.state = UserState.loggedIn;
+          });
+        },
+        child: const Text('로그인'),
       ),
     );
   }

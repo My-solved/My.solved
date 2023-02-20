@@ -1,39 +1,37 @@
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-// User 상태의 열거형입니다.
-enum UserState { loading, unknown, logedin }
+enum UserState { unknown, loggedIn, loading }
 
-// 현재 User의 이름과 상태를 판단하는 클래스입니다.
 class UserService extends ChangeNotifier {
-  // 싱글톤으로 사용하기 위해, 인스턴스를 선언했습니다.
   static final UserService _instance = UserService._privateConstructor();
-  String _name = '';
-  int _zandiTheme = 0;
-  bool _isIllust = true;
   UserState state = UserState.loading;
+  String name = '';
+  int streakTheme = 0;
+  bool isOnIllustration = true;
+  bool _disposed = false;
 
   UserService._privateConstructor() {
-    Future<String> futureName = fetchUserName();
-    futureName.then((name) {
-      _name = name;
-      if (_name == '') {
-        state = UserState.unknown;
+    Future<String> initName = initUserName();
+    initName.then((name) {
+      this.name = name;
+      if (name.isNotEmpty) {
+        state = UserState.loggedIn;
       } else {
-        state = UserState.logedin;
+        state = UserState.unknown;
       }
       notifyListeners();
     });
 
-    Future<int> futureZandiTheme = fetchZandiTheme();
-    futureZandiTheme.then((zandiTheme) {
-      _zandiTheme = zandiTheme;
+    Future<int> initStreak = initStreakTheme();
+    initStreak.then((theme) {
+      streakTheme = theme;
       notifyListeners();
     });
 
-    Future<bool> futureIllust = fetchIllust();
-    futureIllust.then((isIllust) {
-      _isIllust = isIllust;
+    Future<bool> initIllust = initIllustration();
+    initIllust.then((isOn) {
+      isOnIllustration = isOn;
       notifyListeners();
     });
   }
@@ -42,48 +40,60 @@ class UserService extends ChangeNotifier {
     return _instance;
   }
 
-  Future<String> fetchUserName() async {
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  notifyListeners() {
+    if(!_disposed) {
+      super.notifyListeners();
+    }
+  }
+
+  void setUserName(String name) async {
+    this.name = name;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('username', name);
+    notifyListeners();
+  }
+
+  Future<String> initUserName() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('username') ?? '';
   }
 
-  Future<int> fetchZandiTheme() async {
+  void logout() async {
+    state = UserState.unknown;
+    name = '';
+    streakTheme = 0;
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt('zandi_theme') ?? 0;
+    prefs.remove('username');
+    notifyListeners();
   }
 
-  Future<bool> fetchIllust() async {
+  Future<int> initStreakTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('streak') ?? 0;
+  }
+
+  void setStreakTheme(int theme) async {
+    streakTheme = theme;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setInt('streak', theme);
+    notifyListeners();
+  }
+
+  Future<bool> initIllustration() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool('isIllust') ?? true;
   }
 
-  void setUserName(String name) async {
-    _name = name;
+  void setIllustration(bool isOn) async {
+    isOnIllustration = isOn;
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString('username', name);
-  }
-
-  void setZandiTheme(int zandiTheme) async {
-    _zandiTheme = zandiTheme;
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setInt('zandi_theme', zandiTheme);
-  }
-
-  void setIllust(bool isIllust) async {
-    _isIllust = isIllust;
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setBool('isIllust', isIllust);
-  }
-
-  String getUserName() {
-    return _name;
-  }
-
-  int getZandiTheme() {
-    return _zandiTheme;
-  }
-
-  bool getIllust() {
-    return _isIllust;
+    prefs.setBool('isIllust', isOn);
   }
 }

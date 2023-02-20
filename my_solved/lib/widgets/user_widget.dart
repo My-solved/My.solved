@@ -5,386 +5,154 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_radar_chart/flutter_radar_chart.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:my_solved/models/user/TagRatings.dart';
-import 'package:my_solved/models/user/Top_100.dart';
+import 'package:my_solved/models/user/tag_ratings.dart';
+import 'package:my_solved/models/user/top_100.dart';
+import 'package:my_solved/services/network_service.dart';
 import 'package:my_solved/services/user_service.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import '../models/User.dart';
-import '../models/user/Badges.dart';
-import '../models/user/Grass.dart';
+import '../models/user/badges.dart';
+import '../models/user/grass.dart';
+import '../views/setting_view.dart';
 import '../widgets/ImageShadow.dart';
 
-Widget backgroundImage(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return CupertinoPageScaffold(
-      child: ExtendedImage.network(
-    UserService().getIllust()
-        ? snapshot.data?.background['backgroundImageUrl'] ?? ''
-        : snapshot.data?.background['fallbackBackgroundImageUrl'] ??
-            snapshot.data?.background['backgroundImageUrl'] ??
-            '',
-    cache: true,
-    fit: BoxFit.fitWidth,
-  ));
-}
-
-Widget profileImage(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return Card(
-    elevation: 20,
-    shadowColor: levelColor(snapshot.data?.tier ?? 0),
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(100),
-    ),
-    child: SizedBox(
-      width: 100,
-      height: 100,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(100),
-        child: ExtendedImage.network(
-          snapshot.data?.profileImageUrl ??
-              'https://static.solved.ac/misc/360x360/default_profile.png',
-          cache: true,
-          fit: BoxFit.cover,
-        ),
-      ),
-    ),
-  );
-}
-
-Widget handle(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(
-        snapshot.data?.handle ?? '',
-        style: TextStyle(
-          color: CupertinoColors.black,
-          // color: CupertinoTheme.of(context).textTheme.textStyle.color,
-          fontSize: 30,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      SizedBox(
-        height: 5,
-      ),
-      bio(context, snapshot),
-    ],
-  );
-}
-
-// 소속
-Widget organizations(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return CupertinoPageScaffold(
-      backgroundColor: Colors.transparent,
-      child: Row(children: [
-        SvgPicture.asset(
-          'lib/assets/icons/hat.svg',
-          width: 15,
-          height: 15,
-        ),
-        SizedBox(width: 5),
-        Container(
-          width: 180,
-          alignment: Alignment.centerLeft,
-          child: RichText(
-            text: TextSpan(
-              children: [
-                TextSpan(
-                  text: snapshot.data!.organizations.isEmpty
-                      ? '소속 없음'
-                      : snapshot.data?.organizations[0]['name'] ?? '',
-                  style: TextStyle(
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        )
-      ]));
-}
-
-// 자기소개
-Widget bio(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return snapshot.data?.bio?.isEmpty ?? true
-      ? SizedBox(
-          height: 1,
-        )
-      : Text(
-          snapshot.data?.bio ?? '',
-        );
-}
-
-// 클래스
-Widget classes(BuildContext context, AsyncSnapshot<User> snapshot) {
-  String userClass = snapshot.data?.userClass.toString() ?? '';
-  if (snapshot.data?.classDecoration == "silver") {
-    userClass += 's';
-  } else if (snapshot.data?.classDecoration == "gold") {
-    userClass += 'g';
-  }
-
-  return SvgPicture.asset(
-    'lib/assets/classes/c$userClass.svg',
-    width: 50,
-    height: 50,
-  );
-}
-
-// 티어
-Widget tiers(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return CupertinoPageScaffold(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        padding: EdgeInsets.only(top: 20),
-        child: SvgPicture.asset(
-          'lib/assets/tiers/${snapshot.data?.tier}.svg',
-          width: 40,
-          height: 40,
-        ),
-      ));
-}
-
-// 레이팅
-Widget rating(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return CupertinoPageScaffold(
-    backgroundColor: Colors.transparent,
-    child: Text(
-      snapshot.data?.rating.toString() ?? '',
-      style: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-        fontStyle: FontStyle.italic,
-        color: Colors.grey,
-      ),
-    ),
-  );
-}
-
-// 푼 문제 수
-Widget solvedCount(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return Container(
-    width: MediaQuery.of(context).size.width / 5,
-    clipBehavior: Clip.none,
-    child: Column(
-      children: [
-        Text(
-          snapshot.data?.solvedCount.toString() ?? '',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: MediaQuery.of(context).size.width * 0.048,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          '해결',
-          style: TextStyle(
-            color: Colors.grey,
-            fontSize: MediaQuery.of(context).size.width * 0.038,
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-// 기여 수
-Widget voteCount(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return Container(
-    width: MediaQuery.of(context).size.width / 5,
-    clipBehavior: Clip.none,
-    child: Column(
-      children: [
-        Text(
-          snapshot.data?.voteCount.toString() ?? '',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: MediaQuery.of(context).size.width * 0.048,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          '기여',
-          style: TextStyle(
-            color: Colors.grey,
-            fontSize: MediaQuery.of(context).size.width * 0.038,
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-// 라이벌 수
-Widget reverseRivalCount(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return Container(
-    width: MediaQuery.of(context).size.width / 5,
-    clipBehavior: Clip.none,
-    child: Column(
-      children: [
-        Text(
-          snapshot.data?.reverseRivalCount.toString() ?? '',
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: MediaQuery.of(context).size.width * 0.048,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          '라이벌',
-          style: TextStyle(
-            color: Colors.grey,
-            fontSize: MediaQuery.of(context).size.width * 0.038,
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
-// 랭크
-Widget rank(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return CupertinoPageScaffold(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        padding: EdgeInsets.only(top: 20),
-        child: Text(
-          snapshot.data?.rank.toString() ?? '',
-        ),
-      ));
-}
-
-// 잔디 테마
-String zandiUrl(String handle) {
-  int zandiTheme = UserService().getZandiTheme();
-  String theme = '';
-  if (zandiTheme == 0) {
-    theme = 'warm';
-  } else if (zandiTheme == 1) {
-    theme = 'cold';
-  } else if (zandiTheme == 2) {
-    theme = 'dark';
-  }
-  return 'http://mazandi.herokuapp.com/api?handle=$handle&theme=$theme';
-}
-
-// 잔디
-Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
-  int zandiTheme = UserService().getZandiTheme();
+/// ************************************************
+/// User Widget
+/// *************************************************
+Widget profileHeader(BuildContext context, AsyncSnapshot<User> snapshot) {
+  String handle = UserService().name;
   return Stack(
-    children: [
-      SvgPicture.asset(
-        zandiTheme == 2 ? 'lib/assets/zandi_dark.svg' : 'lib/assets/zandi.svg',
-        width: MediaQuery.of(context).size.width,
-      ),
-      SvgPicture.network(
-        zandiUrl(snapshot.data?.handle ?? ''),
-        width: MediaQuery.of(context).size.width,
-      ),
-      Positioned(
-        left: MediaQuery.of(context).size.width * 0.8 * 0.07,
-        bottom: MediaQuery.of(context).size.width * 0.4 * 0.91,
-        child: Container(
-            color: zandiTheme == 2 ? Color(0xFF3f3f3f) : Colors.white,
-            width: MediaQuery.of(context).size.width * 0.82,
-            height: MediaQuery.of(context).size.width * 0.4 * 0.15,
-            child: Row(
-              children: [
-                SvgPicture.asset(
-                  'lib/assets/icons/streak.svg',
-                  width: MediaQuery.of(context).size.width * 0.4 * 0.10,
-                  height: MediaQuery.of(context).size.width * 0.4 * 0.10,
-                  color: zandiTheme == 2 ? Colors.white : Color(0xff8a8f95),
+    clipBehavior: Clip.none,
+    children: <Widget>[
+      backgroundImage(context, snapshot),
+      snapshot.data!.handle == handle
+          ? Align(
+              alignment: Alignment.topRight,
+              child: CupertinoButton(
+                child: Icon(
+                  CupertinoIcons.gear_solid,
+                  color: CupertinoColors.white,
                 ),
-                SizedBox(width: 5),
-                Text(
-                  // 'Rating: ${snapshot.data?.rating}',
-                  '스트릭',
-                  style: TextStyle(
-                    fontSize: MediaQuery.of(context).size.width * 0.4 * 0.10,
-                    // fontWeight: FontWeight.bold,
-                    color: zandiTheme == 2 ? Colors.white : Color(0xff8a8f95),
+                onPressed: () => Navigator.of(context).push(
+                  CupertinoPageRoute(
+                    builder: (BuildContext context) {
+                      return SettingView();
+                    },
                   ),
                 ),
-                Spacer(),
-                maxStreak(context, snapshot),
-                SizedBox(width: MediaQuery.of(context).size.width * 0.4 * 0.1),
-              ],
-            )),
+              ),
+            )
+          : Container(),
+      Positioned(
+        bottom: -50,
+        left: 20,
+        child: profileImage(context, snapshot),
       ),
     ],
   );
 }
 
-// 최대 연속 문제 해결일 수
-Widget maxStreak(BuildContext context, AsyncSnapshot<User> snapshot) {
-  int zandiTheme = UserService().getZandiTheme();
-  return Text(
-    '최장 ${snapshot.data?.maxStreak.toString()}일',
-    style: TextStyle(
-      fontSize: MediaQuery.of(context).size.width * 0.4 * 0.1,
-      // fontWeight: FontWeight.bold,
-      color: zandiTheme == 2 ? Colors.white : Color(0xff8a8f95),
-    ),
-  );
-}
-
-// 현재 연속 문제 해결일 수
-Widget currentStreak(BuildContext context, AsyncSnapshot<Grass> snapshot) {
-  int zandiTheme = UserService().getZandiTheme();
-  return Text(
-    '현재 ${snapshot.data?.currentStreak}일',
-    style: TextStyle(
-      fontSize: MediaQuery.of(context).size.width * 0.4 * 0.1,
-      // fontWeight: FontWeight.bold,
-      color: zandiTheme == 2 ? Colors.white : Color(0xff8a8f95),
-    ),
-  );
-}
-
-// 경험치
-Widget exp(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return CupertinoPageScaffold(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        padding: EdgeInsets.only(top: 20),
-        child: Text(
-          snapshot.data?.exp.toString() ?? '',
+Widget profileDetail(BuildContext context, AsyncSnapshot<User> snapshot) {
+  return Container(
+    padding: EdgeInsets.symmetric(
+        horizontal: MediaQuery.of(context).size.width * 0.05),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(height: 15),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            solvedCount(context, snapshot),
+            voteCount(context, snapshot),
+            reverseRivalCount(context, snapshot)
+          ],
         ),
-      ));
+        SizedBox(height: 15),
+        Wrap(
+          alignment: WrapAlignment.start,
+          children: [
+            handle(context, snapshot),
+            badge(context, snapshot),
+            classes(context, snapshot),
+          ],
+        ),
+        bio(context, snapshot),
+      ],
+    ),
+  );
 }
 
-// 배지
-Widget badge(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return snapshot.data?.badge == null
-      ? SizedBox()
-      : ImageShadow(
-          opacity: 0.2,
-          child: ExtendedImage.network(
-            snapshot.data?.badge['badgeImageUrl']
-                .replaceAll('profile_badge/', 'profile_badge/120x120/'),
-            width: 50,
-            height: 50,
-            cache: true,
-            loadStateChanged: (ExtendedImageState state) {
-              switch (state.extendedImageLoadState) {
-                case LoadState.loading:
-                  return CupertinoActivityIndicator();
-                case LoadState.completed:
-                  return null;
-                case LoadState.failed:
-                  return Icon(Icons.error);
-              }
-            },
-          ));
+Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
+  return Consumer<UserService>(
+    builder: (context, provider, child) {
+      int zandiTheme = UserService().streakTheme;
+      return Container(
+        padding: EdgeInsets.symmetric(
+            horizontal: MediaQuery.of(context).size.width * 0.05),
+        child: Stack(
+          children: [
+            SvgPicture.asset(
+              zandiTheme == 2
+                  ? 'lib/assets/zandi_dark.svg'
+                  : 'lib/assets/zandi.svg',
+              width: MediaQuery.of(context).size.width,
+            ),
+            SvgPicture.network(
+              zandiUrl(snapshot.data?.handle ?? ''),
+              width: MediaQuery.of(context).size.width,
+            ),
+            Positioned(
+              left: MediaQuery.of(context).size.width * 0.8 * 0.07,
+              bottom: MediaQuery.of(context).size.width * 0.4 * 0.91,
+              child: Container(
+                  color:
+                      zandiTheme == 2 ? Color(0xFF3f3f3f) : Color(0xFFfdfdfd),
+                  width: MediaQuery.of(context).size.width * 0.82,
+                  height: MediaQuery.of(context).size.width * 0.4 * 0.15,
+                  child: Row(
+                    children: [
+                      SvgPicture.asset(
+                        'lib/assets/icons/streak.svg',
+                        width: MediaQuery.of(context).size.width * 0.4 * 0.10,
+                        height: MediaQuery.of(context).size.width * 0.4 * 0.10,
+                        color:
+                            zandiTheme == 2 ? Colors.white : Color(0xff8a8f95),
+                      ),
+                      SizedBox(width: 5),
+                      Text(
+                        // 'Rating: ${snapshot.data?.rating}',
+                        '스트릭',
+                        style: TextStyle(
+                          fontSize:
+                              MediaQuery.of(context).size.width * 0.4 * 0.10,
+                          // fontWeight: FontWeight.bold,
+                          color: zandiTheme == 2
+                              ? Colors.white
+                              : Color(0xff8a8f95),
+                        ),
+                      ),
+                      Spacer(),
+                      maxStreak(context, snapshot),
+                      SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.4 * 0.1),
+                    ],
+                  )),
+            ),
+          ],
+        ),
+      );
+    },
+  );
 }
 
-Widget top100(
-    BuildContext context, AsyncSnapshot<Top_100> snapshot, User? user) {
-  int rating = user?.rating ?? 0;
-  int tier = user?.tier ?? 0;
-  int rank = user?.rank ?? 0;
-  int count = snapshot.data!.count;
+Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
+    Future<Top_100> future) {
+  int rating = snapshot.data?.rating ?? 0;
+  int tier = snapshot.data?.tier ?? 0;
+  int rank = snapshot.data?.rank ?? 0;
 
   String tierStr(int tier) {
     if (tier == 1) {
@@ -570,12 +338,13 @@ Widget top100(
   Widget top100Box(BuildContext context, dynamic cur) {
     return CupertinoButton(
         padding: EdgeInsets.zero,
-        color: Colors.white,
+        color: Colors.transparent,
         onPressed: () {
           launchUrlString('https://www.acmicpc.net/problem/${cur['problemId']}',
               mode: LaunchMode.externalApplication);
         },
         child: Tooltip(
+            preferBelow: false,
             message: cur['titleKo'],
             textStyle: TextStyle(
               fontSize: MediaQuery.of(context).size.width * 0.4 * 0.1,
@@ -586,623 +355,941 @@ Widget top100(
                 width: MediaQuery.of(context).size.width * 0.041)));
   }
 
+  return FutureBuilder<Top_100>(
+    future: future,
+    builder: (context, snapshot) {
+      if (snapshot.hasData) {
+        int count = snapshot.data?.count ?? 0;
+        return Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          padding: EdgeInsets.only(
+            left: MediaQuery.of(context).size.width * 0.04,
+            right: MediaQuery.of(context).size.width * 0.04,
+          ),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.grey, width: 0.5),
+          ),
+          child: Column(
+            children: [
+              SizedBox(height: 5),
+              top100Header(rating, tier, rank, context),
+              SizedBox(height: 5),
+              GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 10,
+                    childAspectRatio: 1,
+                  ),
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: count,
+                  itemBuilder: (BuildContext context, int index) {
+                    return top100Box(context, snapshot.data!.items[index]);
+                  }),
+              SizedBox(height: 10),
+            ],
+          ),
+        );
+      } else {
+        return CupertinoActivityIndicator();
+      }
+    },
+  );
+}
+
+Widget badges(BuildContext context, Future<Badges> future) {
+  return FutureBuilder<Badges>(
+    future: future,
+    builder: (context, snapshot) {
+      if (snapshot.hasData) {
+        int count = snapshot.data!.count;
+
+        List<dynamic> achievements = [];
+        List<dynamic> seasons = [];
+        List<dynamic> events = [];
+        List<dynamic> contests = [];
+
+        for (int i = 0; i < count; i++) {
+          if (snapshot.data!.items[i]['badgeCategory'] == 'achievement') {
+            achievements.add(snapshot.data!.items[i]);
+          } else if (snapshot.data!.items[i]['badgeCategory'] == 'season') {
+            seasons.add(snapshot.data!.items[i]);
+          } else if (snapshot.data!.items[i]['badgeCategory'] == 'event') {
+            events.add(snapshot.data!.items[i]);
+          } else if (snapshot.data!.items[i]['badgeCategory'] == 'contest') {
+            contests.add(snapshot.data!.items[i]);
+          }
+        }
+
+        achievements.sort((a, b) => a['badgeId'].compareTo(b['badgeId']));
+
+        Widget badgeTier(BuildContext context, dynamic badge, int idx) {
+          String tier = badge['badgeTier'];
+          bool isContest = badge['badgeCategory'] == 'contest';
+          Color tierColor = Colors.white;
+          if (tier == 'bronze') {
+            tierColor = Color(0xffad5600);
+          } else if (tier == 'silver') {
+            tierColor = Color(0xff435f7a);
+          } else if (tier == 'gold') {
+            tierColor = Color(0xffec9a00);
+          } else if (tier == 'master') {
+            tierColor = Color(0xffff99d8);
+          }
+
+          return Tooltip(
+            textAlign: TextAlign.start,
+            preferBelow: false,
+            richMessage: TextSpan(children: [
+              TextSpan(
+                  text: '${badge['displayName']}\n',
+                  style: TextStyle(
+                    fontSize: MediaQuery.of(context).size.width * 0.04,
+                    fontFamily: 'Pretendard-Regular',
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  )),
+              TextSpan(
+                  text: '${badge['displayDescription']}',
+                  style: TextStyle(
+                    fontSize: MediaQuery.of(context).size.width * 0.04,
+                    fontFamily: 'Pretendard',
+                    color: Colors.white,
+                  )),
+            ]),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                ImageShadow(
+                    opacity: 0.2,
+                    child: ExtendedImage.network(
+                      'https://static.solved.ac/profile_badge/120x120/${badge['badgeId']}.png',
+                      width: MediaQuery.of(context).size.width * 0.13,
+                      fit: BoxFit.cover,
+                      cache: true,
+                      loadStateChanged: (ExtendedImageState state) {
+                        switch (state.extendedImageLoadState) {
+                          case LoadState.loading:
+                            return Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          case LoadState.completed:
+                            return null;
+                          case LoadState.failed:
+                            return Center(
+                              child: Icon(Icons.error),
+                            );
+                        }
+                      },
+                    )),
+                isContest
+                    ? SizedBox.shrink()
+                    : Positioned(
+                        bottom: -5,
+                        right: -1,
+                        child: Card(
+                          elevation: 2,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.02,
+                            height: MediaQuery.of(context).size.width * 0.02,
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: Alignment.center,
+                            child: Container(
+                              width: MediaQuery.of(context).size.width * 0.014,
+                              height: MediaQuery.of(context).size.width * 0.014,
+                              decoration: BoxDecoration(
+                                color: tierColor,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                        )),
+              ],
+            ),
+          );
+        }
+
+        Widget badgeAchievements(
+            BuildContext context, AsyncSnapshot<Badges> snapshot) {
+          if (achievements.isEmpty) {
+            return SizedBox.shrink();
+          }
+          return Container(
+              margin: EdgeInsets.only(
+                  top: MediaQuery.of(context).size.width * 0.4 * 0.05,
+                  bottom: MediaQuery.of(context).size.width * 0.4 * 0.05),
+              child: Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.4 * 0.65,
+                      height: MediaQuery.of(context).size.width * 0.4 * 0.2,
+                      child: Container(
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(
+                                color: Color(0xff8a8f95), width: 0.5),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              SvgPicture.asset('lib/assets/icons/badge.svg',
+                                  width: MediaQuery.of(context).size.width *
+                                      0.4 *
+                                      0.1,
+                                  color: Color(0xff8a8f95)),
+                              SizedBox(
+                                width: 2,
+                              ),
+                              Text(
+                                '업적',
+                                style: TextStyle(
+                                  fontSize: MediaQuery.of(context).size.width *
+                                      0.4 *
+                                      0.08,
+                                  fontFamily: 'Pretendard-Regular',
+                                  color: Color(0xff8a8f95),
+                                ),
+                              )
+                            ],
+                          )),
+                    ),
+                    for (int i = 0; i < achievements.length; i++)
+                      badgeTier(context, achievements[i], i),
+                  ]));
+        }
+
+        Widget badgeSeasons(
+            BuildContext context, AsyncSnapshot<Badges> snapshot) {
+          if (seasons.isEmpty) {
+            return SizedBox.shrink();
+          }
+          return Container(
+              margin: EdgeInsets.only(
+                  top: MediaQuery.of(context).size.width * 0.4 * 0.05,
+                  bottom: MediaQuery.of(context).size.width * 0.4 * 0.05),
+              child: Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.4 * 0.65,
+                      height: MediaQuery.of(context).size.width * 0.4 * 0.2,
+                      child: Container(
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(
+                                color: Color(0xff8a8f95), width: 0.5),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              SvgPicture.asset('lib/assets/icons/badge.svg',
+                                  width: MediaQuery.of(context).size.width *
+                                      0.4 *
+                                      0.1,
+                                  color: Color(0xff8a8f95)),
+                              SizedBox(
+                                width: 2,
+                              ),
+                              Text(
+                                '시즌',
+                                style: TextStyle(
+                                  fontSize: MediaQuery.of(context).size.width *
+                                      0.4 *
+                                      0.08,
+                                  fontFamily: 'Pretendard-Regular',
+                                  color: Color(0xff8a8f95),
+                                ),
+                              )
+                            ],
+                          )),
+                    ),
+                    for (int i = 0; i < seasons.length; i++)
+                      badgeTier(context, seasons[i], i),
+                  ]));
+        }
+
+        Widget badgeEvents(
+            BuildContext context, AsyncSnapshot<Badges> snapshot) {
+          if (events.isEmpty) {
+            return SizedBox.shrink();
+          }
+          return Container(
+              margin: EdgeInsets.only(
+                  top: MediaQuery.of(context).size.width * 0.4 * 0.05,
+                  bottom: MediaQuery.of(context).size.width * 0.4 * 0.05),
+              child: Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.4 * 0.65,
+                      height: MediaQuery.of(context).size.width * 0.4 * 0.2,
+                      child: Container(
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(
+                                color: Color(0xff8a8f95), width: 0.5),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              SvgPicture.asset('lib/assets/icons/badge.svg',
+                                  width: MediaQuery.of(context).size.width *
+                                      0.4 *
+                                      0.1,
+                                  color: Color(0xff8a8f95)),
+                              SizedBox(
+                                width: 2,
+                              ),
+                              Text(
+                                '이벤트',
+                                style: TextStyle(
+                                  fontSize: MediaQuery.of(context).size.width *
+                                      0.4 *
+                                      0.08,
+                                  fontFamily: 'Pretendard-Regular',
+                                  color: Color(0xff8a8f95),
+                                ),
+                              )
+                            ],
+                          )),
+                    ),
+                    for (int i = 0; i < events.length; i++)
+                      badgeTier(context, events[i], i),
+                  ]));
+        }
+
+        Widget badgeContests(
+            BuildContext context, AsyncSnapshot<Badges> snapshot) {
+          if (contests.isEmpty) {
+            return SizedBox.shrink();
+          }
+          return Container(
+              margin: EdgeInsets.only(
+                  top: MediaQuery.of(context).size.width * 0.4 * 0.05,
+                  bottom: MediaQuery.of(context).size.width * 0.4 * 0.05),
+              child: Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.4 * 0.65,
+                      height: MediaQuery.of(context).size.width * 0.4 * 0.2,
+                      child: Container(
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(100),
+                            border: Border.all(
+                                color: Color(0xff8a8f95), width: 0.5),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              SvgPicture.asset('lib/assets/icons/badge.svg',
+                                  width: MediaQuery.of(context).size.width *
+                                      0.4 *
+                                      0.1,
+                                  color: Color(0xff8a8f95)),
+                              SizedBox(
+                                width: 2,
+                              ),
+                              Text(
+                                '대회',
+                                style: TextStyle(
+                                  fontSize: MediaQuery.of(context).size.width *
+                                      0.4 *
+                                      0.08,
+                                  fontFamily: 'Pretendard-Regular',
+                                  color: Color(0xff8a8f95),
+                                ),
+                              )
+                            ],
+                          )),
+                    ),
+                    for (int i = 0; i < contests.length; i++)
+                      badgeTier(context, contests[i], i),
+                  ]));
+        }
+
+        return Container(
+            margin: EdgeInsets.only(top: 10),
+            padding: EdgeInsets.symmetric(
+                horizontal: MediaQuery.of(context).size.width * 0.05),
+            child: Container(
+                width: MediaQuery.of(context).size.width,
+                padding: EdgeInsets.only(
+                  left: MediaQuery.of(context).size.width * 0.05,
+                  right: MediaQuery.of(context).size.width * 0.05,
+                  top: MediaQuery.of(context).size.width * 0.05,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.grey, width: 0.5),
+                ),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          SvgPicture.asset('lib/assets/icons/badge.svg',
+                              color: Color(0xff8a8f95),
+                              width: MediaQuery.of(context).size.width * 0.05),
+                          SizedBox(width: 5),
+                          Text(
+                            '뱃지',
+                            style: TextStyle(
+                              fontSize:
+                                  MediaQuery.of(context).size.width * 0.04,
+                              color: Color(0xff8a8f95),
+                            ),
+                          ),
+                        ],
+                      ),
+                      RichText(
+                          text: TextSpan(children: [
+                        TextSpan(
+                            text: count.toString(),
+                            style: TextStyle(
+                              fontSize:
+                                  MediaQuery.of(context).size.width * 0.05,
+                              fontFamily: 'Pretendard-Regular',
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            )),
+                        TextSpan(
+                            text: '개',
+                            style: TextStyle(
+                              fontSize:
+                                  MediaQuery.of(context).size.width * 0.05,
+                              fontFamily: 'Pretendard',
+                              color: Colors.black,
+                            )),
+                      ])),
+                      badgeAchievements(context, snapshot),
+                      badgeSeasons(context, snapshot),
+                      badgeEvents(context, snapshot),
+                      badgeContests(context, snapshot),
+                    ])));
+      } else {
+        return CupertinoActivityIndicator();
+      }
+    },
+  );
+}
+
+Widget backgroundImage(BuildContext context, AsyncSnapshot<User> snapshot) {
+  return CupertinoPageScaffold(
+      child: ExtendedImage.network(
+    UserService().isOnIllustration
+        ? snapshot.data?.background['backgroundImageUrl'] ?? ''
+        : snapshot.data?.background['fallbackBackgroundImageUrl'] ??
+            snapshot.data?.background['backgroundImageUrl'] ??
+            '',
+    cache: true,
+    fit: BoxFit.fitWidth,
+  ));
+}
+
+Widget profileImage(BuildContext context, AsyncSnapshot<User> snapshot) {
+  return Card(
+    elevation: 20,
+    shadowColor: levelColor(snapshot.data!.tier),
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(100),
+    ),
+    child: SizedBox(
+      width: 100,
+      height: 100,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(100),
+        child: ExtendedImage.network(
+          snapshot.data?.profileImageUrl ??
+              'https://static.solved.ac/misc/360x360/default_profile.png',
+          cache: true,
+        ),
+      ),
+    ),
+  );
+}
+
+Widget tagChart(BuildContext context, AsyncSnapshot<User> userSnapshot) {
+  NetworkService networkService = NetworkService();
+
+  return FutureBuilder<List<TagRatings>>(
+    future: networkService.requestTagRatings(userSnapshot.data?.handle ?? ''),
+    builder: (context, snapshot) {
+      List<TagRatings>? tags = snapshot.data;
+      tags?.sort((a, b) => b.rating.compareTo(a.rating));
+
+      List<int> ticks = [];
+      List<String> features = [];
+      List<List<num>> data = [[]];
+
+      int? length = min(8, snapshot.data?.length ?? 0);
+      int maxTick = 0;
+      for (var i = 0; i < length; i++) {
+        features.add(snapshot.data?[i].tag['key'] ?? '');
+        data[0].add(snapshot.data?[i].rating ?? 0);
+        maxTick = max(maxTick, data[0][i].toInt());
+      }
+      maxTick = (maxTick + 500) ~/ 500 * 500;
+      while (maxTick > 0) {
+        ticks.add(maxTick);
+        maxTick -= 500;
+      }
+      if (snapshot.hasData) {
+        return Container(
+          margin: EdgeInsets.only(top: 10, bottom: 20),
+          padding: EdgeInsets.symmetric(
+              horizontal: MediaQuery.of(context).size.width * 0.05),
+          child: Container(
+              width: MediaQuery.of(context).size.width,
+              padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.05),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.grey, width: 0.5),
+              ),
+              child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        SvgPicture.asset('lib/assets/icons/tag.svg',
+                            color: Color(0xff8a8f95),
+                            width: MediaQuery.of(context).size.width * 0.05),
+                        SizedBox(width: 5),
+                        Text(
+                          '태그 분포',
+                          style: TextStyle(
+                            fontSize: MediaQuery.of(context).size.width * 0.04,
+                            color: Color(0xff8a8f95),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      color: Colors.white,
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.width * 0.6,
+                      child: RadarChart(
+                        ticks: ticks.reversed.toList(),
+                        features: features,
+                        data: data,
+                        outlineColor: Color(0xff8a8f95),
+                        featuresTextStyle: TextStyle(
+                          fontSize: MediaQuery.of(context).size.width * 0.03,
+                          color: Colors.black,
+                        ),
+                        graphColors: [
+                          ratingColor(userSnapshot.data?.rating ?? 0)
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Text(
+                          '태그',
+                          style: TextStyle(
+                            fontSize: MediaQuery.of(context).size.width * 0.04,
+                            color: Color(0xff8a8f95),
+                          ),
+                        ),
+                        Spacer(),
+                        Spacer(),
+                        Text(
+                          '문제',
+                          style: TextStyle(
+                            fontSize: MediaQuery.of(context).size.width * 0.04,
+                            color: Color(0xff8a8f95),
+                          ),
+                        ),
+                        Spacer(),
+                        Text(
+                          '레이팅',
+                          style: TextStyle(
+                            fontSize: MediaQuery.of(context).size.width * 0.04,
+                            color: Color(0xff8a8f95),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Divider(
+                      color: Colors.grey,
+                      thickness: 0.5,
+                    ),
+                    ListView.separated(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemBuilder: (BuildContext context, int index) {
+                          return Container(
+                            clipBehavior: Clip.none,
+                            width: MediaQuery.of(context).size.width,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.44,
+                                  child: Text(
+                                    tags?[index].tag['key'] ?? '',
+                                    style: TextStyle(
+                                      fontSize:
+                                          MediaQuery.of(context).size.width *
+                                              0.04,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.2,
+                                  child: Text(
+                                    tags?[index].solvedCount.toString() ?? '',
+                                    style: TextStyle(
+                                      fontSize:
+                                          MediaQuery.of(context).size.width *
+                                              0.04,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                ),
+                                Spacer(),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SvgPicture.asset(
+                                      'lib/assets/tiers/${ratingToTier(tags![index].rating)}.svg',
+                                      width: MediaQuery.of(context).size.width *
+                                          0.04,
+                                    ),
+                                    SizedBox(width: 3),
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.1,
+                                      child: Text(
+                                        tags[index].rating.toString(),
+                                        style: TextStyle(
+                                          fontSize: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.04,
+                                          color:
+                                              ratingColor(tags[index].rating),
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                )
+                              ],
+                            ),
+                          );
+                        },
+                        separatorBuilder: (BuildContext context, int index) {
+                          return Divider();
+                        },
+                        itemCount: length),
+                  ])),
+        );
+      } else {
+        return Container();
+      }
+    },
+  );
+}
+
+/// ************************************************
+/// Simple Widget
+/// *************************************************
+// 핸들
+Widget handle(BuildContext context, AsyncSnapshot<User> snapshot) {
+  return Text(
+    snapshot.data?.handle ?? '',
+    style: TextStyle(
+      color: CupertinoColors.black,
+      // color: CupertinoTheme.of(context).textTheme.textStyle.color,
+      fontSize: 30,
+      fontWeight: FontWeight.bold,
+    ),
+  );
+}
+
+// 소속
+Widget organizations(BuildContext context, AsyncSnapshot<User> snapshot) {
+  return CupertinoPageScaffold(
+      backgroundColor: Colors.transparent,
+      child: Row(children: [
+        SvgPicture.asset(
+          'lib/assets/icons/hat.svg',
+          width: 15,
+          height: 15,
+        ),
+        SizedBox(width: 5),
+        Container(
+          width: 180,
+          alignment: Alignment.centerLeft,
+          child: RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: snapshot.data!.organizations.isEmpty
+                      ? '소속 없음'
+                      : snapshot.data?.organizations[0]['name'] ?? '',
+                  style: TextStyle(
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        )
+      ]));
+}
+
+// 자기소개
+Widget bio(BuildContext context, AsyncSnapshot<User> snapshot) {
+  return snapshot.data?.bio?.isEmpty ?? true
+      ? SizedBox(
+          height: 1,
+        )
+      : Text(
+          snapshot.data?.bio ?? '',
+        );
+}
+
+// 클래스
+Widget classes(BuildContext context, AsyncSnapshot<User> snapshot) {
+  String userClass = snapshot.data?.userClass.toString() ?? '';
+  if (snapshot.data?.classDecoration == "silver") {
+    userClass += 's';
+  } else if (snapshot.data?.classDecoration == "gold") {
+    userClass += 'g';
+  }
+
+  return CupertinoButton(
+      padding: EdgeInsets.zero,
+      color: Colors.transparent,
+      onPressed: () {
+        launchUrlString('https://solved.ac/class/$userClass',
+            mode: LaunchMode.externalApplication);
+      },
+      child: SvgPicture.asset(
+        'lib/assets/classes/c$userClass.svg',
+        width: 50,
+        height: 50,
+      ));
+}
+
+// 티어
+Widget tiers(BuildContext context, AsyncSnapshot<User> snapshot) {
+  return CupertinoPageScaffold(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        padding: EdgeInsets.only(top: 20),
+        child: SvgPicture.asset(
+          'lib/assets/tiers/${snapshot.data?.tier}.svg',
+          width: 40,
+          height: 40,
+        ),
+      ));
+}
+
+// 레이팅
+Widget rating(BuildContext context, AsyncSnapshot<User> snapshot) {
+  return CupertinoPageScaffold(
+    backgroundColor: Colors.transparent,
+    child: Text(
+      snapshot.data?.rating.toString() ?? '',
+      style: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+        fontStyle: FontStyle.italic,
+        color: Colors.grey,
+      ),
+    ),
+  );
+}
+
+// 푼 문제 수
+Widget solvedCount(BuildContext context, AsyncSnapshot<User> snapshot) {
   return Container(
-    width: MediaQuery.of(context).size.width,
-    padding: EdgeInsets.only(
-      left: MediaQuery.of(context).size.width * 0.04,
-      right: MediaQuery.of(context).size.width * 0.04,
-    ),
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(10),
-      border: Border.all(color: Colors.grey, width: 0.5),
-    ),
+    width: MediaQuery.of(context).size.width / 5,
+    clipBehavior: Clip.none,
     child: Column(
       children: [
-        SizedBox(height: 5),
-        top100Header(rating, tier, rank, context),
-        SizedBox(height: 5),
-        GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 10,
-              childAspectRatio: 1,
-            ),
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemCount: count,
-            itemBuilder: (BuildContext context, int index) {
-              return top100Box(context, snapshot.data!.items[index]);
-            }),
-        SizedBox(height: 10),
+        Text(
+          snapshot.data?.solvedCount.toString() ?? '',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: MediaQuery.of(context).size.width * 0.04,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          '해결',
+          style: TextStyle(
+            color: Colors.grey,
+            fontSize: MediaQuery.of(context).size.width * 0.04,
+          ),
+        ),
       ],
     ),
   );
 }
 
-Widget badges(BuildContext context, AsyncSnapshot<Badges> snapshot) {
-  int count = snapshot.data!.count;
-
-  List<dynamic> achievements = [];
-  List<dynamic> seasons = [];
-  List<dynamic> events = [];
-  List<dynamic> contests = [];
-
-  for (int i = 0; i < count; i++) {
-    if (snapshot.data!.items[i]['badgeCategory'] == 'achievement') {
-      achievements.add(snapshot.data!.items[i]);
-    } else if (snapshot.data!.items[i]['badgeCategory'] == 'season') {
-      seasons.add(snapshot.data!.items[i]);
-    } else if (snapshot.data!.items[i]['badgeCategory'] == 'event') {
-      events.add(snapshot.data!.items[i]);
-    } else if (snapshot.data!.items[i]['badgeCategory'] == 'contest') {
-      contests.add(snapshot.data!.items[i]);
-    }
-  }
-
-  achievements.sort((a, b) => a['badgeId'].compareTo(b['badgeId']));
-
-  Widget badgeTier(BuildContext context, dynamic badge, int idx) {
-    String tier = badge['badgeTier'];
-    Color tierColor = Colors.white;
-    if (tier == 'bronze') {
-      tierColor = Color(0xffad5600);
-    } else if (tier == 'silver') {
-      tierColor = Color(0xff435f7a);
-    } else if (tier == 'gold') {
-      tierColor = Color(0xffec9a00);
-    } else if (tier == 'master') {
-      tierColor = Color(0xffff99d8);
-    }
-
-    return Tooltip(
-      textAlign: TextAlign.start,
-      richMessage: TextSpan(children: [
-        TextSpan(
-            text: '${badge['displayName']}\n',
-            style: TextStyle(
-              fontSize: MediaQuery.of(context).size.width * 0.04,
-              fontFamily: 'Pretendard-Regular',
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            )),
-        TextSpan(
-            text: '${badge['displayDescription']}',
-            style: TextStyle(
-              fontSize: MediaQuery.of(context).size.width * 0.04,
-              fontFamily: 'Pretendard',
-              color: Colors.white,
-            )),
-      ]),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          ImageShadow(
-              opacity: 0.2,
-              child: ExtendedImage.network(
-                'https://static.solved.ac/profile_badge/120x120/${badge['badgeId']}.png',
-                width: MediaQuery.of(context).size.width * 0.13,
-                fit: BoxFit.cover,
-                cache: true,
-                loadStateChanged: (ExtendedImageState state) {
-                  switch (state.extendedImageLoadState) {
-                    case LoadState.loading:
-                      return Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    case LoadState.completed:
-                      return null;
-                    case LoadState.failed:
-                      return Center(
-                        child: Icon(Icons.error),
-                      );
-                  }
-                },
-              )),
-          Positioned(
-              bottom: -5,
-              right: -1,
-              child: Card(
-                elevation: 2,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(100),
-                ),
-                child: Container(
-                  width: MediaQuery.of(context).size.width * 0.02,
-                  height: MediaQuery.of(context).size.width * 0.02,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: Container(
-                    width: MediaQuery.of(context).size.width * 0.014,
-                    height: MediaQuery.of(context).size.width * 0.014,
-                    decoration: BoxDecoration(
-                      color: tierColor,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                ),
-              )),
-        ],
-      ),
-    );
-  }
-
-  Widget badgeAchievements(
-      BuildContext context, AsyncSnapshot<Badges> snapshot) {
-    if (achievements.isEmpty) {
-      return SizedBox.shrink();
-    }
-    return Container(
-        margin: EdgeInsets.only(
-            top: MediaQuery.of(context).size.width * 0.4 * 0.05,
-            bottom: MediaQuery.of(context).size.width * 0.4 * 0.05),
-        child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.4 * 0.65,
-            height: MediaQuery.of(context).size.width * 0.4 * 0.2,
-            child: Container(
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(100),
-                  border: Border.all(color: Color(0xff8a8f95), width: 0.5),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    SvgPicture.asset('lib/assets/icons/badge.svg',
-                        width: MediaQuery.of(context).size.width * 0.4 * 0.1,
-                        color: Color(0xff8a8f95)),
-                    SizedBox(
-                      width: 2,
-                    ),
-                    Text(
-                      '업적',
-                      style: TextStyle(
-                        fontSize:
-                            MediaQuery.of(context).size.width * 0.4 * 0.08,
-                        fontFamily: 'Pretendard-Regular',
-                        color: Color(0xff8a8f95),
-                      ),
-                    )
-                  ],
-                )),
-          ),
-          for (int i = 0; i < achievements.length; i++)
-            badgeTier(context, achievements[i], i),
-
-          // GridView.builder(
-          //     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          //       crossAxisCount: 6,
-          //       childAspectRatio: 1,
-          //     ),
-          //     shrinkWrap: true,
-          //     physics: NeverScrollableScrollPhysics(),
-          //     itemCount: achievements.length,
-          //     itemBuilder: (BuildContext context, int index) {
-          //       return badgeTier(context, achievements[index], index);
-          //     }),
-        ]));
-  }
-
-  Widget badgeSeasons(BuildContext context, AsyncSnapshot<Badges> snapshot) {
-    if (seasons.isEmpty) {
-      return SizedBox.shrink();
-    }
-    return Container(
-        margin: EdgeInsets.only(
-            top: MediaQuery.of(context).size.width * 0.4 * 0.05,
-            bottom: MediaQuery.of(context).size.width * 0.4 * 0.05),
-        child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.4 * 0.65,
-            height: MediaQuery.of(context).size.width * 0.4 * 0.2,
-            child: Container(
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(100),
-                  border: Border.all(color: Color(0xff8a8f95), width: 0.5),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    SvgPicture.asset('lib/assets/icons/badge.svg',
-                        width: MediaQuery.of(context).size.width * 0.4 * 0.1,
-                        color: Color(0xff8a8f95)),
-                    SizedBox(
-                      width: 2,
-                    ),
-                    Text(
-                      '시즌',
-                      style: TextStyle(
-                        fontSize:
-                            MediaQuery.of(context).size.width * 0.4 * 0.08,
-                        fontFamily: 'Pretendard-Regular',
-                        color: Color(0xff8a8f95),
-                      ),
-                    )
-                  ],
-                )),
-          ),
-          for (int i = 0; i < seasons.length; i++)
-            badgeTier(context, seasons[i], i),
-          // GridView.builder(
-          //     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          //       crossAxisCount: 6,
-          //       childAspectRatio: 1,
-          //     ),
-          //     shrinkWrap: true,
-          //     physics: NeverScrollableScrollPhysics(),
-          //     itemCount: seasons.length,
-          //     itemBuilder: (BuildContext context, int index) {
-          //       return badgeTier(context, seasons[index], index);
-          //     }),
-        ]));
-  }
-
-  Widget badgeEvents(BuildContext context, AsyncSnapshot<Badges> snapshot) {
-    if (events.isEmpty) {
-      return SizedBox.shrink();
-    }
-    return Container(
-        margin: EdgeInsets.only(
-            top: MediaQuery.of(context).size.width * 0.4 * 0.05,
-            bottom: MediaQuery.of(context).size.width * 0.4 * 0.05),
-        child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.4 * 0.65,
-            height: MediaQuery.of(context).size.width * 0.4 * 0.2,
-            child: Container(
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(100),
-                  border: Border.all(color: Color(0xff8a8f95), width: 0.5),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    SvgPicture.asset('lib/assets/icons/badge.svg',
-                        width: MediaQuery.of(context).size.width * 0.4 * 0.1,
-                        color: Color(0xff8a8f95)),
-                    SizedBox(
-                      width: 2,
-                    ),
-                    Text(
-                      '이벤트',
-                      style: TextStyle(
-                        fontSize:
-                            MediaQuery.of(context).size.width * 0.4 * 0.08,
-                        fontFamily: 'Pretendard-Regular',
-                        color: Color(0xff8a8f95),
-                      ),
-                    )
-                  ],
-                )),
-          ),
-          for (int i = 0; i < events.length; i++)
-            badgeTier(context, events[i], i),
-          // GridView.builder(
-          //     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          //       crossAxisCount: 6,
-          //       childAspectRatio: 1,
-          //     ),
-          //     shrinkWrap: true,
-          //     physics: NeverScrollableScrollPhysics(),
-          //     itemCount: events.length,
-          //     itemBuilder: (BuildContext context, int index) {
-          //       return badgeTier(context, events[index], index);
-          //     }),
-        ]));
-  }
-
-  Widget badgeContests(BuildContext context, AsyncSnapshot<Badges> snapshot) {
-    if (contests.isEmpty) {
-      return SizedBox.shrink();
-    }
-    return Container(
-        margin: EdgeInsets.only(
-            top: MediaQuery.of(context).size.width * 0.4 * 0.05,
-            bottom: MediaQuery.of(context).size.width * 0.4 * 0.05),
-        child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.4 * 0.65,
-            height: MediaQuery.of(context).size.width * 0.4 * 0.2,
-            child: Container(
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(100),
-                  border: Border.all(color: Color(0xff8a8f95), width: 0.5),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    SvgPicture.asset('lib/assets/icons/badge.svg',
-                        width: MediaQuery.of(context).size.width * 0.4 * 0.1,
-                        color: Color(0xff8a8f95)),
-                    SizedBox(
-                      width: 2,
-                    ),
-                    Text(
-                      '대회',
-                      style: TextStyle(
-                        fontSize:
-                            MediaQuery.of(context).size.width * 0.4 * 0.08,
-                        fontFamily: 'Pretendard-Regular',
-                        color: Color(0xff8a8f95),
-                      ),
-                    )
-                  ],
-                )),
-          ),
-          for (int i = 0; i < contests.length; i++)
-            badgeTier(context, contests[i], i),
-          // GridView.builder(
-          //     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          //       crossAxisCount: 6,
-          //       childAspectRatio: 1,
-          //     ),
-          //     shrinkWrap: true,
-          //     physics: NeverScrollableScrollPhysics(),
-          //     itemCount: contests.length,
-          //     itemBuilder: (BuildContext context, int index) {
-          //       return Tooltip(
-          //         textAlign: TextAlign.start,
-          //         richMessage: TextSpan(children: [
-          //           TextSpan(
-          //               text: '${contests[index]['displayName']}\n',
-          //               style: TextStyle(
-          //                 fontSize: MediaQuery.of(context).size.width * 0.04,
-          //                 fontFamily: 'Pretendard-Regular',
-          //                 fontWeight: FontWeight.bold,
-          //                 color: Colors.white,
-          //               )),
-          //           TextSpan(
-          //               text: '${contests[index]['displayDescription']}',
-          //               style: TextStyle(
-          //                 fontSize: MediaQuery.of(context).size.width * 0.04,
-          //                 fontFamily: 'Pretendard',
-          //                 color: Colors.white,
-          //               )),
-          //         ]),
-          //         child: Stack(
-          //           children: [
-          //             ImageShadow(
-          //                 opacity: 0.2,
-          //                 child: ExtendedImage.network(
-          //                   'https://static.solved.ac/profile_badge/120x120/${contests[index]['badgeId']}.png',
-          //                   width: MediaQuery.of(context).size.width * 0.13,
-          //                   fit: BoxFit.cover,
-          //                   cache: true,
-          //                   loadStateChanged: (ExtendedImageState state) {
-          //                     switch (state.extendedImageLoadState) {
-          //                       case LoadState.loading:
-          //                         return Center(
-          //                           child: CircularProgressIndicator(),
-          //                         );
-          //                       case LoadState.completed:
-          //                         return null;
-          //                       case LoadState.failed:
-          //                         return Center(
-          //                           child: Icon(Icons.error),
-          //                         );
-          //                     }
-          //                   },
-          //                 )),
-          //           ],
-          //         ),
-          //       );
-          //     }),
-        ]));
-  }
-
+// 기여 수
+Widget voteCount(BuildContext context, AsyncSnapshot<User> snapshot) {
   return Container(
-      width: MediaQuery.of(context).size.width,
-      padding: EdgeInsets.only(
-        left: MediaQuery.of(context).size.width * 0.05,
-        right: MediaQuery.of(context).size.width * 0.05,
-        top: MediaQuery.of(context).size.width * 0.05,
-      ),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey, width: 0.5),
-      ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(
-          children: [
-            SvgPicture.asset('lib/assets/icons/badge.svg',
-                color: Color(0xff8a8f95),
-                width: MediaQuery.of(context).size.width * 0.05),
-            SizedBox(width: 5),
-            Text(
-              '뱃지',
-              style: TextStyle(
-                fontSize: MediaQuery.of(context).size.width * 0.04,
-                color: Color(0xff8a8f95),
-              ),
-            ),
-          ],
+    width: MediaQuery.of(context).size.width / 5,
+    clipBehavior: Clip.none,
+    child: Column(
+      children: [
+        Text(
+          snapshot.data?.voteCount.toString() ?? '',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: MediaQuery.of(context).size.width * 0.04,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        RichText(
-            text: TextSpan(children: [
-          TextSpan(
-              text: count.toString(),
-              style: TextStyle(
-                fontSize: MediaQuery.of(context).size.width * 0.05,
-                fontFamily: 'Pretendard-Regular',
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              )),
-          TextSpan(
-              text: '개',
-              style: TextStyle(
-                fontSize: MediaQuery.of(context).size.width * 0.05,
-                fontFamily: 'Pretendard',
-                color: Colors.black,
-              )),
-        ])),
-        badgeAchievements(context, snapshot),
-        badgeSeasons(context, snapshot),
-        badgeEvents(context, snapshot),
-        badgeContests(context, snapshot),
-      ]));
+        Text(
+          '기여',
+          style: TextStyle(
+            color: Colors.grey,
+            fontSize: MediaQuery.of(context).size.width * 0.04,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
-Widget tagChart(
-    BuildContext context, AsyncSnapshot<List<TagRatings>> snapshot, User user) {
-  List<TagRatings>? tags = snapshot.data;
-  tags?.sort((a, b) => b.rating.compareTo(a.rating));
-
-  List<int> ticks = [];
-  List<String> features = [];
-  List<List<num>> data = [[]];
-
-  int? length = min(8, snapshot.data?.length ?? 0);
-  int maxTick = 0;
-  for (var i = 0; i < length; i++) {
-    features.add(snapshot.data?[i].tag['key'] ?? '');
-    data[0].add(snapshot.data?[i].rating ?? 0);
-    maxTick = max(maxTick, data[0][i].toInt());
-  }
-  maxTick = (maxTick + 500) ~/ 500 * 500;
-  while (maxTick > 0) {
-    ticks.add(maxTick);
-    maxTick -= 500;
-  }
-  print(ticks);
-
+// 라이벌 수
+Widget reverseRivalCount(BuildContext context, AsyncSnapshot<User> snapshot) {
   return Container(
-      width: MediaQuery.of(context).size.width,
-      padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.05),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.grey, width: 0.5),
-      ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(
-          children: [
-            SvgPicture.asset('lib/assets/icons/tag.svg',
-                color: Color(0xff8a8f95),
-                width: MediaQuery.of(context).size.width * 0.05),
-            SizedBox(width: 5),
-            Text(
-              '태그 분포',
-              style: TextStyle(
-                fontSize: MediaQuery.of(context).size.width * 0.04,
-                color: Color(0xff8a8f95),
-              ),
-            ),
-          ],
-        ),
-        Container(
-          color: Colors.white,
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.width * 0.6,
-          child: RadarChart(
-            ticks: ticks.reversed.toList(),
-            features: features,
-            data: data,
-            outlineColor: Color(0xff8a8f95),
-            featuresTextStyle: TextStyle(
-              fontSize: MediaQuery.of(context).size.width * 0.03,
-              color: Colors.black,
-            ),
-            graphColors: [ratingColor(user.rating)],
+    width: MediaQuery.of(context).size.width / 5,
+    clipBehavior: Clip.none,
+    child: Column(
+      children: [
+        Text(
+          snapshot.data?.reverseRivalCount.toString() ?? '',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: MediaQuery.of(context).size.width * 0.04,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        SizedBox(height: 10),
-        Row(
-          children: [
-            Text(
-              '태그',
-              style: TextStyle(
-                fontSize: MediaQuery.of(context).size.width * 0.04,
-                color: Color(0xff8a8f95),
-              ),
-            ),
-            Spacer(),
-            Spacer(),
-            Text(
-              '문제',
-              style: TextStyle(
-                fontSize: MediaQuery.of(context).size.width * 0.04,
-                color: Color(0xff8a8f95),
-              ),
-            ),
-            Spacer(),
-            Text(
-              '레이팅',
-              style: TextStyle(
-                fontSize: MediaQuery.of(context).size.width * 0.04,
-                color: Color(0xff8a8f95),
-              ),
-            ),
-          ],
+        Text(
+          '라이벌',
+          style: TextStyle(
+            color: Colors.grey,
+            fontSize: MediaQuery.of(context).size.width * 0.04,
+          ),
         ),
-        Divider(
-          color: Colors.grey,
-          thickness: 0.5,
+      ],
+    ),
+  );
+}
+
+// 랭크
+Widget rank(BuildContext context, AsyncSnapshot<User> snapshot) {
+  return CupertinoPageScaffold(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        padding: EdgeInsets.only(top: 20),
+        child: Text(
+          snapshot.data?.rank.toString() ?? '',
         ),
-        ListView.separated(
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            itemBuilder: (BuildContext context, int index) {
-              return Container(
-                clipBehavior: Clip.none,
-                width: MediaQuery.of(context).size.width,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: MediaQuery.of(context).size.width * 0.44,
-                      child: Text(
-                        tags?[index].tag['key'] ?? '',
-                        style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width * 0.04,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      width: MediaQuery.of(context).size.width * 0.2,
-                      child: Text(
-                        tags?[index].solvedCount.toString() ?? '',
-                        style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width * 0.04,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ),
-                    Spacer(),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SvgPicture.asset(
-                          'lib/assets/tiers/${ratingToTier(tags![index].rating)}.svg',
-                          width: MediaQuery.of(context).size.width * 0.04,
-                        ),
-                        SizedBox(width: 2),
-                        Text(
-                          tags[index].rating.toString(),
-                          style: TextStyle(
-                            fontSize: MediaQuery.of(context).size.width * 0.04,
-                            color: ratingColor(tags[index].rating),
-                          ),
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-              );
+      ));
+}
+
+// 잔디 테마
+String zandiUrl(String handle) {
+  int zandiTheme = UserService().streakTheme;
+  String theme = '';
+  if (zandiTheme == 0) {
+    theme = 'warm';
+  } else if (zandiTheme == 1) {
+    theme = 'cold';
+  } else if (zandiTheme == 2) {
+    theme = 'dark';
+  }
+  return 'http://mazandi.herokuapp.com/api?handle=$handle&theme=$theme';
+}
+
+// 최대 연속 문제 해결일 수
+Widget maxStreak(BuildContext context, AsyncSnapshot<User> snapshot) {
+  int zandiTheme = UserService().streakTheme;
+  return Text(
+    '최장 ${snapshot.data?.maxStreak.toString()}일',
+    style: TextStyle(
+      fontSize: MediaQuery.of(context).size.width * 0.4 * 0.1,
+      // fontWeight: FontWeight.bold,
+      color: zandiTheme == 2 ? Colors.white : Color(0xff8a8f95),
+    ),
+  );
+}
+
+// 현재 연속 문제 해결일 수
+Widget currentStreak(BuildContext context, AsyncSnapshot<Grass> snapshot) {
+  int zandiTheme = UserService().streakTheme;
+  return Text(
+    '현재 ${snapshot.data?.currentStreak}일',
+    style: TextStyle(
+      fontSize: MediaQuery.of(context).size.width * 0.4 * 0.1,
+      // fontWeight: FontWeight.bold,
+      color: zandiTheme == 2 ? Colors.white : Color(0xff8a8f95),
+    ),
+  );
+}
+
+// 경험치
+Widget exp(BuildContext context, AsyncSnapshot<User> snapshot) {
+  return CupertinoPageScaffold(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        padding: EdgeInsets.only(top: 20),
+        child: Text(
+          snapshot.data?.exp.toString() ?? '',
+        ),
+      ));
+}
+
+// 배지
+Widget badge(BuildContext context, AsyncSnapshot<User> snapshot) {
+  return snapshot.data?.badge == null
+      ? SizedBox()
+      : ImageShadow(
+          opacity: 0.2,
+          child: ExtendedImage.network(
+            snapshot.data?.badge['badgeImageUrl']
+                .replaceAll('profile_badge/', 'profile_badge/120x120/'),
+            width: 50,
+            height: 50,
+            cache: true,
+            loadStateChanged: (ExtendedImageState state) {
+              switch (state.extendedImageLoadState) {
+                case LoadState.loading:
+                  return CupertinoActivityIndicator();
+                case LoadState.completed:
+                  return null;
+                case LoadState.failed:
+                  return Icon(Icons.error);
+              }
             },
-            separatorBuilder: (BuildContext context, int index) {
-              return Divider();
-            },
-            itemCount: length),
-      ]));
+          ));
 }
 
 Color levelColor(int level) {

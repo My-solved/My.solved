@@ -1,168 +1,138 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:my_solved/extensions/color_extension.dart';
+import 'package:my_solved/services/user_service.dart';
 
-import '../services/user_service.dart';
+const _themeList = ['warm', 'cold', 'dark'];
 
-const zandiTheme = ['warm', 'cold', 'dark'];
-
-class SettingView extends StatelessWidget {
+class SettingView extends StatefulWidget {
   const SettingView({Key? key}) : super(key: key);
 
-  Color zandiColor(int theme) {
-    switch (theme) {
-      case 0:
-        return Color(0xFFfa8b5a);
-      case 1:
-        return Color(0xFF06CBE5);
-      case 2:
-        return Color(0xFF3f3f3f);
-      default:
-        return Color(0xff11ce3c);
-    }
-  }
+  @override
+  _SettingViewState createState() => _SettingViewState();
+}
+
+class _SettingViewState extends State<SettingView> {
+  UserService userService = UserService();
+  int _selectedIndex = UserService().streakTheme;
 
   @override
   Widget build(BuildContext context) {
-    bool isIllust = UserService().getIllust();
-
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
+        leading: CupertinoNavigationBarBackButton(
+          color: CupertinoColors.label,
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         middle: Text('설정'),
       ),
       child: SafeArea(
         child: Container(
-          padding: EdgeInsets.only(top: 10, left: 20, right: 20),
+          padding: EdgeInsets.only(left: 20, right: 20),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.only(top: 14, bottom: 14),
-                    child: Text(
-                      '백준 ID',
-                      style: TextStyle(
-                        fontSize: 16,
-                        //color: CupertinoTheme.of(context).textTheme.textStyle.color,
-                      ),
-                    ),
-                  ),
-                  Spacer(),
-                  Container(
-                    padding: EdgeInsets.only(top: 14, bottom: 14),
-                    child: Text(
-                      UserService().getUserName(),
-                      style: TextStyle(
-                        fontSize: 16,
-                        //color: CupertinoTheme.of(context).textTheme.textStyle.color,
-                      ),
-                    ),
-                  ),
-                ],
+              id(userService.name),
+              themeOfStrick(context),
+              Divider(
+                thickness: 1,
+                height: 1,
+                color: CupertinoTheme.of(context).dividerGray,
               ),
-              Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.only(top: 14, bottom: 14),
-                    child: Text(
-                      '스트릭 테마 변경',
-                      style: TextStyle(
-                        fontSize: 16,
-                        //color: CupertinoTheme.of(context).textTheme.textStyle.color,
-                      ),
-                    ),
-                  ),
-                  Spacer(),
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      color: zandiColor(UserService().getZandiTheme()),
-                    ),
-                    width: 100,
-                    child: CupertinoButton(
-                        padding: EdgeInsets.all(0),
-                        child: Text(zandiTheme[UserService().getZandiTheme()],
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: CupertinoColors.white,
-                            )),
-                        onPressed: () async {
-                          await showCupertinoModalPopup(
-                            context: context,
-                            builder: (context) => SizedBox(
-                                height: 250.0,
-                                child: CupertinoPicker(
-                                  itemExtent: 30.0,
-                                  scrollController: FixedExtentScrollController(
-                                      initialItem:
-                                          UserService().getZandiTheme()),
-                                  onSelectedItemChanged: (int index) {
-                                    UserService().setZandiTheme(index);
-                                  },
-                                  children: ['warm', 'cold', 'dark']
-                                      .map((e) => Text(e))
-                                      .toList(),
-                                )),
-                          );
-                        }),
-                  ),
-                ],
-              ),
-              Container(
-                padding: EdgeInsets.only(right: 20),
-                child: Divider(),
-              ),
-              Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.only(top: 14, bottom: 14),
-                    child: Text(
-                      '일러스트 배경 보기',
-                      style: TextStyle(
-                        fontSize: 16,
-                        //color: CupertinoTheme.of(context).textTheme.textStyle.color,
-                      ),
-                    ),
-                  ),
-                  Spacer(),
-                  CupertinoSwitch(
-                    value: isIllust,
-                    // setState 필요
-                    onChanged: (value) {
-                      isIllust = !isIllust;
-                      UserService().setIllust(isIllust);
-                    },
-                  ),
-                ],
-              ),
-              Container(
-                padding: EdgeInsets.only(right: 20),
-                child: Divider(),
-              ),
-              Row(
-                children: [
-                  Container(
-                    padding: EdgeInsets.only(top: 14, bottom: 14),
-                    child: Text(
-                      '라이센스',
-                      style: TextStyle(
-                        fontSize: 16,
-                        //color: CupertinoTheme.of(context).textTheme.textStyle.color,
-                      ),
-                    ),
-                  ),
-                  Spacer(),
-                  CupertinoButton(
-                    onPressed: () {},
-                    child: Icon(
-                      CupertinoIcons.right_chevron,
-                      //color: CupertinoTheme.of(context).textTheme.textStyle.color,
-                    ),
-                  )
-                ],
-              ),
+              logoutButton(),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  void _showDialog(Widget child, BuildContext context) {
+    showCupertinoModalPopup<void>(
+        context: context,
+        builder: (BuildContext context) => Container(
+          height: 216,
+          padding: const EdgeInsets.only(top: 6),
+          margin: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+          ),
+          color: CupertinoColors.systemBackground.resolveFrom(context),
+          child: SafeArea(top: false, child: child),
+        ));
+  }
+
+  String getCurrent(int index) {
+    return _themeList[index];
+  }
+}
+
+extension _SettingStateExtension on _SettingViewState {
+  Widget id(String name) {
+    return Container(
+      margin: EdgeInsets.only(top: 24, bottom: 14),
+      child: Row(
+        children: [
+          Text('백준 ID'),
+          Spacer(),
+          Text(name),
+        ],
+      ),
+    );
+  }
+
+  Widget themeOfStrick(BuildContext context) {
+    var _selectedTheme = _themeList[_selectedIndex];
+    return Container(
+      margin: EdgeInsets.only(top: 14, bottom: 14),
+      child: Row(
+        children: <Widget>[
+          Text('스트릭 테마'),
+          Spacer(),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            child: Text(_selectedTheme),
+            onPressed: () => _showDialog(
+                CupertinoPicker(
+                  magnification: 1.22,
+                  squeeze: 1.2,
+                  useMagnifier: true,
+                  itemExtent: 32,
+                  scrollController: FixedExtentScrollController(
+                    initialItem: UserService().streakTheme,
+                  ),
+                  onSelectedItemChanged: (int selected) {
+                    setState(() {
+                      _selectedIndex = selected;
+                      UserService().setStreakTheme(selected);
+                    });
+                  },
+                  children: List<Widget>.generate(_themeList.length, (index) {
+                    return Center(
+                      child: Text(
+                        _themeList[index],
+                      ),
+                    );
+                  }),
+                ),
+                context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget logoutButton() {
+    return Container(
+      margin: EdgeInsets.only(top: 24, bottom: 14),
+      child: CupertinoButton(
+        padding: EdgeInsets.zero,
+        child: Text(
+          '로그아웃',
+          style: TextStyle(color: CupertinoColors.systemRed),
+        ),
+        onPressed: () {
+          userService.logout();
+        },
       ),
     );
   }
