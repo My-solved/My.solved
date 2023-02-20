@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:my_solved/extensions/color_extension.dart';
 import 'package:my_solved/models/search/suggestion.dart';
@@ -158,28 +159,55 @@ class _SearchViewState extends State<SearchView> {
                             if (snapshot.data!.users.isNotEmpty)
                               userHeader(context),
                             for (dynamic user in snapshot.data?.users ?? [])
-                              Container(
-                                decoration: BoxDecoration(
-                                    color: CupertinoTheme.of(context)
-                                        .backgroundGray,
-                                    borderRadius: const BorderRadius.all(
-                                        Radius.circular(10))),
-                                margin: const EdgeInsets.only(top: 10),
-                                width: MediaQuery.of(context).size.width,
-                                child: CupertinoButton(
-                                  alignment: Alignment.centerLeft,
-                                  padding: EdgeInsets.only(left: 20),
-                                  child: Text(
-                                    '${user['handle']}',
-                                    style: TextStyle(fontSize: 14),
+                              Column(
+                                children: [
+                                  Container(
+                                    padding: EdgeInsets.zero,
+                                    child: CupertinoButton(
+                                      alignment: Alignment.centerLeft,
+                                      padding: EdgeInsets.only(left: 20),
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          SvgPicture.asset(
+                                            'lib/assets/tiers/${user['tier']}.svg',
+                                            height: 20,
+                                          ),
+                                          const SizedBox(width: 5),
+                                          Container(
+                                            height: 20,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(100),
+                                              child: Image.network(
+                                                user['profileImageUrl'] ??
+                                                    'https://static.solved.ac/misc/360x360/default_profile.png',
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 5),
+                                          Text(
+                                            '${user['handle']}',
+                                            style: TextStyle(fontSize: 14),
+                                          ),
+                                        ],
+                                      ),
+                                      onPressed: () => Navigator.of(context)
+                                          .push(CupertinoPageRoute(
+                                        builder: (BuildContext context) {
+                                          return UserView(
+                                              username: user['handle']);
+                                        },
+                                      )),
+                                    ),
                                   ),
-                                  onPressed: () => Navigator.of(context)
-                                      .push(CupertinoPageRoute(
-                                    builder: (BuildContext context) {
-                                      return UserView(username: user['handle']);
-                                    },
-                                  )),
-                                ),
+                                  Divider()
+                                ],
                               ),
                             if (snapshot.data!.tags.isNotEmpty)
                               tagHeader(context),
@@ -272,13 +300,19 @@ extension _SearchStateExtension on _SearchViewState {
   }
 
   Widget userHeader(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(top: 20),
-      child: Text(
-        '사용자',
-        style:
-            TextStyle(fontSize: 12, color: CupertinoTheme.of(context).fontGray),
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          margin: const EdgeInsets.only(top: 20),
+          child: Text(
+            '사용자',
+            style: TextStyle(
+                fontSize: 12, color: CupertinoTheme.of(context).fontGray),
+          ),
+        ),
+        Divider(),
+      ],
     );
   }
 

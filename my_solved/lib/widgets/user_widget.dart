@@ -963,7 +963,9 @@ Widget tagChart(BuildContext context, AsyncSnapshot<User> userSnapshot) {
                                   width:
                                       MediaQuery.of(context).size.width * 0.44,
                                   child: Text(
-                                    tags?[index].tag['key'] ?? '',
+                                    tags?[index].tag['displayNames'][0]
+                                            ['name'] ??
+                                        '',
                                     style: TextStyle(
                                       fontSize:
                                           MediaQuery.of(context).size.width *
