@@ -6,9 +6,15 @@ enum UserState { unknown, loggedIn, loading }
 class UserService extends ChangeNotifier {
   static final UserService _instance = UserService._privateConstructor();
   UserState state = UserState.loading;
+
   String name = '';
   int streakTheme = 0;
-  bool isOnIllustration = true;
+  bool isIllustration = true;
+  bool showTierIcon = true;
+  bool showTags = true;
+  int searchDefaultOpt = 0;
+  bool searchDefaultSort = true;
+
   bool _disposed = false;
 
   UserService._privateConstructor() {
@@ -31,7 +37,13 @@ class UserService extends ChangeNotifier {
 
     Future<bool> initIllust = initIllustration();
     initIllust.then((isOn) {
-      isOnIllustration = isOn;
+      isIllustration = isOn;
+      notifyListeners();
+    });
+
+    Future<bool> initTier = initTierIcon();
+    initTier.then((isOn) {
+      showTierIcon = isOn;
       notifyListeners();
     });
   }
@@ -48,7 +60,7 @@ class UserService extends ChangeNotifier {
 
   @override
   notifyListeners() {
-    if(!_disposed) {
+    if (!_disposed) {
       super.notifyListeners();
     }
   }
@@ -92,8 +104,57 @@ class UserService extends ChangeNotifier {
   }
 
   void setIllustration(bool isOn) async {
-    isOnIllustration = isOn;
+    isIllustration = isOn;
     final prefs = await SharedPreferences.getInstance();
     prefs.setBool('isIllust', isOn);
+    notifyListeners();
+  }
+
+  Future<bool> initTierIcon() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('showTierIcon') ?? true;
+  }
+
+  void setTierIcon(bool isOn) async {
+    showTierIcon = isOn;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('showTierIcon', isOn);
+    notifyListeners();
+  }
+
+  Future<bool> initTags() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('showTags') ?? true;
+  }
+
+  void setTags(bool isOn) async {
+    showTags = isOn;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('showTags', isOn);
+    notifyListeners();
+  }
+
+  Future<int> initSearchDefaultOpt() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('searchDefaultOpt') ?? 0;
+  }
+
+  void setSearchDefaultOpt(int opt) async {
+    searchDefaultOpt = opt;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setInt('searchDefaultOpt', opt);
+    notifyListeners();
+  }
+
+  Future<bool> initSearchDefaultSort() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('searchDefaultSort') ?? true;
+  }
+
+  void setSearchDefaultSort(bool isAsc) async {
+    searchDefaultSort = isAsc;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('searchDefaultSort', isAsc);
+    notifyListeners();
   }
 }
