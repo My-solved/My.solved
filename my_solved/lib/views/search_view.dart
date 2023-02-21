@@ -1,3 +1,4 @@
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:my_solved/extensions/color_extension.dart';
@@ -5,6 +6,7 @@ import 'package:my_solved/models/search/object.dart';
 import 'package:my_solved/services/network_service.dart';
 import 'package:my_solved/services/user_service.dart';
 import 'package:my_solved/views/user_view.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class SearchView extends StatefulWidget {
@@ -97,13 +99,28 @@ class _SearchViewState extends State<SearchView> {
                                                     crossAxisAlignment:
                                                         CrossAxisAlignment.end,
                                                     children: [
-                                                      SvgPicture.asset(
-                                                        'lib/assets/tiers/${problem['level'].toString()}.svg',
-                                                        height: 18,
-                                                      ),
-                                                      const SizedBox(
-                                                        width: 5,
-                                                      ),
+                                                      Consumer<UserService>(
+                                                          builder: (context,
+                                                              userService,
+                                                              child) {
+                                                        print(userService
+                                                            .showTags);
+                                                        return userService
+                                                                .showTierIcon
+                                                            ? Container(
+                                                                margin:
+                                                                    const EdgeInsets
+                                                                            .only(
+                                                                        right:
+                                                                            5),
+                                                                child:
+                                                                    SvgPicture
+                                                                        .asset(
+                                                                  'lib/assets/tiers/${problem['level']}.svg',
+                                                                  height: 18,
+                                                                ))
+                                                            : Container();
+                                                      }),
                                                       Text(
                                                         '${problem['problemId']}번',
                                                         style: TextStyle(
@@ -119,50 +136,6 @@ class _SearchViewState extends State<SearchView> {
                                                     style:
                                                         TextStyle(fontSize: 20),
                                                   ),
-                                                  // SizedBox(
-                                                  //   height: 12,
-                                                  // ),
-                                                  // Text(
-                                                  //   '맞은 사람 수: ${problem['solved']}',
-                                                  //   style: TextStyle(
-                                                  //     fontSize: 14,
-                                                  //     color: CupertinoTheme.of(context)
-                                                  //         .fontGray,
-                                                  //   ),
-                                                  // ),
-                                                  // SizedBox(
-                                                  //   height: 4,
-                                                  // ),
-                                                  // Text(
-                                                  //   'Level: ${problem['level']}',
-                                                  //   style: TextStyle(
-                                                  //     fontSize: 14,
-                                                  //     color: CupertinoTheme.of(context)
-                                                  //         .fontGray,
-                                                  //   ),
-                                                  // ),
-                                                  // SizedBox(
-                                                  //   height: 4,
-                                                  // ),
-                                                  // Text(
-                                                  //   '평균 시도 횟수:',
-                                                  //   style: TextStyle(
-                                                  //     fontSize: 14,
-                                                  //     color: CupertinoTheme.of(context)
-                                                  //         .fontGray,
-                                                  //   ),
-                                                  // ),
-                                                  // SizedBox(
-                                                  //   height: 4,
-                                                  // ),
-                                                  // Text(
-                                                  //   '태그:',
-                                                  //   style: TextStyle(
-                                                  //     fontSize: 14,
-                                                  //     color: CupertinoTheme.of(context)
-                                                  //         .fontGray,
-                                                  //   ),
-                                                  // ),
                                                 ],
                                               ),
                                             ),
@@ -198,9 +171,30 @@ class _SearchViewState extends State<SearchView> {
                                           child: CupertinoButton(
                                             alignment: Alignment.centerLeft,
                                             padding: EdgeInsets.only(left: 20),
-                                            child: Text(
-                                              '${user['handle']}',
-                                              style: TextStyle(fontSize: 14),
+                                            child: Row(
+                                              children: [
+                                                SvgPicture.asset(
+                                                  'lib/assets/tiers/${user['tier']}.svg',
+                                                  height: 20,
+                                                ),
+                                                const SizedBox(width: 5),
+                                                ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                  child: ExtendedImage.network(
+                                                    user['profileImageUrl'] ??
+                                                        'https://static.solved.ac/misc/360x360/default_profile.png',
+                                                    width: 20,
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 5),
+                                                Text(
+                                                  '${user['handle']}',
+                                                  style:
+                                                      TextStyle(fontSize: 14),
+                                                ),
+                                              ],
                                             ),
                                             onPressed: () =>
                                                 Navigator.of(context).push(

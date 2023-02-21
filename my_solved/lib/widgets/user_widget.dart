@@ -84,7 +84,7 @@ Widget profileDetail(BuildContext context, AsyncSnapshot<User> snapshot) {
             ? SizedBox(height: 5)
             : SizedBox.shrink(),
         bio(context, snapshot),
-        snapshot.data!.organizations!.isNotEmpty
+        snapshot.data!.organizations.isNotEmpty
             ? SizedBox(height: 5)
             : SizedBox.shrink(),
         organizations(context, snapshot),
@@ -893,7 +893,11 @@ Widget tagChart(BuildContext context, AsyncSnapshot<User> userSnapshot) {
               horizontal: MediaQuery.of(context).size.width * 0.05),
           child: Container(
               width: MediaQuery.of(context).size.width,
-              padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.05),
+              padding: EdgeInsets.only(
+                  left: MediaQuery.of(context).size.width * 0.06,
+                  right: MediaQuery.of(context).size.width * 0.06,
+                  top: MediaQuery.of(context).size.width * 0.05,
+                  bottom: MediaQuery.of(context).size.width * 0.05),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: Colors.grey, width: 0.5),
@@ -918,7 +922,6 @@ Widget tagChart(BuildContext context, AsyncSnapshot<User> userSnapshot) {
                     ),
                     Container(
                       color: Colors.white,
-                      width: MediaQuery.of(context).size.width,
                       height: MediaQuery.of(context).size.width * 0.6,
                       child: RadarChart(
                         ticks: ticks.reversed.toList(),
@@ -971,70 +974,61 @@ Widget tagChart(BuildContext context, AsyncSnapshot<User> userSnapshot) {
                         shrinkWrap: true,
                         physics: NeverScrollableScrollPhysics(),
                         itemBuilder: (BuildContext context, int index) {
-                          return Container(
-                            clipBehavior: Clip.none,
-                            width: MediaQuery.of(context).size.width,
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.44,
-                                  child: Text(
-                                    tags?[index].tag['displayNames'][0]
-                                            ['name'] ??
-                                        '',
-                                    style: TextStyle(
-                                      fontSize:
-                                          MediaQuery.of(context).size.width *
-                                              0.04,
-                                      color: Colors.black,
-                                    ),
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: MediaQuery.of(context).size.width * 0.42,
+                                child: Text(
+                                  tags?[index].tag['displayNames'][0]['name'] ??
+                                      '',
+                                  style: TextStyle(
+                                    fontSize:
+                                        MediaQuery.of(context).size.width *
+                                            0.035,
+                                    color: Colors.black,
                                   ),
                                 ),
-                                SizedBox(
-                                  width:
-                                      MediaQuery.of(context).size.width * 0.2,
-                                  child: Text(
-                                    tags?[index].solvedCount.toString() ?? '',
-                                    style: TextStyle(
-                                      fontSize:
-                                          MediaQuery.of(context).size.width *
-                                              0.04,
-                                      color: Colors.black,
-                                    ),
+                              ),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.2,
+                                child: Text(
+                                  tags?[index].solvedCount.toString() ?? '',
+                                  style: TextStyle(
+                                    fontSize:
+                                        MediaQuery.of(context).size.width *
+                                            0.035,
+                                    color: Colors.black,
                                   ),
                                 ),
-                                Spacer(),
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    SvgPicture.asset(
-                                      'lib/assets/tiers/${ratingToTier(tags![index].rating)}.svg',
-                                      width: MediaQuery.of(context).size.width *
-                                          0.04,
-                                    ),
-                                    SizedBox(width: 3),
-                                    SizedBox(
-                                      width: MediaQuery.of(context).size.width *
-                                          0.1,
-                                      child: Text(
-                                        tags[index].rating.toString(),
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: MediaQuery.of(context)
-                                                  .size
-                                                  .width *
-                                              0.04,
-                                          color:
-                                              ratingColor(tags[index].rating),
-                                        ),
+                              ),
+                              Spacer(),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SvgPicture.asset(
+                                    'lib/assets/tiers/${ratingToTier(tags![index].rating)}.svg',
+                                    width: MediaQuery.of(context).size.width *
+                                        0.035,
+                                  ),
+                                  SizedBox(width: 3),
+                                  SizedBox(
+                                    width:
+                                        MediaQuery.of(context).size.width * 0.1,
+                                    child: Text(
+                                      tags[index].rating.toString(),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize:
+                                            MediaQuery.of(context).size.width *
+                                                0.035,
+                                        color: ratingColor(tags[index].rating),
                                       ),
-                                    )
-                                  ],
-                                )
-                              ],
-                            ),
+                                    ),
+                                  )
+                                ],
+                              )
+                            ],
                           );
                         },
                         separatorBuilder: (BuildContext context, int index) {
@@ -1106,6 +1100,7 @@ Widget organizations(BuildContext context, AsyncSnapshot<User> snapshot) {
               ],
               style: TextStyle(
                 color: Colors.grey,
+                fontSize: MediaQuery.of(context).size.width * 0.035,
               ),
             ),
           ),
@@ -1136,6 +1131,7 @@ Widget organizations(BuildContext context, AsyncSnapshot<User> snapshot) {
               ],
               style: TextStyle(
                 color: Colors.grey,
+                fontSize: MediaQuery.of(context).size.width * 0.035,
               ),
             ),
           ),
@@ -1166,6 +1162,7 @@ Widget organizations(BuildContext context, AsyncSnapshot<User> snapshot) {
               ],
               style: TextStyle(
                 color: Colors.grey,
+                fontSize: MediaQuery.of(context).size.width * 0.035,
               ),
             ),
           ),
@@ -1178,6 +1175,9 @@ Widget bio(BuildContext context, AsyncSnapshot<User> snapshot) {
       ? SizedBox.shrink()
       : Text(
           snapshot.data?.bio ?? '',
+          style: TextStyle(
+            fontSize: MediaQuery.of(context).size.width * 0.04,
+          ),
         );
 }
 
