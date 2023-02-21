@@ -20,11 +20,12 @@ class _SettingViewState extends State<SettingView> {
   bool _showTierIcon = UserService().showTierIcon;
   bool _showTags = UserService().showTags;
   int _searchDefaultOpt = UserService().searchDefaultOpt;
-  bool _searchDefaltSort = UserService().searchDefaultSort;
+  bool _searchDefaultSort = UserService().searchDefaultSort;
 
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
+      resizeToAvoidBottomInset: false,
       navigationBar: CupertinoNavigationBar(
         leading: CupertinoNavigationBarBackButton(
           color: CupertinoColors.label,
@@ -364,7 +365,7 @@ extension _SettingStateExtension on _SettingViewState {
             SizedBox(width: 10),
             CupertinoButton(
               padding: EdgeInsets.zero,
-              child: Text(_searchDefaltSort ? '오름차순' : '내림차순'),
+              child: Text(_searchDefaultSort ? '오름차순' : '내림차순'),
               onPressed: () => _showDialog(
                   CupertinoPicker(
                     magnification: 1.22,
@@ -376,7 +377,7 @@ extension _SettingStateExtension on _SettingViewState {
                     ),
                     onSelectedItemChanged: (int selected) {
                       setState(() {
-                        _searchDefaltSort = selected == 0 ? true : false;
+                        _searchDefaultSort = selected == 0 ? true : false;
                         UserService()
                             .setSearchDefaultSort(selected == 0 ? true : false);
                       });

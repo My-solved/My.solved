@@ -1,8 +1,9 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:my_solved/extensions/color_extension.dart';
-import 'package:my_solved/models/search/suggestion.dart';
+import 'package:my_solved/models/search/object.dart';
 import 'package:my_solved/services/network_service.dart';
+import 'package:my_solved/services/user_service.dart';
 import 'package:my_solved/views/user_view.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -17,7 +18,7 @@ class _SearchViewState extends State<SearchView> {
   NetworkService networkService = NetworkService();
   String input = '';
   bool isSubmitted = false;
-  Future<SearchSuggestion>? future;
+  Future<SearchObject>? future;
   int _selectedSegment = 0;
 
   void _updateSelectedSegment(int value) {
@@ -41,136 +42,148 @@ class _SearchViewState extends State<SearchView> {
                 if (!isSubmitted) header(),
                 searchBar(),
                 if (isSubmitted)
-                  FutureBuilder(
-                    future: future,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            UnderlineSegmentControl(
-                                children: {
-                                  0: '문제',
-                                  1: '사용자',
-                                  2: '태그',
-                                },
-                                onValueChanged: (value) {
-                                  print('Selected segment: $value');
-                                  _updateSelectedSegment(value);
-                                }),
-                            Builder(
-                              builder: (context) {
-                                if (_selectedSegment == 0) {
-                                  return Column(
-                                    children: <Widget>[
-                                      for (dynamic problem
-                                          in snapshot.data!.problems)
-                                        Container(
-                                          decoration: BoxDecoration(
-                                            color: CupertinoTheme.of(context)
-                                                .backgroundGray,
-                                            borderRadius:
-                                                const BorderRadius.all(
-                                              Radius.circular(10),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      UnderlineSegmentControl(
+                          children: {
+                            0: '문제',
+                            1: '사용자',
+                            2: '태그',
+                          },
+                          onValueChanged: (value) {
+                            print('Selected segment: $value');
+                            _updateSelectedSegment(value);
+                          }),
+                      Builder(
+                        builder: (context) {
+                          if (_selectedSegment == 0) {
+                            return FutureBuilder(
+                                future: NetworkService().requestSearchProblem(
+                                    input, null, null, null),
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData) {
+                                    return Column(
+                                      children: <Widget>[
+                                        for (dynamic problem
+                                            in snapshot.data!.items)
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              color: CupertinoTheme.of(context)
+                                                  .backgroundGray,
+                                              borderRadius:
+                                                  const BorderRadius.all(
+                                                Radius.circular(10),
+                                              ),
+                                            ),
+                                            margin:
+                                                const EdgeInsets.only(top: 10),
+                                            padding: const EdgeInsets.all(20),
+                                            width: MediaQuery.of(context)
+                                                .size
+                                                .width,
+                                            child: CupertinoButton(
+                                              padding: EdgeInsets.zero,
+                                              onPressed: () async {
+                                                String url =
+                                                    'https://acmicpc.net/problem/${problem['problemId']}';
+                                                launchUrlString(url);
+                                              },
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment.end,
+                                                    children: [
+                                                      SvgPicture.asset(
+                                                        'lib/assets/tiers/${problem['level'].toString()}.svg',
+                                                        height: 18,
+                                                      ),
+                                                      const SizedBox(
+                                                        width: 5,
+                                                      ),
+                                                      Text(
+                                                        '${problem['problemId']}번',
+                                                        style: TextStyle(
+                                                            fontSize: 16),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  SizedBox(
+                                                    height: 10,
+                                                  ),
+                                                  Text(
+                                                    '${problem['titleKo']}',
+                                                    style:
+                                                        TextStyle(fontSize: 20),
+                                                  ),
+                                                  // SizedBox(
+                                                  //   height: 12,
+                                                  // ),
+                                                  // Text(
+                                                  //   '맞은 사람 수: ${problem['solved']}',
+                                                  //   style: TextStyle(
+                                                  //     fontSize: 14,
+                                                  //     color: CupertinoTheme.of(context)
+                                                  //         .fontGray,
+                                                  //   ),
+                                                  // ),
+                                                  // SizedBox(
+                                                  //   height: 4,
+                                                  // ),
+                                                  // Text(
+                                                  //   'Level: ${problem['level']}',
+                                                  //   style: TextStyle(
+                                                  //     fontSize: 14,
+                                                  //     color: CupertinoTheme.of(context)
+                                                  //         .fontGray,
+                                                  //   ),
+                                                  // ),
+                                                  // SizedBox(
+                                                  //   height: 4,
+                                                  // ),
+                                                  // Text(
+                                                  //   '평균 시도 횟수:',
+                                                  //   style: TextStyle(
+                                                  //     fontSize: 14,
+                                                  //     color: CupertinoTheme.of(context)
+                                                  //         .fontGray,
+                                                  //   ),
+                                                  // ),
+                                                  // SizedBox(
+                                                  //   height: 4,
+                                                  // ),
+                                                  // Text(
+                                                  //   '태그:',
+                                                  //   style: TextStyle(
+                                                  //     fontSize: 14,
+                                                  //     color: CupertinoTheme.of(context)
+                                                  //         .fontGray,
+                                                  //   ),
+                                                  // ),
+                                                ],
+                                              ),
                                             ),
                                           ),
-                                          margin:
-                                              const EdgeInsets.only(top: 10),
-                                          padding: const EdgeInsets.all(20),
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                          child: CupertinoButton(
-                                            padding: EdgeInsets.zero,
-                                            onPressed: () async {
-                                              String url =
-                                                  'https://acmicpc.net/problem/${problem['id']}';
-                                              launchUrlString(url);
-                                            },
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.end,
-                                                  children: [
-                                                    SvgPicture.asset(
-                                                      'lib/assets/tiers/${problem['level'].toString()}.svg',
-                                                      height: 18,
-                                                    ),
-                                                    const SizedBox(
-                                                      width: 5,
-                                                    ),
-                                                    Text(
-                                                      '${problem['id']}번',
-                                                      style: TextStyle(
-                                                          fontSize: 16),
-                                                    ),
-                                                  ],
-                                                ),
-                                                SizedBox(
-                                                  height: 10,
-                                                ),
-                                                Text(
-                                                  '${problem['title']}',
-                                                  style:
-                                                      TextStyle(fontSize: 20),
-                                                ),
-                                                // SizedBox(
-                                                //   height: 12,
-                                                // ),
-                                                // Text(
-                                                //   '맞은 사람 수: ${problem['solved']}',
-                                                //   style: TextStyle(
-                                                //     fontSize: 14,
-                                                //     color: CupertinoTheme.of(context)
-                                                //         .fontGray,
-                                                //   ),
-                                                // ),
-                                                // SizedBox(
-                                                //   height: 4,
-                                                // ),
-                                                // Text(
-                                                //   'Level: ${problem['level']}',
-                                                //   style: TextStyle(
-                                                //     fontSize: 14,
-                                                //     color: CupertinoTheme.of(context)
-                                                //         .fontGray,
-                                                //   ),
-                                                // ),
-                                                // SizedBox(
-                                                //   height: 4,
-                                                // ),
-                                                // Text(
-                                                //   '평균 시도 횟수:',
-                                                //   style: TextStyle(
-                                                //     fontSize: 14,
-                                                //     color: CupertinoTheme.of(context)
-                                                //         .fontGray,
-                                                //   ),
-                                                // ),
-                                                // SizedBox(
-                                                //   height: 4,
-                                                // ),
-                                                // Text(
-                                                //   '태그:',
-                                                //   style: TextStyle(
-                                                //     fontSize: 14,
-                                                //     color: CupertinoTheme.of(context)
-                                                //         .fontGray,
-                                                //   ),
-                                                // ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  );
-                                } else if (_selectedSegment == 1) {
+                                      ],
+                                    );
+                                  } else if (snapshot.hasError) {
+                                    return Text('${snapshot.error}');
+                                  } else {
+                                    return CupertinoActivityIndicator();
+                                  }
+                                });
+                          } else if (_selectedSegment == 1) {
+                            return FutureBuilder(
+                              future: NetworkService()
+                                  .requestSearchUser(input, null),
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
                                   return Column(
                                     children: [
-                                      for (dynamic user
-                                          in snapshot.data?.users ?? [])
+                                      for (dynamic user in snapshot.data!.items)
                                         Container(
                                           decoration: BoxDecoration(
                                               color: CupertinoTheme.of(context)
@@ -190,22 +203,35 @@ class _SearchViewState extends State<SearchView> {
                                               style: TextStyle(fontSize: 14),
                                             ),
                                             onPressed: () =>
-                                                Navigator.of(context)
-                                                    .push(CupertinoPageRoute(
-                                              builder: (BuildContext context) {
-                                                return UserView(
-                                                    username: user['handle']);
-                                              },
-                                            )),
+                                                Navigator.of(context).push(
+                                              CupertinoPageRoute(
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return UserView(
+                                                      username: user['handle']);
+                                                },
+                                              ),
+                                            ),
                                           ),
                                         ),
                                     ],
                                   );
+                                } else if (snapshot.hasError) {
+                                  return Text('${snapshot.error}');
                                 } else {
+                                  return CupertinoActivityIndicator();
+                                }
+                              },
+                            );
+                          } else {
+                            return FutureBuilder(
+                              future: NetworkService()
+                                  .requestSearchTag(input, null),
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
                                   return Column(
                                     children: [
-                                      for (dynamic tag
-                                          in snapshot.data?.tags ?? [])
+                                      for (dynamic tag in snapshot.data!.items)
                                         Container(
                                           decoration: BoxDecoration(
                                               color: CupertinoTheme.of(context)
@@ -221,7 +247,7 @@ class _SearchViewState extends State<SearchView> {
                                             alignment: Alignment.centerLeft,
                                             padding: EdgeInsets.only(left: 20),
                                             child: Text(
-                                              '${tag['key']}:${tag['description']}',
+                                              '${tag['key']}:${tag['problemCount']}',
                                               style: TextStyle(fontSize: 14),
                                             ),
                                             onPressed: () async {
@@ -233,20 +259,18 @@ class _SearchViewState extends State<SearchView> {
                                         ),
                                     ],
                                   );
+                                } else if (snapshot.hasError) {
+                                  return Text('${snapshot.error}');
+                                } else {
+                                  return CupertinoActivityIndicator();
                                 }
                               },
-                            ),
-                          ],
-                        );
-                      } else if (snapshot.hasError) {
-                        return Center(
-                          child: Text('Error'),
-                        );
-                      } else {
-                        return Center(child: CupertinoActivityIndicator());
-                      }
-                    },
-                  ),
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                  )
               ],
             ),
           ),
@@ -279,7 +303,18 @@ extension _SearchStateExtension on _SearchViewState {
         },
         onSubmitted: (text) {
           setState(() {
-            future = networkService.requestSearchSuggestion(input);
+            if (_selectedSegment == 0) {
+              const optList = ['id', 'level', 'title', 'solved', 'average_try'];
+              int opt = UserService().searchDefaultOpt;
+              bool asc = UserService().searchDefaultSort;
+
+              future = networkService.requestSearchProblem(
+                  input, null, optList[opt], asc ? 'asc' : 'desc');
+            } else if (_selectedSegment == 1) {
+              future = networkService.requestSearchUser(input, null);
+            } else {
+              future = networkService.requestSearchTag(input, null);
+            }
             isSubmitted = true;
           });
         },
@@ -343,7 +378,8 @@ class UnderlineSegmentControl extends StatefulWidget {
   });
 
   @override
-  _UnderlineSegmentedControlState createState() => _UnderlineSegmentedControlState();
+  _UnderlineSegmentedControlState createState() =>
+      _UnderlineSegmentedControlState();
 }
 
 class _UnderlineSegmentedControlState extends State<UnderlineSegmentControl> {
@@ -352,8 +388,8 @@ class _UnderlineSegmentedControlState extends State<UnderlineSegmentControl> {
   @override
   Widget build(BuildContext context) {
     return Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-          children: widget.children.entries
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: widget.children.entries
           .map(
             (entry) => GestureDetector(
               onTap: () {

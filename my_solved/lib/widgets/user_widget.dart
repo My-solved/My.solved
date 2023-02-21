@@ -84,7 +84,9 @@ Widget profileDetail(BuildContext context, AsyncSnapshot<User> snapshot) {
             ? SizedBox(height: 5)
             : SizedBox.shrink(),
         bio(context, snapshot),
-        SizedBox(height: 5),
+        snapshot.data!.organizations!.isNotEmpty
+            ? SizedBox(height: 5)
+            : SizedBox.shrink(),
         organizations(context, snapshot),
       ],
     ),
@@ -1379,6 +1381,10 @@ Widget exp(BuildContext context, AsyncSnapshot<User> snapshot) {
 
 // 배지
 Widget badge(BuildContext context, AsyncSnapshot<User> snapshot) {
+  if (snapshot.data?.badge == null) {
+    return SizedBox();
+  }
+
   String tier = snapshot.data!.badge['badgeTier'];
   bool isContest = snapshot.data!.badge['badgeCategory'] == 'contest';
   Color tierColor = Colors.white;
