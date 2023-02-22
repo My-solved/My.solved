@@ -1,15 +1,16 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:html/dom.dart' as dom;
+import 'package:html/parser.dart' as parser;
 import 'package:http/http.dart' as http;
 import 'package:my_solved/models/User.dart';
 import 'package:my_solved/models/search/object.dart';
 import 'package:my_solved/models/search/suggestion.dart';
 import 'package:my_solved/models/user/badges.dart';
 import 'package:my_solved/models/user/grass.dart';
+import 'package:my_solved/models/user/tag_ratings.dart';
 import 'package:my_solved/models/user/top_100.dart';
-
-import '../models/user/tag_ratings.dart';
 
 class NetworkService {
   static final NetworkService _instance = NetworkService._privateConstructor();
@@ -159,6 +160,19 @@ class NetworkService {
     if (statusCode == 200) {
       SearchObject search = SearchObject.fromJson(jsonDecode(response.body));
       return search;
+    } else {
+      throw Exception('Fail to load');
+    }
+  }
+
+  Future<dom.Document> requestContests() async {
+    final response =
+        await http.get(Uri.parse("https://www.acmicpc.net/contest/other/list"));
+    final statusCode = response.statusCode;
+
+    if (statusCode == 200) {
+      dom.Document document = parser.parse(response.body);
+      return document;
     } else {
       throw Exception('Fail to load');
     }
