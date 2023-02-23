@@ -56,7 +56,7 @@ class _SearchViewState extends State<SearchView> {
                             2: '태그',
                           },
                           onValueChanged: (value) {
-                            print('Selected segment: $value');
+                            // print('Selected segment: $value');
                             _updateSelectedSegment(value);
                           }),
                       Builder(
@@ -69,20 +69,28 @@ class _SearchViewState extends State<SearchView> {
                                     return Column(
                                       children: <Widget>[
                                         for (dynamic problem
-                                            in snapshot.data!.items)
+                                        in snapshot.data!.items)
                                           Container(
                                             decoration: BoxDecoration(
-                                              color: CupertinoTheme.of(context)
+                                              color: CupertinoTheme
+                                                  .of(
+                                                  context)
                                                   .backgroundGray,
                                               borderRadius:
-                                                  const BorderRadius.all(
+                                              const BorderRadius
+                                                  .all(
                                                 Radius.circular(10),
                                               ),
                                             ),
                                             margin:
-                                                const EdgeInsets.only(top: 10),
-                                            padding: const EdgeInsets.all(20),
-                                            width: MediaQuery.of(context)
+                                            const EdgeInsets.only(
+                                                top: 10),
+                                            padding:
+                                            const EdgeInsets.all(
+                                                20),
+                                            width:
+                                            MediaQuery
+                                                .of(context)
                                                 .size
                                                 .width,
                                             child: CupertinoButton(
@@ -96,38 +104,39 @@ class _SearchViewState extends State<SearchView> {
                                               },
                                               child: Column(
                                                 crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
+                                                CrossAxisAlignment
+                                                    .start,
                                                 children: [
                                                   Row(
                                                     crossAxisAlignment:
-                                                        CrossAxisAlignment.end,
+                                                    CrossAxisAlignment
+                                                        .end,
                                                     children: [
-                                                      Consumer<UserService>(
+                                                      Consumer<
+                                                          UserService>(
                                                           builder: (context,
                                                               userService,
                                                               child) {
-                                                        print(userService
-                                                            .showTags);
-                                                        return userService
+                                                            return userService
                                                                 .showTierIcon
-                                                            ? Container(
-                                                                margin:
-                                                                    const EdgeInsets
-                                                                            .only(
-                                                                        right:
-                                                                            5),
-                                                                child:
-                                                                    SvgPicture
-                                                                        .asset(
+                                                                ? Container(
+                                                                margin: const EdgeInsets
+                                                                    .only(
+                                                                    right:
+                                                                    5),
+                                                                child: SvgPicture
+                                                                    .asset(
                                                                   'lib/assets/tiers/${problem['level']}.svg',
-                                                                  height: 18,
+                                                                  height:
+                                                                  18,
                                                                 ))
-                                                            : Container();
-                                                      }),
+                                                                : Container();
+                                                          }),
                                                       Text(
                                                         '${problem['problemId']}번',
                                                         style: TextStyle(
-                                                            fontSize: 16),
+                                                            fontSize:
+                                                            16),
                                                       ),
                                                     ],
                                                   ),
@@ -136,8 +145,8 @@ class _SearchViewState extends State<SearchView> {
                                                   ),
                                                   Text(
                                                     '${problem['titleKo']}',
-                                                    style:
-                                                        TextStyle(fontSize: 20),
+                                                    style: TextStyle(
+                                                        fontSize: 20),
                                                   ),
                                                 ],
                                               ),
@@ -161,15 +170,19 @@ class _SearchViewState extends State<SearchView> {
                                       for (dynamic user in snapshot.data!.items)
                                         Container(
                                           decoration: BoxDecoration(
-                                              color: CupertinoTheme.of(context)
+                                              color: CupertinoTheme
+                                                  .of(context)
                                                   .backgroundGray,
                                               borderRadius:
-                                                  const BorderRadius.all(
-                                                      Radius.circular(10))),
+                                              const BorderRadius.all(
+                                                  Radius.circular(10))),
                                           margin:
-                                              const EdgeInsets.only(top: 10),
+                                          const EdgeInsets.only(top: 10),
                                           width:
-                                              MediaQuery.of(context).size.width,
+                                          MediaQuery
+                                              .of(context)
+                                              .size
+                                              .width,
                                           child: CupertinoButton(
                                             alignment: Alignment.centerLeft,
                                             padding: EdgeInsets.only(left: 20),
@@ -182,7 +195,7 @@ class _SearchViewState extends State<SearchView> {
                                                 const SizedBox(width: 5),
                                                 ClipRRect(
                                                   borderRadius:
-                                                      BorderRadius.circular(10),
+                                                  BorderRadius.circular(10),
                                                   child: ExtendedImage.network(
                                                     user['profileImageUrl'] ??
                                                         'https://static.solved.ac/misc/360x360/default_profile.png',
@@ -194,20 +207,20 @@ class _SearchViewState extends State<SearchView> {
                                                 Text(
                                                   '${user['handle']}',
                                                   style:
-                                                      TextStyle(fontSize: 14),
+                                                  TextStyle(fontSize: 14),
                                                 ),
                                               ],
                                             ),
                                             onPressed: () =>
                                                 Navigator.of(context).push(
-                                              CupertinoPageRoute(
-                                                builder:
-                                                    (BuildContext context) {
-                                                  return UserView(
-                                                      username: user['handle']);
-                                                },
-                                              ),
-                                            ),
+                                                  CupertinoPageRoute(
+                                                    builder:
+                                                        (BuildContext context) {
+                                                      return UserView(
+                                                          username: user['handle']);
+                                                    },
+                                                  ),
+                                                ),
                                           ),
                                         ),
                                     ],
@@ -229,15 +242,19 @@ class _SearchViewState extends State<SearchView> {
                                       for (dynamic tag in snapshot.data!.items)
                                         Container(
                                           decoration: BoxDecoration(
-                                              color: CupertinoTheme.of(context)
+                                              color: CupertinoTheme
+                                                  .of(context)
                                                   .backgroundGray,
                                               borderRadius:
-                                                  const BorderRadius.all(
-                                                      Radius.circular(10))),
+                                              const BorderRadius.all(
+                                                  Radius.circular(10))),
                                           margin:
-                                              const EdgeInsets.only(top: 10),
+                                          const EdgeInsets.only(top: 10),
                                           width:
-                                              MediaQuery.of(context).size.width,
+                                          MediaQuery
+                                              .of(context)
+                                              .size
+                                              .width,
                                           child: CupertinoButton(
                                             alignment: Alignment.centerLeft,
                                             padding: EdgeInsets.only(left: 20),
@@ -265,7 +282,7 @@ class _SearchViewState extends State<SearchView> {
                             );
                           }
                         },
-                      ),
+                      )
                     ],
                   )
               ],
@@ -300,58 +317,16 @@ extension _SearchStateExtension on _SearchViewState {
         },
         onSubmitted: (text) {
           setState(() {
-            futureProblem =
-                NetworkService().requestSearchProblem(input, null, null, null);
+            const optList = ['id', 'level', 'title', 'solved', 'average_try'];
+            int opt = UserService().searchDefaultOpt;
+            bool asc = UserService().searchDefaultSort;
+            futureProblem = networkService.requestSearchProblem(
+                input, null, optList[opt], asc ? 'asc' : 'desc');
             futureUser = NetworkService().requestSearchUser(input, null);
             futureTag = NetworkService().requestSearchTag(input, null);
-            // if (_selectedSegment == 0) {
-            //   const optList = ['id', 'level', 'title', 'solved', 'average_try'];
-            //   int opt = UserService().searchDefaultOpt;
-            //   bool asc = UserService().searchDefaultSort;
-            //
-            //   future = networkService.requestSearchProblem(
-            //       input, null, optList[opt], asc ? 'asc' : 'desc');
-            // } else if (_selectedSegment == 1) {
-            //   future = networkService.requestSearchUser(input, null);
-            // } else {
-            //   future = networkService.requestSearchTag(input, null);
-            // }
             isSubmitted = true;
           });
         },
-      ),
-    );
-  }
-
-  Widget problemHeader(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(top: 20),
-      child: Text(
-        '문제',
-        style:
-            TextStyle(fontSize: 12, color: CupertinoTheme.of(context).fontGray),
-      ),
-    );
-  }
-
-  Widget userHeader(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(top: 20),
-      child: Text(
-        '사용자',
-        style:
-            TextStyle(fontSize: 12, color: CupertinoTheme.of(context).fontGray),
-      ),
-    );
-  }
-
-  Widget tagHeader(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(top: 20),
-      child: Text(
-        '태그',
-        style:
-            TextStyle(fontSize: 12, color: CupertinoTheme.of(context).fontGray),
       ),
     );
   }
@@ -392,7 +367,8 @@ class _UnderlineSegmentedControlState extends State<UnderlineSegmentControl> {
       mainAxisAlignment: MainAxisAlignment.start,
       children: widget.children.entries
           .map(
-            (entry) => GestureDetector(
+            (entry) =>
+            GestureDetector(
               onTap: () {
                 setState(() {
                   _selectedIndex = entry.key;
@@ -431,7 +407,7 @@ class _UnderlineSegmentedControlState extends State<UnderlineSegmentControl> {
                 ],
               ),
             ),
-          )
+      )
           .toList(),
     );
   }

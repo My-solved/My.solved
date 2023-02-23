@@ -120,7 +120,10 @@ class NetworkService {
     if (direction != null) {
       url += "&direction=$direction";
     }
-    final response = await http.get(Uri.parse(url));
+    final response = await http.get(Uri.parse(url
+        .replaceAll(' ', '%20')
+        .replaceAll('#', '%23')
+        .replaceAll('@', '%40')));
     final statusCode = response.statusCode;
 
     if (statusCode == 200) {

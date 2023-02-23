@@ -45,20 +45,20 @@ class _SettingViewState extends State<SettingView> {
                 height: 1,
                 color: CupertinoTheme.of(context).dividerGray,
               ),
-              illustration(context),
               themeOfStrick(context),
+              illustration(context),
               tierIcon(context),
+              searchDefaultOpt(context),
               Divider(
                 thickness: 1,
-                height: 1,
+                height: 20,
                 color: CupertinoTheme.of(context).dividerGray,
               ),
               Container(
-                  padding: EdgeInsets.only(top: 20),
+                  // padding: EdgeInsets.only(top: 20),
                   alignment: Alignment.center,
                   child: Text('구현 예정 기능')),
               tags(context),
-              searchDefaultOpt(context),
               Divider(
                 thickness: 1,
                 height: 1,
@@ -321,9 +321,9 @@ extension _SettingStateExtension on _SettingViewState {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('검색 기본 옵션'),
+                Text('문제 정렬 기본 옵션'),
                 Text(
-                  '검색 결과를 정렬하는 기준입니다.',
+                  '검색한 문제들의 정렬 기본 옵션입니다.',
                   style: TextStyle(
                     color: CupertinoColors.systemGrey,
                     fontSize: 12,
@@ -334,8 +334,9 @@ extension _SettingStateExtension on _SettingViewState {
             Spacer(),
             CupertinoButton(
               padding: EdgeInsets.zero,
+              minSize: 0,
               child: SizedBox(
-                width: 100,
+                width: 60,
                 child: Text(
                   _sortList[UserService().searchDefaultOpt],
                   textAlign: TextAlign.right,

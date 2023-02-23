@@ -344,6 +344,7 @@ Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
 
   Widget top100Box(BuildContext context, dynamic cur) {
     return CupertinoButton(
+        minSize: 0,
         padding: EdgeInsets.zero,
         color: Colors.transparent,
         onPressed: () {
