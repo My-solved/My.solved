@@ -90,7 +90,9 @@ class _SearchViewState extends State<SearchView> {
                                               onPressed: () async {
                                                 String url =
                                                     'https://acmicpc.net/problem/${problem['problemId']}';
-                                                launchUrlString(url);
+                                                launchUrlString(url,
+                                                    mode: LaunchMode
+                                                        .externalApplication);
                                               },
                                               child: Column(
                                                 crossAxisAlignment:
@@ -246,7 +248,9 @@ class _SearchViewState extends State<SearchView> {
                                             onPressed: () async {
                                               String url =
                                                   'https://solved.ac/search?query=%23${tag['key']}';
-                                              launchUrlString(url);
+                                              launchUrlString(url,
+                                                  mode: LaunchMode
+                                                      .externalApplication);
                                             },
                                           ),
                                         ),
@@ -296,8 +300,8 @@ extension _SearchStateExtension on _SearchViewState {
         },
         onSubmitted: (text) {
           setState(() {
-            futureProblem = NetworkService().requestSearchProblem(
-                input, null, null, null);
+            futureProblem =
+                NetworkService().requestSearchProblem(input, null, null, null);
             futureUser = NetworkService().requestSearchUser(input, null);
             futureTag = NetworkService().requestSearchTag(input, null);
             // if (_selectedSegment == 0) {
