@@ -20,7 +20,9 @@ class _SearchViewState extends State<SearchView> {
   NetworkService networkService = NetworkService();
   String input = '';
   bool isSubmitted = false;
-  Future<SearchObject>? future;
+  Future<SearchObject>? futureProblem;
+  Future<SearchObject>? futureUser;
+  Future<SearchObject>? futureTag;
   int _selectedSegment = 0;
 
   void _updateSelectedSegment(int value) {
@@ -61,8 +63,7 @@ class _SearchViewState extends State<SearchView> {
                         builder: (context) {
                           if (_selectedSegment == 0) {
                             return FutureBuilder(
-                                future: NetworkService().requestSearchProblem(
-                                    input, null, null, null),
+                                future: futureProblem,
                                 builder: (context, snapshot) {
                                   if (snapshot.hasData) {
                                     return Column(
@@ -150,8 +151,7 @@ class _SearchViewState extends State<SearchView> {
                                 });
                           } else if (_selectedSegment == 1) {
                             return FutureBuilder(
-                              future: NetworkService()
-                                  .requestSearchUser(input, null),
+                              future: futureUser,
                               builder: (context, snapshot) {
                                 if (snapshot.hasData) {
                                   return Column(
@@ -219,8 +219,7 @@ class _SearchViewState extends State<SearchView> {
                             );
                           } else {
                             return FutureBuilder(
-                              future: NetworkService()
-                                  .requestSearchTag(input, null),
+                              future: futureTag,
                               builder: (context, snapshot) {
                                 if (snapshot.hasData) {
                                   return Column(
@@ -297,18 +296,22 @@ extension _SearchStateExtension on _SearchViewState {
         },
         onSubmitted: (text) {
           setState(() {
-            if (_selectedSegment == 0) {
-              const optList = ['id', 'level', 'title', 'solved', 'average_try'];
-              int opt = UserService().searchDefaultOpt;
-              bool asc = UserService().searchDefaultSort;
-
-              future = networkService.requestSearchProblem(
-                  input, null, optList[opt], asc ? 'asc' : 'desc');
-            } else if (_selectedSegment == 1) {
-              future = networkService.requestSearchUser(input, null);
-            } else {
-              future = networkService.requestSearchTag(input, null);
-            }
+            futureProblem = NetworkService().requestSearchProblem(
+                input, null, null, null);
+            futureUser = NetworkService().requestSearchUser(input, null);
+            futureTag = NetworkService().requestSearchTag(input, null);
+            // if (_selectedSegment == 0) {
+            //   const optList = ['id', 'level', 'title', 'solved', 'average_try'];
+            //   int opt = UserService().searchDefaultOpt;
+            //   bool asc = UserService().searchDefaultSort;
+            //
+            //   future = networkService.requestSearchProblem(
+            //       input, null, optList[opt], asc ? 'asc' : 'desc');
+            // } else if (_selectedSegment == 1) {
+            //   future = networkService.requestSearchUser(input, null);
+            // } else {
+            //   future = networkService.requestSearchTag(input, null);
+            // }
             isSubmitted = true;
           });
         },
