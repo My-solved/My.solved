@@ -50,19 +50,10 @@ Widget profileHeader(BuildContext context, AsyncSnapshot<User> snapshot) {
         left: 20,
         child: profileImage(context, snapshot),
       ),
-    ],
-  );
-}
-
-Widget profileDetail(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return Container(
-    padding: EdgeInsets.symmetric(
-        horizontal: MediaQuery.of(context).size.width * 0.05),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(height: 15),
-        Row(
+      Positioned(
+        bottom: -58,
+        right: 20,
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             solvedCount(context, snapshot),
@@ -70,14 +61,31 @@ Widget profileDetail(BuildContext context, AsyncSnapshot<User> snapshot) {
             reverseRivalCount(context, snapshot)
           ],
         ),
-        SizedBox(height: 15),
+      ),
+    ],
+  );
+}
+
+Widget profileDetail(BuildContext context, AsyncSnapshot<User> snapshot) {
+  return Container(
+    width: MediaQuery.of(context).size.width,
+    margin: EdgeInsets.only(top: 10),
+    padding: EdgeInsets.symmetric(
+        horizontal: MediaQuery.of(context).size.width * 0.02),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
         Wrap(
           alignment: WrapAlignment.start,
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             handle(context, snapshot),
-            badge(context, snapshot),
-            classes(context, snapshot),
+            Wrap(
+              children: [
+                badge(context, snapshot),
+                classes(context, snapshot),
+              ],
+            )
           ],
         ),
         snapshot.data!.bio!.isNotEmpty
@@ -97,59 +105,52 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
   return Consumer<UserService>(
     builder: (context, provider, child) {
       int zandiTheme = UserService().streakTheme;
-      return Container(
-        padding: EdgeInsets.symmetric(
-            horizontal: MediaQuery.of(context).size.width * 0.05),
-        child: Stack(
-          children: [
-            SvgPicture.asset(
-              zandiTheme == 2
-                  ? 'lib/assets/zandi_dark.svg'
-                  : 'lib/assets/zandi.svg',
-              width: MediaQuery.of(context).size.width,
-            ),
-            SvgPicture.network(
-              zandiUrl(snapshot.data?.handle ?? ''),
-              width: MediaQuery.of(context).size.width,
-            ),
-            Positioned(
-              left: MediaQuery.of(context).size.width * 0.8 * 0.07,
-              bottom: MediaQuery.of(context).size.width * 0.4 * 0.91,
-              child: Container(
-                  color:
-                      zandiTheme == 2 ? Color(0xFF3f3f3f) : Color(0xFFfdfdfd),
-                  width: MediaQuery.of(context).size.width * 0.82,
-                  height: MediaQuery.of(context).size.width * 0.4 * 0.15,
-                  child: Row(
-                    children: [
-                      SvgPicture.asset(
-                        'lib/assets/icons/streak.svg',
-                        width: MediaQuery.of(context).size.width * 0.4 * 0.10,
-                        height: MediaQuery.of(context).size.width * 0.4 * 0.10,
+      return Stack(
+        children: [
+          SvgPicture.asset(
+            zandiTheme == 2
+                ? 'lib/assets/zandi_dark.svg'
+                : 'lib/assets/zandi.svg',
+            width: MediaQuery.of(context).size.width,
+          ),
+          SvgPicture.network(
+            zandiUrl(snapshot.data?.handle ?? ''),
+            width: MediaQuery.of(context).size.width,
+          ),
+          Positioned(
+            left: MediaQuery.of(context).size.width * 0.8 * 0.07,
+            bottom: MediaQuery.of(context).size.width * 0.4 * 0.91,
+            child: Container(
+                color: zandiTheme == 2 ? Color(0xFF3f3f3f) : Color(0xFFfdfdfd),
+                width: MediaQuery.of(context).size.width * 0.82,
+                height: MediaQuery.of(context).size.width * 0.4 * 0.15,
+                child: Row(
+                  children: [
+                    SvgPicture.asset(
+                      'lib/assets/icons/streak.svg',
+                      width: MediaQuery.of(context).size.width * 0.4 * 0.10,
+                      height: MediaQuery.of(context).size.width * 0.4 * 0.10,
+                      color: zandiTheme == 2 ? Colors.white : Color(0xff8a8f95),
+                    ),
+                    SizedBox(width: 5),
+                    Text(
+                      // 'Rating: ${snapshot.data?.rating}',
+                      '스트릭',
+                      style: TextStyle(
+                        fontSize: MediaQuery.of(context).size.width * 0.035,
+                        // fontWeight: FontWeight.bold,
                         color:
                             zandiTheme == 2 ? Colors.white : Color(0xff8a8f95),
                       ),
-                      SizedBox(width: 5),
-                      Text(
-                        // 'Rating: ${snapshot.data?.rating}',
-                        '스트릭',
-                        style: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width * 0.035,
-                          // fontWeight: FontWeight.bold,
-                          color: zandiTheme == 2
-                              ? Colors.white
-                              : Color(0xff8a8f95),
-                        ),
-                      ),
-                      Spacer(),
-                      maxStreak(context, snapshot),
-                      SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.4 * 0.1),
-                    ],
-                  )),
-            ),
-          ],
-        ),
+                    ),
+                    Spacer(),
+                    maxStreak(context, snapshot),
+                    SizedBox(
+                        width: MediaQuery.of(context).size.width * 0.4 * 0.1),
+                  ],
+                )),
+          ),
+        ],
       );
     },
   );
@@ -274,23 +275,6 @@ Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  SvgPicture.asset('lib/assets/icons/rating.svg',
-                      color: Color(0xff8a8f95),
-                      width: MediaQuery.of(context).size.width * 0.04),
-                  SizedBox(
-                    width: 5,
-                  ),
-                  Text(
-                    '레이팅',
-                    style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.width * 0.035,
-                      color: Color(0xff8a8f95),
-                    ),
-                  ),
-                ],
-              ),
               rating < 3000
                   ? Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -369,7 +353,9 @@ Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
       if (snapshot.hasData) {
         int count = snapshot.data?.count ?? 0;
         return Container(
-          width: MediaQuery.of(context).size.width * 0.9,
+          margin: EdgeInsets.only(
+            top: 10,
+          ),
           padding: EdgeInsets.only(
             left: MediaQuery.of(context).size.width * 0.04,
             right: MediaQuery.of(context).size.width * 0.04,
@@ -755,15 +741,11 @@ Widget badges(BuildContext context, Future<Badges> future) {
         return Container(
             width: MediaQuery.of(context).size.width,
             margin: EdgeInsets.only(
-              left: MediaQuery.of(context).size.width * 0.05,
-              right: MediaQuery.of(context).size.width * 0.05,
               top: 10,
-              bottom: 20,
             ),
             padding: EdgeInsets.only(
               left: MediaQuery.of(context).size.width * 0.05,
               right: MediaQuery.of(context).size.width * 0.05,
-              top: MediaQuery.of(context).size.width * 0.05,
             ),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(10),
@@ -771,39 +753,6 @@ Widget badges(BuildContext context, Future<Badges> future) {
             ),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Row(
-                children: [
-                  SvgPicture.asset('lib/assets/icons/badge.svg',
-                      color: Color(0xff8a8f95),
-                      width: MediaQuery.of(context).size.width * 0.04),
-                  SizedBox(width: 5),
-                  Text(
-                    '뱃지',
-                    style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.width * 0.035,
-                      color: Color(0xff8a8f95),
-                    ),
-                  ),
-                ],
-              ),
-              RichText(
-                  text: TextSpan(children: [
-                TextSpan(
-                    text: count.toString(),
-                    style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.width * 0.05,
-                      fontFamily: 'Pretendard-Regular',
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    )),
-                TextSpan(
-                    text: '개',
-                    style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.width * 0.05,
-                      fontFamily: 'Pretendard',
-                      color: Colors.black,
-                    )),
-              ])),
               badgeAchievements(context, snapshot),
               badgeSeasons(context, snapshot),
               badgeEvents(context, snapshot),
@@ -890,15 +839,13 @@ Widget tagChart(BuildContext context, AsyncSnapshot<User> userSnapshot) {
       if (snapshot.hasData) {
         return Container(
           margin: EdgeInsets.only(top: 10),
-          padding: EdgeInsets.symmetric(
-              horizontal: MediaQuery.of(context).size.width * 0.05),
           child: Container(
               width: MediaQuery.of(context).size.width,
               padding: EdgeInsets.only(
                   left: MediaQuery.of(context).size.width * 0.06,
                   right: MediaQuery.of(context).size.width * 0.06,
-                  top: MediaQuery.of(context).size.width * 0.05,
-                  bottom: MediaQuery.of(context).size.width * 0.05),
+                  top: 5,
+                  bottom: 5),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: Colors.grey, width: 0.5),
@@ -906,21 +853,6 @@ Widget tagChart(BuildContext context, AsyncSnapshot<User> userSnapshot) {
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        SvgPicture.asset('lib/assets/icons/tag.svg',
-                            color: Color(0xff8a8f95),
-                            width: MediaQuery.of(context).size.width * 0.04),
-                        SizedBox(width: 5),
-                        Text(
-                          '태그 분포',
-                          style: TextStyle(
-                            fontSize: MediaQuery.of(context).size.width * 0.035,
-                            color: Color(0xff8a8f95),
-                          ),
-                        ),
-                      ],
-                    ),
                     Container(
                       color: Colors.white,
                       height: MediaQuery.of(context).size.width * 0.6,
