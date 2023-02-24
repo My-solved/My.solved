@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:my_solved/extensions/color_extension.dart';
 import 'package:my_solved/main.dart';
+import 'package:my_solved/services/network_service.dart';
 import 'package:my_solved/services/user_service.dart';
 
 class LoginView extends StatefulWidget {
@@ -12,6 +14,7 @@ class LoginView extends StatefulWidget {
 
 class _LoginViewState extends State<LoginView> {
   UserService userService = UserService();
+  NetworkService networkService = NetworkService();
   String input = '';
 
   @override
@@ -51,7 +54,7 @@ extension _LoginStateExtension on _LoginViewState {
         Container(
           margin: const EdgeInsets.only(top: 8),
           child: Text(
-            '백준 아이디와 비밀번호로 로그인해주세요.',
+            '백준 아이디로 로그인해주세요.',
             style: TextStyle(
                 fontSize: 14, color: CupertinoTheme.of(context).fontGray),
           ),
@@ -69,7 +72,7 @@ extension _LoginStateExtension on _LoginViewState {
       ),
       child: CupertinoTextField.borderless(
         padding: const EdgeInsets.all(20),
-        placeholder: '닉네임을 입력해주세요.',
+        placeholder: '아이디를 입력해주세요.',
         onChanged: (text) {
           input = text;
         },
@@ -85,10 +88,15 @@ extension _LoginStateExtension on _LoginViewState {
         padding: const EdgeInsets.all(20),
         color: CupertinoTheme.of(context).main,
         onPressed: () {
-          userService.setUserName(input);
-          parent?.setState(() {
-            userService.state = UserState.loggedIn;
-          });
+          networkService
+              .requestUser(input)
+              .then((value) => parent?.setState(() {
+                    userService.setUserName(input);
+                    userService.state = UserState.loggedIn;
+                    Fluttertoast.showToast(msg: '로그인 성공!');
+                  }))
+              .onError((error, stackTrace) =>
+                  Fluttertoast.showToast(msg: '아이디를 확인해주세요.'));
         },
         child: const Text('로그인'),
       ),
