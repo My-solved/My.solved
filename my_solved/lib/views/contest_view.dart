@@ -51,18 +51,31 @@ extension _ContestStateExtension on _ContestViewState {
       future: networkService.requestContests(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.hasData) {
-          List<dom.Element> currentContests = snapshot.data.body
-              .getElementsByClassName('col-md-12')[2]
-              .getElementsByTagName('tbody')
-              .first
-              .getElementsByTagName('tr')
-              .toList();
-          List<dom.Element> futureContests = snapshot.data.body
-              .getElementsByClassName('col-md-12')[4]
-              .getElementsByTagName('tbody')
-              .first
-              .getElementsByTagName('tr')
-              .toList();
+          List<dom.Element> currentContests = [];
+          List<dom.Element> futureContests = [];
+
+          if (snapshot.data.body.getElementsByClassName('col-md-12').length <
+              5) {
+            futureContests = snapshot.data.body
+                .getElementsByClassName('col-md-12')[2]
+                .getElementsByTagName('tbody')
+                .first
+                .getElementsByTagName('tr')
+                .toList();
+          } else {
+            currentContests = snapshot.data.body
+                .getElementsByClassName('col-md-12')[2]
+                .getElementsByTagName('tbody')
+                .first
+                .getElementsByTagName('tr')
+                .toList();
+            futureContests = snapshot.data.body
+                .getElementsByClassName('col-md-12')[4]
+                .getElementsByTagName('tbody')
+                .first
+                .getElementsByTagName('tr')
+                .toList();
+          }
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,9 +89,12 @@ extension _ContestStateExtension on _ContestViewState {
                 thickness: 1,
               ),
               currentContests.isEmpty
-                  ? const Text(
-                      '진행 중인 대회가 없습니다.',
-                      style: TextStyle(fontSize: 15),
+                  ? Container(
+                      margin: EdgeInsets.only(top: 10, bottom: 20),
+                      child: Text(
+                        '진행 중인 대회가 없습니다.',
+                        style: TextStyle(fontSize: 15),
+                      ),
                     )
                   : Container(
                       margin: const EdgeInsets.only(top: 10, bottom: 20),
@@ -97,7 +113,7 @@ extension _ContestStateExtension on _ContestViewState {
                         itemBuilder: (BuildContext context, int index) {
                           return Container(
                               margin: const EdgeInsets.only(
-                                  top: 5, bottom: 5, left: 10),
+                                  top: 10, bottom: 10, left: 10),
                               child: Row(
                                 children: [
                                   Expanded(
@@ -177,8 +193,7 @@ extension _ContestStateExtension on _ContestViewState {
                           return const Divider(
                             color: Colors.black,
                             thickness: 1,
-                            indent: 0,
-                            endIndent: 0,
+                            height: 0,
                           );
                         },
                       ),
@@ -213,7 +228,7 @@ extension _ContestStateExtension on _ContestViewState {
                         itemBuilder: (BuildContext context, int index) {
                           return Container(
                               margin: const EdgeInsets.only(
-                                  top: 5, bottom: 5, left: 10),
+                                  top: 10, bottom: 10, left: 10),
                               child: Row(
                                 children: [
                                   Expanded(
@@ -293,8 +308,7 @@ extension _ContestStateExtension on _ContestViewState {
                           return const Divider(
                             color: Colors.black,
                             thickness: 1,
-                            indent: 0,
-                            endIndent: 0,
+                            height: 0,
                           );
                         },
                       ),
