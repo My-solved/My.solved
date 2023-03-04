@@ -413,24 +413,26 @@ Widget badges(BuildContext context, Future<Badges> future) {
       if (snapshot.hasData) {
         int count = snapshot.data!.count;
 
-        List<dynamic> achievements = [];
-        List<dynamic> seasons = [];
-        List<dynamic> events = [];
-        List<dynamic> contests = [];
-
+        List<List<dynamic>> temp = [[], [], [], []];
         for (int i = 0; i < count; i++) {
           if (snapshot.data!.items[i]['badgeCategory'] == 'achievement') {
-            achievements.add(snapshot.data!.items[i]);
+            temp[0].add(snapshot.data!.items[i]);
           } else if (snapshot.data!.items[i]['badgeCategory'] == 'season') {
-            seasons.add(snapshot.data!.items[i]);
+            temp[1].add(snapshot.data!.items[i]);
           } else if (snapshot.data!.items[i]['badgeCategory'] == 'event') {
-            events.add(snapshot.data!.items[i]);
+            temp[2].add(snapshot.data!.items[i]);
           } else if (snapshot.data!.items[i]['badgeCategory'] == 'contest') {
-            contests.add(snapshot.data!.items[i]);
+            temp[3].add(snapshot.data!.items[i]);
           }
         }
+        temp[0].sort((a, b) => a['badgeId'].compareTo(b['badgeId']));
 
-        achievements.sort((a, b) => a['badgeId'].compareTo(b['badgeId']));
+        List<dynamic> badges = [];
+        for (int i = 0; i < 4; i++) {
+          for (int j = 0; j < temp[i].length; j++) {
+            badges.add(temp[i][j]);
+          }
+        }
 
         Widget badgeTier(BuildContext context, dynamic badge, int idx) {
           String tier = badge['badgeTier'];
@@ -447,332 +449,99 @@ Widget badges(BuildContext context, Future<Badges> future) {
           }
           return badge == null
               ? SizedBox()
-              : Container(
-                  margin:
-                      EdgeInsets.all(MediaQuery.of(context).size.width * 0.015),
-                  child: Tooltip(
-                    preferBelow: false,
-                    richMessage: TextSpan(
-                      children: [
-                        TextSpan(
-                          text: badge['displayName'],
-                          style: TextStyle(
-                            fontSize:
-                                MediaQuery.of(context).size.width * 0.4 * 0.1,
-                            fontFamily: 'Pretendard-Regular',
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        TextSpan(text: '\n'),
-                        TextSpan(
-                          text: badge['displayDescription'],
-                          style: TextStyle(
-                            fontSize:
-                                MediaQuery.of(context).size.width * 0.4 * 0.1,
-                            fontFamily: 'Pretendard-Regular',
-                            color: Colors.white,
-                          ),
-                        )
-                      ],
-                    ),
-                    child: ImageShadow(
-                      opacity: 0.2,
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          ImageShadow(
-                              opacity: 0.2,
-                              child: ExtendedImage.network(
-                                'https://static.solved.ac/profile_badge/120x120/${badge['badgeId']}.png',
-                                width: MediaQuery.of(context).size.width * 0.1,
-                                fit: BoxFit.cover,
-                                cache: true,
-                                loadStateChanged: (ExtendedImageState state) {
-                                  switch (state.extendedImageLoadState) {
-                                    case LoadState.loading:
-                                      return Center(
-                                        child: CircularProgressIndicator(),
-                                      );
-                                    case LoadState.completed:
-                                      return null;
-                                    case LoadState.failed:
-                                      return Center(
-                                        child: Icon(Icons.error),
-                                      );
-                                  }
-                                },
-                              )),
-                          isContest
-                              ? SizedBox.shrink()
-                              : Positioned(
-                                  bottom: -5,
-                                  right: -1,
-                                  child: Card(
-                                    elevation: 2,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(100),
-                                    ),
-                                    child: Container(
-                                      width: MediaQuery.of(context).size.width *
-                                          0.02,
-                                      height:
-                                          MediaQuery.of(context).size.width *
-                                              0.02,
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: Container(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                                0.014,
-                                        height:
-                                            MediaQuery.of(context).size.width *
-                                                0.014,
-                                        decoration: BoxDecoration(
-                                          color: tierColor,
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                    ),
-                                  )),
-                        ],
+              : Tooltip(
+                  preferBelow: false,
+                  richMessage: TextSpan(children: [
+                    TextSpan(
+                      text: badge['displayName'],
+                      style: TextStyle(
+                        fontSize: MediaQuery.of(context).size.width * 0.035,
+                        fontFamily: 'Pretendard-Regular',
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
+                    TextSpan(
+                      text: '\n',
+                    ),
+                    TextSpan(
+                        text: badge['displayDescription'],
+                        style: TextStyle(
+                          fontSize: MediaQuery.of(context).size.width * 0.03,
+                          fontFamily: 'Pretendard-Regular',
+                          color: Colors.white,
+                        ))
+                  ]),
+                  triggerMode: TooltipTriggerMode.tap,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      ExtendedImage.network(
+                        'https://static.solved.ac/profile_badge/120x120/${badge['badgeId']}.png',
+                        width: MediaQuery.of(context).size.width * 0.1,
+                        fit: BoxFit.cover,
+                        cache: true,
+                        loadStateChanged: (ExtendedImageState state) {
+                          switch (state.extendedImageLoadState) {
+                            case LoadState.loading:
+                              return Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            case LoadState.completed:
+                              return null;
+                            case LoadState.failed:
+                              return Center(
+                                child: Icon(Icons.error),
+                              );
+                          }
+                        },
+                      ),
+                      isContest
+                          ? SizedBox.shrink()
+                          : Positioned(
+                              bottom: 15,
+                              right: 15,
+                              child: Container(
+                                width: MediaQuery.of(context).size.width * 0.02,
+                                height:
+                                    MediaQuery.of(context).size.width * 0.02,
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                ),
+                                alignment: Alignment.center,
+                                child: Container(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.014,
+                                  height:
+                                      MediaQuery.of(context).size.width * 0.014,
+                                  decoration: BoxDecoration(
+                                    color: tierColor,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              )),
+                    ],
                   ),
                 );
         }
 
-        Widget badgeAchievements(
-            BuildContext context, AsyncSnapshot<Badges> snapshot) {
-          if (achievements.isEmpty) {
-            return SizedBox.shrink();
-          }
-          return Container(
-              margin: EdgeInsets.only(
-                  top: MediaQuery.of(context).size.width * 0.4 * 0.05,
-                  bottom: MediaQuery.of(context).size.width * 0.4 * 0.05),
-              child: Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.4 * 0.65,
-                      height: MediaQuery.of(context).size.width * 0.4 * 0.2,
-                      child: Container(
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(100),
-                            border: Border.all(
-                                color: Color(0xff8a8f95), width: 0.5),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              SvgPicture.asset('lib/assets/icons/badge.svg',
-                                  width: MediaQuery.of(context).size.width *
-                                      0.4 *
-                                      0.1,
-                                  color: Color(0xff8a8f95)),
-                              SizedBox(
-                                width: 2,
-                              ),
-                              Text(
-                                '업적',
-                                style: TextStyle(
-                                  fontSize: MediaQuery.of(context).size.width *
-                                      0.4 *
-                                      0.08,
-                                  fontFamily: 'Pretendard-Regular',
-                                  color: Color(0xff8a8f95),
-                                ),
-                              )
-                            ],
-                          )),
-                    ),
-                    for (int i = 0; i < achievements.length; i++)
-                      badgeTier(context, achievements[i], i),
-                  ]));
-        }
-
-        Widget badgeSeasons(
-            BuildContext context, AsyncSnapshot<Badges> snapshot) {
-          if (seasons.isEmpty) {
-            return SizedBox.shrink();
-          }
-          return Container(
-              margin: EdgeInsets.only(
-                  top: MediaQuery.of(context).size.width * 0.4 * 0.05,
-                  bottom: MediaQuery.of(context).size.width * 0.4 * 0.05),
-              child: Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.4 * 0.65,
-                      height: MediaQuery.of(context).size.width * 0.4 * 0.2,
-                      child: Container(
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(100),
-                            border: Border.all(
-                                color: Color(0xff8a8f95), width: 0.5),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              SvgPicture.asset('lib/assets/icons/badge.svg',
-                                  width: MediaQuery.of(context).size.width *
-                                      0.4 *
-                                      0.1,
-                                  color: Color(0xff8a8f95)),
-                              SizedBox(
-                                width: 2,
-                              ),
-                              Text(
-                                '시즌',
-                                style: TextStyle(
-                                  fontSize: MediaQuery.of(context).size.width *
-                                      0.4 *
-                                      0.08,
-                                  fontFamily: 'Pretendard-Regular',
-                                  color: Color(0xff8a8f95),
-                                ),
-                              )
-                            ],
-                          )),
-                    ),
-                    for (int i = 0; i < seasons.length; i++)
-                      badgeTier(context, seasons[i], i),
-                  ]));
-        }
-
-        Widget badgeEvents(
-            BuildContext context, AsyncSnapshot<Badges> snapshot) {
-          if (events.isEmpty) {
-            return SizedBox.shrink();
-          }
-          return Container(
-              margin: EdgeInsets.only(
-                  top: MediaQuery.of(context).size.width * 0.4 * 0.05,
-                  bottom: MediaQuery.of(context).size.width * 0.4 * 0.05),
-              child: Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.4 * 0.65,
-                      height: MediaQuery.of(context).size.width * 0.4 * 0.2,
-                      child: Container(
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(100),
-                            border: Border.all(
-                                color: Color(0xff8a8f95), width: 0.5),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              SvgPicture.asset('lib/assets/icons/badge.svg',
-                                  width: MediaQuery.of(context).size.width *
-                                      0.4 *
-                                      0.1,
-                                  color: Color(0xff8a8f95)),
-                              SizedBox(
-                                width: 2,
-                              ),
-                              Text(
-                                '이벤트',
-                                style: TextStyle(
-                                  fontSize: MediaQuery.of(context).size.width *
-                                      0.4 *
-                                      0.08,
-                                  fontFamily: 'Pretendard-Regular',
-                                  color: Color(0xff8a8f95),
-                                ),
-                              )
-                            ],
-                          )),
-                    ),
-                    for (int i = 0; i < events.length; i++)
-                      badgeTier(context, events[i], i),
-                  ]));
-        }
-
-        Widget badgeContests(
-            BuildContext context, AsyncSnapshot<Badges> snapshot) {
-          if (contests.isEmpty) {
-            return SizedBox.shrink();
-          }
-          return Container(
-              margin: EdgeInsets.only(
-                  top: MediaQuery.of(context).size.width * 0.4 * 0.05,
-                  bottom: MediaQuery.of(context).size.width * 0.4 * 0.05),
-              child: Wrap(
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.4 * 0.65,
-                      height: MediaQuery.of(context).size.width * 0.4 * 0.2,
-                      child: Container(
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(100),
-                            border: Border.all(
-                                color: Color(0xff8a8f95), width: 0.5),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              SvgPicture.asset('lib/assets/icons/badge.svg',
-                                  width: MediaQuery.of(context).size.width *
-                                      0.4 *
-                                      0.1,
-                                  color: Color(0xff8a8f95)),
-                              SizedBox(
-                                width: 2,
-                              ),
-                              Text(
-                                '대회',
-                                style: TextStyle(
-                                  fontSize: MediaQuery.of(context).size.width *
-                                      0.4 *
-                                      0.08,
-                                  fontFamily: 'Pretendard-Regular',
-                                  color: Color(0xff8a8f95),
-                                ),
-                              )
-                            ],
-                          )),
-                    ),
-                    for (int i = 0; i < contests.length; i++)
-                      badgeTier(context, contests[i], i),
-                  ]));
-        }
-
         return Container(
-            width: MediaQuery.of(context).size.width,
-            margin: EdgeInsets.only(
-              top: 20,
-            ),
-            padding: EdgeInsets.only(
-              left: MediaQuery.of(context).size.width * 0.05,
-              right: MediaQuery.of(context).size.width * 0.05,
-            ),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.grey, width: 0.5),
-            ),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              badgeAchievements(context, snapshot),
-              badgeSeasons(context, snapshot),
-              badgeEvents(context, snapshot),
-              badgeContests(context, snapshot),
-            ]));
+          padding: EdgeInsets.symmetric(
+              horizontal: MediaQuery.of(context).size.width * 0.025,
+              vertical: 10),
+          child: GridView.builder(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 6,
+                childAspectRatio: 1,
+              ),
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              itemCount: count,
+              itemBuilder: (BuildContext context, int index) {
+                return badgeTier(context, badges[index], index);
+              }),
+        );
       } else {
         return CupertinoActivityIndicator();
       }
@@ -853,138 +622,122 @@ Widget tagChart(BuildContext context, AsyncSnapshot<User> userSnapshot) {
       }
       if (snapshot.hasData) {
         return Container(
-          margin: EdgeInsets.only(top: 20),
-          child: Container(
-              width: MediaQuery.of(context).size.width,
-              padding: EdgeInsets.only(
-                  left: MediaQuery.of(context).size.width * 0.06,
-                  right: MediaQuery.of(context).size.width * 0.06,
-                  top: 5,
-                  bottom: 5),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.grey, width: 0.5),
+            width: MediaQuery.of(context).size.width,
+            padding: EdgeInsets.symmetric(
+                horizontal: MediaQuery.of(context).size.width * 0.025,
+                vertical: 10),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Container(
+                color: Colors.white,
+                height: MediaQuery.of(context).size.width * 0.6,
+                child: RadarChart(
+                  ticks: ticks.reversed.toList(),
+                  features: features,
+                  data: data,
+                  outlineColor: Color(0xff8a8f95),
+                  featuresTextStyle: TextStyle(
+                    fontSize: MediaQuery.of(context).size.width * 0.03,
+                    color: Colors.black,
+                  ),
+                  graphColors: [ratingColor(userSnapshot.data?.rating ?? 0)],
+                ),
               ),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      color: Colors.white,
-                      height: MediaQuery.of(context).size.width * 0.6,
-                      child: RadarChart(
-                        ticks: ticks.reversed.toList(),
-                        features: features,
-                        data: data,
-                        outlineColor: Color(0xff8a8f95),
-                        featuresTextStyle: TextStyle(
-                          fontSize: MediaQuery.of(context).size.width * 0.03,
-                          color: Colors.black,
-                        ),
-                        graphColors: [
-                          ratingColor(userSnapshot.data?.rating ?? 0)
-                        ],
-                      ),
+              SizedBox(height: 10),
+              Row(
+                children: [
+                  Text(
+                    '태그',
+                    style: TextStyle(
+                      fontSize: MediaQuery.of(context).size.width * 0.04,
+                      color: Color(0xff8a8f95),
                     ),
-                    SizedBox(height: 10),
-                    Row(
+                  ),
+                  Spacer(),
+                  Spacer(),
+                  Spacer(),
+                  Text(
+                    '문제',
+                    style: TextStyle(
+                      fontSize: MediaQuery.of(context).size.width * 0.04,
+                      color: Color(0xff8a8f95),
+                    ),
+                  ),
+                  Spacer(),
+                  Spacer(),
+                  Text(
+                    '레이팅',
+                    style: TextStyle(
+                      fontSize: MediaQuery.of(context).size.width * 0.04,
+                      color: Color(0xff8a8f95),
+                    ),
+                  ),
+                ],
+              ),
+              Divider(
+                color: Colors.grey,
+                thickness: 0.5,
+              ),
+              ListView.separated(
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemBuilder: (BuildContext context, int index) {
+                    return Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '태그',
-                          style: TextStyle(
-                            fontSize: MediaQuery.of(context).size.width * 0.04,
-                            color: Color(0xff8a8f95),
+                        Container(
+                          width: MediaQuery.of(context).size.width * 0.42,
+                          child: Text(
+                            tags?[index].tag['displayNames'][0]['name'] ?? '',
+                            style: TextStyle(
+                              fontSize:
+                                  MediaQuery.of(context).size.width * 0.035,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.2,
+                          child: Text(
+                            tags?[index].solvedCount.toString() ?? '',
+                            style: TextStyle(
+                              fontSize:
+                                  MediaQuery.of(context).size.width * 0.035,
+                              color: Colors.black,
+                            ),
                           ),
                         ),
                         Spacer(),
-                        Spacer(),
-                        Text(
-                          '문제',
-                          style: TextStyle(
-                            fontSize: MediaQuery.of(context).size.width * 0.04,
-                            color: Color(0xff8a8f95),
-                          ),
-                        ),
-                        Spacer(),
-                        Text(
-                          '레이팅',
-                          style: TextStyle(
-                            fontSize: MediaQuery.of(context).size.width * 0.04,
-                            color: Color(0xff8a8f95),
-                          ),
-                        ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SvgPicture.asset(
+                              'lib/assets/tiers/${ratingToTier(tags![index].rating)}.svg',
+                              width: MediaQuery.of(context).size.width * 0.035,
+                            ),
+                            SizedBox(width: 3),
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width * 0.1,
+                              child: Text(
+                                tags[index].rating.toString(),
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize:
+                                      MediaQuery.of(context).size.width * 0.035,
+                                  color: ratingColor(tags[index].rating),
+                                ),
+                              ),
+                            )
+                          ],
+                        )
                       ],
-                    ),
-                    Divider(
-                      color: Colors.grey,
-                      thickness: 0.5,
-                    ),
-                    ListView.separated(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemBuilder: (BuildContext context, int index) {
-                          return Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                width: MediaQuery.of(context).size.width * 0.42,
-                                child: Text(
-                                  tags?[index].tag['displayNames'][0]['name'] ??
-                                      '',
-                                  style: TextStyle(
-                                    fontSize:
-                                        MediaQuery.of(context).size.width *
-                                            0.035,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ),
-                              SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.2,
-                                child: Text(
-                                  tags?[index].solvedCount.toString() ?? '',
-                                  style: TextStyle(
-                                    fontSize:
-                                        MediaQuery.of(context).size.width *
-                                            0.035,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ),
-                              Spacer(),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SvgPicture.asset(
-                                    'lib/assets/tiers/${ratingToTier(tags![index].rating)}.svg',
-                                    width: MediaQuery.of(context).size.width *
-                                        0.035,
-                                  ),
-                                  SizedBox(width: 3),
-                                  SizedBox(
-                                    width:
-                                        MediaQuery.of(context).size.width * 0.1,
-                                    child: Text(
-                                      tags[index].rating.toString(),
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize:
-                                            MediaQuery.of(context).size.width *
-                                                0.035,
-                                        color: ratingColor(tags[index].rating),
-                                      ),
-                                    ),
-                                  )
-                                ],
-                              )
-                            ],
-                          );
-                        },
-                        separatorBuilder: (BuildContext context, int index) {
-                          return Divider();
-                        },
-                        itemCount: length),
-                  ])),
-        );
+                    );
+                  },
+                  separatorBuilder: (BuildContext context, int index) {
+                    return Divider();
+                  },
+                  itemCount: length),
+            ]));
       } else {
         return Container();
       }
@@ -1350,6 +1103,8 @@ Widget badge(BuildContext context, AsyncSnapshot<User> snapshot) {
       : ImageShadow(
           opacity: 0.2,
           child: Tooltip(
+            preferBelow: false,
+            triggerMode: TooltipTriggerMode.tap,
             richMessage: TextSpan(
               children: [
                 TextSpan(
