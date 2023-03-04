@@ -45,11 +45,11 @@ class _UserViewState extends State<UserView> {
             future: networkService.requestUser(username),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                Widget _zandi = zandi(context, snapshot);
-                Widget _top100 = top100(
+                final Widget _zandi = zandi(context, snapshot);
+                final Widget _top100 = top100(
                     context, snapshot, networkService.requestTop100(username));
-                Widget _tagChart = tagChart(context, snapshot);
-                Widget _badges =
+                final Widget _tagChart = tagChart(context, snapshot);
+                final Widget _badges =
                     badges(context, networkService.requestBadges(username));
 
                 return Column(
