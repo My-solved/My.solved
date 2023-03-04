@@ -756,7 +756,7 @@ Widget badges(BuildContext context, Future<Badges> future) {
         return Container(
             width: MediaQuery.of(context).size.width,
             margin: EdgeInsets.only(
-              top: 10,
+              top: 20,
             ),
             padding: EdgeInsets.only(
               left: MediaQuery.of(context).size.width * 0.05,
@@ -853,7 +853,7 @@ Widget tagChart(BuildContext context, AsyncSnapshot<User> userSnapshot) {
       }
       if (snapshot.hasData) {
         return Container(
-          margin: EdgeInsets.only(top: 10),
+          margin: EdgeInsets.only(top: 20),
           child: Container(
               width: MediaQuery.of(context).size.width,
               padding: EdgeInsets.only(
