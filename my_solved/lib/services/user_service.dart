@@ -14,6 +14,12 @@ class UserService extends ChangeNotifier {
   bool showTags = true;
   int searchDefaultOpt = 0;
   bool searchDefaultSort = true;
+  bool isOnStreakAlarm = true;
+  int streakAlarmHour = 0;
+  int streakAlarmMinute = 0;
+  bool isOnContestAlarm = true;
+  int contestAlarmHour = 0;
+  int contestAlarmMinute = 0;
 
   bool _disposed = false;
 
@@ -29,21 +35,65 @@ class UserService extends ChangeNotifier {
       notifyListeners();
     });
 
-    Future<int> initStreak = initStreakTheme();
-    initStreak.then((theme) {
+    Future<int> _initStreak = initStreakTheme();
+    _initStreak.then((theme) {
       streakTheme = theme;
       notifyListeners();
     });
 
-    Future<bool> initIllust = initIllustration();
-    initIllust.then((isOn) {
+    Future<bool> _initIllust = initIllustration();
+    _initIllust.then((isOn) {
       isIllustration = isOn;
       notifyListeners();
     });
 
-    Future<bool> initTier = initTierIcon();
-    initTier.then((isOn) {
+    Future<bool> _initTier = initTierIcon();
+    _initTier.then((isOn) {
       showTierIcon = isOn;
+      notifyListeners();
+    });
+
+    Future<bool> _initTags = initTags();
+    _initTags.then((isOn) {
+      showTags = isOn;
+      notifyListeners();
+    });
+
+    Future<bool> _initStreakAlarm = initStreakAlarm();
+    _initStreakAlarm.then((isOn) {
+      isOnStreakAlarm = isOn;
+      notifyListeners();
+    });
+
+    Future<DateTime> _initStreakAlarmTime = initStreakAlarmTime();
+    _initStreakAlarmTime.then((time) {
+      streakAlarmHour = time.hour;
+      streakAlarmMinute = time.minute;
+      notifyListeners();
+    });
+
+    Future<int> _initSearchDefaultOpt = initSearchDefaultOpt();
+    _initSearchDefaultOpt.then((opt) {
+      searchDefaultOpt = opt;
+      notifyListeners();
+    });
+
+    Future<bool> _initSearchDefaultSort = initSearchDefaultSort();
+    _initSearchDefaultSort.then((isAsc) {
+      searchDefaultSort = isAsc;
+      notifyListeners();
+    });
+
+    Future<bool> _initContestAlarm = initContestAlarm();
+    _initContestAlarm.then((isOn) {
+      isOnContestAlarm = isOn;
+      notifyListeners();
+    });
+
+    Future<DateTime> _initContestAlarmTime = initContestAlarmTime();
+    _initContestAlarmTime.then((time) {
+      contestAlarmHour = time.hour;
+      contestAlarmMinute = time.minute;
       notifyListeners();
     });
   }
@@ -155,6 +205,56 @@ class UserService extends ChangeNotifier {
     searchDefaultSort = isAsc;
     final prefs = await SharedPreferences.getInstance();
     prefs.setBool('searchDefaultSort', isAsc);
+    notifyListeners();
+  }
+
+  Future<bool> initStreakAlarm() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('isOnStreakAlarm') ?? true;
+  }
+
+  void setStreakAlarm(bool isOn) async {
+    isOnStreakAlarm = isOn;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('isOnStreakAlarm', isOn);
+    notifyListeners();
+  }
+
+  Future<DateTime> initStreakAlarmTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    return DateTime(0, 0, 0, prefs.getInt('streakAlarmHour') ?? 0,
+        prefs.getInt('streakAlarmMinute') ?? 0);
+  }
+
+  void setStreakAlarmTime(int hour, int minute) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setInt('streakAlarmHour', hour);
+    prefs.setInt('streakAlarmMinute', minute);
+    notifyListeners();
+  }
+
+  Future<bool> initContestAlarm() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('isOnContestAlarm') ?? true;
+  }
+
+  void setContestAlarm(bool isOn) async {
+    isOnContestAlarm = isOn;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('isOnContestAlarm', isOn);
+    notifyListeners();
+  }
+
+  Future<DateTime> initContestAlarmTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    return DateTime(0, 0, 0, prefs.getInt('contestAlarmHour') ?? 0,
+        prefs.getInt('contestAlarmMinute') ?? 0);
+  }
+
+  void setContestAlarmTime(int hour, int minute) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setInt('contestAlarmHour', hour);
+    prefs.setInt('contestAlarmMinute', minute);
     notifyListeners();
   }
 }

@@ -15,12 +15,22 @@ class SettingView extends StatefulWidget {
 
 class _SettingViewState extends State<SettingView> {
   UserService userService = UserService();
+
   int _selectedIndex = UserService().streakTheme;
   bool _isIllustration = UserService().isIllustration;
   bool _showTierIcon = UserService().showTierIcon;
   bool _showTags = UserService().showTags;
+
   int _searchDefaultOpt = UserService().searchDefaultOpt;
   bool _searchDefaultSort = UserService().searchDefaultSort;
+
+  bool _isOnStreakAlarm = UserService().isOnStreakAlarm;
+  int _streakAlarmHour = UserService().streakAlarmHour;
+  int _streakAlarmMinute = UserService().streakAlarmMinute;
+
+  bool _isOnContestAlarm = UserService().isOnContestAlarm;
+  int _contestAlarmHour = UserService().contestAlarmHour;
+  int _contestAlarmMinute = UserService().contestAlarmMinute;
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +69,8 @@ class _SettingViewState extends State<SettingView> {
                   alignment: Alignment.center,
                   child: Text('구현 예정 기능')),
               tags(context),
+              streakAlarm(context),
+              contestAlarm(context),
               Divider(
                 thickness: 1,
                 height: 1,
@@ -317,6 +329,7 @@ extension _SettingStateExtension on _SettingViewState {
     return Container(
         margin: EdgeInsets.only(top: 5, bottom: 5),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -335,12 +348,9 @@ extension _SettingStateExtension on _SettingViewState {
             CupertinoButton(
               padding: EdgeInsets.zero,
               minSize: 0,
-              child: SizedBox(
-                width: 60,
-                child: Text(
-                  _sortList[UserService().searchDefaultOpt],
-                  textAlign: TextAlign.right,
-                ),
+              child: Text(
+                _sortList[UserService().searchDefaultOpt],
+                textAlign: TextAlign.right,
               ),
               onPressed: () => _showDialog(
                   CupertinoPicker(
@@ -370,6 +380,7 @@ extension _SettingStateExtension on _SettingViewState {
             SizedBox(width: 10),
             CupertinoButton(
               padding: EdgeInsets.zero,
+              minSize: 0,
               child: Text(_searchDefaultSort ? '오름차순' : '내림차순'),
               onPressed: () => _showDialog(
                   CupertinoPicker(
@@ -399,6 +410,166 @@ extension _SettingStateExtension on _SettingViewState {
             )
           ],
         ));
+  }
+
+  Widget streakAlarm(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(top: 5, bottom: 5),
+      child: Row(
+        children: <Widget>[
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('스트릭 알림'),
+              Text(
+                '스트릭 알림 시간을 설정합니다.',
+                style: TextStyle(
+                  color: CupertinoColors.systemGrey,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+          Spacer(),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            child: Text(
+              '매일 $_streakAlarmHour시 ${_streakAlarmMinute.toString().padLeft(2, '0')}분 알림',
+              style: TextStyle(
+                color: CupertinoColors.systemGrey,
+                fontSize: 12,
+              ),
+            ),
+            onPressed: () => _showDialog(
+                CupertinoDatePicker(
+                  use24hFormat: true,
+                  mode: CupertinoDatePickerMode.time,
+                  initialDateTime:
+                      DateTime(0, 0, 0, _streakAlarmHour, _streakAlarmMinute),
+                  minuteInterval: 10,
+                  onDateTimeChanged: (DateTime newDateTime) {
+                    setState(() {
+                      _streakAlarmHour = newDateTime.hour;
+                      _streakAlarmMinute = newDateTime.minute;
+                      UserService().setStreakAlarmTime(
+                          newDateTime.hour, newDateTime.minute);
+                    });
+                  },
+                ),
+                context),
+          ),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            child: Text(UserService().isOnStreakAlarm ? '켜기' : '끄기'),
+            onPressed: () => _showDialog(
+                CupertinoPicker(
+                  magnification: 1.22,
+                  squeeze: 1.2,
+                  useMagnifier: true,
+                  itemExtent: 32,
+                  scrollController: FixedExtentScrollController(
+                    initialItem: UserService().isOnStreakAlarm ? 0 : 1,
+                  ),
+                  onSelectedItemChanged: (int selected) {
+                    setState(() {
+                      _isOnStreakAlarm = selected == 0 ? true : false;
+                      UserService()
+                          .setStreakAlarm(selected == 0 ? true : false);
+                    });
+                  },
+                  children: List<Widget>.generate(2, (index) {
+                    return Center(
+                      child: Text(
+                        index == 0 ? '켜기' : '끄기',
+                      ),
+                    );
+                  }),
+                ),
+                context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget contestAlarm(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(top: 5, bottom: 5),
+      child: Row(
+        children: <Widget>[
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('대회 시작 알림'),
+              Text(
+                '대회 시작 미리 알림 시간을 설정합니다.',
+                style: TextStyle(
+                  color: CupertinoColors.systemGrey,
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+          Spacer(),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            child: Text(
+              '$_contestAlarmHour시간 ${_contestAlarmMinute.toString().padLeft(2, '0')}분 전 알림',
+              style: TextStyle(
+                color: CupertinoColors.systemGrey,
+                fontSize: 12,
+              ),
+            ),
+            onPressed: () => _showDialog(
+                CupertinoDatePicker(
+                  use24hFormat: true,
+                  mode: CupertinoDatePickerMode.time,
+                  initialDateTime:
+                      DateTime(0, 0, 0, _contestAlarmHour, _contestAlarmMinute),
+                  minuteInterval: 10,
+                  onDateTimeChanged: (DateTime newDateTime) {
+                    setState(() {
+                      _contestAlarmHour = newDateTime.hour;
+                      _contestAlarmMinute = newDateTime.minute;
+                      UserService().setContestAlarmTime(
+                          newDateTime.hour, newDateTime.minute);
+                    });
+                  },
+                ),
+                context),
+          ),
+          CupertinoButton(
+            padding: EdgeInsets.zero,
+            child: Text(UserService().isOnContestAlarm ? '켜기' : '끄기'),
+            onPressed: () => _showDialog(
+                CupertinoPicker(
+                  magnification: 1.22,
+                  squeeze: 1.2,
+                  useMagnifier: true,
+                  itemExtent: 32,
+                  scrollController: FixedExtentScrollController(
+                    initialItem: UserService().isOnContestAlarm ? 0 : 1,
+                  ),
+                  onSelectedItemChanged: (int selected) {
+                    setState(() {
+                      _isOnContestAlarm = selected == 0 ? true : false;
+                      UserService()
+                          .setContestAlarm(selected == 0 ? true : false);
+                    });
+                  },
+                  children: List<Widget>.generate(2, (index) {
+                    return Center(
+                      child: Text(
+                        index == 0 ? '켜기' : '끄기',
+                      ),
+                    );
+                  }),
+                ),
+                context),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget logoutButton() {
