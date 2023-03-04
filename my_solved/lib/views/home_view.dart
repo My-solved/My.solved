@@ -46,40 +46,55 @@ class _HomeViewState extends State<HomeView> {
                     children: <Widget>[
                       profileHeader(context, snapshot),
                       SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.1),
-                      Divider(
-                        height: 0,
-                        thickness: 1,
+                          height: MediaQuery.of(context).size.height * 0.08),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal:
+                                MediaQuery.of(context).size.width * 0.05),
+                        margin: EdgeInsets.only(bottom: 10),
+                        child: profileDetail(context, snapshot),
+                      ),
+                      CupertinoTabBar(
+                        border: Border(
+                          bottom: BorderSide(
+                              color: Colors.black,
+                              width: 1.0,
+                              style: BorderStyle.solid),
+                        ),
+                        items: <BottomNavigationBarItem>[
+                          BottomNavigationBarItem(
+                              icon: Icon(CupertinoIcons.person),
+                              label: 'Profile'),
+                          BottomNavigationBarItem(
+                              icon: Icon(CupertinoIcons.tag), label: 'Tags'),
+                          BottomNavigationBarItem(
+                              icon: Icon(CupertinoIcons.archivebox),
+                              label: 'Badges'),
+                        ],
+                        onTap: (value) {
+                          _updateSelectedSegment(value);
+                        },
+                        currentIndex: _selectedSegment,
+                        backgroundColor: Colors.white,
+                        activeColor: Colors.black,
                       ),
                       Container(
                           padding: EdgeInsets.symmetric(
                               horizontal:
                                   MediaQuery.of(context).size.width * 0.05),
-                          child: Column(
-                            children: [
-                              UnderlineSegmentControl(
-                                  children: {0: '프로필', 1: '태그', 2: '뱃지'},
-                                  onValueChanged: (value) {
-                                    _updateSelectedSegment(value);
-                                  }),
-                              Builder(builder: (context) {
-                                if (_selectedSegment == 0) {
-                                  return Column(
-                                    children: [
-                                      profileDetail(context, snapshot),
-                                      _zandi,
-                                      _top100
-                                    ],
-                                  );
-                                } else if (_selectedSegment == 1) {
+                          child: Builder(
+                            builder: (context) {
+                              switch (_selectedSegment) {
+                                case 0:
+                                  return Column(children: [_zandi, _top100]);
+                                case 1:
                                   return _tagChart;
-                                } else if (_selectedSegment == 2) {
+                                case 2:
                                   return _badges;
-                                } else {
-                                  return Text('Error');
-                                }
-                              })
-                            ],
+                                default:
+                                  return Container();
+                              }
+                            },
                           ))
                     ],
                   );
@@ -90,86 +105,6 @@ class _HomeViewState extends State<HomeView> {
               },
             )),
       ),
-    );
-  }
-}
-
-class UnderlineSegmentControl extends StatefulWidget {
-  final Map<int, String> children;
-  final ValueChanged<int> onValueChanged;
-  final Color color;
-  final double fontSize;
-  final FontWeight selectionFontWeight;
-  final FontWeight unselectionFontWeight;
-  final double indicatorHeight;
-  final double indicatorWidth;
-
-  const UnderlineSegmentControl({
-    required this.children,
-    required this.onValueChanged,
-    this.color = CupertinoColors.label,
-    this.fontSize = 16.0,
-    this.selectionFontWeight = FontWeight.bold,
-    this.unselectionFontWeight = FontWeight.normal,
-    this.indicatorHeight = 2.0,
-    this.indicatorWidth = 50.0,
-  });
-
-  @override
-  _UnderlineSegmentedControlState createState() =>
-      _UnderlineSegmentedControlState();
-}
-
-class _UnderlineSegmentedControlState extends State<UnderlineSegmentControl> {
-  int _selectedIndex = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: widget.children.entries
-          .map(
-            (entry) => GestureDetector(
-              onTap: () {
-                setState(() {
-                  _selectedIndex = entry.key;
-                  widget.onValueChanged(_selectedIndex);
-                });
-              },
-              child: Column(
-                children: [
-                  Container(
-                    margin: EdgeInsets.only(top: 10),
-                    padding: EdgeInsets.only(
-                      left: 10,
-                      top: 10,
-                      right: 10,
-                      bottom: 10,
-                    ),
-                    child: Text(
-                      entry.value,
-                      style: TextStyle(
-                        fontSize: widget.fontSize,
-                        fontWeight: _selectedIndex == entry.key
-                            ? widget.selectionFontWeight
-                            : widget.unselectionFontWeight,
-                        color: widget.color,
-                      ),
-                    ),
-                  ),
-                  if (_selectedIndex == entry.key)
-                    Container(
-                      width: widget.indicatorWidth,
-                      height: widget.indicatorHeight,
-                      decoration: BoxDecoration(
-                        color: widget.color,
-                      ),
-                    )
-                ],
-              ),
-            ),
-          )
-          .toList(),
     );
   }
 }
