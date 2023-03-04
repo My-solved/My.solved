@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:my_solved/services/network_service.dart';
 import 'package:my_solved/widgets/user_widget.dart';
 
-import 'home_view.dart';
-
 class UserView extends StatefulWidget {
   const UserView({Key? key, required this.username}) : super(key: key);
 
@@ -56,40 +54,54 @@ class _UserViewState extends State<UserView> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: <Widget>[
                     profileHeader(context, snapshot),
-                    SizedBox(height: MediaQuery.of(context).size.height * 0.1),
-                    Divider(
-                      height: 0,
-                      thickness: 1,
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.08),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: MediaQuery.of(context).size.width * 0.05),
+                      margin: EdgeInsets.only(bottom: 10),
+                      child: profileDetail(context, snapshot),
+                    ),
+                    CupertinoTabBar(
+                      border: Border(
+                        bottom: BorderSide(
+                            color: Colors.black,
+                            width: 1.0,
+                            style: BorderStyle.solid),
+                      ),
+                      items: <BottomNavigationBarItem>[
+                        BottomNavigationBarItem(
+                            icon: Icon(CupertinoIcons.person),
+                            label: 'Profile'),
+                        BottomNavigationBarItem(
+                            icon: Icon(CupertinoIcons.tag), label: 'Tags'),
+                        BottomNavigationBarItem(
+                            icon: Icon(CupertinoIcons.archivebox),
+                            label: 'Badges'),
+                      ],
+                      onTap: (value) {
+                        _updateSelectedSegment(value);
+                      },
+                      currentIndex: _selectedSegment,
+                      backgroundColor: Colors.white,
+                      activeColor: Colors.black,
                     ),
                     Container(
                         padding: EdgeInsets.symmetric(
                             horizontal:
                                 MediaQuery.of(context).size.width * 0.05),
-                        child: Column(
-                          children: [
-                            UnderlineSegmentControl(
-                                children: {0: '프로필', 1: '태그', 2: '뱃지'},
-                                onValueChanged: (value) {
-                                  _updateSelectedSegment(value);
-                                }),
-                            Builder(builder: (context) {
-                              if (_selectedSegment == 0) {
-                                return Column(
-                                  children: [
-                                    profileDetail(context, snapshot),
-                                    _zandi,
-                                    _top100
-                                  ],
-                                );
-                              } else if (_selectedSegment == 1) {
+                        child: Builder(
+                          builder: (context) {
+                            switch (_selectedSegment) {
+                              case 0:
+                                return Column(children: [_zandi, _top100]);
+                              case 1:
                                 return _tagChart;
-                              } else if (_selectedSegment == 2) {
+                              case 2:
                                 return _badges;
-                              } else {
-                                return Text('Error');
-                              }
-                            })
-                          ],
+                              default:
+                                return Container();
+                            }
+                          },
                         ))
                   ],
                 );
