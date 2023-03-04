@@ -39,7 +39,7 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
-        coreLibraryDesugaringEnabled true
+//        coreLibraryDesugaringEnabled true
     }
 
     kotlinOptions {
@@ -82,5 +82,5 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.google.firebase:firebase-analytics:21.2.0'
     implementation 'androidx.multidex:multidex:2.0.1'
-    coreLibraryDesugaring 'com.android.tools.desugar:desugar_jdk_libs:1.1.5'
+//    coreLibraryDesugaring 'com.android.tools.desugar:desugar_jdk_libs:1.1.5'
 }
