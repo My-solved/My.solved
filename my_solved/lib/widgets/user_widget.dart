@@ -37,6 +37,7 @@ Widget profileHeader(BuildContext context, AsyncSnapshot<User> snapshot) {
                 ),
                 onPressed: () => Navigator.of(context).push(
                   CupertinoPageRoute(
+                    maintainState: false,
                     builder: (BuildContext context) {
                       return SettingView();
                     },
@@ -266,7 +267,7 @@ Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
     return Container(
       padding: EdgeInsets.only(
         left: MediaQuery.of(context).size.width * 0.015,
-        top: MediaQuery.of(context).size.width * 0.4 * 0.05,
+        top: MediaQuery.of(context).size.width * 0.045,
         right: MediaQuery.of(context).size.width * 0.015,
       ),
       child: Row(
@@ -275,6 +276,24 @@ Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Row(
+                children: [
+                  SvgPicture.asset('lib/assets/icons/rating.svg',
+                      width: MediaQuery.of(context).size.width * 0.4 * 0.1,
+                      height: MediaQuery.of(context).size.width * 0.4 * 0.1,
+                      color: Color(0xff8a8f95)),
+                  SizedBox(
+                    width: 5,
+                  ),
+                  Text(
+                    '레이팅',
+                    style: TextStyle(
+                      fontSize: MediaQuery.of(context).size.width * 0.035,
+                      color: Color(0xff8a8f95),
+                    ),
+                  )
+                ],
+              ),
               rating < 3000
                   ? Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -353,9 +372,6 @@ Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
       if (snapshot.hasData) {
         int count = snapshot.data?.count ?? 0;
         return Container(
-          margin: EdgeInsets.only(
-            top: 10,
-          ),
           padding: EdgeInsets.only(
             left: MediaQuery.of(context).size.width * 0.04,
             right: MediaQuery.of(context).size.width * 0.04,
@@ -366,9 +382,8 @@ Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
           ),
           child: Column(
             children: [
-              SizedBox(height: 5),
               top100Header(rating, tier, rank, context),
-              SizedBox(height: 5),
+              const SizedBox(height: 10),
               GridView.builder(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 10,

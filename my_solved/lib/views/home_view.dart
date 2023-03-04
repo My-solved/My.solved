@@ -58,12 +58,7 @@ class _HomeViewState extends State<HomeView> {
                           child: Column(
                             children: [
                               UnderlineSegmentControl(
-                                  children: {
-                                    0: '프로필',
-                                    1: '레이팅',
-                                    2: '태그',
-                                    3: '뱃지'
-                                  },
+                                  children: {0: '프로필', 1: '태그', 2: '뱃지'},
                                   onValueChanged: (value) {
                                     _updateSelectedSegment(value);
                                   }),
@@ -72,14 +67,13 @@ class _HomeViewState extends State<HomeView> {
                                   return Column(
                                     children: [
                                       profileDetail(context, snapshot),
-                                      _zandi
+                                      _zandi,
+                                      _top100
                                     ],
                                   );
                                 } else if (_selectedSegment == 1) {
-                                  return _top100;
-                                } else if (_selectedSegment == 2) {
                                   return _tagChart;
-                                } else if (_selectedSegment == 3) {
+                                } else if (_selectedSegment == 2) {
                                   return _badges;
                                 } else {
                                   return Text('Error');
