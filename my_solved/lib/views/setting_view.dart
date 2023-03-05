@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:my_solved/extensions/color_extension.dart';
+import 'package:my_solved/models/User.dart';
 import 'package:my_solved/services/user_service.dart';
 
 const _themeList = ['warm', 'cold', 'dark'];
@@ -136,34 +137,15 @@ extension _SettingStateExtension on _SettingViewState {
             ],
           ),
           Spacer(),
-          CupertinoButton(
-            padding: EdgeInsets.zero,
-            child: Text(UserService().isIllustration ? '켜기' : '끄기'),
-            onPressed: () => _showDialog(
-                CupertinoPicker(
-                  magnification: 1.22,
-                  squeeze: 1.2,
-                  useMagnifier: true,
-                  itemExtent: 32,
-                  scrollController: FixedExtentScrollController(
-                    initialItem: UserService().isIllustration ? 0 : 1,
-                  ),
-                  onSelectedItemChanged: (int selected) {
-                    setState(() {
-                      _isIllustration = selected == 0 ? true : false;
-                      UserService()
-                          .setIllustration(selected == 0 ? true : false);
-                    });
-                  },
-                  children: List<Widget>.generate(2, (index) {
-                    return Center(
-                      child: Text(
-                        index == 0 ? '켜기' : '끄기',
-                      ),
-                    );
-                  }),
-                ),
-                context),
+          CupertinoSwitch(
+            value: _isIllustration,
+            activeColor: CupertinoTheme.of(context).main,
+            onChanged: (bool value) {
+              setState(() {
+                _isIllustration = value;
+                UserService().setIllustration(value);
+              });
+            },
           ),
         ],
       ),
@@ -240,33 +222,15 @@ extension _SettingStateExtension on _SettingViewState {
             ],
           ),
           Spacer(),
-          CupertinoButton(
-            padding: EdgeInsets.zero,
-            child: Text(UserService().showTierIcon ? '켜기' : '끄기'),
-            onPressed: () => _showDialog(
-                CupertinoPicker(
-                  magnification: 1.22,
-                  squeeze: 1.2,
-                  useMagnifier: true,
-                  itemExtent: 32,
-                  scrollController: FixedExtentScrollController(
-                    initialItem: UserService().showTierIcon ? 0 : 1,
-                  ),
-                  onSelectedItemChanged: (int selected) {
-                    setState(() {
-                      _showTierIcon = selected == 0 ? true : false;
-                      UserService().setTierIcon(selected == 0 ? true : false);
-                    });
-                  },
-                  children: List<Widget>.generate(2, (index) {
-                    return Center(
-                      child: Text(
-                        index == 0 ? '켜기' : '끄기',
-                      ),
-                    );
-                  }),
-                ),
-                context),
+          CupertinoSwitch(
+            value: _showTierIcon,
+            activeColor: CupertinoTheme.of(context).main,
+            onChanged: (bool value) {
+              setState(() {
+                _showTierIcon = value;
+                UserService().setTierIcon(value);
+              });
+            },
           ),
         ],
       ),
@@ -292,33 +256,15 @@ extension _SettingStateExtension on _SettingViewState {
             ],
           ),
           Spacer(),
-          CupertinoButton(
-            padding: EdgeInsets.zero,
-            child: Text(UserService().showTags ? '켜기' : '끄기'),
-            onPressed: () => _showDialog(
-                CupertinoPicker(
-                  magnification: 1.22,
-                  squeeze: 1.2,
-                  useMagnifier: true,
-                  itemExtent: 32,
-                  scrollController: FixedExtentScrollController(
-                    initialItem: UserService().showTags ? 0 : 1,
-                  ),
-                  onSelectedItemChanged: (int selected) {
-                    setState(() {
-                      _showTags = selected == 0 ? true : false;
-                      UserService().setTags(selected == 0 ? true : false);
-                    });
-                  },
-                  children: List<Widget>.generate(2, (index) {
-                    return Center(
-                      child: Text(
-                        index == 0 ? '켜기' : '끄기',
-                      ),
-                    );
-                  }),
-                ),
-                context),
+          CupertinoSwitch(
+            value: _showTags,
+            activeColor: CupertinoTheme.of(context).main,
+            onChanged: (bool value) {
+              setState(() {
+                _showTags = value;
+                UserService().setTags(value);
+              });
+            },
           ),
         ],
       ),
@@ -434,7 +380,7 @@ extension _SettingStateExtension on _SettingViewState {
           CupertinoButton(
             padding: EdgeInsets.zero,
             child: Text(
-              '매일 $_streakAlarmHour시 ${_streakAlarmMinute.toString().padLeft(2, '0')}분 알림',
+              '매일 $_streakAlarmHour시 ${_streakAlarmMinute.toString().padLeft(2, '0')}분',
               style: TextStyle(
                 color: CupertinoColors.systemGrey,
                 fontSize: 12,
@@ -458,34 +404,15 @@ extension _SettingStateExtension on _SettingViewState {
                 ),
                 context),
           ),
-          CupertinoButton(
-            padding: EdgeInsets.zero,
-            child: Text(UserService().isOnStreakAlarm ? '켜기' : '끄기'),
-            onPressed: () => _showDialog(
-                CupertinoPicker(
-                  magnification: 1.22,
-                  squeeze: 1.2,
-                  useMagnifier: true,
-                  itemExtent: 32,
-                  scrollController: FixedExtentScrollController(
-                    initialItem: UserService().isOnStreakAlarm ? 0 : 1,
-                  ),
-                  onSelectedItemChanged: (int selected) {
-                    setState(() {
-                      _isOnStreakAlarm = selected == 0 ? true : false;
-                      UserService()
-                          .setStreakAlarm(selected == 0 ? true : false);
-                    });
-                  },
-                  children: List<Widget>.generate(2, (index) {
-                    return Center(
-                      child: Text(
-                        index == 0 ? '켜기' : '끄기',
-                      ),
-                    );
-                  }),
-                ),
-                context),
+          CupertinoSwitch(
+            value: _isOnStreakAlarm,
+            activeColor: CupertinoTheme.of(context).main,
+            onChanged: (bool value) {
+              setState(() {
+                _isOnStreakAlarm = value;
+                UserService().setStreakAlarm(value);
+              });
+            },
           ),
         ],
       ),
@@ -514,7 +441,7 @@ extension _SettingStateExtension on _SettingViewState {
           CupertinoButton(
             padding: EdgeInsets.zero,
             child: Text(
-              '$_contestAlarmHour시간 ${_contestAlarmMinute.toString().padLeft(2, '0')}분 전 알림',
+              '$_contestAlarmHour시간 ${_contestAlarmMinute.toString().padLeft(2, '0')}분 전',
               style: TextStyle(
                 color: CupertinoColors.systemGrey,
                 fontSize: 12,
@@ -538,34 +465,15 @@ extension _SettingStateExtension on _SettingViewState {
                 ),
                 context),
           ),
-          CupertinoButton(
-            padding: EdgeInsets.zero,
-            child: Text(UserService().isOnContestAlarm ? '켜기' : '끄기'),
-            onPressed: () => _showDialog(
-                CupertinoPicker(
-                  magnification: 1.22,
-                  squeeze: 1.2,
-                  useMagnifier: true,
-                  itemExtent: 32,
-                  scrollController: FixedExtentScrollController(
-                    initialItem: UserService().isOnContestAlarm ? 0 : 1,
-                  ),
-                  onSelectedItemChanged: (int selected) {
-                    setState(() {
-                      _isOnContestAlarm = selected == 0 ? true : false;
-                      UserService()
-                          .setContestAlarm(selected == 0 ? true : false);
-                    });
-                  },
-                  children: List<Widget>.generate(2, (index) {
-                    return Center(
-                      child: Text(
-                        index == 0 ? '켜기' : '끄기',
-                      ),
-                    );
-                  }),
-                ),
-                context),
+          CupertinoSwitch(
+            value: _isOnContestAlarm,
+            activeColor: CupertinoTheme.of(context).main,
+            onChanged: (bool value) {
+              setState(() {
+                _isOnContestAlarm = value;
+                UserService().setContestAlarm(value);
+              });
+            },
           ),
         ],
       ),
