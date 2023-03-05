@@ -70,9 +70,7 @@ Widget profileHeader(BuildContext context, AsyncSnapshot<User> snapshot) {
 Widget profileDetail(BuildContext context, AsyncSnapshot<User> snapshot) {
   return Container(
     width: MediaQuery.of(context).size.width,
-    margin: EdgeInsets.only(top: 10),
-    padding: EdgeInsets.symmetric(
-        horizontal: MediaQuery.of(context).size.width * 0.02),
+    margin: const EdgeInsets.only(top: 10),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -272,55 +270,32 @@ Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  SvgPicture.asset('lib/assets/icons/rating.svg',
-                      width: MediaQuery.of(context).size.width * 0.4 * 0.1,
-                      height: MediaQuery.of(context).size.width * 0.4 * 0.1,
-                      color: Color(0xff8a8f95)),
-                  SizedBox(
-                    width: 5,
-                  ),
-                  Text(
-                    '레이팅',
-                    style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.width * 0.035,
-                      color: Color(0xff8a8f95),
+          rating < 3000
+              ? Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text('${tierStr(tier)} ',
+                        style: TextStyle(
+                          fontSize:
+                              MediaQuery.of(context).size.width * 0.4 * 0.14,
+                          fontFamily: 'Pretendard',
+                          color: ratingColor(rating),
+                        )),
+                    Text(
+                      rating.toString(),
+                      style: TextStyle(
+                        fontSize:
+                            MediaQuery.of(context).size.width * 0.4 * 0.14,
+                        fontFamily: 'Pretendard-ExtraBold',
+                        fontWeight: FontWeight.bold,
+                        color: ratingColor(rating),
+                      ),
                     ),
-                  )
-                ],
-              ),
-              rating < 3000
-                  ? Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text('${tierStr(tier)} ',
-                            style: TextStyle(
-                              fontSize: MediaQuery.of(context).size.width *
-                                  0.4 *
-                                  0.14,
-                              fontFamily: 'Pretendard',
-                              color: ratingColor(rating),
-                            )),
-                        Text(
-                          rating.toString(),
-                          style: TextStyle(
-                            fontSize:
-                                MediaQuery.of(context).size.width * 0.4 * 0.14,
-                            fontFamily: 'Pretendard-ExtraBold',
-                            fontWeight: FontWeight.bold,
-                            color: ratingColor(rating),
-                          ),
-                        ),
-                      ],
-                    )
-                  : masterHandle(rating, context),
-            ],
-          ),
+                  ],
+                )
+              : masterHandle(rating, context),
           Spacer(),
           Container(
             decoration: BoxDecoration(
@@ -372,13 +347,13 @@ Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
       if (snapshot.hasData) {
         int count = snapshot.data?.count ?? 0;
         return Container(
-          padding: EdgeInsets.only(
-            left: MediaQuery.of(context).size.width * 0.04,
-            right: MediaQuery.of(context).size.width * 0.04,
-          ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.grey, width: 0.5),
+            color: Color(0xfff7f8f9),
+          ),
+          padding: EdgeInsets.only(
+            left: MediaQuery.of(context).size.width * 0.025,
+            right: MediaQuery.of(context).size.width * 0.025,
           ),
           child: Column(
             children: [
@@ -395,7 +370,6 @@ Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
                   itemBuilder: (BuildContext context, int index) {
                     return top100Box(context, snapshot.data!.items[index]);
                   }),
-              SizedBox(height: 10),
             ],
           ),
         );
@@ -474,6 +448,7 @@ Widget badges(BuildContext context, Future<Badges> future) {
                   ]),
                   triggerMode: TooltipTriggerMode.tap,
                   child: Stack(
+                    alignment: Alignment.center,
                     clipBehavior: Clip.none,
                     children: [
                       ExtendedImage.network(
@@ -527,21 +502,21 @@ Widget badges(BuildContext context, Future<Badges> future) {
         }
 
         return Container(
-          padding: EdgeInsets.symmetric(
-              horizontal: MediaQuery.of(context).size.width * 0.025,
-              vertical: 10),
-          child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 6,
-                childAspectRatio: 1,
-              ),
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: count,
-              itemBuilder: (BuildContext context, int index) {
-                return badgeTier(context, badges[index], index);
-              }),
-        );
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: Color(0xfff7f8f9),
+            ),
+            child: GridView.builder(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 6,
+                  childAspectRatio: 1,
+                ),
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: count,
+                itemBuilder: (BuildContext context, int index) {
+                  return badgeTier(context, badges[index], index);
+                }));
       } else {
         return CupertinoActivityIndicator();
       }
@@ -622,14 +597,16 @@ Widget tagChart(BuildContext context, AsyncSnapshot<User> userSnapshot) {
       }
       if (snapshot.hasData) {
         return Container(
-            width: MediaQuery.of(context).size.width,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              color: Color(0xfff7f8f9),
+            ),
             padding: EdgeInsets.symmetric(
                 horizontal: MediaQuery.of(context).size.width * 0.025,
                 vertical: 10),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Container(
-                color: Colors.white,
+              SizedBox(
                 height: MediaQuery.of(context).size.width * 0.6,
                 child: RadarChart(
                   ticks: ticks.reversed.toList(),

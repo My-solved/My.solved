@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:my_solved/extensions/color_extension.dart';
-import 'package:my_solved/models/User.dart';
 import 'package:my_solved/services/user_service.dart';
 
 const _themeList = ['warm', 'cold', 'dark'];
@@ -305,7 +304,7 @@ extension _SettingStateExtension on _SettingViewState {
                     useMagnifier: true,
                     itemExtent: 32,
                     scrollController: FixedExtentScrollController(
-                      initialItem: UserService().searchDefaultOpt,
+                      initialItem: _searchDefaultOpt,
                     ),
                     onSelectedItemChanged: (int selected) {
                       setState(() {
