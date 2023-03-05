@@ -1,5 +1,6 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:my_solved/extensions/color_extension.dart';
 import 'package:my_solved/models/search/object.dart';
@@ -69,87 +70,101 @@ class _SearchViewState extends State<SearchView> {
                                     return Column(
                                       children: <Widget>[
                                         for (dynamic problem
-                                        in snapshot.data!.items)
+                                            in snapshot.data!.items)
                                           Container(
                                             decoration: BoxDecoration(
-                                              color: CupertinoTheme
-                                                  .of(
-                                                  context)
+                                              color: CupertinoTheme.of(context)
                                                   .backgroundGray,
                                               borderRadius:
-                                              const BorderRadius
-                                                  .all(
+                                                  const BorderRadius.all(
                                                 Radius.circular(10),
                                               ),
                                             ),
                                             margin:
-                                            const EdgeInsets.only(
-                                                top: 10),
-                                            padding:
-                                            const EdgeInsets.all(
-                                                20),
-                                            width:
-                                            MediaQuery
-                                                .of(context)
+                                                const EdgeInsets.only(top: 10),
+                                            padding: const EdgeInsets.all(20),
+                                            width: MediaQuery.of(context)
                                                 .size
                                                 .width,
-                                            child: CupertinoButton(
-                                              padding: EdgeInsets.zero,
-                                              onPressed: () async {
-                                                String url =
-                                                    'https://acmicpc.net/problem/${problem['problemId']}';
-                                                launchUrlString(url,
-                                                    mode: LaunchMode
-                                                        .externalApplication);
-                                              },
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                CrossAxisAlignment
-                                                    .start,
-                                                children: [
-                                                  Row(
-                                                    crossAxisAlignment:
-                                                    CrossAxisAlignment
-                                                        .end,
-                                                    children: [
-                                                      Consumer<
-                                                          UserService>(
-                                                          builder: (context,
-                                                              userService,
-                                                              child) {
-                                                            return userService
-                                                                .showTierIcon
-                                                                ? Container(
-                                                                margin: const EdgeInsets
-                                                                    .only(
-                                                                    right:
-                                                                    5),
-                                                                child: SvgPicture
-                                                                    .asset(
-                                                                  'lib/assets/tiers/${problem['level']}.svg',
-                                                                  height:
-                                                                  18,
-                                                                ))
-                                                                : Container();
-                                                          }),
-                                                      Text(
-                                                        '${problem['problemId']}번',
-                                                        style: TextStyle(
-                                                            fontSize:
-                                                            16),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                  SizedBox(
-                                                    height: 10,
-                                                  ),
-                                                  Text(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.end,
+                                                  children: [
+                                                    Consumer<UserService>(
+                                                        builder: (context,
+                                                            userService,
+                                                            child) {
+                                                      return userService
+                                                              .showTierIcon
+                                                          ? Container(
+                                                              margin:
+                                                                  const EdgeInsets
+                                                                          .only(
+                                                                      right: 5),
+                                                              child: SvgPicture
+                                                                  .asset(
+                                                                'lib/assets/tiers/${problem['level']}.svg',
+                                                                height: 18,
+                                                              ))
+                                                          : Container();
+                                                    }),
+                                                    Text(
+                                                      '${problem['problemId']}번',
+                                                      style: TextStyle(
+                                                          fontSize: 16),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 5),
+                                                CupertinoButton(
+                                                  padding: EdgeInsets.zero,
+                                                  minSize: 0,
+                                                  onPressed: () async {
+                                                    String url =
+                                                        'https://acmicpc.net/problem/${problem['problemId']}';
+                                                    launchUrlString(url,
+                                                        mode: LaunchMode
+                                                            .externalApplication);
+                                                  },
+                                                  child: Text(
                                                     '${problem['titleKo']}',
-                                                    style: TextStyle(
-                                                        fontSize: 20),
+                                                    style:
+                                                        TextStyle(fontSize: 20),
                                                   ),
-                                                ],
-                                              ),
+                                                ),
+                                                Consumer<UserService>(builder:
+                                                    (context, userService,
+                                                        child) {
+                                                  return userService.showTags
+                                                      ? problem['tags']
+                                                              .isNotEmpty
+                                                          ? RichText(
+                                                              text: TextSpan(
+                                                                  children: [
+                                                                  for (dynamic tag
+                                                                      in problem[
+                                                                          'tags'])
+                                                                    TextSpan(
+                                                                      text:
+                                                                          '#${tag['displayNames'][0]['name']} ',
+                                                                      style:
+                                                                          TextStyle(
+                                                                        fontSize:
+                                                                            12,
+                                                                        color: Colors
+                                                                            .black
+                                                                            .withOpacity(0.5),
+                                                                      ),
+                                                                    ),
+                                                                ]))
+                                                          : SizedBox.shrink()
+                                                      : SizedBox.shrink();
+                                                }),
+                                              ],
                                             ),
                                           ),
                                       ],
@@ -170,19 +185,15 @@ class _SearchViewState extends State<SearchView> {
                                       for (dynamic user in snapshot.data!.items)
                                         Container(
                                           decoration: BoxDecoration(
-                                              color: CupertinoTheme
-                                                  .of(context)
+                                              color: CupertinoTheme.of(context)
                                                   .backgroundGray,
                                               borderRadius:
-                                              const BorderRadius.all(
-                                                  Radius.circular(10))),
+                                                  const BorderRadius.all(
+                                                      Radius.circular(10))),
                                           margin:
-                                          const EdgeInsets.only(top: 10),
+                                              const EdgeInsets.only(top: 10),
                                           width:
-                                          MediaQuery
-                                              .of(context)
-                                              .size
-                                              .width,
+                                              MediaQuery.of(context).size.width,
                                           child: CupertinoButton(
                                             alignment: Alignment.centerLeft,
                                             padding: EdgeInsets.only(left: 20),
@@ -195,7 +206,7 @@ class _SearchViewState extends State<SearchView> {
                                                 const SizedBox(width: 5),
                                                 ClipRRect(
                                                   borderRadius:
-                                                  BorderRadius.circular(10),
+                                                      BorderRadius.circular(10),
                                                   child: ExtendedImage.network(
                                                     user['profileImageUrl'] ??
                                                         'https://static.solved.ac/misc/360x360/default_profile.png',
@@ -207,20 +218,20 @@ class _SearchViewState extends State<SearchView> {
                                                 Text(
                                                   '${user['handle']}',
                                                   style:
-                                                  TextStyle(fontSize: 14),
+                                                      TextStyle(fontSize: 14),
                                                 ),
                                               ],
                                             ),
                                             onPressed: () =>
                                                 Navigator.of(context).push(
-                                                  CupertinoPageRoute(
-                                                    builder:
-                                                        (BuildContext context) {
-                                                      return UserView(
-                                                          username: user['handle']);
-                                                    },
-                                                  ),
-                                                ),
+                                              CupertinoPageRoute(
+                                                builder:
+                                                    (BuildContext context) {
+                                                  return UserView(
+                                                      username: user['handle']);
+                                                },
+                                              ),
+                                            ),
                                           ),
                                         ),
                                     ],
@@ -242,19 +253,15 @@ class _SearchViewState extends State<SearchView> {
                                       for (dynamic tag in snapshot.data!.items)
                                         Container(
                                           decoration: BoxDecoration(
-                                              color: CupertinoTheme
-                                                  .of(context)
+                                              color: CupertinoTheme.of(context)
                                                   .backgroundGray,
                                               borderRadius:
-                                              const BorderRadius.all(
-                                                  Radius.circular(10))),
+                                                  const BorderRadius.all(
+                                                      Radius.circular(10))),
                                           margin:
-                                          const EdgeInsets.only(top: 10),
+                                              const EdgeInsets.only(top: 10),
                                           width:
-                                          MediaQuery
-                                              .of(context)
-                                              .size
-                                              .width,
+                                              MediaQuery.of(context).size.width,
                                           child: CupertinoButton(
                                             alignment: Alignment.centerLeft,
                                             padding: EdgeInsets.only(left: 20),
@@ -367,8 +374,7 @@ class _UnderlineSegmentedControlState extends State<UnderlineSegmentControl> {
       mainAxisAlignment: MainAxisAlignment.start,
       children: widget.children.entries
           .map(
-            (entry) =>
-            GestureDetector(
+            (entry) => GestureDetector(
               onTap: () {
                 setState(() {
                   _selectedIndex = entry.key;
@@ -407,7 +413,7 @@ class _UnderlineSegmentedControlState extends State<UnderlineSegmentControl> {
                 ],
               ),
             ),
-      )
+          )
           .toList(),
     );
   }

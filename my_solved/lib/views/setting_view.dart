@@ -56,9 +56,10 @@ class _SettingViewState extends State<SettingView> {
                 color: CupertinoTheme.of(context).dividerGray,
               ),
               themeOfStrick(context),
+              searchDefaultOpt(context),
               illustration(context),
               tierIcon(context),
-              searchDefaultOpt(context),
+              tags(context),
               Divider(
                 thickness: 1,
                 height: 20,
@@ -68,7 +69,6 @@ class _SettingViewState extends State<SettingView> {
                   // padding: EdgeInsets.only(top: 20),
                   alignment: Alignment.center,
                   child: Text('구현 예정 기능')),
-              tags(context),
               streakAlarm(context),
               contestAlarm(context),
               Divider(
