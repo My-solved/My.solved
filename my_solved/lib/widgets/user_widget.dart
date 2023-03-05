@@ -104,52 +104,14 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
   return Consumer<UserService>(
     builder: (context, provider, child) {
       int zandiTheme = UserService().streakTheme;
-      return Stack(
-        children: [
-          SvgPicture.asset(
-            zandiTheme == 2
-                ? 'lib/assets/zandi_dark.svg'
-                : 'lib/assets/zandi.svg',
-            width: MediaQuery.of(context).size.width,
-          ),
-          SvgPicture.network(
-            zandiUrl(snapshot.data?.handle ?? ''),
-            width: MediaQuery.of(context).size.width,
-          ),
-          Positioned(
-            left: MediaQuery.of(context).size.width * 0.8 * 0.07,
-            bottom: MediaQuery.of(context).size.width * 0.4 * 0.91,
-            child: Container(
-                color: zandiTheme == 2 ? Color(0xFF3f3f3f) : Color(0xFFfdfdfd),
-                width: MediaQuery.of(context).size.width * 0.82,
-                height: MediaQuery.of(context).size.width * 0.4 * 0.15,
-                child: Row(
-                  children: [
-                    SvgPicture.asset(
-                      'lib/assets/icons/streak.svg',
-                      width: MediaQuery.of(context).size.width * 0.4 * 0.10,
-                      height: MediaQuery.of(context).size.width * 0.4 * 0.10,
-                      color: zandiTheme == 2 ? Colors.white : Color(0xff8a8f95),
-                    ),
-                    SizedBox(width: 5),
-                    Text(
-                      // 'Rating: ${snapshot.data?.rating}',
-                      '스트릭',
-                      style: TextStyle(
-                        fontSize: MediaQuery.of(context).size.width * 0.035,
-                        // fontWeight: FontWeight.bold,
-                        color:
-                            zandiTheme == 2 ? Colors.white : Color(0xff8a8f95),
-                      ),
-                    ),
-                    Spacer(),
-                    maxStreak(context, snapshot),
-                    SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.4 * 0.1),
-                  ],
-                )),
-          ),
-        ],
+      return Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: Color(0xfff7f8f9),
+        ),
+        padding: EdgeInsets.symmetric(
+          vertical: MediaQuery.of(context).size.width * 0.025,
+        ),
       );
     },
   );
@@ -262,66 +224,59 @@ Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
       );
     }
 
-    return Container(
-      padding: EdgeInsets.only(
-        left: MediaQuery.of(context).size.width * 0.015,
-        top: MediaQuery.of(context).size.width * 0.045,
-        right: MediaQuery.of(context).size.width * 0.015,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          rating < 3000
-              ? Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text('${tierStr(tier)} ',
-                        style: TextStyle(
-                          fontSize:
-                              MediaQuery.of(context).size.width * 0.4 * 0.14,
-                          fontFamily: 'Pretendard',
-                          color: ratingColor(rating),
-                        )),
-                    Text(
-                      rating.toString(),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        rating < 3000
+            ? Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text('${tierStr(tier)} ',
                       style: TextStyle(
                         fontSize:
                             MediaQuery.of(context).size.width * 0.4 * 0.14,
-                        fontFamily: 'Pretendard-ExtraBold',
-                        fontWeight: FontWeight.bold,
+                        fontFamily: 'Pretendard',
                         color: ratingColor(rating),
-                      ),
+                      )),
+                  Text(
+                    rating.toString(),
+                    style: TextStyle(
+                      fontSize: MediaQuery.of(context).size.width * 0.4 * 0.14,
+                      fontFamily: 'Pretendard-ExtraBold',
+                      fontWeight: FontWeight.bold,
+                      color: ratingColor(rating),
                     ),
-                  ],
-                )
-              : masterHandle(rating, context),
-          Spacer(),
-          Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(100),
-              color: rankBoxColor(rank),
+                  ),
+                ],
+              )
+            : masterHandle(rating, context),
+        Spacer(),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(100),
+            color: rankBoxColor(rank),
+          ),
+          padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
+          child: Text(
+            rank < 1000
+                ? '#$rank'
+                : '#${(rank / 1000).floor()},${(rank % 1000).toString().padLeft(3).replaceAll(' ', '0')}',
+            style: TextStyle(
+              fontSize: MediaQuery.of(context).size.width * 0.4 * 0.11,
+              fontFamily: 'Pretendard-Regular',
+              fontWeight: FontWeight.bold,
+              color: rank == 1 || 100 < rank ? Colors.black : Colors.white,
             ),
-            padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
-            child: Text(
-              rank < 1000
-                  ? '#$rank'
-                  : '#${(rank / 1000).floor()},${(rank % 1000).toString().padLeft(3).replaceAll(' ', '0')}',
-              style: TextStyle(
-                fontSize: MediaQuery.of(context).size.width * 0.4 * 0.11,
-                fontFamily: 'Pretendard-Regular',
-                fontWeight: FontWeight.bold,
-                color: rank == 1 || 100 < rank ? Colors.black : Colors.white,
-              ),
-            ),
-          )
-        ],
-      ),
+          ),
+        )
+      ],
     );
   }
 
   Widget top100Box(BuildContext context, dynamic cur) {
     return CupertinoButton(
+        alignment: Alignment.center,
         minSize: 0,
         padding: EdgeInsets.zero,
         color: Colors.transparent,
@@ -351,13 +306,18 @@ Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
             borderRadius: BorderRadius.circular(10),
             color: Color(0xfff7f8f9),
           ),
-          padding: EdgeInsets.only(
-            left: MediaQuery.of(context).size.width * 0.025,
-            right: MediaQuery.of(context).size.width * 0.025,
+          padding: EdgeInsets.symmetric(
+            vertical: MediaQuery.of(context).size.width * 0.04,
+            horizontal: MediaQuery.of(context).size.width * 0.025,
           ),
           child: Column(
             children: [
-              top100Header(rating, tier, rank, context),
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: MediaQuery.of(context).size.width * 0.02,
+                ),
+                child: top100Header(rating, tier, rank, context),
+              ),
               const SizedBox(height: 10),
               GridView.builder(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
