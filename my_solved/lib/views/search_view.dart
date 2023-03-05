@@ -149,25 +149,24 @@ class _SearchViewState extends State<SearchView> {
                                                     return userService.showTags
                                                         ? problem['tags']
                                                                 .isNotEmpty
-                                                            ? RichText(
-                                                                text: TextSpan(
-                                                                    children: [
-                                                                    for (dynamic tag
-                                                                        in problem[
-                                                                            'tags'])
-                                                                      TextSpan(
-                                                                        text:
-                                                                            '#${tag['displayNames'][0]['name']} ',
-                                                                        style:
-                                                                            TextStyle(
-                                                                          fontSize:
-                                                                              12,
-                                                                          color: Colors
-                                                                              .black
-                                                                              .withOpacity(0.5),
-                                                                        ),
+                                                            ? Wrap(
+                                                                children: [
+                                                                  for (dynamic tag
+                                                                      in problem[
+                                                                          'tags'])
+                                                                    Text(
+                                                                      '#${tag['displayNames'][0]['name']} ',
+                                                                      style:
+                                                                          TextStyle(
+                                                                        fontSize:
+                                                                            12,
+                                                                        color: Colors
+                                                                            .black
+                                                                            .withOpacity(0.5),
                                                                       ),
-                                                                  ]))
+                                                                    ),
+                                                                ],
+                                                              )
                                                             : SizedBox.shrink()
                                                         : SizedBox.shrink();
                                                   }),
