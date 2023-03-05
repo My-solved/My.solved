@@ -7,6 +7,7 @@ import 'package:my_solved/models/search/object.dart';
 import 'package:my_solved/services/network_service.dart';
 import 'package:my_solved/services/user_service.dart';
 import 'package:my_solved/views/user_view.dart';
+import 'package:my_solved/widgets/user_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -71,102 +72,109 @@ class _SearchViewState extends State<SearchView> {
                                       children: <Widget>[
                                         for (dynamic problem
                                             in snapshot.data!.items)
-                                          Container(
-                                            decoration: BoxDecoration(
-                                              color: CupertinoTheme.of(context)
-                                                  .backgroundGray,
-                                              borderRadius:
-                                                  const BorderRadius.all(
-                                                Radius.circular(10),
+                                          CupertinoButton(
+                                            padding: EdgeInsets.zero,
+                                            minSize: 0,
+                                            onPressed: () async {
+                                              String url =
+                                                  'https://acmicpc.net/problem/${problem['problemId']}';
+                                              launchUrlString(url,
+                                                  mode: LaunchMode
+                                                      .externalApplication);
+                                            },
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                color:
+                                                    CupertinoTheme.of(context)
+                                                        .backgroundGray,
+                                                borderRadius:
+                                                    const BorderRadius.all(
+                                                  Radius.circular(10),
+                                                ),
+                                              ),
+                                              margin: const EdgeInsets.only(
+                                                  top: 10),
+                                              padding: const EdgeInsets.all(20),
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment.end,
+                                                    children: [
+                                                      Consumer<UserService>(
+                                                          builder: (context,
+                                                              userService,
+                                                              child) {
+                                                        return userService
+                                                                .showTierIcon
+                                                            ? Container(
+                                                                margin:
+                                                                    const EdgeInsets
+                                                                            .only(
+                                                                        right:
+                                                                            5),
+                                                                child:
+                                                                    SvgPicture
+                                                                        .asset(
+                                                                  'lib/assets/tiers/${problem['level']}.svg',
+                                                                  height: 18,
+                                                                ))
+                                                            : Container();
+                                                      }),
+                                                      Text(
+                                                        '${problem['problemId']}번',
+                                                        style: TextStyle(
+                                                            fontSize: 16,
+                                                            color: levelColor(
+                                                                problem[
+                                                                    'level'])),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  const SizedBox(height: 5),
+                                                  Text(
+                                                    '${problem['titleKo']}',
+                                                    style: TextStyle(
+                                                        fontSize: 20,
+                                                        color: Colors.black),
+                                                  ),
+                                                  Consumer<UserService>(builder:
+                                                      (context, userService,
+                                                          child) {
+                                                    return userService.showTags
+                                                        ? problem['tags']
+                                                                .isNotEmpty
+                                                            ? RichText(
+                                                                text: TextSpan(
+                                                                    children: [
+                                                                    for (dynamic tag
+                                                                        in problem[
+                                                                            'tags'])
+                                                                      TextSpan(
+                                                                        text:
+                                                                            '#${tag['displayNames'][0]['name']} ',
+                                                                        style:
+                                                                            TextStyle(
+                                                                          fontSize:
+                                                                              12,
+                                                                          color: Colors
+                                                                              .black
+                                                                              .withOpacity(0.5),
+                                                                        ),
+                                                                      ),
+                                                                  ]))
+                                                            : SizedBox.shrink()
+                                                        : SizedBox.shrink();
+                                                  }),
+                                                ],
                                               ),
                                             ),
-                                            margin:
-                                                const EdgeInsets.only(top: 10),
-                                            padding: const EdgeInsets.all(20),
-                                            width: MediaQuery.of(context)
-                                                .size
-                                                .width,
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.end,
-                                                  children: [
-                                                    Consumer<UserService>(
-                                                        builder: (context,
-                                                            userService,
-                                                            child) {
-                                                      return userService
-                                                              .showTierIcon
-                                                          ? Container(
-                                                              margin:
-                                                                  const EdgeInsets
-                                                                          .only(
-                                                                      right: 5),
-                                                              child: SvgPicture
-                                                                  .asset(
-                                                                'lib/assets/tiers/${problem['level']}.svg',
-                                                                height: 18,
-                                                              ))
-                                                          : Container();
-                                                    }),
-                                                    Text(
-                                                      '${problem['problemId']}번',
-                                                      style: TextStyle(
-                                                          fontSize: 16),
-                                                    ),
-                                                  ],
-                                                ),
-                                                const SizedBox(height: 5),
-                                                CupertinoButton(
-                                                  padding: EdgeInsets.zero,
-                                                  minSize: 0,
-                                                  onPressed: () async {
-                                                    String url =
-                                                        'https://acmicpc.net/problem/${problem['problemId']}';
-                                                    launchUrlString(url,
-                                                        mode: LaunchMode
-                                                            .externalApplication);
-                                                  },
-                                                  child: Text(
-                                                    '${problem['titleKo']}',
-                                                    style:
-                                                        TextStyle(fontSize: 20),
-                                                  ),
-                                                ),
-                                                Consumer<UserService>(builder:
-                                                    (context, userService,
-                                                        child) {
-                                                  return userService.showTags
-                                                      ? problem['tags']
-                                                              .isNotEmpty
-                                                          ? RichText(
-                                                              text: TextSpan(
-                                                                  children: [
-                                                                  for (dynamic tag
-                                                                      in problem[
-                                                                          'tags'])
-                                                                    TextSpan(
-                                                                      text:
-                                                                          '#${tag['displayNames'][0]['name']} ',
-                                                                      style:
-                                                                          TextStyle(
-                                                                        fontSize:
-                                                                            12,
-                                                                        color: Colors
-                                                                            .black
-                                                                            .withOpacity(0.5),
-                                                                      ),
-                                                                    ),
-                                                                ]))
-                                                          : SizedBox.shrink()
-                                                      : SizedBox.shrink();
-                                                }),
-                                              ],
-                                            ),
-                                          ),
+                                          )
                                       ],
                                     );
                                   } else if (snapshot.hasError) {
