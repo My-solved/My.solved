@@ -896,8 +896,8 @@ Widget badges(BuildContext context, Future<Badges> future) {
                       isContest
                           ? SizedBox.shrink()
                           : Positioned(
-                              bottom: 15,
-                              right: 15,
+                              bottom: 10,
+                              right: 10,
                               child: Container(
                                 width: MediaQuery.of(context).size.width * 0.02,
                                 height:
