@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_radar_chart/flutter_radar_chart.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:my_solved/extensions/color_extension.dart';
 import 'package:my_solved/models/user/tag_ratings.dart';
 import 'package:my_solved/models/user/top_100.dart';
 import 'package:my_solved/services/network_service.dart';
@@ -12,6 +13,7 @@ import 'package:my_solved/services/user_service.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
+import '../models/StreakDate.dart';
 import '../models/User.dart';
 import '../models/user/badges.dart';
 import '../models/user/grass.dart';
@@ -33,7 +35,7 @@ Widget profileHeader(BuildContext context, AsyncSnapshot<User> snapshot) {
               child: CupertinoButton(
                 child: Icon(
                   CupertinoIcons.gear_solid,
-                  color: CupertinoColors.white,
+                  color: ratingColor(snapshot.data!.rating),
                 ),
                 onPressed: () => Navigator.of(context).push(
                   CupertinoPageRoute(
@@ -100,21 +102,296 @@ Widget profileDetail(BuildContext context, AsyncSnapshot<User> snapshot) {
   );
 }
 
-Widget zandi(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return Consumer<UserService>(
-    builder: (context, provider, child) {
-      int zandiTheme = UserService().streakTheme;
-      return Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          color: Color(0xfff7f8f9),
-        ),
-        padding: EdgeInsets.symmetric(
-          vertical: MediaQuery.of(context).size.width * 0.025,
-        ),
-      );
-    },
-  );
+Widget zandi(BuildContext context, AsyncSnapshot<User> userSnapshot,
+    Future<Grass> future) {
+  return FutureBuilder(
+      future: future,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          List<dynamic> grass = List.from(snapshot.data!.grass);
+          int currentStreak = snapshot.data!.currentStreak;
+          int longestStreak = snapshot.data!.longestStreak;
+          String theme = snapshot.data!.theme ?? 'default';
+
+          bool solvedToday = false;
+
+          grass.sort((a, b) => a['date'].compareTo(b['date']));
+
+          List<StreakDate> streakDates = [];
+          DateTime now = DateTime.now().subtract(Duration(hours: 6));
+          StreakDate today = StreakDate(
+              year: now.year,
+              month: now.month,
+              day: now.day,
+              weekDay: now.weekday,
+              solvedCount: 0,
+              isFuture: false,
+              isFrozen: false,
+              isRepaired: false);
+          if (grass.isNotEmpty) {
+            String gl = grass.last['date'].toString();
+            if (today.year == int.parse(gl.substring(0, 4)) &&
+                today.month == int.parse(gl.substring(5, 7)) &&
+                today.day == int.parse(gl.substring(8, 10))) {
+              today = StreakDate(
+                  year: now.year,
+                  month: now.month,
+                  day: now.day,
+                  weekDay: now.weekday,
+                  solvedCount: grass.last['value'],
+                  isFuture: false,
+                  isFrozen: false,
+                  isRepaired: false);
+              grass.removeLast();
+              if (today.solvedCount > 0) {
+                solvedToday = true;
+              }
+            }
+          }
+          streakDates.add(today);
+          while (streakDates.last.weekDay != 6) {
+            DateTime tomorrow = DateTime(streakDates.last.year,
+                    streakDates.last.month, streakDates.last.day)
+                .add(Duration(days: 1));
+            int year = tomorrow.year;
+            int month = tomorrow.month;
+            int day = tomorrow.day;
+            int weekDay = tomorrow.weekday;
+            streakDates.add(StreakDate(
+                year: year,
+                month: month,
+                day: day,
+                weekDay: weekDay,
+                solvedCount: 0,
+                isFuture: true,
+                isFrozen: false,
+                isRepaired: false));
+          }
+          streakDates = streakDates.reversed.toList();
+
+          int maxSolvedCount = 0;
+          while (streakDates.length < 365) {
+            DateTime yesterday = DateTime(streakDates.last.year,
+                    streakDates.last.month, streakDates.last.day)
+                .subtract(Duration(days: 1));
+            int year = yesterday.year;
+            int month = yesterday.month;
+            int day = yesterday.day;
+            int weekDay = yesterday.weekday;
+            int solvedCount = 0;
+            bool isFrozen = false;
+            bool isRepaired = false;
+            String gl = '';
+            if (grass.isNotEmpty) {
+              gl = grass.last['date'].toString();
+              if (year == int.parse(gl.substring(0, 4)) &&
+                  month == int.parse(gl.substring(5, 7)) &&
+                  day == int.parse(gl.substring(8, 10))) {
+                if (grass.last['value'] == 'frozen') {
+                  isFrozen = true;
+                } else if (grass.last['value'] == 'repaired-incremented') {
+                  isRepaired = true;
+                } else {
+                  solvedCount = grass.last['value'];
+                  maxSolvedCount = max(maxSolvedCount, solvedCount);
+                }
+                grass.removeLast();
+              }
+            }
+            streakDates.add(StreakDate(
+                year: year,
+                month: month,
+                day: day,
+                weekDay: weekDay,
+                solvedCount: solvedCount,
+                isFuture: false,
+                isFrozen: isFrozen,
+                isRepaired: isRepaired));
+          }
+          const List<String> week = ['일', '월', '화', '수', '목', '금', '토'];
+          print(streakDates.length);
+
+          maxSolvedCount = max(min(maxSolvedCount, 50), 4);
+          int themeAccent(int solvedCount) {
+            if (solvedCount == 0) {
+              return 0;
+            } else if (solvedCount <= (maxSolvedCount * 0.1).ceil()) {
+              return 1;
+            } else if (solvedCount <= (maxSolvedCount * 0.3).ceil()) {
+              return 2;
+            } else if (solvedCount <= (maxSolvedCount * 0.6).ceil()) {
+              return 3;
+            } else {
+              return 4;
+            }
+          }
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const SizedBox(width: 5),
+                  RichText(
+                      text: TextSpan(children: [
+                    TextSpan(
+                      text: '현재 ',
+                      style: TextStyle(
+                          color: Colors.black,
+                          fontSize: MediaQuery.of(context).size.width * 0.045),
+                    ),
+                    TextSpan(
+                        text: '$currentStreak',
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize:
+                                MediaQuery.of(context).size.width * 0.045)),
+                    TextSpan(
+                        text: '일',
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize:
+                                MediaQuery.of(context).size.width * 0.045)),
+                  ])),
+                  Spacer(),
+                  Tooltip(
+                    preferBelow: false,
+                    message: solvedToday ? '풀었습니다!!' : '오늘의 문제를 풀어보세요',
+                    triggerMode: TooltipTriggerMode.tap,
+                    child: SvgPicture.asset(
+                      'lib/assets/icons/streak.svg',
+                      width: 20,
+                      color: solvedToday
+                          ? CupertinoTheme.of(context).main
+                          : Color(0xff8a8f95),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                ],
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                height: 20,
+                // width: MediaQuery.of(context).size.width * 0.8,
+                child: GridView.builder(
+                  itemBuilder: (BuildContext context, int index) {
+                    return Text(
+                      week[index],
+                      style: TextStyle(color: Color(0xff8a8f95)),
+                      textAlign: TextAlign.center,
+                    );
+                  },
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 7,
+                      childAspectRatio: 1,
+                      crossAxisSpacing: 10),
+                  itemCount: 7,
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                ),
+              ),
+              RotatedBox(
+                  quarterTurns: 2,
+                  child: Container(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.bottomCenter,
+                    // width: MediaQuery.of(context).size.width * 0.8,
+                    child: GridView.builder(
+                      scrollDirection: Axis.vertical,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 7,
+                          childAspectRatio: 1,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10),
+                      shrinkWrap: true,
+                      physics: NeverScrollableScrollPhysics(),
+                      itemCount: 35,
+                      itemBuilder: (context, index) {
+                        var date = streakDates[index];
+                        print('${date.year}/${date.month}/${date.day}\n');
+                        try {
+                          return date.isFuture
+                              ? SizedBox.shrink()
+                              : Tooltip(
+                                  richMessage: TextSpan(
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                      children: [
+                                        TextSpan(
+                                          text:
+                                              '${date.year}/${date.month}/${date.day}\n',
+                                        ),
+                                        TextSpan(
+                                          text: date.isFrozen
+                                              ? '스트릭 프리즈 사용'
+                                              : date.isRepaired
+                                                  ? '스트릭 리페어 사용'
+                                                  : '${date.solvedCount}문제 해결',
+                                        ),
+                                      ]),
+                                  triggerMode: TooltipTriggerMode.tap,
+                                  preferBelow: false,
+                                  child: date.isFrozen
+                                      ? RotatedBox(
+                                          quarterTurns: 2,
+                                          child: SvgPicture.asset(
+                                            'lib/assets/icons/freeze.svg',
+                                            clipBehavior: Clip.none,
+                                          ))
+                                      : Container(
+                                          margin: EdgeInsets.all(5),
+                                          alignment: Alignment.center,
+                                          decoration: BoxDecoration(
+                                            color: date.isRepaired
+                                                ? CupertinoTheme.of(context)
+                                                    .streakTheme[theme]![0]
+                                                : CupertinoTheme.of(context)
+                                                        .streakTheme[theme]![
+                                                    themeAccent(
+                                                        date.solvedCount)],
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                          ),
+                                        ));
+                        } catch (e) {
+                          print(e);
+                          return SizedBox.shrink();
+                        }
+                      },
+                    ),
+                  )),
+              const SizedBox(height: 10),
+              RichText(
+                text: TextSpan(
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: MediaQuery.of(context).size.width * 0.035,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: '최장 ',
+                    ),
+                    TextSpan(
+                        text: '$longestStreak',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        )),
+                    TextSpan(
+                      text: '일 연속 문제 해결',
+                    )
+                  ],
+                ),
+              ),
+            ],
+          );
+        } else if (snapshot.hasError) {
+          return Text('Error: ${snapshot.error}');
+        } else {
+          return CupertinoActivityIndicator();
+        }
+      });
 }
 
 Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
@@ -300,41 +577,226 @@ Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
     future: future,
     builder: (context, snapshot) {
       if (snapshot.hasData) {
-        int count = snapshot.data?.count ?? 0;
-        return Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: Color(0xfff7f8f9),
-          ),
-          padding: EdgeInsets.symmetric(
-            vertical: MediaQuery.of(context).size.width * 0.04,
-            horizontal: MediaQuery.of(context).size.width * 0.025,
-          ),
-          child: Column(
-            children: [
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: MediaQuery.of(context).size.width * 0.02,
-                ),
-                child: top100Header(rating, tier, rank, context),
+        int count = min(80, snapshot.data?.count ?? 0);
+        return Column(
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: MediaQuery.of(context).size.width * 0.02,
               ),
-              const SizedBox(height: 10),
-              GridView.builder(
+              child: top100Header(rating, tier, rank, context),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.5,
+              child: GridView.builder(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 10,
-                    childAspectRatio: 1,
+                    mainAxisExtent: MediaQuery.of(context).size.height * 0.05,
                   ),
-                  shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
                   itemCount: count,
                   itemBuilder: (BuildContext context, int index) {
                     return top100Box(context, snapshot.data!.items[index]);
                   }),
-            ],
-          ),
+            )
+          ],
         );
       } else {
         return CupertinoActivityIndicator();
+      }
+    },
+  );
+}
+
+Widget tagChart(BuildContext context, AsyncSnapshot<User> userSnapshot) {
+  NetworkService networkService = NetworkService();
+
+  return FutureBuilder<List<TagRatings>>(
+    future: networkService.requestTagRatings(userSnapshot.data?.handle ?? ''),
+    builder: (context, snapshot) {
+      List<TagRatings>? tags = snapshot.data;
+      tags?.sort((a, b) => b.rating.compareTo(a.rating));
+
+      List<int> ticks = [];
+      List<String> features = [];
+      List<List<num>> data = [[]];
+
+      int? length = min(8, snapshot.data?.length ?? 0);
+      int maxTick = 0;
+      for (var i = 0; i < length; i++) {
+        features.add(snapshot.data?[i].tag['key'] ?? '');
+        data[0].add(snapshot.data?[i].rating ?? 0);
+        maxTick = max(maxTick, data[0][i].toInt());
+      }
+      maxTick = (maxTick + 500) ~/ 500 * 500;
+      while (maxTick > 0) {
+        ticks.add(maxTick);
+        maxTick -= 500;
+      }
+      if (snapshot.hasData) {
+        return Consumer<UserService>(builder: (context, userService, child) {
+          int chartType = UserService().tagChartType;
+          return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Spacer(),
+                    CupertinoSlidingSegmentedControl(
+                      children: {
+                        0: Text('표'),
+                        1: Text('차트'),
+                      },
+                      onValueChanged: (value) {
+                        UserService().setTagChartType(value!);
+                      },
+                      groupValue: chartType,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                chartType == 0
+                    ? Column(
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                '태그',
+                                style: TextStyle(
+                                  fontSize:
+                                      MediaQuery.of(context).size.width * 0.04,
+                                  color: Color(0xff8a8f95),
+                                ),
+                              ),
+                              Spacer(),
+                              Spacer(),
+                              Spacer(),
+                              Text(
+                                '문제',
+                                style: TextStyle(
+                                  fontSize:
+                                      MediaQuery.of(context).size.width * 0.04,
+                                  color: Color(0xff8a8f95),
+                                ),
+                              ),
+                              Spacer(),
+                              Spacer(),
+                              Text(
+                                '레이팅',
+                                style: TextStyle(
+                                  fontSize:
+                                      MediaQuery.of(context).size.width * 0.04,
+                                  color: Color(0xff8a8f95),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Divider(
+                            color: Colors.grey,
+                            thickness: 0.5,
+                          ),
+                          ListView.separated(
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              itemBuilder: (BuildContext context, int index) {
+                                return Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.42,
+                                      child: Text(
+                                        tags?[index].tag['displayNames'][0]
+                                                ['name'] ??
+                                            '',
+                                        style: TextStyle(
+                                          fontSize: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.035,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: MediaQuery.of(context).size.width *
+                                          0.2,
+                                      child: Text(
+                                        tags?[index].solvedCount.toString() ??
+                                            '',
+                                        style: TextStyle(
+                                          fontSize: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.035,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                    Spacer(),
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        SvgPicture.asset(
+                                          'lib/assets/tiers/${ratingToTier(tags![index].rating)}.svg',
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.035,
+                                        ),
+                                        SizedBox(width: 3),
+                                        SizedBox(
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.1,
+                                          child: Text(
+                                            tags[index].rating.toString(),
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: MediaQuery.of(context)
+                                                      .size
+                                                      .width *
+                                                  0.035,
+                                              color: ratingColor(
+                                                  tags[index].rating),
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                    )
+                                  ],
+                                );
+                              },
+                              separatorBuilder:
+                                  (BuildContext context, int index) {
+                                return Divider();
+                              },
+                              itemCount: length),
+                        ],
+                      )
+                    : SizedBox(
+                        height: MediaQuery.of(context).size.width * 0.6,
+                        child: RadarChart(
+                          ticks: ticks.reversed.toList(),
+                          features: features,
+                          data: data,
+                          outlineColor: Color(0xff8a8f95),
+                          featuresTextStyle: TextStyle(
+                            fontSize: MediaQuery.of(context).size.width * 0.03,
+                            color: Colors.black,
+                          ),
+                          graphColors: [
+                            ratingColor(userSnapshot.data?.rating ?? 0)
+                          ],
+                        ),
+                      )
+              ]);
+        });
+      } else {
+        return Container();
       }
     },
   );
@@ -461,12 +923,10 @@ Widget badges(BuildContext context, Future<Badges> future) {
                 );
         }
 
-        return Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              color: Color(0xfff7f8f9),
-            ),
-            child: GridView.builder(
+        return Column(
+          children: [
+            const SizedBox(height: 10),
+            GridView.builder(
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 6,
                   childAspectRatio: 1,
@@ -476,7 +936,9 @@ Widget badges(BuildContext context, Future<Badges> future) {
                 itemCount: count,
                 itemBuilder: (BuildContext context, int index) {
                   return badgeTier(context, badges[index], index);
-                }));
+                })
+          ],
+        );
       } else {
         return CupertinoActivityIndicator();
       }
@@ -484,6 +946,11 @@ Widget badges(BuildContext context, Future<Badges> future) {
   );
 }
 
+/// ************************************************
+/// Simple Widget
+/// *************************************************
+
+// 배경
 Widget backgroundImage(BuildContext context, AsyncSnapshot<User> snapshot) {
   return Consumer<UserService>(builder: (context, provider, child) {
     bool isIllustration = provider.isIllustration;
@@ -500,6 +967,7 @@ Widget backgroundImage(BuildContext context, AsyncSnapshot<User> snapshot) {
   });
 }
 
+// 프로필 이미지
 Widget profileImage(BuildContext context, AsyncSnapshot<User> snapshot) {
   return Container(
       width: 100,
@@ -530,161 +998,6 @@ Widget profileImage(BuildContext context, AsyncSnapshot<User> snapshot) {
       ));
 }
 
-Widget tagChart(BuildContext context, AsyncSnapshot<User> userSnapshot) {
-  NetworkService networkService = NetworkService();
-
-  return FutureBuilder<List<TagRatings>>(
-    future: networkService.requestTagRatings(userSnapshot.data?.handle ?? ''),
-    builder: (context, snapshot) {
-      List<TagRatings>? tags = snapshot.data;
-      tags?.sort((a, b) => b.rating.compareTo(a.rating));
-
-      List<int> ticks = [];
-      List<String> features = [];
-      List<List<num>> data = [[]];
-
-      int? length = min(8, snapshot.data?.length ?? 0);
-      int maxTick = 0;
-      for (var i = 0; i < length; i++) {
-        features.add(snapshot.data?[i].tag['key'] ?? '');
-        data[0].add(snapshot.data?[i].rating ?? 0);
-        maxTick = max(maxTick, data[0][i].toInt());
-      }
-      maxTick = (maxTick + 500) ~/ 500 * 500;
-      while (maxTick > 0) {
-        ticks.add(maxTick);
-        maxTick -= 500;
-      }
-      if (snapshot.hasData) {
-        return Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              color: Color(0xfff7f8f9),
-            ),
-            padding: EdgeInsets.symmetric(
-                horizontal: MediaQuery.of(context).size.width * 0.025,
-                vertical: 10),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              SizedBox(
-                height: MediaQuery.of(context).size.width * 0.6,
-                child: RadarChart(
-                  ticks: ticks.reversed.toList(),
-                  features: features,
-                  data: data,
-                  outlineColor: Color(0xff8a8f95),
-                  featuresTextStyle: TextStyle(
-                    fontSize: MediaQuery.of(context).size.width * 0.03,
-                    color: Colors.black,
-                  ),
-                  graphColors: [ratingColor(userSnapshot.data?.rating ?? 0)],
-                ),
-              ),
-              SizedBox(height: 10),
-              Row(
-                children: [
-                  Text(
-                    '태그',
-                    style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.width * 0.04,
-                      color: Color(0xff8a8f95),
-                    ),
-                  ),
-                  Spacer(),
-                  Spacer(),
-                  Spacer(),
-                  Text(
-                    '문제',
-                    style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.width * 0.04,
-                      color: Color(0xff8a8f95),
-                    ),
-                  ),
-                  Spacer(),
-                  Spacer(),
-                  Text(
-                    '레이팅',
-                    style: TextStyle(
-                      fontSize: MediaQuery.of(context).size.width * 0.04,
-                      color: Color(0xff8a8f95),
-                    ),
-                  ),
-                ],
-              ),
-              Divider(
-                color: Colors.grey,
-                thickness: 0.5,
-              ),
-              ListView.separated(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemBuilder: (BuildContext context, int index) {
-                    return Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: MediaQuery.of(context).size.width * 0.42,
-                          child: Text(
-                            tags?[index].tag['displayNames'][0]['name'] ?? '',
-                            style: TextStyle(
-                              fontSize:
-                                  MediaQuery.of(context).size.width * 0.035,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.2,
-                          child: Text(
-                            tags?[index].solvedCount.toString() ?? '',
-                            style: TextStyle(
-                              fontSize:
-                                  MediaQuery.of(context).size.width * 0.035,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                        Spacer(),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SvgPicture.asset(
-                              'lib/assets/tiers/${ratingToTier(tags![index].rating)}.svg',
-                              width: MediaQuery.of(context).size.width * 0.035,
-                            ),
-                            SizedBox(width: 3),
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.1,
-                              child: Text(
-                                tags[index].rating.toString(),
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize:
-                                      MediaQuery.of(context).size.width * 0.035,
-                                  color: ratingColor(tags[index].rating),
-                                ),
-                              ),
-                            )
-                          ],
-                        )
-                      ],
-                    );
-                  },
-                  separatorBuilder: (BuildContext context, int index) {
-                    return Divider();
-                  },
-                  itemCount: length),
-            ]));
-      } else {
-        return Container();
-      }
-    },
-  );
-}
-
-/// ************************************************
-/// Simple Widget
-/// *************************************************
 // 핸들
 Widget handle(BuildContext context, AsyncSnapshot<User> snapshot) {
   return Text(

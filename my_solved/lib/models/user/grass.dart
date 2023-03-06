@@ -1,6 +1,6 @@
 class Grass {
   final List<dynamic> grass;
-  final String theme;
+  final dynamic theme;
   final int currentStreak;
   final int longestStreak;
 

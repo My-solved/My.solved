@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_native_timezone/flutter_native_timezone.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 enum UserState { unknown, loggedIn, loading }
@@ -20,6 +21,11 @@ class UserService extends ChangeNotifier {
   bool isOnContestAlarm = true;
   int contestAlarmHour = 0;
   int contestAlarmMinute = 0;
+  String currentTimeZone = '';
+  bool solvedToday = false;
+  int tagChartType = 0;
+  int currentHomeTab = 0;
+  int currentUserTab = 0;
 
   bool _disposed = false;
 
@@ -94,6 +100,36 @@ class UserService extends ChangeNotifier {
     _initContestAlarmTime.then((time) {
       contestAlarmHour = time.hour;
       contestAlarmMinute = time.minute;
+      notifyListeners();
+    });
+
+    Future<String> _initTimeZone = FlutterNativeTimezone.getLocalTimezone();
+    _initTimeZone.then((zone) {
+      currentTimeZone = zone;
+      notifyListeners();
+    });
+
+    Future<bool> _initSolvedToday = initSolvedToday();
+    _initSolvedToday.then((isSolved) {
+      solvedToday = isSolved;
+      notifyListeners();
+    });
+
+    Future<int> _initTagChartType = initTagChartType();
+    _initTagChartType.then((type) {
+      tagChartType = type;
+      notifyListeners();
+    });
+
+    Future<int> _initHomeTab = initCurrentHomeTab();
+    _initHomeTab.then((tab) {
+      currentHomeTab = tab;
+      notifyListeners();
+    });
+
+    Future<int> _initUserTab = initCurrentUserTab();
+    _initUserTab.then((tab) {
+      currentUserTab = tab;
       notifyListeners();
     });
   }
@@ -255,6 +291,54 @@ class UserService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     prefs.setInt('contestAlarmHour', hour);
     prefs.setInt('contestAlarmMinute', minute);
+    notifyListeners();
+  }
+
+  Future<bool> initSolvedToday() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('solvedToday') ?? true;
+  }
+
+  void setSolvedToday(bool solved) async {
+    solvedToday = solved;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool('solvedToday', solved);
+    notifyListeners();
+  }
+
+  Future<int> initTagChartType() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('tagChartType') ?? 0;
+  }
+
+  void setTagChartType(int type) async {
+    tagChartType = type;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setInt('tagChartType', type);
+    notifyListeners();
+  }
+
+  Future<int> initCurrentHomeTab() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('currentHomeTab') ?? 0;
+  }
+
+  void setCurrentHomeTab(int tab) async {
+    currentHomeTab = tab;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setInt('currentHomeTab', tab);
+    notifyListeners();
+  }
+
+  Future<int> initCurrentUserTab() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('currentUserTab') ?? 0;
+  }
+
+  void setCurrentUserTab(int tab) async {
+    currentUserTab = tab;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setInt('currentUserTab', tab);
     notifyListeners();
   }
 }
