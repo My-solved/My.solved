@@ -9,20 +9,25 @@ class UserService extends ChangeNotifier {
   UserState state = UserState.loading;
 
   String name = '';
-  int streakTheme = 0;
   bool isIllustration = true;
+
   bool showTierIcon = true;
   bool showTags = true;
+
   int searchDefaultOpt = 0;
   bool searchDefaultSort = true;
+
   bool isOnStreakAlarm = true;
   int streakAlarmHour = 0;
   int streakAlarmMinute = 0;
+
   bool isOnContestAlarm = true;
   int contestAlarmHour = 0;
   int contestAlarmMinute = 0;
+
   String currentTimeZone = '';
   bool solvedToday = false;
+
   int tagChartType = 0;
   int currentHomeTab = 0;
   int currentUserTab = 0;
@@ -38,12 +43,6 @@ class UserService extends ChangeNotifier {
       } else {
         state = UserState.unknown;
       }
-      notifyListeners();
-    });
-
-    Future<int> _initStreak = initStreakTheme();
-    _initStreak.then((theme) {
-      streakTheme = theme;
       notifyListeners();
     });
 
@@ -166,21 +165,8 @@ class UserService extends ChangeNotifier {
   void logout() async {
     state = UserState.unknown;
     name = '';
-    streakTheme = 0;
     final prefs = await SharedPreferences.getInstance();
     prefs.remove('username');
-    notifyListeners();
-  }
-
-  Future<int> initStreakTheme() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getInt('streak') ?? 0;
-  }
-
-  void setStreakTheme(int theme) async {
-    streakTheme = theme;
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setInt('streak', theme);
     notifyListeners();
   }
 

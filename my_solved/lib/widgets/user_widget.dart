@@ -1278,46 +1278,6 @@ Widget rank(BuildContext context, AsyncSnapshot<User> snapshot) {
       ));
 }
 
-// 잔디 테마
-String zandiUrl(String handle) {
-  int zandiTheme = UserService().streakTheme;
-  String theme = '';
-  if (zandiTheme == 0) {
-    theme = 'warm';
-  } else if (zandiTheme == 1) {
-    theme = 'cold';
-  } else if (zandiTheme == 2) {
-    theme = 'dark';
-  }
-  return 'http://mazandi.herokuapp.com/api?handle=$handle&theme=$theme';
-}
-
-// 최대 연속 문제 해결일 수
-Widget maxStreak(BuildContext context, AsyncSnapshot<User> snapshot) {
-  int zandiTheme = UserService().streakTheme;
-  return Text(
-    '최장 ${snapshot.data?.maxStreak.toString()}일',
-    style: TextStyle(
-      fontSize: MediaQuery.of(context).size.width * 0.4 * 0.1,
-      // fontWeight: FontWeight.bold,
-      color: zandiTheme == 2 ? Colors.white : Color(0xff8a8f95),
-    ),
-  );
-}
-
-// 현재 연속 문제 해결일 수
-Widget currentStreak(BuildContext context, AsyncSnapshot<Grass> snapshot) {
-  int zandiTheme = UserService().streakTheme;
-  return Text(
-    '현재 ${snapshot.data?.currentStreak}일',
-    style: TextStyle(
-      fontSize: MediaQuery.of(context).size.width * 0.4 * 0.1,
-      // fontWeight: FontWeight.bold,
-      color: zandiTheme == 2 ? Colors.white : Color(0xff8a8f95),
-    ),
-  );
-}
-
 // 경험치
 Widget exp(BuildContext context, AsyncSnapshot<User> snapshot) {
   return CupertinoPageScaffold(

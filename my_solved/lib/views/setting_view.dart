@@ -16,7 +16,6 @@ class SettingView extends StatefulWidget {
 class _SettingViewState extends State<SettingView> {
   UserService userService = UserService();
 
-  int _selectedIndex = UserService().streakTheme;
   bool _isIllustration = UserService().isIllustration;
   bool _showTierIcon = UserService().showTierIcon;
   bool _showTags = UserService().showTags;
@@ -55,7 +54,6 @@ class _SettingViewState extends State<SettingView> {
                 height: 1,
                 color: CupertinoTheme.of(context).dividerGray,
               ),
-              themeOfStrick(context),
               searchDefaultOpt(context),
               illustration(context),
               tierIcon(context),
@@ -145,57 +143,6 @@ extension _SettingStateExtension on _SettingViewState {
                 UserService().setIllustration(value);
               });
             },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget themeOfStrick(BuildContext context) {
-    var _selectedTheme = _themeList[_selectedIndex];
-    return Container(
-      margin: EdgeInsets.only(top: 5, bottom: 5),
-      child: Row(
-        children: <Widget>[
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('스트릭 테마'),
-              Text('스트릭 색상을 변경합니다.',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: CupertinoColors.secondaryLabel,
-                  )),
-            ],
-          ),
-          Spacer(),
-          CupertinoButton(
-            padding: EdgeInsets.zero,
-            child: Text(_selectedTheme),
-            onPressed: () => _showDialog(
-                CupertinoPicker(
-                  magnification: 1.22,
-                  squeeze: 1.2,
-                  useMagnifier: true,
-                  itemExtent: 32,
-                  scrollController: FixedExtentScrollController(
-                    initialItem: UserService().streakTheme,
-                  ),
-                  onSelectedItemChanged: (int selected) {
-                    setState(() {
-                      _selectedIndex = selected;
-                      UserService().setStreakTheme(selected);
-                    });
-                  },
-                  children: List<Widget>.generate(_themeList.length, (index) {
-                    return Center(
-                      child: Text(
-                        _themeList[index],
-                      ),
-                    );
-                  }),
-                ),
-                context),
           ),
         ],
       ),
