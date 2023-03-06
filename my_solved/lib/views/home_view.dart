@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:my_solved/services/network_service.dart';
 import 'package:my_solved/services/user_service.dart';
 import 'package:my_solved/widgets/user_widget.dart';
@@ -37,7 +36,7 @@ class _HomeViewState extends State<HomeView> {
                       badges(context, networkService.requestBadges(handle));
 
                   final PageController _pageController = PageController(
-                    initialPage: 0,
+                    initialPage: userService.currentHomeTab,
                   );
 
                   return Column(
@@ -79,7 +78,7 @@ class _HomeViewState extends State<HomeView> {
                       const SizedBox(height: 10),
                       Container(
                         alignment: Alignment.topCenter,
-                        height: MediaQuery.of(context).size.height * 0.9,
+                        height: MediaQuery.of(context).size.height,
                         child: PageView(
                           controller: _pageController,
                           onPageChanged: (int index) {
@@ -109,7 +108,7 @@ class _HomeViewState extends State<HomeView> {
                                   horizontal:
                                       MediaQuery.of(context).size.width * 0.05),
                               child: _badges,
-                            ),
+                            )
                           ],
                         ),
                       ),

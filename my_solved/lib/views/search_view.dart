@@ -131,8 +131,8 @@ class _SearchViewState extends State<SearchView> {
                                                         style: TextStyle(
                                                             fontSize: 16,
                                                             color: levelColor(
-                                                                problem[
-                                                                    'level'])),
+                                                                problem['level'] ??
+                                                                    0)),
                                                       ),
                                                     ],
                                                   ),
@@ -207,7 +207,7 @@ class _SearchViewState extends State<SearchView> {
                                             child: Row(
                                               children: [
                                                 SvgPicture.asset(
-                                                  'lib/assets/tiers/${user['tier']}.svg',
+                                                  'lib/assets/tiers/${user['tier'] ?? 0}.svg',
                                                   height: 20,
                                                 ),
                                                 const SizedBox(width: 5),
@@ -224,8 +224,10 @@ class _SearchViewState extends State<SearchView> {
                                                 const SizedBox(width: 5),
                                                 Text(
                                                   '${user['handle']}',
-                                                  style:
-                                                      TextStyle(fontSize: 14),
+                                                  style: TextStyle(
+                                                      fontSize: 14,
+                                                      color: ratingColor(
+                                                          user['rating'] ?? 0)),
                                                 ),
                                               ],
                                             ),

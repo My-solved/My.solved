@@ -17,14 +17,13 @@ dependencies:
   flutter_svg: ^0.22.0
   cupertino_icons: ^1.0.2
   extended_image: ^6.3.2
-  flutter_secure_storage: ^6.1.0
   shared_preferences: ^2.0.15
   url_launcher: ^6.1.7
   flutter_radar_chart: ^0.2.1
   fluttertoast: ^8.2.1
-  #  flutter_local_notifications: ^8.2.0
   flutter_native_timezone: ^2.0.0
-#  flutter_app_badger: ^1.5.0
+  #  flutter_local_notifications: ^8.2.0
+  #  flutter_app_badger: ^1.5.0
 
 dev_dependencies:
   flutter_test:
@@ -35,7 +34,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - lib/assets/
     - lib/assets/classes/
     - lib/assets/tiers/
     - lib/assets/icons/

@@ -38,9 +38,7 @@ class PageRouterState extends State<PageRouter> {
         child: CupertinoApp(
             home: Consumer<UserService>(
               builder: (context, provider, child) =>
-                  route(Provider
-                      .of<UserService>(context)
-                      .state),
+                  route(Provider.of<UserService>(context).state),
             ),
             theme: const CupertinoThemeData(
               brightness: Brightness.light,

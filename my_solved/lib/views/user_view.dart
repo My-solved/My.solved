@@ -45,10 +45,10 @@ class _UserViewState extends State<UserView> {
                     context, snapshot, networkService.requestTop100(username));
                 final Widget _tagChart = tagChart(context, snapshot);
                 final Widget _badges =
-                badges(context, networkService.requestBadges(username));
+                    badges(context, networkService.requestBadges(username));
 
                 final PageController _pageController = PageController(
-                  initialPage: 0,
+                  initialPage: userService.currentUserTab,
                 );
 
                 return Column(
@@ -56,16 +56,10 @@ class _UserViewState extends State<UserView> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: <Widget>[
                     profileHeader(context, snapshot),
-                    SizedBox(height: MediaQuery
-                        .of(context)
-                        .size
-                        .height * 0.08),
+                    SizedBox(height: MediaQuery.of(context).size.height * 0.08),
                     Container(
                       padding: EdgeInsets.symmetric(
-                          horizontal: MediaQuery
-                              .of(context)
-                              .size
-                              .width * 0.05),
+                          horizontal: MediaQuery.of(context).size.width * 0.05),
                       margin: EdgeInsets.only(bottom: 10),
                       child: profileDetail(context, snapshot),
                     ),
@@ -94,10 +88,7 @@ class _UserViewState extends State<UserView> {
                     const SizedBox(height: 10),
                     Container(
                       alignment: Alignment.topCenter,
-                      height: MediaQuery
-                          .of(context)
-                          .size
-                          .height * 0.9,
+                      height: MediaQuery.of(context).size.height,
                       child: PageView(
                         controller: _pageController,
                         onPageChanged: (int index) {
@@ -107,37 +98,25 @@ class _UserViewState extends State<UserView> {
                           Container(
                             padding: EdgeInsets.symmetric(
                                 horizontal:
-                                MediaQuery
-                                    .of(context)
-                                    .size
-                                    .width * 0.05),
+                                    MediaQuery.of(context).size.width * 0.05),
                             child: _zandi,
                           ),
                           Container(
                             padding: EdgeInsets.symmetric(
                                 horizontal:
-                                MediaQuery
-                                    .of(context)
-                                    .size
-                                    .width * 0.05),
+                                    MediaQuery.of(context).size.width * 0.05),
                             child: _top100,
                           ),
                           Container(
                             padding: EdgeInsets.symmetric(
                                 horizontal:
-                                MediaQuery
-                                    .of(context)
-                                    .size
-                                    .width * 0.05),
+                                    MediaQuery.of(context).size.width * 0.05),
                             child: _tagChart,
                           ),
                           Container(
                             padding: EdgeInsets.symmetric(
                                 horizontal:
-                                MediaQuery
-                                    .of(context)
-                                    .size
-                                    .width * 0.05),
+                                    MediaQuery.of(context).size.width * 0.05),
                             child: _badges,
                           ),
                         ],

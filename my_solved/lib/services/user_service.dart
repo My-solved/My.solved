@@ -49,87 +49,73 @@ class UserService extends ChangeNotifier {
     Future<bool> _initIllust = initIllustration();
     _initIllust.then((isOn) {
       isIllustration = isOn;
-      notifyListeners();
     });
 
     Future<bool> _initTier = initTierIcon();
     _initTier.then((isOn) {
       showTierIcon = isOn;
-      notifyListeners();
     });
 
     Future<bool> _initTags = initTags();
     _initTags.then((isOn) {
       showTags = isOn;
-      notifyListeners();
     });
 
     Future<bool> _initStreakAlarm = initStreakAlarm();
     _initStreakAlarm.then((isOn) {
       isOnStreakAlarm = isOn;
-      notifyListeners();
     });
 
     Future<DateTime> _initStreakAlarmTime = initStreakAlarmTime();
     _initStreakAlarmTime.then((time) {
       streakAlarmHour = time.hour;
       streakAlarmMinute = time.minute;
-      notifyListeners();
     });
 
     Future<int> _initSearchDefaultOpt = initSearchDefaultOpt();
     _initSearchDefaultOpt.then((opt) {
       searchDefaultOpt = opt;
-      notifyListeners();
     });
 
     Future<bool> _initSearchDefaultSort = initSearchDefaultSort();
     _initSearchDefaultSort.then((isAsc) {
       searchDefaultSort = isAsc;
-      notifyListeners();
     });
 
     Future<bool> _initContestAlarm = initContestAlarm();
     _initContestAlarm.then((isOn) {
       isOnContestAlarm = isOn;
-      notifyListeners();
     });
 
     Future<DateTime> _initContestAlarmTime = initContestAlarmTime();
     _initContestAlarmTime.then((time) {
       contestAlarmHour = time.hour;
       contestAlarmMinute = time.minute;
-      notifyListeners();
     });
 
     Future<String> _initTimeZone = FlutterNativeTimezone.getLocalTimezone();
     _initTimeZone.then((zone) {
       currentTimeZone = zone;
-      notifyListeners();
     });
 
     Future<bool> _initSolvedToday = initSolvedToday();
     _initSolvedToday.then((isSolved) {
       solvedToday = isSolved;
-      notifyListeners();
     });
 
     Future<int> _initTagChartType = initTagChartType();
     _initTagChartType.then((type) {
       tagChartType = type;
-      notifyListeners();
     });
 
     Future<int> _initHomeTab = initCurrentHomeTab();
     _initHomeTab.then((tab) {
       currentHomeTab = tab;
-      notifyListeners();
     });
 
     Future<int> _initUserTab = initCurrentUserTab();
     _initUserTab.then((tab) {
       currentUserTab = tab;
-      notifyListeners();
     });
   }
 
@@ -150,10 +136,11 @@ class UserService extends ChangeNotifier {
     }
   }
 
-  void setUserName(String name) async {
-    this.name = name;
+  void logout() async {
+    state = UserState.unknown;
+    name = '';
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString('username', name);
+    prefs.remove('username');
     notifyListeners();
   }
 
@@ -162,11 +149,10 @@ class UserService extends ChangeNotifier {
     return prefs.getString('username') ?? '';
   }
 
-  void logout() async {
-    state = UserState.unknown;
-    name = '';
+  void setUserName(String name) async {
+    this.name = name;
     final prefs = await SharedPreferences.getInstance();
-    prefs.remove('username');
+    prefs.setString('username', name);
     notifyListeners();
   }
 
