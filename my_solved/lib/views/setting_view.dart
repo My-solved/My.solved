@@ -16,7 +16,7 @@ class _SettingViewState extends State<SettingView> {
   UserService userService = UserService();
 
   bool _isIllustration = UserService().isIllustration;
-  bool _showTierIcon = UserService().showTierIcon;
+  bool _showTier = UserService().showTier;
   bool _showTags = UserService().showTags;
 
   int _searchDefaultOpt = UserService().searchDefaultOpt;
@@ -154,7 +154,7 @@ extension _SettingStateExtension on _SettingViewState {
             children: [
               Text('난이도 표시'),
               Text(
-                '문제 검색시 난이도 아이콘을 표시합니다.',
+                '문제 검색시 난이도를 표시합니다.',
                 style: TextStyle(
                   color: CupertinoColors.systemGrey,
                   fontSize: 12,
@@ -164,12 +164,12 @@ extension _SettingStateExtension on _SettingViewState {
           ),
           Spacer(),
           CupertinoSwitch(
-            value: _showTierIcon,
+            value: _showTier,
             activeColor: CupertinoTheme.of(context).main,
             onChanged: (bool value) {
               setState(() {
-                _showTierIcon = value;
-                UserService().setTierIcon(value);
+                _showTier = value;
+                UserService().setTier(value);
               });
             },
           ),

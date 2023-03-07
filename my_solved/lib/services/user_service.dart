@@ -11,7 +11,7 @@ class UserService extends ChangeNotifier {
   String name = '';
   bool isIllustration = true;
 
-  bool showTierIcon = true;
+  bool showTier = true;
   bool showTags = true;
 
   int searchDefaultOpt = 0;
@@ -51,9 +51,9 @@ class UserService extends ChangeNotifier {
       isIllustration = isOn;
     });
 
-    Future<bool> _initTier = initTierIcon();
+    Future<bool> _initTier = initTier();
     _initTier.then((isOn) {
-      showTierIcon = isOn;
+      showTier = isOn;
     });
 
     Future<bool> _initTags = initTags();
@@ -168,15 +168,15 @@ class UserService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> initTierIcon() async {
+  Future<bool> initTier() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('showTierIcon') ?? true;
+    return prefs.getBool('showTier') ?? true;
   }
 
-  void setTierIcon(bool isOn) async {
-    showTierIcon = isOn;
+  void setTier(bool isOn) async {
+    showTier = isOn;
     final prefs = await SharedPreferences.getInstance();
-    prefs.setBool('showTierIcon', isOn);
+    prefs.setBool('showTier', isOn);
     notifyListeners();
   }
 

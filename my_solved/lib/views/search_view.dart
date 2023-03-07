@@ -111,7 +111,7 @@ class _SearchViewState extends State<SearchView> {
                                                               userService,
                                                               child) {
                                                         return userService
-                                                                .showTierIcon
+                                                                .showTier
                                                             ? Container(
                                                                 margin:
                                                                     const EdgeInsets
@@ -126,14 +126,23 @@ class _SearchViewState extends State<SearchView> {
                                                                 ))
                                                             : Container();
                                                       }),
-                                                      Text(
-                                                        '${problem['problemId']}번',
-                                                        style: TextStyle(
-                                                            fontSize: 16,
-                                                            color: levelColor(
-                                                                problem['level'] ??
-                                                                    0)),
-                                                      ),
+                                                      Consumer<UserService>(
+                                                          builder: (context,
+                                                              userService,
+                                                              child) {
+                                                        return Text(
+                                                          '${problem['problemId']}번',
+                                                          style: TextStyle(
+                                                              fontSize: 16,
+                                                              color: userService
+                                                                      .showTier
+                                                                  ? levelColor(
+                                                                      problem['level'] ??
+                                                                          0)
+                                                                  : Colors
+                                                                      .black),
+                                                        );
+                                                      }),
                                                     ],
                                                   ),
                                                   const SizedBox(height: 5),
