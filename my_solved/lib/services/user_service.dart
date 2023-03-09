@@ -32,6 +32,8 @@ class UserService extends ChangeNotifier {
   int currentHomeTab = 0;
   int currentUserTab = 0;
 
+  int userCount = 0;
+
   bool _disposed = false;
 
   UserService._privateConstructor() {
@@ -116,6 +118,11 @@ class UserService extends ChangeNotifier {
     Future<int> _initUserTab = initCurrentUserTab();
     _initUserTab.then((tab) {
       currentUserTab = tab;
+    });
+
+    Future<int> _initUserCount = initUserCount();
+    _initUserCount.then((count) {
+      userCount = count;
     });
   }
 
@@ -311,6 +318,18 @@ class UserService extends ChangeNotifier {
     currentUserTab = tab;
     final prefs = await SharedPreferences.getInstance();
     prefs.setInt('currentUserTab', tab);
+    notifyListeners();
+  }
+
+  Future<int> initUserCount() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('userCount') ?? 0;
+  }
+
+  void setUserCount(int count) async {
+    userCount = count;
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setInt('userCount', count);
     notifyListeners();
   }
 }
