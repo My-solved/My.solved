@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:my_solved/models/SiteStats.dart';
 import 'package:my_solved/services/network_service.dart';
 import 'package:my_solved/services/user_service.dart';
 import 'package:my_solved/widgets/user_widget.dart';
@@ -18,6 +19,12 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     String handle = userService.name;
+    SiteStats siteStats;
+    networkService.requestSiteStats().then((value) {
+      siteStats = value;
+      userService.setUserCount(value.userCount);
+      print(siteStats.userCount);
+    });
 
     return CupertinoPageScaffold(
       child: SafeArea(

@@ -529,23 +529,42 @@ Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
             : masterHandle(rating, context),
         Spacer(),
         Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(100),
-            color: rankBoxColor(rank),
-          ),
-          padding: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
-          child: Text(
-            rank < 1000
-                ? '#$rank'
-                : '#${(rank / 1000).floor()},${(rank % 1000).toString().padLeft(3).replaceAll(' ', '0')}',
-            style: TextStyle(
-              fontSize: MediaQuery.of(context).size.width * 0.4 * 0.11,
-              fontFamily: 'Pretendard-Regular',
-              fontWeight: FontWeight.bold,
-              color: rank == 1 || 100 < rank ? Colors.black : Colors.white,
+            width: MediaQuery.of(context).size.width * 0.25,
+            padding: const EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(100),
+              color: rankBoxColor(rank),
             ),
-          ),
-        )
+            child: RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                  style: TextStyle(
+                    fontFamily: 'Pretendard-Regular',
+                    color:
+                        rank == 1 || 100 < rank ? Colors.black : Colors.white,
+                  ),
+                  children: [
+                    TextSpan(
+                      text: rank < 1000
+                          ? '#$rank'
+                          : '#${(rank / 1000).floor()},${(rank % 1000).toString().padLeft(3).replaceAll(' ', '0')}',
+                      style: TextStyle(
+                        fontSize: MediaQuery.of(context).size.width * 0.04,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    TextSpan(
+                      text: '\n',
+                    ),
+                    TextSpan(
+                      text:
+                          '전체 ${(((rank / UserService().userCount) * 10000).ceil() / 100).toStringAsFixed(2)}%',
+                      style: TextStyle(
+                        fontSize: MediaQuery.of(context).size.width * 0.03,
+                      ),
+                    )
+                  ]),
+            ))
       ],
     );
   }
