@@ -34,5 +34,7 @@ jobs:
           channel: "stable"
           flutter-version: "3.7"
       - name: Analyze
-        run: flutter pub get
-        run: flutter analyze        
+        run: |
+          cd my_solved
+          flutter pub get
+          flutter analyze
