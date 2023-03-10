@@ -35,5 +35,6 @@ jobs:
           flutter-version: "3.7"
       - name: Analyze
         run: |
+          cd my_solved
           flutter pub get
           flutter analyze
