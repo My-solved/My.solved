@@ -90,6 +90,7 @@ extension _LoginStateExtension on _LoginViewState {
         onPressed: () {
           networkService
               .requestUser(input)
+              // ignore: invalid_use_of_protected_member
               .then((value) => parent?.setState(() {
                     userService.setUserName(input);
                     userService.state = UserState.loggedIn;

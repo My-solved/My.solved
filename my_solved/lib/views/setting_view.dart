@@ -133,6 +133,7 @@ extension _SettingStateExtension on _SettingViewState {
             value: _isIllustration,
             activeColor: CupertinoTheme.of(context).main,
             onChanged: (bool value) {
+              // ignore: invalid_use_of_protected_member
               setState(() {
                 _isIllustration = value;
                 UserService().setIllustration(value);
@@ -167,6 +168,7 @@ extension _SettingStateExtension on _SettingViewState {
             value: _showTier,
             activeColor: CupertinoTheme.of(context).main,
             onChanged: (bool value) {
+              // ignore: invalid_use_of_protected_member
               setState(() {
                 _showTier = value;
                 UserService().setTier(value);
@@ -201,6 +203,7 @@ extension _SettingStateExtension on _SettingViewState {
             value: _showTags,
             activeColor: CupertinoTheme.of(context).main,
             onChanged: (bool value) {
+              // ignore: invalid_use_of_protected_member
               setState(() {
                 _showTags = value;
                 UserService().setTags(value);
@@ -249,6 +252,7 @@ extension _SettingStateExtension on _SettingViewState {
                       initialItem: _searchDefaultOpt,
                     ),
                     onSelectedItemChanged: (int selected) {
+                      // ignore: invalid_use_of_protected_member
                       setState(() {
                         _searchDefaultOpt = selected;
                         UserService().setSearchDefaultOpt(selected);
@@ -279,6 +283,7 @@ extension _SettingStateExtension on _SettingViewState {
                       initialItem: UserService().searchDefaultSort ? 0 : 1,
                     ),
                     onSelectedItemChanged: (int selected) {
+                      // ignore: invalid_use_of_protected_member
                       setState(() {
                         _searchDefaultSort = selected == 0 ? true : false;
                         UserService()
@@ -335,6 +340,7 @@ extension _SettingStateExtension on _SettingViewState {
                       DateTime(0, 0, 0, _streakAlarmHour, _streakAlarmMinute),
                   minuteInterval: 10,
                   onDateTimeChanged: (DateTime newDateTime) {
+                    // ignore: invalid_use_of_protected_member
                     setState(() {
                       _streakAlarmHour = newDateTime.hour;
                       _streakAlarmMinute = newDateTime.minute;
@@ -349,6 +355,7 @@ extension _SettingStateExtension on _SettingViewState {
             value: _isOnStreakAlarm,
             activeColor: CupertinoTheme.of(context).main,
             onChanged: (bool value) {
+              // ignore: invalid_use_of_protected_member
               setState(() {
                 _isOnStreakAlarm = value;
                 UserService().setStreakAlarm(value);
@@ -396,6 +403,7 @@ extension _SettingStateExtension on _SettingViewState {
                       DateTime(0, 0, 0, _contestAlarmHour, _contestAlarmMinute),
                   minuteInterval: 10,
                   onDateTimeChanged: (DateTime newDateTime) {
+                    // ignore: invalid_use_of_protected_member
                     setState(() {
                       _contestAlarmHour = newDateTime.hour;
                       _contestAlarmMinute = newDateTime.minute;
@@ -410,6 +418,7 @@ extension _SettingStateExtension on _SettingViewState {
             value: _isOnContestAlarm,
             activeColor: CupertinoTheme.of(context).main,
             onChanged: (bool value) {
+              // ignore: invalid_use_of_protected_member
               setState(() {
                 _isOnContestAlarm = value;
                 UserService().setContestAlarm(value);
