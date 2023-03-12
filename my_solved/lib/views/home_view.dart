@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:my_solved/models/SiteStats.dart';
+import 'package:my_solved/models/site_stats.dart';
 import 'package:my_solved/services/network_service.dart';
 import 'package:my_solved/services/user_service.dart';
 import 'package:my_solved/widgets/user_widget.dart';
@@ -9,7 +9,7 @@ class HomeView extends StatefulWidget {
   const HomeView({Key? key}) : super(key: key);
 
   @override
-  _HomeViewState createState() => _HomeViewState();
+  State<HomeView> createState() => _HomeViewState();
 }
 
 class _HomeViewState extends State<HomeView> {
@@ -23,7 +23,7 @@ class _HomeViewState extends State<HomeView> {
     networkService.requestSiteStats().then((value) {
       siteStats = value;
       userService.setUserCount(value.userCount);
-      print(siteStats.userCount);
+      debugPrint(siteStats.userCount as String?);
     });
 
     return CupertinoPageScaffold(
@@ -34,15 +34,15 @@ class _HomeViewState extends State<HomeView> {
               future: networkService.requestUser(handle),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  final Widget _zandi = zandi(
+                  final Widget widgetZandi = zandi(
                       context, snapshot, networkService.requestStreak(handle));
-                  final Widget _top100 = top100(
+                  final Widget widgetTop100 = top100(
                       context, snapshot, networkService.requestTop100(handle));
-                  final Widget _tagChart = tagChart(context, snapshot);
-                  final Widget _badges =
+                  final Widget widgetTagChart = tagChart(context, snapshot);
+                  final Widget widgetBadges =
                       badges(context, networkService.requestBadges(handle));
 
-                  final PageController _pageController = PageController(
+                  final PageController pageController = PageController(
                     initialPage: userService.currentHomeTab,
                   );
 
@@ -74,7 +74,7 @@ class _HomeViewState extends State<HomeView> {
                             onValueChanged: (int? value) {
                               if (value != null) {
                                 userService.setCurrentHomeTab(value);
-                                _pageController.animateToPage(value,
+                                pageController.animateToPage(value,
                                     duration: const Duration(milliseconds: 300),
                                     curve: Curves.ease);
                               }
@@ -87,7 +87,7 @@ class _HomeViewState extends State<HomeView> {
                         alignment: Alignment.topCenter,
                         height: MediaQuery.of(context).size.height,
                         child: PageView(
-                          controller: _pageController,
+                          controller: pageController,
                           onPageChanged: (int index) {
                             userService.setCurrentHomeTab(index);
                           },
@@ -96,25 +96,25 @@ class _HomeViewState extends State<HomeView> {
                               padding: EdgeInsets.symmetric(
                                   horizontal:
                                       MediaQuery.of(context).size.width * 0.05),
-                              child: _zandi,
+                              child: widgetZandi,
                             ),
                             Container(
                               padding: EdgeInsets.symmetric(
                                   horizontal:
                                       MediaQuery.of(context).size.width * 0.05),
-                              child: _top100,
+                              child: widgetTop100,
                             ),
                             Container(
                               padding: EdgeInsets.symmetric(
                                   horizontal:
                                       MediaQuery.of(context).size.width * 0.05),
-                              child: _tagChart,
+                              child: widgetTagChart,
                             ),
                             Container(
                               padding: EdgeInsets.symmetric(
                                   horizontal:
                                       MediaQuery.of(context).size.width * 0.05),
-                              child: _badges,
+                              child: widgetBadges,
                             )
                           ],
                         ),

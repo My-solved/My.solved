@@ -1,14 +1,14 @@
-class Top_100 {
+class Top100 {
   final int count;
   final List<dynamic> items;
 
-  const Top_100({
+  const Top100({
     required this.count,
     required this.items,
   });
 
-  factory Top_100.fromJson(Map<String, dynamic> json) {
-    return Top_100(
+  factory Top100.fromJson(Map<String, dynamic> json) {
+    return Top100(
       count: json['count'],
       items: json['items'],
     );

@@ -15,7 +15,7 @@ class SearchView extends StatefulWidget {
   const SearchView({Key? key}) : super(key: key);
 
   @override
-  _SearchViewState createState() => _SearchViewState();
+  State<SearchView> createState() => _SearchViewState();
 }
 
 class _SearchViewState extends State<SearchView> {
@@ -336,11 +336,13 @@ extension _SearchStateExtension on _SearchViewState {
       child: CupertinoSearchTextField(
         placeholder: '문제 번호, 문제 제목을 입력해주세요.',
         onChanged: (text) {
+          // ignore: invalid_use_of_protected_member
           setState(() {
             input = text;
           });
         },
         onSubmitted: (text) {
+          // ignore: invalid_use_of_protected_member
           setState(() {
             const optList = ['id', 'level', 'title', 'solved', 'average_try'];
             int opt = UserService().searchDefaultOpt;
@@ -368,6 +370,7 @@ class UnderlineSegmentControl extends StatefulWidget {
   final double indicatorWidth;
 
   const UnderlineSegmentControl({
+    super.key,
     required this.children,
     required this.onValueChanged,
     this.color = CupertinoColors.label,
@@ -379,7 +382,7 @@ class UnderlineSegmentControl extends StatefulWidget {
   });
 
   @override
-  _UnderlineSegmentedControlState createState() =>
+  State<UnderlineSegmentControl> createState() =>
       _UnderlineSegmentedControlState();
 }
 

@@ -13,8 +13,8 @@ import 'package:my_solved/services/user_service.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import '../models/StreakDate.dart';
-import '../models/User.dart';
+import '../models/streak_date.dart';
+import '../models/user.dart';
 import '../models/user/badges.dart';
 import '../models/user/grass.dart';
 import '../views/setting_view.dart';
@@ -208,7 +208,7 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> userSnapshot,
                 isRepaired: isRepaired));
           }
           const List<String> week = ['일', '월', '화', '수', '목', '금', '토'];
-          print(streakDates.length);
+          debugPrint(streakDates.length as String?);
 
           maxSolvedCount = max(min(maxSolvedCount, 50), 4);
           int themeAccent(int solvedCount) {
@@ -308,7 +308,7 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> userSnapshot,
                       itemCount: 35,
                       itemBuilder: (context, index) {
                         var date = streakDates[index];
-                        print('${date.year}/${date.month}/${date.day}\n');
+                        debugPrint('${date.year}/${date.month}/${date.day}\n');
                         try {
                           return date.isFuture
                               ? SizedBox.shrink()
@@ -355,7 +355,7 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> userSnapshot,
                                           ),
                                         ));
                         } catch (e) {
-                          print(e);
+                          debugPrint(e as String?);
                           return SizedBox.shrink();
                         }
                       },
@@ -394,7 +394,7 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> userSnapshot,
 }
 
 Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
-    Future<Top_100> future) {
+    Future<Top100> future) {
   int rating = snapshot.data?.rating ?? 0;
   int tier = snapshot.data?.tier ?? 0;
   int rank = snapshot.data?.rank ?? 0;
@@ -591,7 +591,7 @@ Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
                 width: MediaQuery.of(context).size.width * 0.041)));
   }
 
-  return FutureBuilder<Top_100>(
+  return FutureBuilder<Top100>(
     future: future,
     builder: (context, snapshot) {
       if (snapshot.hasData) {
@@ -721,7 +721,7 @@ Widget tagChart(BuildContext context, AsyncSnapshot<User> userSnapshot) {
                                 return Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Container(
+                                    SizedBox(
                                       width: MediaQuery.of(context).size.width *
                                           0.42,
                                       child: Text(

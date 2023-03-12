@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:my_solved/services/network_service.dart';
 import 'package:my_solved/services/user_service.dart';
 import 'package:my_solved/widgets/user_widget.dart';
@@ -11,7 +10,7 @@ class UserView extends StatefulWidget {
   final String username;
 
   @override
-  _UserViewState createState() => _UserViewState();
+  State<UserView> createState() => _UserViewState();
 }
 
 class _UserViewState extends State<UserView> {
@@ -39,15 +38,15 @@ class _UserViewState extends State<UserView> {
             future: networkService.requestUser(username),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                final Widget _zandi = zandi(
+                final Widget widgetZandi = zandi(
                     context, snapshot, networkService.requestStreak(username));
-                final Widget _top100 = top100(
+                final Widget widgetTop100 = top100(
                     context, snapshot, networkService.requestTop100(username));
-                final Widget _tagChart = tagChart(context, snapshot);
-                final Widget _badges =
+                final Widget widgetTagChart = tagChart(context, snapshot);
+                final Widget widgetBadges =
                     badges(context, networkService.requestBadges(username));
 
-                final PageController _pageController = PageController(
+                final PageController pageController = PageController(
                   initialPage: userService.currentUserTab,
                 );
 
@@ -77,7 +76,7 @@ class _UserViewState extends State<UserView> {
                           onValueChanged: (int? value) {
                             if (value != null) {
                               userService.setCurrentUserTab(value);
-                              _pageController.animateToPage(value,
+                              pageController.animateToPage(value,
                                   duration: const Duration(milliseconds: 300),
                                   curve: Curves.ease);
                             }
@@ -90,7 +89,7 @@ class _UserViewState extends State<UserView> {
                       alignment: Alignment.topCenter,
                       height: MediaQuery.of(context).size.height,
                       child: PageView(
-                        controller: _pageController,
+                        controller: pageController,
                         onPageChanged: (int index) {
                           userService.setCurrentUserTab(index);
                         },
@@ -99,25 +98,25 @@ class _UserViewState extends State<UserView> {
                             padding: EdgeInsets.symmetric(
                                 horizontal:
                                     MediaQuery.of(context).size.width * 0.05),
-                            child: _zandi,
+                            child: widgetZandi,
                           ),
                           Container(
                             padding: EdgeInsets.symmetric(
                                 horizontal:
                                     MediaQuery.of(context).size.width * 0.05),
-                            child: _top100,
+                            child: widgetTop100,
                           ),
                           Container(
                             padding: EdgeInsets.symmetric(
                                 horizontal:
                                     MediaQuery.of(context).size.width * 0.05),
-                            child: _tagChart,
+                            child: widgetTagChart,
                           ),
                           Container(
                             padding: EdgeInsets.symmetric(
                                 horizontal:
                                     MediaQuery.of(context).size.width * 0.05),
-                            child: _badges,
+                            child: widgetBadges,
                           ),
                         ],
                       ),
