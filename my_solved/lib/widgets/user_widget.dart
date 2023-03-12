@@ -394,7 +394,7 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> userSnapshot,
 }
 
 Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
-    Future<Top_100> future) {
+    Future<Top100> future) {
   int rating = snapshot.data?.rating ?? 0;
   int tier = snapshot.data?.tier ?? 0;
   int rank = snapshot.data?.rank ?? 0;
@@ -591,7 +591,7 @@ Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
                 width: MediaQuery.of(context).size.width * 0.041)));
   }
 
-  return FutureBuilder<Top_100>(
+  return FutureBuilder<Top100>(
     future: future,
     builder: (context, snapshot) {
       if (snapshot.hasData) {

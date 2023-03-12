@@ -64,13 +64,13 @@ class NetworkService {
     }
   }
 
-  Future<Top_100> requestTop100(String handle) async {
+  Future<Top100> requestTop100(String handle) async {
     final response = await http
         .get(Uri.parse("https://solved.ac/api/v3/user/top_100?handle=$handle"));
     final statusCode = response.statusCode;
 
     if (statusCode == 200) {
-      Top_100 top100 = Top_100.fromJson(jsonDecode(response.body));
+      Top100 top100 = Top100.fromJson(jsonDecode(response.body));
       return top100;
     } else {
       throw Exception('Failed to load');
