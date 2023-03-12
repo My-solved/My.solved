@@ -721,7 +721,7 @@ Widget tagChart(BuildContext context, AsyncSnapshot<User> userSnapshot) {
                                 return Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Container(
+                                    SizedBox(
                                       width: MediaQuery.of(context).size.width *
                                           0.42,
                                       child: Text(
