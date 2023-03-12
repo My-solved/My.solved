@@ -23,7 +23,7 @@ class _HomeViewState extends State<HomeView> {
     networkService.requestSiteStats().then((value) {
       siteStats = value;
       userService.setUserCount(value.userCount);
-      print(siteStats.userCount);
+      debugPrint(siteStats.userCount as String?);
     });
 
     return CupertinoPageScaffold(

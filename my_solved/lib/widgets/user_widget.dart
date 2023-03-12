@@ -208,7 +208,7 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> userSnapshot,
                 isRepaired: isRepaired));
           }
           const List<String> week = ['일', '월', '화', '수', '목', '금', '토'];
-          print(streakDates.length);
+          debugPrint(streakDates.length as String?);
 
           maxSolvedCount = max(min(maxSolvedCount, 50), 4);
           int themeAccent(int solvedCount) {
@@ -308,7 +308,7 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> userSnapshot,
                       itemCount: 35,
                       itemBuilder: (context, index) {
                         var date = streakDates[index];
-                        print('${date.year}/${date.month}/${date.day}\n');
+                        debugPrint('${date.year}/${date.month}/${date.day}\n');
                         try {
                           return date.isFuture
                               ? SizedBox.shrink()
@@ -355,7 +355,7 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> userSnapshot,
                                           ),
                                         ));
                         } catch (e) {
-                          print(e);
+                          debugPrint(e as String?);
                           return SizedBox.shrink();
                         }
                       },
