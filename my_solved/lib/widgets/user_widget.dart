@@ -13,8 +13,8 @@ import 'package:my_solved/services/user_service.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
-import '../models/StreakDate.dart';
-import '../models/User.dart';
+import '../models/streak_date.dart';
+import '../models/user.dart';
 import '../models/user/badges.dart';
 import '../models/user/grass.dart';
 import '../views/setting_view.dart';

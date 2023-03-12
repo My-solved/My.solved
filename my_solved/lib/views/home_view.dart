@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:my_solved/models/SiteStats.dart';
+import 'package:my_solved/models/site_stats.dart';
 import 'package:my_solved/services/network_service.dart';
 import 'package:my_solved/services/user_service.dart';
 import 'package:my_solved/widgets/user_widget.dart';
