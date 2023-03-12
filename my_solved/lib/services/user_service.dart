@@ -37,8 +37,8 @@ class UserService extends ChangeNotifier {
   bool _disposed = false;
 
   UserService._privateConstructor() {
-    Future<String> initName = initUserName();
-    initName.then((name) {
+    Future<String> valUserName = initUserName();
+    valUserName.then((name) {
       this.name = name;
       if (name.isNotEmpty) {
         state = UserState.loggedIn;
@@ -48,80 +48,80 @@ class UserService extends ChangeNotifier {
       notifyListeners();
     });
 
-    Future<bool> _initIllust = initIllustration();
-    _initIllust.then((isOn) {
+    Future<bool> valIllustration = initIllustration();
+    valIllustration.then((isOn) {
       isIllustration = isOn;
     });
 
-    Future<bool> _initTier = initTier();
-    _initTier.then((isOn) {
+    Future<bool> valTier = initTier();
+    valTier.then((isOn) {
       showTier = isOn;
     });
 
-    Future<bool> _initTags = initTags();
-    _initTags.then((isOn) {
+    Future<bool> valTags = initTags();
+    valTags.then((isOn) {
       showTags = isOn;
     });
 
-    Future<bool> _initStreakAlarm = initStreakAlarm();
-    _initStreakAlarm.then((isOn) {
+    Future<bool> valStreakAlarm = initStreakAlarm();
+    valStreakAlarm.then((isOn) {
       isOnStreakAlarm = isOn;
     });
 
-    Future<DateTime> _initStreakAlarmTime = initStreakAlarmTime();
-    _initStreakAlarmTime.then((time) {
+    Future<DateTime> valStreakAlarmTime = initStreakAlarmTime();
+    valStreakAlarmTime.then((time) {
       streakAlarmHour = time.hour;
       streakAlarmMinute = time.minute;
     });
 
-    Future<int> _initSearchDefaultOpt = initSearchDefaultOpt();
-    _initSearchDefaultOpt.then((opt) {
+    Future<int> valSearchDefaultOpt = initSearchDefaultOpt();
+    valSearchDefaultOpt.then((opt) {
       searchDefaultOpt = opt;
     });
 
-    Future<bool> _initSearchDefaultSort = initSearchDefaultSort();
-    _initSearchDefaultSort.then((isAsc) {
+    Future<bool> valSearchDefaultSort = initSearchDefaultSort();
+    valSearchDefaultSort.then((isAsc) {
       searchDefaultSort = isAsc;
     });
 
-    Future<bool> _initContestAlarm = initContestAlarm();
-    _initContestAlarm.then((isOn) {
+    Future<bool> valContestAlarm = initContestAlarm();
+    valContestAlarm.then((isOn) {
       isOnContestAlarm = isOn;
     });
 
-    Future<DateTime> _initContestAlarmTime = initContestAlarmTime();
-    _initContestAlarmTime.then((time) {
+    Future<DateTime> valContestAlarmTime = initContestAlarmTime();
+    valContestAlarmTime.then((time) {
       contestAlarmHour = time.hour;
       contestAlarmMinute = time.minute;
     });
 
-    Future<String> _initTimeZone = FlutterNativeTimezone.getLocalTimezone();
-    _initTimeZone.then((zone) {
+    Future<String> valTimeZone = FlutterNativeTimezone.getLocalTimezone();
+    valTimeZone.then((zone) {
       currentTimeZone = zone;
     });
 
-    Future<bool> _initSolvedToday = initSolvedToday();
-    _initSolvedToday.then((isSolved) {
+    Future<bool> valSolvedToday = initSolvedToday();
+    valSolvedToday.then((isSolved) {
       solvedToday = isSolved;
     });
 
-    Future<int> _initTagChartType = initTagChartType();
-    _initTagChartType.then((type) {
+    Future<int> valTagChartType = initTagChartType();
+    valTagChartType.then((type) {
       tagChartType = type;
     });
 
-    Future<int> _initHomeTab = initCurrentHomeTab();
-    _initHomeTab.then((tab) {
+    Future<int> valHomeTab = initCurrentHomeTab();
+    valHomeTab.then((tab) {
       currentHomeTab = tab;
     });
 
-    Future<int> _initUserTab = initCurrentUserTab();
-    _initUserTab.then((tab) {
+    Future<int> valUserTab = initCurrentUserTab();
+    valUserTab.then((tab) {
       currentUserTab = tab;
     });
 
-    Future<int> _initUserCount = initUserCount();
-    _initUserCount.then((count) {
+    Future<int> valUserCount = initUserCount();
+    valUserCount.then((count) {
       userCount = count;
     });
   }
