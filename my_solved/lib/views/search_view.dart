@@ -368,6 +368,7 @@ class UnderlineSegmentControl extends StatefulWidget {
   final double indicatorWidth;
 
   const UnderlineSegmentControl({
+    super.key,
     required this.children,
     required this.onValueChanged,
     this.color = CupertinoColors.label,
