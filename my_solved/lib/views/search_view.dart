@@ -15,7 +15,7 @@ class SearchView extends StatefulWidget {
   const SearchView({Key? key}) : super(key: key);
 
   @override
-  _SearchViewState createState() => _SearchViewState();
+  State<SearchView> createState() => _SearchViewState();
 }
 
 class _SearchViewState extends State<SearchView> {
@@ -379,7 +379,7 @@ class UnderlineSegmentControl extends StatefulWidget {
   });
 
   @override
-  _UnderlineSegmentedControlState createState() =>
+  State<UnderlineSegmentControl> createState() =>
       _UnderlineSegmentedControlState();
 }
 

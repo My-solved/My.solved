@@ -11,7 +11,7 @@ class UserView extends StatefulWidget {
   final String username;
 
   @override
-  _UserViewState createState() => _UserViewState();
+  State<UserView> createState() => _UserViewState();
 }
 
 class _UserViewState extends State<UserView> {

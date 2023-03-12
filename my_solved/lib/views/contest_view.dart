@@ -8,7 +8,7 @@ class ContestView extends StatefulWidget {
   const ContestView({Key? key}) : super(key: key);
 
   @override
-  _ContestViewState createState() => _ContestViewState();
+  State<ContestView> createState() => _ContestViewState();
 }
 
 class _ContestViewState extends State<ContestView> {
