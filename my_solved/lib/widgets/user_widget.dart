@@ -9,6 +9,7 @@ import 'package:my_solved/extensions/color_extension.dart';
 import 'package:my_solved/models/user/tag_ratings.dart';
 import 'package:my_solved/models/user/top_100.dart';
 import 'package:my_solved/services/network_service.dart';
+import 'package:my_solved/services/notification_service.dart';
 import 'package:my_solved/services/user_service.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -24,6 +25,7 @@ import '../views/setting_view.dart';
 /// *************************************************
 Widget profileHeader(BuildContext context, AsyncSnapshot<User> snapshot) {
   String handle = UserService().name;
+
   return Stack(
     clipBehavior: Clip.none,
     children: <Widget>[

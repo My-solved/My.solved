@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:my_solved/extensions/color_extension.dart';
+import 'package:my_solved/services/notification_service.dart';
 import 'package:my_solved/services/user_service.dart';
 
 const _sortList = ['ID', '레벨', '제목', '푼 사람 수', '평균 시도'];
@@ -13,6 +14,7 @@ class SettingView extends StatefulWidget {
 }
 
 class _SettingViewState extends State<SettingView> {
+  NotificationService notificationService = NotificationService();
   UserService userService = UserService();
 
   bool _isIllustration = UserService().isIllustration;
@@ -73,6 +75,11 @@ class _SettingViewState extends State<SettingView> {
                 height: 1,
                 color: CupertinoTheme.of(context).dividerGray,
               ),
+              CupertinoButton(
+                  child: Text('Test'),
+                  onPressed: () {
+                    notificationService.testPush();
+                  }),
               logoutButton(),
             ],
           ),
