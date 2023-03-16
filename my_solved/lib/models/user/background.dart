@@ -1,11 +1,11 @@
 class Background {
   final String backgroundId;
   final String backgroundImageUrl;
-  final String fallbackBackgroundImageUrl;
-  final String backgroundVideoUrl;
+  final String? fallbackBackgroundImageUrl;
+  final String? backgroundVideoUrl;
   final int unlockedUserCount;
   final String displayDescription;
-  final String conditions;
+  final String? conditions;
   final bool hiddenConditions;
   final bool isIllust;
   final String displayName;

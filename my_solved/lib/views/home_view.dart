@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:my_solved/models/site_stats.dart';
+import 'package:my_solved/models/user.dart';
 import 'package:my_solved/services/network_service.dart';
 import 'package:my_solved/services/user_service.dart';
 import 'package:my_solved/widgets/user_widget.dart';
@@ -19,11 +19,9 @@ class _HomeViewState extends State<HomeView> {
   @override
   Widget build(BuildContext context) {
     String handle = userService.name;
-    SiteStats siteStats;
+
     networkService.requestSiteStats().then((value) {
-      siteStats = value;
       userService.setUserCount(value.userCount);
-      debugPrint(siteStats.userCount as String?);
     });
 
     return CupertinoPageScaffold(
@@ -34,13 +32,27 @@ class _HomeViewState extends State<HomeView> {
               future: networkService.requestUser(handle),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
-                  final Widget widgetZandi = zandi(
-                      context, snapshot, networkService.requestStreak(handle));
-                  final Widget widgetTop100 = top100(
-                      context, snapshot, networkService.requestTop100(handle));
+                  final User? user = snapshot.data;
+                  final Widget widgetGrass = grass(context, snapshot,
+                      networkService.requestStreak(user?.handle ?? ''));
+                  final Widget widgetTop100 = top100(context, snapshot,
+                      networkService.requestTop100(user?.handle ?? ''));
                   final Widget widgetTagChart = tagChart(context, snapshot);
-                  final Widget widgetBadges =
-                      badges(context, networkService.requestBadges(handle));
+                  final Widget widgetBadges = badges(context,
+                      networkService.requestBadges(user?.handle ?? ''));
+
+                  late Widget widgetBackground = backgroundImage(
+                      context,
+                      networkService
+                          .requestBackground(user?.backgroundId ?? ''));
+
+                  late Widget widgetBadge;
+                  if (user?.badgeId != null) {
+                    widgetBadge = badge(context,
+                        networkService.requestBadge(user?.badgeId ?? ''));
+                  } else {
+                    widgetBadge = SizedBox.shrink();
+                  }
 
                   final PageController pageController = PageController(
                     initialPage: userService.currentHomeTab,
@@ -50,7 +62,7 @@ class _HomeViewState extends State<HomeView> {
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
-                      profileHeader(context, snapshot),
+                      profileHeader(context, snapshot, widgetBackground),
                       SizedBox(
                           height: MediaQuery.of(context).size.height * 0.08),
                       Container(
@@ -58,7 +70,7 @@ class _HomeViewState extends State<HomeView> {
                             horizontal:
                                 MediaQuery.of(context).size.width * 0.05),
                         margin: EdgeInsets.only(bottom: 10),
-                        child: profileDetail(context, snapshot),
+                        child: profileDetail(context, snapshot, widgetBadge),
                       ),
                       const SizedBox(height: 10),
                       Consumer<UserService>(
@@ -96,7 +108,7 @@ class _HomeViewState extends State<HomeView> {
                               padding: EdgeInsets.symmetric(
                                   horizontal:
                                       MediaQuery.of(context).size.width * 0.05),
-                              child: widgetZandi,
+                              child: widgetGrass,
                             ),
                             Container(
                               padding: EdgeInsets.symmetric(
