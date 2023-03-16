@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_radar_chart/flutter_radar_chart.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:my_solved/extensions/color_extension.dart';
+import 'package:my_solved/models/badge.dart';
+import 'package:my_solved/models/user/background.dart';
 import 'package:my_solved/models/user/tag_ratings.dart';
 import 'package:my_solved/models/user/top_100.dart';
 import 'package:my_solved/services/network_service.dart';
@@ -22,12 +24,13 @@ import '../views/setting_view.dart';
 /// ************************************************
 /// User Widget
 /// *************************************************
-Widget profileHeader(BuildContext context, AsyncSnapshot<User> snapshot) {
+Widget profileHeader(BuildContext context, AsyncSnapshot<User> snapshot,
+    Widget backgroundImage) {
   String handle = UserService().name;
   return Stack(
     clipBehavior: Clip.none,
     children: <Widget>[
-      backgroundImage(context, snapshot),
+      backgroundImage,
       snapshot.data!.handle == handle
           ? Align(
               alignment: Alignment.topRight,
@@ -68,7 +71,8 @@ Widget profileHeader(BuildContext context, AsyncSnapshot<User> snapshot) {
   );
 }
 
-Widget profileDetail(BuildContext context, AsyncSnapshot<User> snapshot) {
+Widget profileDetail(
+    BuildContext context, AsyncSnapshot<User> snapshot, Widget badge) {
   return Container(
     width: MediaQuery.of(context).size.width,
     margin: const EdgeInsets.only(top: 10),
@@ -81,8 +85,9 @@ Widget profileDetail(BuildContext context, AsyncSnapshot<User> snapshot) {
           children: [
             handle(context, snapshot),
             Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                badge(context, snapshot),
+                badge,
                 classes(context, snapshot),
               ],
             )
@@ -92,16 +97,16 @@ Widget profileDetail(BuildContext context, AsyncSnapshot<User> snapshot) {
             ? SizedBox(height: 5)
             : SizedBox.shrink(),
         bio(context, snapshot),
-        snapshot.data!.organizations.isNotEmpty
-            ? SizedBox(height: 5)
-            : SizedBox.shrink(),
-        organizations(context, snapshot),
+        // snapshot.data!.organizations.isNotEmpty
+        //     ? SizedBox(height: 5)
+        //     : SizedBox.shrink(),
+        // organizations(context, snapshot),
       ],
     ),
   );
 }
 
-Widget zandi(BuildContext context, AsyncSnapshot<User> userSnapshot,
+Widget grass(BuildContext context, AsyncSnapshot<User> userSnapshot,
     Future<Grass> future) {
   return FutureBuilder(
       future: future,
@@ -208,7 +213,6 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> userSnapshot,
                 isRepaired: isRepaired));
           }
           const List<String> week = ['일', '월', '화', '수', '목', '금', '토'];
-          debugPrint(streakDates.length as String?);
 
           maxSolvedCount = max(min(maxSolvedCount, 50), 4);
           int themeAccent(int solvedCount) {
@@ -308,7 +312,6 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> userSnapshot,
                       itemCount: 35,
                       itemBuilder: (context, index) {
                         var date = streakDates[index];
-                        debugPrint('${date.year}/${date.month}/${date.day}\n');
                         try {
                           return date.isFuture
                               ? SizedBox.shrink()
@@ -393,8 +396,8 @@ Widget zandi(BuildContext context, AsyncSnapshot<User> userSnapshot,
       });
 }
 
-Widget top100(BuildContext context, AsyncSnapshot<User> snapshot,
-    Future<Top100> future) {
+Widget top100(
+    BuildContext context, AsyncSnapshot<User> snapshot, Future<Top100> future) {
   int rating = snapshot.data?.rating ?? 0;
   int tier = snapshot.data?.tier ?? 0;
   int rank = snapshot.data?.rank ?? 0;
@@ -968,21 +971,27 @@ Widget badges(BuildContext context, Future<Badges> future) {
 /// Simple Widget
 /// *************************************************
 
-// 배경
-Widget backgroundImage(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return Consumer<UserService>(builder: (context, provider, child) {
-    bool isIllustration = provider.isIllustration;
-    return CupertinoPageScaffold(
-        child: ExtendedImage.network(
-      isIllustration
-          ? snapshot.data?.background['backgroundImageUrl'] ?? ''
-          : snapshot.data?.background['fallbackBackgroundImageUrl'] ??
-              snapshot.data?.background['backgroundImageUrl'] ??
-              '',
-      cache: true,
-      fit: BoxFit.fitWidth,
-    ));
-  });
+//배경
+Widget backgroundImage(BuildContext context, Future<Background> future) {
+  return FutureBuilder(
+    future: future,
+    builder: (context, AsyncSnapshot<Background> snapshot) {
+      if (snapshot.hasData) {
+        return Consumer<UserService>(builder: (context, provider, child) {
+          bool isIllustration = provider.isIllustration;
+          return ExtendedImage.network(
+            isIllustration
+                ? snapshot.data?.backgroundImageUrl ?? ''
+                : snapshot.data?.fallbackBackgroundImageUrl ?? '',
+            cache: true,
+            fit: BoxFit.fitWidth,
+          );
+        });
+      } else {
+        return CupertinoActivityIndicator();
+      }
+    },
+  );
 }
 
 // 프로필 이미지
@@ -1030,113 +1039,113 @@ Widget handle(BuildContext context, AsyncSnapshot<User> snapshot) {
 }
 
 // 소속
-Widget organizations(BuildContext context, AsyncSnapshot<User> snapshot) {
-  List<dynamic> companies = [];
-  List<dynamic> schools = [];
-  List<dynamic> communities = [];
-  for (var i = 0; i < snapshot.data!.organizations.length; i++) {
-    if (snapshot.data!.organizations[i]['type'] == 'community') {
-      communities.add(snapshot.data!.organizations[i]['name']);
-    } else if (snapshot.data!.organizations[i]['type'] == 'company') {
-      companies.add(snapshot.data!.organizations[i]['name']);
-    } else {
-      schools.add(snapshot.data!.organizations[i]['name']);
-    }
-  }
-
-  return CupertinoPageScaffold(
-      backgroundColor: Colors.transparent,
-      child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
-        companies.isEmpty
-            ? SizedBox.shrink()
-            : Container(
-                margin: EdgeInsets.only(right: 5),
-                child: SvgPicture.asset(
-                  'lib/assets/icons/company.svg',
-                  color: Colors.grey,
-                  width: 15,
-                  height: 15,
-                ),
-              ),
-        for (var i = 0; i < companies.length; i++)
-          RichText(
-            text: TextSpan(
-              children: [
-                (0 < i) ? TextSpan(text: ", ") : TextSpan(),
-                TextSpan(
-                  text: companies[i],
-                ),
-              ],
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: MediaQuery.of(context).size.width * 0.035,
-              ),
-            ),
-          ),
-        companies.isNotEmpty && (schools.isNotEmpty || communities.isNotEmpty)
-            ? SizedBox(
-                width: 5,
-              )
-            : SizedBox.shrink(),
-        schools.isEmpty
-            ? SizedBox.shrink()
-            : Container(
-                margin: EdgeInsets.only(right: 5),
-                child: SvgPicture.asset(
-                  'lib/assets/icons/school.svg',
-                  color: Colors.grey,
-                  width: 15,
-                  height: 15,
-                ),
-              ),
-        for (var i = 0; i < schools.length; i++)
-          RichText(
-            text: TextSpan(
-              children: [
-                (0 < i) ? TextSpan(text: ", ") : TextSpan(),
-                TextSpan(
-                  text: schools[i],
-                ),
-              ],
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: MediaQuery.of(context).size.width * 0.035,
-              ),
-            ),
-          ),
-        (companies.isNotEmpty || schools.isNotEmpty) && communities.isNotEmpty
-            ? SizedBox.shrink()
-            : SizedBox(
-                width: 5,
-              ),
-        communities.isEmpty
-            ? SizedBox.shrink()
-            : Container(
-                margin: EdgeInsets.only(right: 5),
-                child: SvgPicture.asset(
-                  'lib/assets/icons/community.svg',
-                  color: Colors.grey,
-                  width: 15,
-                  height: 15,
-                ),
-              ),
-        for (var i = 0; i < communities.length; i++)
-          RichText(
-            text: TextSpan(
-              children: [
-                (0 < i) ? TextSpan(text: ", ") : TextSpan(),
-                TextSpan(
-                  text: communities[i],
-                ),
-              ],
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: MediaQuery.of(context).size.width * 0.035,
-              ),
-            ),
-          ),
-      ]));
-}
+// Widget organizations(BuildContext context, AsyncSnapshot<User> snapshot) {
+//   List<dynamic> companies = [];
+//   List<dynamic> schools = [];
+//   List<dynamic> communities = [];
+//   for (var i = 0; i < snapshot.data!.organizations.length; i++) {
+//     if (snapshot.data!.organizations[i]['type'] == 'community') {
+//       communities.add(snapshot.data!.organizations[i]['name']);
+//     } else if (snapshot.data!.organizations[i]['type'] == 'company') {
+//       companies.add(snapshot.data!.organizations[i]['name']);
+//     } else {
+//       schools.add(snapshot.data!.organizations[i]['name']);
+//     }
+//   }
+//
+//   return CupertinoPageScaffold(
+//       backgroundColor: Colors.transparent,
+//       child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
+//         companies.isEmpty
+//             ? SizedBox.shrink()
+//             : Container(
+//                 margin: EdgeInsets.only(right: 5),
+//                 child: SvgPicture.asset(
+//                   'lib/assets/icons/company.svg',
+//                   color: Colors.grey,
+//                   width: 15,
+//                   height: 15,
+//                 ),
+//               ),
+//         for (var i = 0; i < companies.length; i++)
+//           RichText(
+//             text: TextSpan(
+//               children: [
+//                 (0 < i) ? TextSpan(text: ", ") : TextSpan(),
+//                 TextSpan(
+//                   text: companies[i],
+//                 ),
+//               ],
+//               style: TextStyle(
+//                 color: Colors.grey,
+//                 fontSize: MediaQuery.of(context).size.width * 0.035,
+//               ),
+//             ),
+//           ),
+//         companies.isNotEmpty && (schools.isNotEmpty || communities.isNotEmpty)
+//             ? SizedBox(
+//                 width: 5,
+//               )
+//             : SizedBox.shrink(),
+//         schools.isEmpty
+//             ? SizedBox.shrink()
+//             : Container(
+//                 margin: EdgeInsets.only(right: 5),
+//                 child: SvgPicture.asset(
+//                   'lib/assets/icons/school.svg',
+//                   color: Colors.grey,
+//                   width: 15,
+//                   height: 15,
+//                 ),
+//               ),
+//         for (var i = 0; i < schools.length; i++)
+//           RichText(
+//             text: TextSpan(
+//               children: [
+//                 (0 < i) ? TextSpan(text: ", ") : TextSpan(),
+//                 TextSpan(
+//                   text: schools[i],
+//                 ),
+//               ],
+//               style: TextStyle(
+//                 color: Colors.grey,
+//                 fontSize: MediaQuery.of(context).size.width * 0.035,
+//               ),
+//             ),
+//           ),
+//         (companies.isNotEmpty || schools.isNotEmpty) && communities.isNotEmpty
+//             ? SizedBox.shrink()
+//             : SizedBox(
+//                 width: 5,
+//               ),
+//         communities.isEmpty
+//             ? SizedBox.shrink()
+//             : Container(
+//                 margin: EdgeInsets.only(right: 5),
+//                 child: SvgPicture.asset(
+//                   'lib/assets/icons/community.svg',
+//                   color: Colors.grey,
+//                   width: 15,
+//                   height: 15,
+//                 ),
+//               ),
+//         for (var i = 0; i < communities.length; i++)
+//           RichText(
+//             text: TextSpan(
+//               children: [
+//                 (0 < i) ? TextSpan(text: ", ") : TextSpan(),
+//                 TextSpan(
+//                   text: communities[i],
+//                 ),
+//               ],
+//               style: TextStyle(
+//                 color: Colors.grey,
+//                 fontSize: MediaQuery.of(context).size.width * 0.035,
+//               ),
+//             ),
+//           ),
+//       ]));
+// }
 
 // 자기소개
 Widget bio(BuildContext context, AsyncSnapshot<User> snapshot) {
@@ -1308,105 +1317,105 @@ Widget exp(BuildContext context, AsyncSnapshot<User> snapshot) {
       ));
 }
 
-// 배지
-Widget badge(BuildContext context, AsyncSnapshot<User> snapshot) {
-  if (snapshot.data?.badge == null) {
-    return SizedBox();
-  }
+//배지
+Widget badge(BuildContext context, Future<Badge> snapshot) {
+  return FutureBuilder<Badge>(
+      future: snapshot,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          if (snapshot.data?.badgeId == null) {
+            return SizedBox();
+          }
 
-  String tier = snapshot.data!.badge['badgeTier'];
-  bool isContest = snapshot.data!.badge['badgeCategory'] == 'contest';
-  Color tierColor = Colors.white;
-  if (tier == 'bronze') {
-    tierColor = Color(0xffad5600);
-  } else if (tier == 'silver') {
-    tierColor = Color(0xff435f7a);
-  } else if (tier == 'gold') {
-    tierColor = Color(0xffec9a00);
-  } else if (tier == 'master') {
-    tierColor = Color(0xffff99d8);
-  }
-  return snapshot.data?.badge == null
-      ? SizedBox()
-      : Tooltip(
-          preferBelow: false,
-          triggerMode: TooltipTriggerMode.tap,
-          richMessage: TextSpan(
-            children: [
-              TextSpan(
-                text: snapshot.data!.badge['displayName'],
-                style: TextStyle(
-                  fontSize: MediaQuery.of(context).size.width * 0.4 * 0.1,
-                  fontFamily: 'Pretendard-Regular',
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              TextSpan(text: '\n'),
-              TextSpan(
-                text: snapshot.data!.badge['displayDescription'],
-                style: TextStyle(
-                  fontSize: MediaQuery.of(context).size.width * 0.4 * 0.1,
-                  fontFamily: 'Pretendard-Regular',
-                  color: Colors.white,
-                ),
-              )
-            ],
-          ),
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              ExtendedImage.network(
-                'https://static.solved.ac/profile_badge/120x120/${snapshot.data!.badge['badgeId']}.png',
-                width: MediaQuery.of(context).size.width * 0.11,
-                fit: BoxFit.cover,
-                cache: true,
-                loadStateChanged: (ExtendedImageState state) {
-                  switch (state.extendedImageLoadState) {
-                    case LoadState.loading:
-                      return Center(
-                        child: CircularProgressIndicator(),
-                      );
-                    case LoadState.completed:
-                      return null;
-                    case LoadState.failed:
-                      return Center(
-                        child: Icon(Icons.error),
-                      );
-                  }
-                },
-              ),
-              isContest
-                  ? SizedBox.shrink()
-                  : Positioned(
-                      bottom: -5,
-                      right: -1,
-                      child: Card(
-                        elevation: 2,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(100),
+          String tier = snapshot.data!.badgeTier;
+          bool isContest = snapshot.data!.badgeCategory == 'contest';
+          Color tierColor = Colors.white;
+          if (tier == 'bronze') {
+            tierColor = Color(0xffad5600);
+          } else if (tier == 'silver') {
+            tierColor = Color(0xff435f7a);
+          } else if (tier == 'gold') {
+            tierColor = Color(0xffec9a00);
+          } else if (tier == 'master') {
+            tierColor = Color(0xffff99d8);
+          }
+          return snapshot.data?.badgeId == null
+              ? SizedBox()
+              : Tooltip(
+                  preferBelow: false,
+                  triggerMode: TooltipTriggerMode.tap,
+                  richMessage: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: snapshot.data!.displayName,
+                        style: TextStyle(
+                          fontSize:
+                              MediaQuery.of(context).size.width * 0.4 * 0.1,
+                          fontFamily: 'Pretendard-Regular',
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
-                        child: Container(
-                          width: MediaQuery.of(context).size.width * 0.02,
-                          height: MediaQuery.of(context).size.width * 0.02,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          alignment: Alignment.center,
-                          child: Container(
-                            width: MediaQuery.of(context).size.width * 0.014,
-                            height: MediaQuery.of(context).size.width * 0.014,
-                            decoration: BoxDecoration(
-                              color: tierColor,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
+                      ),
+                      TextSpan(text: '\n'),
+                      TextSpan(
+                        text: snapshot.data!.displayDescription,
+                        style: TextStyle(
+                          fontSize:
+                              MediaQuery.of(context).size.width * 0.4 * 0.1,
+                          fontFamily: 'Pretendard-Regular',
+                          color: Colors.white,
                         ),
-                      )),
-            ],
-          ),
-        );
+                      )
+                    ],
+                  ),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      ExtendedImage.network(
+                        'https://static.solved.ac/profile_badge/120x120/${snapshot.data!.badgeId}.png',
+                        width: MediaQuery.of(context).size.width * 0.11,
+                        fit: BoxFit.cover,
+                        cache: true,
+                      ),
+                      isContest
+                          ? SizedBox.shrink()
+                          : Positioned(
+                              bottom: -5,
+                              right: -1,
+                              child: Card(
+                                elevation: 2,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(100),
+                                ),
+                                child: Container(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.02,
+                                  height:
+                                      MediaQuery.of(context).size.width * 0.02,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Container(
+                                    width: MediaQuery.of(context).size.width *
+                                        0.014,
+                                    height: MediaQuery.of(context).size.width *
+                                        0.014,
+                                    decoration: BoxDecoration(
+                                      color: tierColor,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                ),
+                              )),
+                    ],
+                  ),
+                );
+        } else {
+          return CupertinoActivityIndicator();
+        }
+      });
 }
 
 Color levelColor(int level) {
