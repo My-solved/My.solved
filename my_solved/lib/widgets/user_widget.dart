@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_radar_chart/flutter_radar_chart.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:my_solved/extensions/color_extension.dart';
-import 'package:my_solved/models/badge.dart';
+// import 'package:my_solved/models/badge.dart';
 import 'package:my_solved/models/streak_date.dart';
 import 'package:my_solved/models/user.dart';
 import 'package:my_solved/models/user/background.dart';
@@ -1317,9 +1317,9 @@ Widget exp(BuildContext context, AsyncSnapshot<User> snapshot) {
 }
 
 //배지
-Widget badge(BuildContext context, Future<Badge> snapshot) {
-  return FutureBuilder<Badge>(
-      future: snapshot,
+Widget badge(BuildContext context, Future future) {
+  return FutureBuilder(
+      future: future,
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           if (snapshot.data?.badgeId == null) {
