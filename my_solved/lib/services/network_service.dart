@@ -9,6 +9,7 @@ import 'package:my_solved/models/search/object.dart';
 import 'package:my_solved/models/search/suggestion.dart';
 import 'package:my_solved/models/site_stats.dart';
 import 'package:my_solved/models/user.dart';
+import 'package:my_solved/models/user/background.dart';
 import 'package:my_solved/models/user/badges.dart';
 import 'package:my_solved/models/user/grass.dart';
 import 'package:my_solved/models/user/organizations.dart';
@@ -45,6 +46,18 @@ class NetworkService {
 
     if (statusCode == 200) {
       return Organizations.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to load');
+    }
+  }
+
+  Future<Background> requestBackground(String backgroundId) async {
+    final response = await http.get(Uri.parse(
+        "https://solved.ac/api/v3/background/show?backgroundId=$backgroundId"));
+    final statusCode = response.statusCode;
+
+    if (statusCode == 200) {
+      return Background.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Failed to load');
     }
