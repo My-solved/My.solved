@@ -49,9 +49,6 @@ class _SearchViewState extends State<SearchView> {
               children: <Widget>[
                 if (!isSubmitted) header(),
                 searchBar(),
-                CupertinoButton(child: Text("Test"), onPressed: () {
-                  notificationService.testPush();
-                }),
                 if (isSubmitted)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
