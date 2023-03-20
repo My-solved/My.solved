@@ -5,6 +5,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:my_solved/extensions/color_extension.dart';
 import 'package:my_solved/models/search/object.dart';
 import 'package:my_solved/services/network_service.dart';
+import 'package:my_solved/services/notification_service.dart';
 import 'package:my_solved/services/user_service.dart';
 import 'package:my_solved/views/user_view.dart';
 import 'package:my_solved/widgets/user_widget.dart';
@@ -20,6 +21,7 @@ class SearchView extends StatefulWidget {
 
 class _SearchViewState extends State<SearchView> {
   NetworkService networkService = NetworkService();
+  NotificationService notificationService = NotificationService();
   String input = '';
   bool isSubmitted = false;
   Future<SearchObject>? futureProblem;

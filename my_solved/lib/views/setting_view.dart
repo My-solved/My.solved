@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:my_solved/extensions/color_extension.dart';
+import 'package:my_solved/services/notification_service.dart';
 import 'package:my_solved/services/user_service.dart';
 
 const _sortList = ['ID', '레벨', '제목', '푼 사람 수', '평균 시도'];
@@ -13,6 +14,7 @@ class SettingView extends StatefulWidget {
 }
 
 class _SettingViewState extends State<SettingView> {
+  NotificationService notificationService = NotificationService();
   UserService userService = UserService();
 
   bool _isIllustration = UserService().isIllustration;
@@ -344,7 +346,7 @@ extension _SettingStateExtension on _SettingViewState {
                     setState(() {
                       _streakAlarmHour = newDateTime.hour;
                       _streakAlarmMinute = newDateTime.minute;
-                      UserService().setStreakAlarmTime(
+                      userService.setStreakAlarmTime(
                           newDateTime.hour, newDateTime.minute);
                     });
                   },
@@ -358,8 +360,15 @@ extension _SettingStateExtension on _SettingViewState {
               // ignore: invalid_use_of_protected_member
               setState(() {
                 _isOnStreakAlarm = value;
-                UserService().setStreakAlarm(value);
               });
+              userService.setStreakAlarm(value);
+
+              if(value) {
+                notificationService.setStreakPush(_streakAlarmHour, _streakAlarmMinute);
+              }
+              else {
+                notificationService.cancelStreakPush();
+              }
             },
           ),
         ],

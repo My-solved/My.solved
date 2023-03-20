@@ -17,7 +17,7 @@ class UserService extends ChangeNotifier {
   int searchDefaultOpt = 0;
   bool searchDefaultSort = true;
 
-  bool isOnStreakAlarm = true;
+  bool isOnStreakAlarm = false;
   int streakAlarmHour = 0;
   int streakAlarmMinute = 0;
 
@@ -225,7 +225,7 @@ class UserService extends ChangeNotifier {
 
   Future<bool> initStreakAlarm() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('isOnStreakAlarm') ?? true;
+    return prefs.getBool('isOnStreakAlarm') ?? false;
   }
 
   void setStreakAlarm(bool isOn) async {
@@ -245,6 +245,8 @@ class UserService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     prefs.setInt('streakAlarmHour', hour);
     prefs.setInt('streakAlarmMinute', minute);
+    streakAlarmHour = hour;
+    streakAlarmMinute = minute;
     notifyListeners();
   }
 

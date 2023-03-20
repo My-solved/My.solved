@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:my_solved/services/notification_service.dart';
 import 'package:my_solved/services/user_service.dart';
 import 'package:my_solved/views/login_view.dart';
 import 'package:my_solved/views/main_tab_view.dart';
@@ -29,6 +30,14 @@ class PageRouter extends StatefulWidget {
 
 class PageRouterState extends State<PageRouter> {
   UserService userService = UserService();
+  NotificationService notificationService = NotificationService();
+
+  @override
+  void initState() {
+    super.initState();
+    notificationService.init();
+    notificationService.removeBadge();
+  }
 
   @override
   Widget build(BuildContext context) {
