@@ -31,8 +31,8 @@ class NotificationService {
   }
 
   Future<void> _initializeNotification() async {
-    const IOSInitializationSettings iosInitializationSettings = IOSInitializationSettings(requestAlertPermission: true, requestBadgePermission: true, requestSoundPermission: true);
     const AndroidInitializationSettings androidInitializationSettings = AndroidInitializationSettings('ic_notification');
+    const DarwinInitializationSettings iosInitializationSettings = DarwinInitializationSettings(requestAlertPermission: true, requestBadgePermission: true, requestSoundPermission: true);
     const InitializationSettings settings = InitializationSettings(android: androidInitializationSettings, iOS: iosInitializationSettings);
 
     _flutterLocalNotificationsPlugin.initialize(settings);
@@ -40,15 +40,20 @@ class NotificationService {
 
   Future<void> testPush() async {
     NotificationDetails details = NotificationDetails(
-      android: AndroidNotificationDetails("test", "test", "test"),
-      iOS: IOSNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-          badgeNumber: 1
+      android: AndroidNotificationDetails(
+          'channel id',
+          'channel name',
+          channelDescription: 'channelDescription',
+      ),
+      iOS: DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+        badgeNumber: 1,
       ),
     );
 
-    await _flutterLocalNotificationsPlugin.show(0, "test", "test push", details);
+    await _flutterLocalNotificationsPlugin.show(
+        1, "test", "test push", details);
   }
 }

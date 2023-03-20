@@ -14,7 +14,6 @@ class SettingView extends StatefulWidget {
 }
 
 class _SettingViewState extends State<SettingView> {
-  NotificationService notificationService = NotificationService();
   UserService userService = UserService();
 
   bool _isIllustration = UserService().isIllustration;
@@ -75,11 +74,6 @@ class _SettingViewState extends State<SettingView> {
                 height: 1,
                 color: CupertinoTheme.of(context).dividerGray,
               ),
-              CupertinoButton(
-                  child: Text('Test'),
-                  onPressed: () {
-                    notificationService.testPush();
-                  }),
               logoutButton(),
             ],
           ),
