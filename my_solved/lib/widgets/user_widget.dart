@@ -15,7 +15,7 @@ import 'package:my_solved/models/user/grass.dart';
 import 'package:my_solved/models/user/tag_ratings.dart';
 import 'package:my_solved/models/user/top_100.dart';
 import 'package:my_solved/services/network_service.dart';
-import 'package:my_solved/services/notification_service.dart';
+// import 'package:my_solved/services/notification_service.dart';
 import 'package:my_solved/services/user_service.dart';
 import 'package:my_solved/views/setting_view.dart';
 import 'package:provider/provider.dart';
@@ -266,9 +266,11 @@ Widget grass(BuildContext context, AsyncSnapshot<User> userSnapshot,
                     child: SvgPicture.asset(
                       'lib/assets/icons/streak.svg',
                       width: 20,
-                      color: solvedToday
-                          ? CupertinoTheme.of(context).main
-                          : Color(0xff8a8f95),
+                      colorFilter: ColorFilter.mode(
+                          solvedToday
+                              ? CupertinoTheme.of(context).main
+                              : Color(0xff8a8f95),
+                          BlendMode.srcIn),
                     ),
                   ),
                   const SizedBox(width: 10),

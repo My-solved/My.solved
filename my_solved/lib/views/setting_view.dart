@@ -340,7 +340,7 @@ extension _SettingStateExtension on _SettingViewState {
                   mode: CupertinoDatePickerMode.time,
                   initialDateTime:
                       DateTime(0, 0, 0, _streakAlarmHour, _streakAlarmMinute),
-                  minuteInterval: 10,
+                  minuteInterval: 1,
                   onDateTimeChanged: (DateTime newDateTime) {
                     // ignore: invalid_use_of_protected_member
                     setState(() {
@@ -363,10 +363,10 @@ extension _SettingStateExtension on _SettingViewState {
               });
               userService.setStreakAlarm(value);
 
-              if(value) {
-                notificationService.setStreakPush(_streakAlarmHour, _streakAlarmMinute);
-              }
-              else {
+              if (value) {
+                notificationService.setStreakPush(
+                    _streakAlarmHour, _streakAlarmMinute);
+              } else {
                 notificationService.cancelStreakPush();
               }
             },
