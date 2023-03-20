@@ -1,34 +1,18 @@
+import 'organization.dart';
+
 class Organizations {
-  final int organizationId;
-  final String name;
-  final String type;
-  final int rating;
-  final int userCount;
-  final int voteCount;
-  final int solvedCount;
-  final String color;
+  final List<Organization> organizations;
 
   Organizations({
-      required this.organizationId,
-      required this.name,
-      required this.type,
-      required this.rating,
-      required this.userCount,
-      required this.voteCount,
-      required this.solvedCount,
-      required this.color,
+    required this.organizations,
   });
 
-  factory Organizations.fromJson(Map<String, dynamic> json) {
+  factory Organizations.fromJson(List<dynamic> json) {
+    List<Organization> organizations = <Organization>[];
+    organizations = json.map((i) => Organization.fromJson(i)).toList();
+
     return Organizations(
-      organizationId: json['organizationId'],
-      name: json['name'],
-      type: json['type'],
-      rating: json['rating'],
-      userCount: json['userCount'],
-      voteCount: json['voteCount'],
-      solvedCount: json['solvedCount'],
-      color: json['color'],
+      organizations: organizations,
     );
   }
 }

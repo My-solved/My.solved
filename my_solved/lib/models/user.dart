@@ -1,9 +1,8 @@
 class User {
   final String? handle;
   final String? bio;
-  final List<dynamic> organizations;
-  final dynamic badge;
-  final dynamic background;
+  final String? badgeId;
+  final String? backgroundId;
   final String? profileImageUrl;
   final int solvedCount;
   final int voteCount;
@@ -19,15 +18,18 @@ class User {
   final int rivalCount;
   final int reverseRivalCount;
   final int maxStreak;
-  final dynamic proUntil;
+  final int coins;
+  final int stardusts;
+  final String? joinedAt;
+  final String? bannedUntil;
+  final String? proUntil;
   final int rank;
 
   const User({
     required this.handle,
     required this.bio,
-    required this.organizations,
-    required this.badge,
-    required this.background,
+    required this.badgeId,
+    required this.backgroundId,
     required this.profileImageUrl,
     required this.solvedCount,
     required this.voteCount,
@@ -43,6 +45,10 @@ class User {
     required this.rivalCount,
     required this.reverseRivalCount,
     required this.maxStreak,
+    required this.coins,
+    required this.stardusts,
+    required this.joinedAt,
+    required this.bannedUntil,
     required this.proUntil,
     required this.rank,
   });
@@ -51,9 +57,8 @@ class User {
     return User(
       handle: json['handle'],
       bio: json['bio'],
-      organizations: json['organizations'],
-      badge: json['badge'],
-      background: json['background'],
+      badgeId: json['badgeId'],
+      backgroundId: json['backgroundId'],
       profileImageUrl: json['profileImageUrl'],
       solvedCount: json['solvedCount'],
       voteCount: json['voteCount'],
@@ -69,6 +74,10 @@ class User {
       rivalCount: json['rivalCount'],
       reverseRivalCount: json['reverseRivalCount'],
       maxStreak: json['maxStreak'],
+      coins: json['coins'],
+      stardusts: json['stardusts'],
+      joinedAt: json['joinedAt'],
+      bannedUntil: json['bannedUntil'],
       proUntil: json['proUntil'],
       rank: json['rank'],
     );

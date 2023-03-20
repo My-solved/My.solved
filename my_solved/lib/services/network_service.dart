@@ -5,12 +5,15 @@ import 'package:flutter/foundation.dart';
 import 'package:html/dom.dart' as dom;
 import 'package:html/parser.dart' as parser;
 import 'package:http/http.dart' as http;
-import 'package:my_solved/models/site_stats.dart';
-import 'package:my_solved/models/user.dart';
+import 'package:my_solved/models/badge.dart';
 import 'package:my_solved/models/search/object.dart';
 import 'package:my_solved/models/search/suggestion.dart';
+import 'package:my_solved/models/site_stats.dart';
+import 'package:my_solved/models/user.dart';
+import 'package:my_solved/models/user/background.dart';
 import 'package:my_solved/models/user/badges.dart';
 import 'package:my_solved/models/user/grass.dart';
+import 'package:my_solved/models/user/organizations.dart';
 import 'package:my_solved/models/user/tag_ratings.dart';
 import 'package:my_solved/models/user/top_100.dart';
 
@@ -32,6 +35,42 @@ class NetworkService {
     if (statusCode == 200) {
       User user = User.fromJson(jsonDecode(response.body));
       return user;
+    } else {
+      throw Exception('Failed to load');
+    }
+  }
+
+  Future<Organizations> requestOrganizations(String handle) async {
+    final response = await http.get(Uri.parse(
+        "https://solved.ac/api/v3/user/organizations?handle=$handle"));
+    final statusCode = response.statusCode;
+
+    if (statusCode == 200) {
+      return Organizations.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to load');
+    }
+  }
+
+  Future<Background> requestBackground(String backgroundId) async {
+    final response = await http.get(Uri.parse(
+        "https://solved.ac/api/v3/background/show?backgroundId=$backgroundId"));
+    final statusCode = response.statusCode;
+
+    if (statusCode == 200) {
+      return Background.fromJson(jsonDecode(response.body));
+    } else {
+      throw Exception('Failed to load');
+    }
+  }
+
+  Future<Badge> requestBadge(String badgeId) async {
+    final response = await http
+        .get(Uri.parse("https://solved.ac/api/v3/badge/show?badgeId=$badgeId"));
+    final statusCode = response.statusCode;
+
+    if (statusCode == 200) {
+      return Badge.fromJson(jsonDecode(response.body));
     } else {
       throw Exception('Failed to load');
     }
