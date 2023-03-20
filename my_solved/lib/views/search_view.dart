@@ -158,8 +158,10 @@ class _SearchViewState extends State<SearchView> {
                                                       (context, userService,
                                                           child) {
                                                     return userService.showTags
-                                                        ? problem['tags']
-                                                                .isNotEmpty
+                                                        ? problem['tags'] !=
+                                                                    null &&
+                                                                problem['tags']
+                                                                    .isNotEmpty
                                                             ? Wrap(
                                                                 children: [
                                                                   for (dynamic tag
