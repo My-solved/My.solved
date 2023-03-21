@@ -29,13 +29,11 @@ class MainTabView extends StatelessWidget {
         ],
       ),
       tabBuilder: (BuildContext context, int index) {
-        return WillPopScope(
-            onWillPop: () async => false,
-            child: CupertinoTabView(
-              builder: (BuildContext context) {
-                return options[index];
-              },
-            ));
+        return CupertinoTabView(
+          builder: (BuildContext context) {
+            return options[index];
+          },
+        );
       },
     );
   }
