@@ -266,11 +266,9 @@ Widget grass(BuildContext context, AsyncSnapshot<User> userSnapshot,
                     child: SvgPicture.asset(
                       'lib/assets/icons/streak.svg',
                       width: 20,
-                      colorFilter: ColorFilter.mode(
-                          solvedToday
-                              ? CupertinoTheme.of(context).main
-                              : Color(0xff8a8f95),
-                          BlendMode.srcIn),
+                      color: solvedToday
+                          ? CupertinoTheme.of(context).main
+                          : Color(0xff8a8f95),
                     ),
                   ),
                   const SizedBox(width: 10),
