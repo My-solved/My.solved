@@ -49,16 +49,40 @@ class _SettingViewState extends State<SettingView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              id(userService.name),
+              const SizedBox(height: 20),
+              Text('사용자 정보',
+                  style: TextStyle(
+                      fontSize: 12, color: CupertinoColors.systemGrey)),
               Divider(
                 thickness: 1,
-                height: 1,
+                height: 5,
+                color: CupertinoTheme.of(context).dividerGray,
+              ),
+              id(userService.name),
+              const SizedBox(height: 20),
+              Text('설정',
+                  style: TextStyle(
+                      fontSize: 12, color: CupertinoColors.systemGrey)),
+              Divider(
+                thickness: 1,
+                height: 5,
                 color: CupertinoTheme.of(context).dividerGray,
               ),
               searchDefaultOpt(context),
               illustration(context),
               tierIcon(context),
               tags(context),
+              const SizedBox(height: 20),
+              Text('알림',
+                  style: TextStyle(
+                      fontSize: 12, color: CupertinoColors.systemGrey)),
+              Divider(
+                thickness: 1,
+                height: 5,
+                color: CupertinoTheme.of(context).dividerGray,
+              ),
+              streakAlarm(context),
+              SizedBox(height: 40),
               Divider(
                 thickness: 1,
                 height: 20,
@@ -68,7 +92,6 @@ class _SettingViewState extends State<SettingView> {
                   // padding: EdgeInsets.only(top: 20),
                   alignment: Alignment.center,
                   child: Text('구현 예정 기능')),
-              streakAlarm(context),
               contestAlarm(context),
               Divider(
                 thickness: 1,
@@ -100,15 +123,12 @@ class _SettingViewState extends State<SettingView> {
 
 extension _SettingStateExtension on _SettingViewState {
   Widget id(String name) {
-    return Container(
-      margin: EdgeInsets.only(top: 24, bottom: 14),
-      child: Row(
-        children: [
-          Text('백준 핸들'),
-          Spacer(),
-          Text(name),
-        ],
-      ),
+    return Row(
+      children: [
+        Text('백준 핸들'),
+        Spacer(),
+        Text(name),
+      ],
     );
   }
 
@@ -328,7 +348,7 @@ extension _SettingStateExtension on _SettingViewState {
           CupertinoButton(
             padding: EdgeInsets.zero,
             child: Text(
-              '매일 $_streakAlarmHour시 ${_streakAlarmMinute.toString().padLeft(2, '0')}분',
+              '$_streakAlarmHour:${_streakAlarmMinute.toString().padLeft(2, '0')} ${_streakAlarmHour > 11 ? 'PM' : 'AM'}',
               style: TextStyle(
                 color: CupertinoColors.systemGrey,
                 fontSize: 12,
@@ -336,18 +356,24 @@ extension _SettingStateExtension on _SettingViewState {
             ),
             onPressed: () => _showDialog(
                 CupertinoDatePicker(
-                  use24hFormat: true,
+                  use24hFormat: false,
                   mode: CupertinoDatePickerMode.time,
                   initialDateTime:
                       DateTime(0, 0, 0, _streakAlarmHour, _streakAlarmMinute),
-                  minuteInterval: 1,
+                  minuteInterval: 10,
                   onDateTimeChanged: (DateTime newDateTime) {
                     // ignore: invalid_use_of_protected_member
                     setState(() {
                       _streakAlarmHour = newDateTime.hour;
                       _streakAlarmMinute = newDateTime.minute;
+
                       userService.setStreakAlarmTime(
                           newDateTime.hour, newDateTime.minute);
+
+                      if (_isOnStreakAlarm) {
+                        notificationService.setStreakPush(
+                            newDateTime.hour, newDateTime.minute);
+                      }
                     });
                   },
                 ),

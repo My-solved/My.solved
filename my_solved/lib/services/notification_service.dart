@@ -34,7 +34,7 @@ class NotificationService {
 
   Future<void> _initializeNotification() async {
     const AndroidInitializationSettings androidInitializationSettings =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@android:drawable/ic_lock_idle_alarm');
     const DarwinInitializationSettings iosInitializationSettings =
         DarwinInitializationSettings(
       requestAlertPermission: true,
@@ -46,6 +46,10 @@ class NotificationService {
       iOS: iosInitializationSettings,
     );
 
+    _flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestPermission();
     _flutterLocalNotificationsPlugin.initialize(settings);
   }
 
@@ -53,9 +57,10 @@ class NotificationService {
   Future<void> setStreakPush(int hour, int minute) async {
     NotificationDetails details = NotificationDetails(
       android: AndroidNotificationDetails(
-        'channel id',
-        'channel name',
-        channelDescription: 'channelDescription',
+        'Notification_channel',
+        'Notification_channel',
+        // color: const Color(0xFF11CE3C),
+        channelDescription: 'Notification_channel',
       ),
       iOS: DarwinNotificationDetails(
         presentAlert: true,
@@ -67,8 +72,8 @@ class NotificationService {
 
     await _flutterLocalNotificationsPlugin.zonedSchedule(
       2,
-      '오늘 알고리즘 한 문제를 푸셨나요?',
-      '스트릭을 채워보세요!',
+      '오늘도 백준 한 문제, 잊지 않으셨나요?',
+      '스트릭을 이어보세요!',
       _timeZoneSetting(hour, minute),
       details,
       uiLocalNotificationDateInterpretation:
