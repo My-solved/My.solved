@@ -17,35 +17,17 @@ class _ContestViewState extends State<ContestView> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
+        backgroundColor: Colors.white12,
         resizeToAvoidBottomInset: false,
         child: SafeArea(
           child: SingleChildScrollView(
-            child: Container(
-              margin: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  header(),
-                  contestList(),
-                ],
-              ),
-            ),
+            child: contestList(),
           ),
         ));
   }
 }
 
 extension _ContestStateExtension on _ContestViewState {
-  Widget header() {
-    return Container(
-      margin: const EdgeInsets.only(top: 20, bottom: 20),
-      child: const Text(
-        '대회 일정',
-        style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
   Widget contestList() {
     return FutureBuilder<dom.Document>(
       future: networkService.requestContests(),
@@ -80,239 +62,295 @@ extension _ContestStateExtension on _ContestViewState {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                '진행 중',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const Divider(
-                height: 10,
-                thickness: 1,
-              ),
-              currentContests.isEmpty
-                  ? Container(
-                      margin: EdgeInsets.only(top: 10, bottom: 20),
-                      child: Text(
-                        '진행 중인 대회가 없습니다.',
-                        style: TextStyle(fontSize: 15),
+              Container(
+                  margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '진행 중',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                    )
-                  : Container(
-                      margin: const EdgeInsets.only(top: 10, bottom: 20),
-                      decoration: const BoxDecoration(
-                        border: Border(
-                          top: BorderSide(width: 1.0, color: Colors.black),
-                          bottom: BorderSide(width: 1.0, color: Colors.black),
-                          left: BorderSide(width: 1.0, color: Colors.black),
-                          right: BorderSide(width: 1.0, color: Colors.black),
-                        ),
+                      const Divider(
+                        height: 10,
+                        thickness: 1,
                       ),
-                      child: ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: currentContests.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return Container(
-                              margin: const EdgeInsets.only(
-                                  top: 10, bottom: 10, left: 10),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    flex: 1,
-                                    child: Text(
-                                      currentContests[index]
-                                          .getElementsByTagName('td')[0]
-                                          .text,
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
+                      currentContests.isEmpty
+                          ? Text(
+                              '진행 중인 대회가 없습니다.',
+                              style: TextStyle(fontSize: 15),
+                            )
+                          : ListView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: currentContests.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                Color linkColor = currentContests[index]
+                                            .getElementsByTagName('td')[1]
+                                            .getElementsByTagName('a')
+                                            .first
+                                            .attributes['href'] ==
+                                        null
+                                    ? Colors.black
+                                    : Colors.blue;
+                                late String contestUrl = '';
+                                if (currentContests[index]
+                                    .getElementsByTagName('td')[1]
+                                    .getElementsByTagName('a')
+                                    .isNotEmpty) {
+                                  contestUrl = currentContests[index]
+                                      .getElementsByTagName('td')[1]
+                                      .getElementsByTagName('a')
+                                      .first
+                                      .attributes['href']!;
+                                }
+                                final String contestVenue =
+                                    currentContests[index]
+                                        .getElementsByTagName('td')[0]
+                                        .text;
+                                final String contestName =
+                                    currentContests[index]
+                                        .getElementsByTagName('td')[1]
+                                        .text;
+                                final String contestStart =
+                                    currentContests[index]
+                                        .getElementsByTagName('td')[2]
+                                        .text;
+                                final String contestEnd = currentContests[index]
+                                    .getElementsByTagName('td')[3]
+                                    .text;
+                                return Container(
+                                    decoration: const BoxDecoration(
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(10),
+                                      ),
+                                      border: Border(
+                                        top: BorderSide(
+                                            width: 1.0, color: Colors.black26),
+                                        bottom: BorderSide(
+                                            width: 1.0, color: Colors.black26),
+                                        left: BorderSide(
+                                            width: 1.0, color: Colors.black26),
+                                        right: BorderSide(
+                                            width: 1.0, color: Colors.black26),
                                       ),
                                     ),
-                                  ),
-                                  Expanded(
-                                    flex: 3,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        currentContests[index]
-                                                .getElementsByTagName('td')[1]
-                                                .getElementsByTagName('a')
-                                                .isEmpty
-                                            ? Text(
-                                                currentContests[index]
-                                                    .getElementsByTagName(
-                                                        'td')[1]
-                                                    .text,
-                                                style: const TextStyle(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              )
-                                            : CupertinoButton(
-                                                minSize: 0,
-                                                padding: EdgeInsets.zero,
-                                                child: Text(
-                                                  currentContests[index]
-                                                      .getElementsByTagName(
-                                                          'td')[1]
-                                                      .getElementsByTagName('a')
-                                                      .first
-                                                      .text,
-                                                  style: const TextStyle(
-                                                    color: Colors.blue,
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.bold,
+                                    margin: const EdgeInsets.only(
+                                        top: 5, bottom: 5),
+                                    child: CupertinoButton(
+                                        minSize: 0,
+                                        padding: EdgeInsets.zero,
+                                        onPressed: () async {
+                                          if (contestUrl.isNotEmpty) {
+                                            await launchUrlString(contestUrl,
+                                                mode: LaunchMode
+                                                    .externalApplication);
+                                          }
+                                        },
+                                        child: Container(
+                                            margin: const EdgeInsets.only(
+                                                top: 10, bottom: 10, left: 10),
+                                            child: Row(
+                                              children: [
+                                                Expanded(
+                                                  flex: 1,
+                                                  child: Text(
+                                                    contestVenue,
+                                                    style: TextStyle(
+                                                      color: Colors.black87,
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
                                                   ),
                                                 ),
-                                                onPressed: () async {
-                                                  await launchUrlString(
-                                                      currentContests[index]
-                                                          .getElementsByTagName(
-                                                              'td')[1]
-                                                          .getElementsByTagName(
-                                                              'a')
-                                                          .first
-                                                          .attributes['href']!,
-                                                      mode: LaunchMode
-                                                          .externalApplication);
-                                                },
-                                              ),
-                                        Text(
-                                          '${currentContests[index].getElementsByTagName('td')[2].text} ~ ${currentContests[index].getElementsByTagName('td')[3].text}',
-                                          style: const TextStyle(
-                                            fontSize: 10,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ));
-                        },
-                        separatorBuilder: (BuildContext context, int index) {
-                          return const Divider(
-                            color: Colors.black,
-                            thickness: 1,
-                            height: 0,
-                          );
-                        },
-                      ),
+                                                Expanded(
+                                                  flex: 3,
+                                                  child: RichText(
+                                                      text: TextSpan(
+                                                    style: const TextStyle(
+                                                      color: Colors.black87,
+                                                    ),
+                                                    children: [
+                                                      TextSpan(
+                                                        text: contestName,
+                                                        style: TextStyle(
+                                                          color: linkColor,
+                                                          fontSize: 15,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      const TextSpan(
+                                                        text: '\n',
+                                                      ),
+                                                      TextSpan(
+                                                        text:
+                                                            '$contestStart ~ $contestEnd',
+                                                        style: const TextStyle(
+                                                          fontSize: 10,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  )),
+                                                ),
+                                              ],
+                                            ))));
+                              },
+                            ),
+                    ],
+                  )),
+              Container(
+                  decoration: const BoxDecoration(
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(20),
                     ),
-              const Text(
-                '예정',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const Divider(
-                height: 10,
-                thickness: 1,
-              ),
-              futureContests.isEmpty
-                  ? const Text(
-                      '예정된 대회가 없습니다.',
-                      style: TextStyle(fontSize: 15),
-                    )
-                  : Container(
-                      margin: const EdgeInsets.only(top: 10),
-                      decoration: const BoxDecoration(
-                        border: Border(
-                          top: BorderSide(width: 1.0, color: Colors.black),
-                          bottom: BorderSide(width: 1.0, color: Colors.black),
-                          left: BorderSide(width: 1.0, color: Colors.black),
-                          right: BorderSide(width: 1.0, color: Colors.black),
-                        ),
+                    color: Colors.white,
+                  ),
+                  margin: const EdgeInsets.symmetric(vertical: 10),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '예정',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                      child: ListView.separated(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: futureContests.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return Container(
-                              margin: const EdgeInsets.only(
-                                  top: 10, bottom: 10, left: 10),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    flex: 1,
-                                    child: Text(
+                      const Divider(
+                        height: 10,
+                        thickness: 1,
+                      ),
+                      futureContests.isEmpty
+                          ? const Text(
+                              '예정된 대회가 없습니다.',
+                              style: TextStyle(fontSize: 15),
+                            )
+                          : Container(
+                              margin: const EdgeInsets.only(top: 10),
+                              child: ListView.builder(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: futureContests.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  Color linkColor = futureContests[index]
+                                          .getElementsByTagName('td')[1]
+                                          .getElementsByTagName('a')
+                                          .isEmpty
+                                      ? Colors.black
+                                      : Colors.blue;
+                                  late String contestUrl = '';
+                                  if (futureContests[index]
+                                      .getElementsByTagName('td')[1]
+                                      .getElementsByTagName('a')
+                                      .isNotEmpty) {
+                                    contestUrl = futureContests[index]
+                                        .getElementsByTagName('td')[1]
+                                        .getElementsByTagName('a')
+                                        .first
+                                        .attributes['href']!;
+                                  }
+                                  final String contestVenue =
                                       futureContests[index]
                                           .getElementsByTagName('td')[0]
-                                          .text,
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
+                                          .text;
+                                  final String contestName =
+                                      futureContests[index]
+                                          .getElementsByTagName('td')[1]
+                                          .text;
+                                  final String contestStart =
+                                      futureContests[index]
+                                          .getElementsByTagName('td')[2]
+                                          .text;
+                                  final String contestEnd =
+                                      futureContests[index]
+                                          .getElementsByTagName('td')[3]
+                                          .text;
+                                  return Container(
+                                      decoration: const BoxDecoration(
+                                        border: Border(
+                                          top: BorderSide(
+                                              width: 1.0,
+                                              color: Colors.black26),
+                                          bottom: BorderSide(
+                                              width: 1.0,
+                                              color: Colors.black26),
+                                          left: BorderSide(
+                                              width: 1.0,
+                                              color: Colors.black26),
+                                          right: BorderSide(
+                                              width: 1.0,
+                                              color: Colors.black26),
+                                        ),
+                                        borderRadius: BorderRadius.all(
+                                          Radius.circular(10),
+                                        ),
                                       ),
-                                    ),
-                                  ),
-                                  Expanded(
-                                    flex: 3,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        futureContests[index]
-                                                .getElementsByTagName('td')[1]
-                                                .getElementsByTagName('a')
-                                                .isEmpty
-                                            ? Text(
-                                                futureContests[index]
-                                                    .getElementsByTagName(
-                                                        'td')[1]
-                                                    .text,
-                                                style: const TextStyle(
-                                                  fontSize: 15,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              )
-                                            : CupertinoButton(
-                                                padding: EdgeInsets.zero,
-                                                minSize: 0,
+                                      margin: const EdgeInsets.only(
+                                          top: 5, bottom: 5),
+                                      padding: const EdgeInsets.all(10),
+                                      child: CupertinoButton(
+                                          padding: EdgeInsets.zero,
+                                          minSize: 0,
+                                          onPressed: () {
+                                            if (contestUrl.isNotEmpty) {
+                                              launchUrlString(contestUrl,
+                                                  mode: LaunchMode
+                                                      .externalApplication);
+                                            }
+                                          },
+                                          child: Row(
+                                            children: [
+                                              Expanded(
+                                                flex: 1,
                                                 child: Text(
-                                                  futureContests[index]
-                                                      .getElementsByTagName(
-                                                          'td')[1]
-                                                      .getElementsByTagName('a')
-                                                      .first
-                                                      .text,
-                                                  style: const TextStyle(
-                                                    color: Colors.blue,
-                                                    fontSize: 15,
+                                                  contestVenue,
+                                                  style: TextStyle(
+                                                    color: linkColor,
+                                                    fontSize: 12,
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
-                                                onPressed: () {
-                                                  launchUrlString(
-                                                      futureContests[index]
-                                                          .getElementsByTagName(
-                                                              'td')[1]
-                                                          .getElementsByTagName(
-                                                              'a')
-                                                          .first
-                                                          .attributes['href']!,
-                                                      mode: LaunchMode
-                                                          .externalApplication);
-                                                },
                                               ),
-                                        Text(
-                                          '${futureContests[index].getElementsByTagName('td')[2].text} ~ ${futureContests[index].getElementsByTagName('td')[3].text}',
-                                          style: const TextStyle(
-                                            fontSize: 10,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ));
-                        },
-                        separatorBuilder: (BuildContext context, int index) {
-                          return const Divider(
-                            color: Colors.black,
-                            thickness: 1,
-                            height: 0,
-                          );
-                        },
-                      ),
-                    )
+                                              Expanded(
+                                                flex: 3,
+                                                child: RichText(
+                                                    text: TextSpan(
+                                                  style: const TextStyle(
+                                                    color: Colors.black87,
+                                                  ),
+                                                  children: [
+                                                    TextSpan(
+                                                      text: contestName,
+                                                      style: TextStyle(
+                                                        color: linkColor,
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                    const TextSpan(
+                                                      text: '\n',
+                                                    ),
+                                                    TextSpan(
+                                                      text:
+                                                          '$contestStart ~ $contestEnd',
+                                                      style: const TextStyle(
+                                                        fontSize: 10,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                )),
+                                              ),
+                                            ],
+                                          )));
+                                },
+                              ),
+                            )
+                    ],
+                  ))
             ],
           );
         } else {
