@@ -60,7 +60,6 @@ class _SearchViewState extends State<SearchView> {
                             2: '태그',
                           },
                           onValueChanged: (value) {
-                            // print('Selected segment: $value');
                             _updateSelectedSegment(value);
                           }),
                       Builder(
@@ -74,119 +73,132 @@ class _SearchViewState extends State<SearchView> {
                                       children: <Widget>[
                                         for (dynamic problem
                                             in snapshot.data!.items)
-                                          CupertinoButton(
-                                            padding: EdgeInsets.zero,
-                                            minSize: 0,
-                                            onPressed: () async {
-                                              String url =
-                                                  'https://acmicpc.net/problem/${problem['problemId']}';
-                                              launchUrlString(url,
-                                                  mode: LaunchMode
-                                                      .externalApplication);
-                                            },
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                color:
-                                                    CupertinoTheme.of(context)
-                                                        .backgroundGray,
-                                                borderRadius:
-                                                    const BorderRadius.all(
-                                                  Radius.circular(10),
-                                                ),
-                                              ),
-                                              margin: const EdgeInsets.only(
-                                                  top: 10),
-                                              padding: const EdgeInsets.all(20),
-                                              width: MediaQuery.of(context)
-                                                  .size
-                                                  .width,
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Row(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment.end,
-                                                    children: [
-                                                      Consumer<UserService>(
-                                                          builder: (context,
-                                                              userService,
-                                                              child) {
-                                                        return userService
-                                                                .showTier
-                                                            ? Container(
-                                                                margin:
-                                                                    const EdgeInsets
-                                                                            .only(
-                                                                        right:
-                                                                            5),
-                                                                child:
-                                                                    SvgPicture
-                                                                        .asset(
-                                                                  'lib/assets/tiers/${problem['level']}.svg',
-                                                                  height: 18,
-                                                                ))
-                                                            : Container();
-                                                      }),
-                                                      Consumer<UserService>(
-                                                          builder: (context,
-                                                              userService,
-                                                              child) {
-                                                        return Text(
-                                                          '${problem['problemId']}번',
-                                                          style: TextStyle(
-                                                              fontSize: 16,
-                                                              color: userService
+                                          problem['problemId'] == null
+                                              ? SizedBox.shrink()
+                                              : CupertinoButton(
+                                                  padding: EdgeInsets.zero,
+                                                  minSize: 0,
+                                                  onPressed: () async {
+                                                    String url =
+                                                        'https://acmicpc.net/problem/${problem['problemId']}';
+                                                    launchUrlString(url,
+                                                        mode: LaunchMode
+                                                            .externalApplication);
+                                                  },
+                                                  child: Container(
+                                                    decoration: BoxDecoration(
+                                                      color: CupertinoTheme.of(
+                                                              context)
+                                                          .backgroundGray,
+                                                      borderRadius:
+                                                          const BorderRadius
+                                                              .all(
+                                                        Radius.circular(10),
+                                                      ),
+                                                    ),
+                                                    margin:
+                                                        const EdgeInsets.only(
+                                                            top: 10),
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            20),
+                                                    width:
+                                                        MediaQuery.of(context)
+                                                            .size
+                                                            .width,
+                                                    child: Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        Row(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .end,
+                                                          children: [
+                                                            Consumer<
+                                                                    UserService>(
+                                                                builder: (context,
+                                                                    userService,
+                                                                    child) {
+                                                              return userService
                                                                       .showTier
-                                                                  ? levelColor(
-                                                                      problem['level'] ??
-                                                                          0)
-                                                                  : Colors
-                                                                      .black),
-                                                        );
-                                                      }),
-                                                    ],
+                                                                  ? Container(
+                                                                      margin: const EdgeInsets
+                                                                              .only(
+                                                                          right:
+                                                                              5),
+                                                                      child: SvgPicture
+                                                                          .asset(
+                                                                        'lib/assets/tiers/${problem['level']}.svg',
+                                                                        height:
+                                                                            18,
+                                                                      ))
+                                                                  : Container();
+                                                            }),
+                                                            Consumer<
+                                                                    UserService>(
+                                                                builder: (context,
+                                                                    userService,
+                                                                    child) {
+                                                              return Text(
+                                                                '${problem['problemId']}번',
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        16,
+                                                                    color: userService
+                                                                            .showTier
+                                                                        ? levelColor(
+                                                                            problem['level'] ??
+                                                                                0)
+                                                                        : Colors
+                                                                            .black),
+                                                              );
+                                                            }),
+                                                          ],
+                                                        ),
+                                                        const SizedBox(
+                                                            height: 5),
+                                                        Text(
+                                                          '${problem['titleKo']}',
+                                                          style: TextStyle(
+                                                              fontSize: 20,
+                                                              color:
+                                                                  Colors.black),
+                                                        ),
+                                                        Consumer<UserService>(
+                                                            builder: (context,
+                                                                userService,
+                                                                child) {
+                                                          return userService
+                                                                  .showTags
+                                                              ? problem['tags'] !=
+                                                                          null &&
+                                                                      problem['tags']
+                                                                          .isNotEmpty
+                                                                  ? Wrap(
+                                                                      children: [
+                                                                        for (dynamic tag
+                                                                            in problem['tags'])
+                                                                          Text(
+                                                                            '#${tag['displayNames'][0]['name']} ',
+                                                                            style:
+                                                                                TextStyle(
+                                                                              fontSize: 12,
+                                                                              color: Colors.black.withOpacity(0.5),
+                                                                            ),
+                                                                          ),
+                                                                      ],
+                                                                    )
+                                                                  : SizedBox
+                                                                      .shrink()
+                                                              : SizedBox
+                                                                  .shrink();
+                                                        }),
+                                                      ],
+                                                    ),
                                                   ),
-                                                  const SizedBox(height: 5),
-                                                  Text(
-                                                    '${problem['titleKo']}',
-                                                    style: TextStyle(
-                                                        fontSize: 20,
-                                                        color: Colors.black),
-                                                  ),
-                                                  Consumer<UserService>(builder:
-                                                      (context, userService,
-                                                          child) {
-                                                    return userService.showTags
-                                                        ? problem['tags'] !=
-                                                                    null &&
-                                                                problem['tags']
-                                                                    .isNotEmpty
-                                                            ? Wrap(
-                                                                children: [
-                                                                  for (dynamic tag
-                                                                      in problem[
-                                                                          'tags'])
-                                                                    Text(
-                                                                      '#${tag['displayNames'][0]['name']} ',
-                                                                      style:
-                                                                          TextStyle(
-                                                                        fontSize:
-                                                                            12,
-                                                                        color: Colors
-                                                                            .black
-                                                                            .withOpacity(0.5),
-                                                                      ),
-                                                                    ),
-                                                                ],
-                                                              )
-                                                            : SizedBox.shrink()
-                                                        : SizedBox.shrink();
-                                                  }),
-                                                ],
-                                              ),
-                                            ),
-                                          )
+                                                ),
                                       ],
                                     );
                                   } else if (snapshot.hasError) {
@@ -203,59 +215,71 @@ class _SearchViewState extends State<SearchView> {
                                   return Column(
                                     children: [
                                       for (dynamic user in snapshot.data!.items)
-                                        Container(
-                                          decoration: BoxDecoration(
-                                              color: CupertinoTheme.of(context)
-                                                  .backgroundGray,
-                                              borderRadius:
-                                                  const BorderRadius.all(
-                                                      Radius.circular(10))),
-                                          margin:
-                                              const EdgeInsets.only(top: 10),
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                          child: CupertinoButton(
-                                            alignment: Alignment.centerLeft,
-                                            padding: EdgeInsets.only(left: 20),
-                                            child: Row(
-                                              children: [
-                                                SvgPicture.asset(
-                                                  'lib/assets/tiers/${user['tier'] ?? 0}.svg',
-                                                  height: 20,
-                                                ),
-                                                const SizedBox(width: 5),
-                                                ClipRRect(
-                                                  borderRadius:
-                                                      BorderRadius.circular(10),
-                                                  child: ExtendedImage.network(
-                                                    user['profileImageUrl'] ??
-                                                        'https://static.solved.ac/misc/360x360/default_profile.png',
-                                                    width: 20,
-                                                    fit: BoxFit.cover,
+                                        user['handle'] == null
+                                            ? SizedBox.shrink()
+                                            : Container(
+                                                decoration: BoxDecoration(
+                                                    color: CupertinoTheme.of(
+                                                            context)
+                                                        .backgroundGray,
+                                                    borderRadius:
+                                                        const BorderRadius.all(
+                                                            Radius.circular(
+                                                                10))),
+                                                margin: const EdgeInsets.only(
+                                                    top: 10),
+                                                width: MediaQuery.of(context)
+                                                    .size
+                                                    .width,
+                                                child: CupertinoButton(
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  padding:
+                                                      EdgeInsets.only(left: 20),
+                                                  child: Row(
+                                                    children: [
+                                                      SvgPicture.asset(
+                                                        'lib/assets/tiers/${user['tier'] ?? 0}.svg',
+                                                        height: 20,
+                                                      ),
+                                                      const SizedBox(width: 5),
+                                                      ClipRRect(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(10),
+                                                        child: ExtendedImage
+                                                            .network(
+                                                          user['profileImageUrl'] ??
+                                                              'https://static.solved.ac/misc/360x360/default_profile.png',
+                                                          width: 20,
+                                                          fit: BoxFit.cover,
+                                                        ),
+                                                      ),
+                                                      const SizedBox(width: 5),
+                                                      Text(
+                                                        '${user['handle']}',
+                                                        style: TextStyle(
+                                                            fontSize: 14,
+                                                            color: ratingColor(
+                                                                user['rating'] ??
+                                                                    0)),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  onPressed: () =>
+                                                      Navigator.of(context)
+                                                          .push(
+                                                    CupertinoPageRoute(
+                                                      builder: (BuildContext
+                                                          context) {
+                                                        return UserView(
+                                                            username:
+                                                                user['handle']);
+                                                      },
+                                                    ),
                                                   ),
                                                 ),
-                                                const SizedBox(width: 5),
-                                                Text(
-                                                  '${user['handle']}',
-                                                  style: TextStyle(
-                                                      fontSize: 14,
-                                                      color: ratingColor(
-                                                          user['rating'] ?? 0)),
-                                                ),
-                                              ],
-                                            ),
-                                            onPressed: () =>
-                                                Navigator.of(context).push(
-                                              CupertinoPageRoute(
-                                                builder:
-                                                    (BuildContext context) {
-                                                  return UserView(
-                                                      username: user['handle']);
-                                                },
                                               ),
-                                            ),
-                                          ),
-                                        ),
                                     ],
                                   );
                                 } else if (snapshot.hasError) {
@@ -273,33 +297,41 @@ class _SearchViewState extends State<SearchView> {
                                   return Column(
                                     children: [
                                       for (dynamic tag in snapshot.data!.items)
-                                        Container(
-                                          decoration: BoxDecoration(
-                                              color: CupertinoTheme.of(context)
-                                                  .backgroundGray,
-                                              borderRadius:
-                                                  const BorderRadius.all(
-                                                      Radius.circular(10))),
-                                          margin:
-                                              const EdgeInsets.only(top: 10),
-                                          width:
-                                              MediaQuery.of(context).size.width,
-                                          child: CupertinoButton(
-                                            alignment: Alignment.centerLeft,
-                                            padding: EdgeInsets.only(left: 20),
-                                            child: Text(
-                                              '${tag['key']}:${tag['problemCount']}',
-                                              style: TextStyle(fontSize: 14),
-                                            ),
-                                            onPressed: () async {
-                                              String url =
-                                                  'https://solved.ac/search?query=%23${tag['key']}';
-                                              launchUrlString(url,
-                                                  mode: LaunchMode
-                                                      .externalApplication);
-                                            },
-                                          ),
-                                        ),
+                                        tag['key'] == null
+                                            ? SizedBox.shrink()
+                                            : Container(
+                                                decoration: BoxDecoration(
+                                                    color: CupertinoTheme.of(
+                                                            context)
+                                                        .backgroundGray,
+                                                    borderRadius:
+                                                        const BorderRadius.all(
+                                                            Radius.circular(
+                                                                10))),
+                                                margin: const EdgeInsets.only(
+                                                    top: 10),
+                                                width: MediaQuery.of(context)
+                                                    .size
+                                                    .width,
+                                                child: CupertinoButton(
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  padding:
+                                                      EdgeInsets.only(left: 20),
+                                                  child: Text(
+                                                    '${tag['key']}:${tag['problemCount']}',
+                                                    style:
+                                                        TextStyle(fontSize: 14),
+                                                  ),
+                                                  onPressed: () async {
+                                                    String url =
+                                                        'https://solved.ac/search?query=%23${tag['key']}';
+                                                    launchUrlString(url,
+                                                        mode: LaunchMode
+                                                            .externalApplication);
+                                                  },
+                                                ),
+                                              ),
                                     ],
                                   );
                                 } else if (snapshot.hasError) {
@@ -337,6 +369,7 @@ extension _SearchStateExtension on _SearchViewState {
   Widget searchBar() {
     return Container(
       margin: const EdgeInsets.only(top: 20),
+      height: 40,
       child: CupertinoSearchTextField(
         placeholder: '문제 번호, 문제 제목을 입력해주세요.',
         onChanged: (text) {
