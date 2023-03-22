@@ -63,16 +63,14 @@ class _HomeViewState extends State<HomeView> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
                       profileHeader(context, snapshot, widgetBackground),
-                      SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.08),
+                      const SizedBox(height: 50),
                       Container(
                         padding: EdgeInsets.symmetric(
                             horizontal:
                                 MediaQuery.of(context).size.width * 0.05),
-                        margin: EdgeInsets.only(bottom: 10),
+                        margin: EdgeInsets.only(bottom: 20),
                         child: profileDetail(context, snapshot, widgetBadge),
                       ),
-                      const SizedBox(height: 10),
                       Consumer<UserService>(
                         builder: (context, userService, child) {
                           return CupertinoSlidingSegmentedControl(
