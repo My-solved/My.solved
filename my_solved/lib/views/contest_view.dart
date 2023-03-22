@@ -17,7 +17,6 @@ class _ContestViewState extends State<ContestView> {
   @override
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
-        backgroundColor: Colors.white12,
         resizeToAvoidBottomInset: false,
         child: SafeArea(
           child: SingleChildScrollView(
@@ -63,7 +62,13 @@ extension _ContestStateExtension on _ContestViewState {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                  margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                  decoration: BoxDecoration(
+                    color: Color(0xfff6f6f6),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  margin:
+                      EdgeInsets.only(left: 10, right: 10, top: 20, bottom: 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -71,10 +76,6 @@ extension _ContestStateExtension on _ContestViewState {
                         '진행 중',
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const Divider(
-                        height: 10,
-                        thickness: 1,
                       ),
                       currentContests.isEmpty
                           ? Text(
@@ -202,13 +203,6 @@ extension _ContestStateExtension on _ContestViewState {
                     ],
                   )),
               Container(
-                  decoration: const BoxDecoration(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(20),
-                    ),
-                    color: Colors.white,
-                  ),
-                  margin: const EdgeInsets.symmetric(vertical: 10),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   child: Column(
@@ -218,10 +212,6 @@ extension _ContestStateExtension on _ContestViewState {
                         '예정',
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const Divider(
-                        height: 10,
-                        thickness: 1,
                       ),
                       futureContests.isEmpty
                           ? const Text(
