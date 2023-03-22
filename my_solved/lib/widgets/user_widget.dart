@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_radar_chart/flutter_radar_chart.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:my_solved/extensions/color_extension.dart';
-// import 'package:my_solved/models/badge.dart';
 import 'package:my_solved/models/streak_date.dart';
 import 'package:my_solved/models/user.dart';
 import 'package:my_solved/models/user/background.dart';
@@ -15,7 +14,6 @@ import 'package:my_solved/models/user/grass.dart';
 import 'package:my_solved/models/user/tag_ratings.dart';
 import 'package:my_solved/models/user/top_100.dart';
 import 'package:my_solved/services/network_service.dart';
-// import 'package:my_solved/services/notification_service.dart';
 import 'package:my_solved/services/user_service.dart';
 import 'package:my_solved/views/setting_view.dart';
 import 'package:provider/provider.dart';
@@ -42,7 +40,7 @@ Widget profileHeader(BuildContext context, AsyncSnapshot<User> snapshot,
                 ),
                 onPressed: () => Navigator.of(context).push(
                   CupertinoPageRoute(
-                    maintainState: false,
+                    maintainState: true,
                     builder: (BuildContext context) {
                       return SettingView();
                     },
@@ -52,21 +50,32 @@ Widget profileHeader(BuildContext context, AsyncSnapshot<User> snapshot,
             )
           : Container(),
       Positioned(
-        bottom: -50,
+          top: MediaQuery.of(context).size.height * 0.25 - 20,
+          child: Container(
+              width: MediaQuery.of(context).size.width,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              alignment: Alignment.bottomCenter,
+              child: Container(
+                margin: const EdgeInsets.only(top: 20),
+                clipBehavior: Clip.none,
+                height: 50,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    solvedCount(context, snapshot),
+                    voteCount(context, snapshot),
+                    reverseRivalCount(context, snapshot)
+                  ],
+                ),
+              ))),
+      Positioned(
+        bottom: -40,
         left: 20,
         child: profileImage(context, snapshot),
-      ),
-      Positioned(
-        bottom: -58,
-        right: 20,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            solvedCount(context, snapshot),
-            voteCount(context, snapshot),
-            reverseRivalCount(context, snapshot)
-          ],
-        ),
       ),
     ],
   );
@@ -985,7 +994,8 @@ Widget backgroundImage(BuildContext context, Future<Background> future) {
                 ? snapshot.data?.backgroundImageUrl ?? ''
                 : snapshot.data?.fallbackBackgroundImageUrl ?? '',
             cache: true,
-            fit: BoxFit.fitWidth,
+            height: MediaQuery.of(context).size.height * 0.25,
+            fit: BoxFit.fitHeight,
           );
         });
       } else {
