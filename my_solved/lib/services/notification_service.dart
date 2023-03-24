@@ -153,11 +153,11 @@ class NotificationService extends ChangeNotifier {
 
       tz.TZDateTime startDate = tz.TZDateTime(
         tz.local,
-        2023,
-        3,
-        24,
-        23,
-        51,
+        contest.startTime.year,
+        contest.startTime.month,
+        contest.startTime.day,
+        contest.startTime.hour,
+        contest.startTime.minute,
       ).subtract(Duration(hours: beforeHour, minutes: beforeMinute));
 
       await _flutterLocalNotificationsPlugin.zonedSchedule(

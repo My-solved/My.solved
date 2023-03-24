@@ -40,9 +40,7 @@ extension _ContestStateExtension on _ContestViewState {
           List<Contest> currentContests = [];
           List<Contest> futureContests = [];
 
-          if (snapshot.data.body
-              .getElementsByClassName('col-md-12')
-              .length <
+          if (snapshot.data.body.getElementsByClassName('col-md-12').length <
               5) {
             futureContests = snapshot.data.body
                 .getElementsByClassName('col-md-12')[2]
@@ -59,9 +57,9 @@ extension _ContestStateExtension on _ContestViewState {
                   .first
                   .attributes['href'];
               DateTime startTime =
-              DateTime.parse(e.getElementsByTagName('td')[2].text);
+                  DateTime.parse(e.getElementsByTagName('td')[2].text);
               DateTime endTime =
-              DateTime.parse(e.getElementsByTagName('td')[3].text);
+                  DateTime.parse(e.getElementsByTagName('td')[3].text);
               return Contest(
                   venue: venue,
                   name: name,
@@ -99,9 +97,8 @@ extension _ContestStateExtension on _ContestViewState {
                   .replaceAll('일', '')
                   .split(' ');
               DateTime startTime = DateTime.parse(
-                  "${startTimeList[0].padLeft(4, "0")}-${startTimeList[1]
-                      .padLeft(2, "0")}-${startTimeList[2].padLeft(
-                      2, "0")}T${startTimeList[3].padLeft(2, "0")}:00");
+                      "${startTimeList[0].padLeft(4, "0")}-${startTimeList[1].padLeft(2, "0")}-${startTimeList[2].padLeft(2, "0")}T${startTimeList[3].padLeft(2, "0")}:00+09:00")
+                  .toLocal();
               List<String> endTimeList = e
                   .getElementsByTagName('td')[3]
                   .text
@@ -111,9 +108,8 @@ extension _ContestStateExtension on _ContestViewState {
                   .replaceAll('일', '')
                   .split(' ');
               DateTime endTime = DateTime.parse(
-                  "${endTimeList[0].padLeft(4, "0")}-${endTimeList[1].padLeft(
-                      2, "0")}-${endTimeList[2].padLeft(
-                      2, "0")}T${endTimeList[3].padLeft(2, "0")}:00");
+                      "${endTimeList[0].padLeft(4, "0")}-${endTimeList[1].padLeft(2, "0")}-${endTimeList[2].padLeft(2, "0")}T${endTimeList[3].padLeft(2, "0")}:00+09:00")
+                  .toLocal();
               return Contest(
                   venue: venue,
                   name: name,
@@ -151,9 +147,7 @@ extension _ContestStateExtension on _ContestViewState {
                   .replaceAll('일', '')
                   .split(' ');
               DateTime startTime = DateTime.parse(
-                  "${startTimeList[0].padLeft(4, "0")}-${startTimeList[1]
-                      .padLeft(2, "0")}-${startTimeList[2].padLeft(
-                      2, "0")}T${startTimeList[3].padLeft(2, "0")}:00")
+                      "${startTimeList[0].padLeft(4, "0")}-${startTimeList[1].padLeft(2, "0")}-${startTimeList[2].padLeft(2, "0")}T${startTimeList[3].padLeft(2, "0")}:00+09:00")
                   .toLocal();
 
               List<String> endTimeList = e
@@ -165,9 +159,8 @@ extension _ContestStateExtension on _ContestViewState {
                   .replaceAll('일', '')
                   .split(' ');
               DateTime endTime = DateTime.parse(
-                  "${endTimeList[0].padLeft(4, "0")}-${endTimeList[1].padLeft(
-                      2, "0")}-${endTimeList[2].padLeft(
-                      2, "0")}T${endTimeList[3].padLeft(2, "0")}:00");
+                      "${endTimeList[0].padLeft(4, "0")}-${endTimeList[1].padLeft(2, "0")}-${endTimeList[2].padLeft(2, "0")}T${endTimeList[3].padLeft(2, "0")}:00+09:00")
+                  .toLocal();
               return Contest(
                   venue: venue,
                   name: name,
@@ -187,7 +180,7 @@ extension _ContestStateExtension on _ContestViewState {
                   ),
                   padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                   margin:
-                  EdgeInsets.only(left: 10, right: 10, top: 20, bottom: 10),
+                      EdgeInsets.only(left: 10, right: 10, top: 20, bottom: 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -198,143 +191,144 @@ extension _ContestStateExtension on _ContestViewState {
                       ),
                       currentContests.isEmpty
                           ? Text(
-                        '진행 중인 대회가 없습니다.',
-                        style: TextStyle(fontSize: 15),
-                      )
+                              '진행 중인 대회가 없습니다.',
+                              style: TextStyle(fontSize: 15),
+                            )
                           : ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: currentContests.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          final contest = currentContests[index];
-                          Color linkColor = contest.url == null
-                              ? Colors.black
-                              : Colors.blue;
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: currentContests.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                final contest = currentContests[index];
+                                Color linkColor = contest.url == null
+                                    ? Colors.black
+                                    : Colors.blue;
 
-                          final String startYear = contest.startTime.year
-                              .toString();
-                          final String startMonth = contest.startTime.month
-                              .toString()
-                              .padLeft(2, '0');
-                          final String startDay = contest.startTime.day
-                              .toString()
-                              .padLeft(2, '0');
-                          final String startHour = contest.startTime.hour
-                              .toString()
-                              .padLeft(2, '0');
-                          final String startMinute = contest.startTime.minute
-                              .toString()
-                              .padLeft(2, '0');
+                                final String startYear =
+                                    contest.startTime.year.toString();
+                                final String startMonth = contest
+                                    .startTime.month
+                                    .toString()
+                                    .padLeft(2, '0');
+                                final String startDay = contest.startTime.day
+                                    .toString()
+                                    .padLeft(2, '0');
+                                final String startHour = contest.startTime.hour
+                                    .toString()
+                                    .padLeft(2, '0');
+                                final String startMinute = contest
+                                    .startTime.minute
+                                    .toString()
+                                    .padLeft(2, '0');
 
-                          final String endYear = contest.endTime.year
-                              .toString();
-                          final String endMonth = contest.endTime.month
-                              .toString()
-                              .padLeft(2, '0');
-                          final String endDay = contest.endTime.day
-                              .toString()
-                              .padLeft(2, '0');
-                          final String endHour = contest.endTime.hour
-                              .toString()
-                              .padLeft(2, '0');
-                          final String endMinute = contest.endTime.minute
-                              .toString()
-                              .padLeft(2, '0');
+                                final String endYear =
+                                    contest.endTime.year.toString();
+                                final String endMonth = contest.endTime.month
+                                    .toString()
+                                    .padLeft(2, '0');
+                                final String endDay = contest.endTime.day
+                                    .toString()
+                                    .padLeft(2, '0');
+                                final String endHour = contest.endTime.hour
+                                    .toString()
+                                    .padLeft(2, '0');
+                                final String endMinute = contest.endTime.minute
+                                    .toString()
+                                    .padLeft(2, '0');
 
-
-                          return Container(
-                              decoration: const BoxDecoration(
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(10),
-                                ),
-                                border: Border(
-                                  top: BorderSide(
-                                      width: 1.0, color: Colors.black26),
-                                  bottom: BorderSide(
-                                      width: 1.0, color: Colors.black26),
-                                  left: BorderSide(
-                                      width: 1.0, color: Colors.black26),
-                                  right: BorderSide(
-                                      width: 1.0, color: Colors.black26),
-                                ),
-                              ),
-                              margin: const EdgeInsets.only(
-                                  top: 5, bottom: 5),
-                              padding: const EdgeInsets.only(
-                                  top: 10, bottom: 10, left: 20),
-                              child: CupertinoButton(
-                                  alignment: Alignment.centerLeft,
-                                  minSize: 0,
-                                  padding: EdgeInsets.zero,
-                                  onPressed: () async {
-                                    if (contest.url != null) {
-                                      await launchUrlString(contest.url!,
-                                          mode: LaunchMode
-                                              .externalApplication);
-                                    }
-                                  },
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 4,
-                                        child: RichText(
-                                            textAlign: TextAlign.left,
-                                            text: TextSpan(
-                                              style: const TextStyle(
-                                                color: Colors.black87,
-                                              ),
-                                              children: [
-                                                TextSpan(
-                                                  text: contest.venue,
-                                                  style: TextStyle(
-                                                    color: Colors.black87,
-                                                    fontSize: 12,
-                                                    fontWeight:
-                                                    FontWeight.bold,
-                                                  ),
-                                                ),
-                                                const TextSpan(
-                                                  text: '\n',
-                                                ),
-                                                TextSpan(
-                                                  text: contest.name,
-                                                  style: TextStyle(
-                                                    color: linkColor,
-                                                    fontSize: 15,
-                                                    fontWeight:
-                                                    FontWeight.bold,
-                                                  ),
-                                                ),
-                                                const TextSpan(
-                                                  text: '\n',
-                                                ),
-                                                TextSpan(
-                                                  text:
-                                                  '$startYear-$startMonth-$startDay $startHour:$startMinute ~ $endYear-$endMonth-$endDay $endHour:$endMinute',
-                                                  style: const TextStyle(
-                                                    fontSize: 10,
-                                                  ),
-                                                ),
-                                              ],
-                                            )),
+                                return Container(
+                                    decoration: const BoxDecoration(
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(10),
                                       ),
-                                      Expanded(
-                                        flex: 1,
-                                        child: Icon(
-                                          Icons.arrow_forward_ios,
-                                          size: 15,
-                                          color: Colors.blue,
-                                        ),
-                                      )
-                                    ],
-                                  )));
-                        },
-                      ),
+                                      border: Border(
+                                        top: BorderSide(
+                                            width: 1.0, color: Colors.black26),
+                                        bottom: BorderSide(
+                                            width: 1.0, color: Colors.black26),
+                                        left: BorderSide(
+                                            width: 1.0, color: Colors.black26),
+                                        right: BorderSide(
+                                            width: 1.0, color: Colors.black26),
+                                      ),
+                                    ),
+                                    margin: const EdgeInsets.only(
+                                        top: 5, bottom: 5),
+                                    padding: const EdgeInsets.only(
+                                        top: 10, bottom: 10, left: 20),
+                                    child: CupertinoButton(
+                                        alignment: Alignment.centerLeft,
+                                        minSize: 0,
+                                        padding: EdgeInsets.zero,
+                                        onPressed: () async {
+                                          if (contest.url != null) {
+                                            await launchUrlString(contest.url!,
+                                                mode: LaunchMode
+                                                    .externalApplication);
+                                          }
+                                        },
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              flex: 4,
+                                              child: RichText(
+                                                  textAlign: TextAlign.left,
+                                                  text: TextSpan(
+                                                    style: const TextStyle(
+                                                      color: Colors.black87,
+                                                    ),
+                                                    children: [
+                                                      TextSpan(
+                                                        text: contest.venue,
+                                                        style: TextStyle(
+                                                          color: Colors.black87,
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      const TextSpan(
+                                                        text: '\n',
+                                                      ),
+                                                      TextSpan(
+                                                        text: contest.name,
+                                                        style: TextStyle(
+                                                          color: linkColor,
+                                                          fontSize: 15,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      const TextSpan(
+                                                        text: '\n',
+                                                      ),
+                                                      TextSpan(
+                                                        text:
+                                                            '$startYear-$startMonth-$startDay $startHour:$startMinute ~ $endYear-$endMonth-$endDay $endHour:$endMinute',
+                                                        style: const TextStyle(
+                                                          fontSize: 10,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  )),
+                                            ),
+                                            Expanded(
+                                              flex: 1,
+                                              child: Icon(
+                                                Icons.arrow_forward_ios,
+                                                size: 15,
+                                                color: Colors.blue,
+                                              ),
+                                            )
+                                          ],
+                                        )));
+                              },
+                            ),
                     ],
                   )),
               Container(
                   padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -376,12 +370,10 @@ extension _ContestStateExtension on _ContestViewState {
                             final endMonth = contest.endTime.month
                                 .toString()
                                 .padLeft(2, '0');
-                            final endDay = contest.endTime.day
-                                .toString()
-                                .padLeft(2, '0');
-                            final endHour = contest.endTime.hour
-                                .toString()
-                                .padLeft(2, '0');
+                            final endDay =
+                                contest.endTime.day.toString().padLeft(2, '0');
+                            final endHour =
+                                contest.endTime.hour.toString().padLeft(2, '0');
                             final endMinute = contest.endTime.minute
                                 .toString()
                                 .padLeft(2, '0');
@@ -403,7 +395,7 @@ extension _ContestStateExtension on _ContestViewState {
                                   ),
                                 ),
                                 margin:
-                                const EdgeInsets.only(top: 5, bottom: 5),
+                                    const EdgeInsets.only(top: 5, bottom: 5),
                                 padding: const EdgeInsets.only(
                                     top: 10, bottom: 10, left: 20),
                                 child: Row(
@@ -453,7 +445,7 @@ extension _ContestStateExtension on _ContestViewState {
                                                 ),
                                                 TextSpan(
                                                   text:
-                                                  '$startYear-$startMonth-$startDay $startHour:$startMinute ~ $endYear-$endMonth-$endDay $endHour:$endMinute',
+                                                      '$startYear-$startMonth-$startDay $startHour:$startMinute ~ $endYear-$endMonth-$endDay $endHour:$endMinute',
                                                   style: const TextStyle(
                                                     fontSize: 10,
                                                   ),
@@ -475,7 +467,7 @@ extension _ContestStateExtension on _ContestViewState {
                                                 onPressed: () async {
                                                   notificationService
                                                       .toggleContestPush(
-                                                      contest);
+                                                          contest);
                                                   Fluttertoast.showToast(
                                                       msg: isOn
                                                           ? '알림이 해제되었습니다.'
@@ -484,8 +476,8 @@ extension _ContestStateExtension on _ContestViewState {
                                                   setState(() {
                                                     notificationService
                                                         .setContestPush(
-                                                        contest.name,
-                                                        !isOn);
+                                                            contest.name,
+                                                            !isOn);
                                                   });
                                                 },
                                                 padding: EdgeInsets.zero,
@@ -493,10 +485,9 @@ extension _ContestStateExtension on _ContestViewState {
                                                 child: Icon(
                                                   CupertinoIcons.alarm,
                                                   color: snapshot.data!
-                                                      ? CupertinoTheme
-                                                      .of(
-                                                      context)
-                                                      .main
+                                                      ? CupertinoTheme.of(
+                                                              context)
+                                                          .main
                                                       : Colors.black26,
                                                 ),
                                               );
