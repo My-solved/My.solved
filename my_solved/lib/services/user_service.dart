@@ -21,9 +21,8 @@ class UserService extends ChangeNotifier {
   int streakAlarmHour = 0;
   int streakAlarmMinute = 0;
 
-  bool isOnContestAlarm = true;
   int contestAlarmHour = 0;
-  int contestAlarmMinute = 0;
+  int contestAlarmMinute = 30;
 
   String currentTimeZone = '';
   bool solvedToday = false;
@@ -82,11 +81,6 @@ class UserService extends ChangeNotifier {
     Future<bool> valSearchDefaultSort = initSearchDefaultSort();
     valSearchDefaultSort.then((isAsc) {
       searchDefaultSort = isAsc;
-    });
-
-    Future<bool> valContestAlarm = initContestAlarm();
-    valContestAlarm.then((isOn) {
-      isOnContestAlarm = isOn;
     });
 
     Future<DateTime> valContestAlarmTime = initContestAlarmTime();
@@ -250,18 +244,6 @@ class UserService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> initContestAlarm() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('isOnContestAlarm') ?? true;
-  }
-
-  void setContestAlarm(bool isOn) async {
-    isOnContestAlarm = isOn;
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setBool('isOnContestAlarm', isOn);
-    notifyListeners();
-  }
-
   Future<DateTime> initContestAlarmTime() async {
     final prefs = await SharedPreferences.getInstance();
     return DateTime(0, 0, 0, prefs.getInt('contestAlarmHour') ?? 0,
@@ -272,6 +254,8 @@ class UserService extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     prefs.setInt('contestAlarmHour', hour);
     prefs.setInt('contestAlarmMinute', minute);
+    contestAlarmHour = hour;
+    contestAlarmMinute = minute;
     notifyListeners();
   }
 
