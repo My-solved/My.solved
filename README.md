@@ -1,17 +1,17 @@
 # My.solved
 
-## 설명
-
 비공식 [solved.ac](https://solved.ac/) 애플리케이션입니다.
-
+    
 ## 기능
 
 * 나의 solved.ac 프로필을 확인할 수 있습니다.
 * 키워드 및 문제 번호로 문제를 검색할 수 있습니다.
 * 문제 상세 정보를 확인할 수 있습니다.
 * 관련 태그, 사용자를 검색할 수 있습니다.
-* 진행중이거나 예정된 대회 일정을 확인할 수 있습니다.
-
+* 진행 중이거나 예정된 대회 일정을 확인할 수 있습니다.
+* 스트릭 알림, 대회 알림을 받을 수 있습니다.
+    
+    
 ## 스크린샷
 
 ### 프로필
@@ -49,12 +49,12 @@
   </tr>
 </table>
 
-### 대회 일정
+### 대회 일정 및 알림
 
 <table>
 <th> 대회 일정 </th>
 <th> 대회 알림 </th>
-
+<th> 스트릭 알림 </th>
 <tr>
 <td>
 <img src="https://user-images.githubusercontent.com/52066828/227566477-93c12788-4879-4e94-8c78-72aba287f312.png" width="300">
@@ -62,8 +62,13 @@
 <td>
 <img src="https://user-images.githubusercontent.com/52066828/227567459-1ef4ce50-f87a-4809-a552-aed1588f38ff.png" width="300">
 </td>
+<td>
+  <img src="https://user-images.githubusercontent.com/52066828/227570592-b1db185a-6f92-4a8a-931d-df4043f8dd2b.png" width="300">
+  </td>
+
   </tr>
 </table>
+    
 ## 영감을 주신 분들
 
 @shiftpsh for [solved.ac](https://solved.ac/).    
