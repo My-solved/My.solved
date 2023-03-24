@@ -28,7 +28,6 @@ class _SettingViewState extends State<SettingView> {
   int _streakAlarmHour = UserService().streakAlarmHour;
   int _streakAlarmMinute = UserService().streakAlarmMinute;
 
-  bool _isOnContestAlarm = UserService().isOnContestAlarm;
   int _contestAlarmHour = UserService().contestAlarmHour;
   int _contestAlarmMinute = UserService().contestAlarmMinute;
 
@@ -82,22 +81,22 @@ class _SettingViewState extends State<SettingView> {
                 color: CupertinoTheme.of(context).dividerGray,
               ),
               streakAlarm(context),
-              SizedBox(height: 40),
-              Divider(
-                thickness: 1,
-                height: 20,
-                color: CupertinoTheme.of(context).dividerGray,
-              ),
-              Container(
-                  // padding: EdgeInsets.only(top: 20),
-                  alignment: Alignment.center,
-                  child: Text('구현 예정 기능')),
               contestAlarm(context),
-              Divider(
-                thickness: 1,
-                height: 1,
-                color: CupertinoTheme.of(context).dividerGray,
-              ),
+              SizedBox(height: 40),
+              // Divider(
+              //   thickness: 1,
+              //   height: 20,
+              //   color: CupertinoTheme.of(context).dividerGray,
+              // ),
+              // Container(
+              //     // padding: EdgeInsets.only(top: 20),
+              //     alignment: Alignment.center,
+              //     child: Text('구현 예정 기능')),
+              // Divider(
+              //   thickness: 1,
+              //   height: 20,
+              //   color: CupertinoTheme.of(context).dividerGray,
+              // ),
               logoutButton(),
             ],
           ),
@@ -418,6 +417,11 @@ extension _SettingStateExtension on _SettingViewState {
                   fontSize: 12,
                 ),
               ),
+              Text('알림 설정 이후, 알림 시간을 변경하시면 반영되지 않습니다.',
+                  style: TextStyle(
+                    color: CupertinoColors.destructiveRed,
+                    fontSize: 10,
+                  ))
             ],
           ),
           Spacer(),
@@ -442,24 +446,14 @@ extension _SettingStateExtension on _SettingViewState {
                     setState(() {
                       _contestAlarmHour = newDateTime.hour;
                       _contestAlarmMinute = newDateTime.minute;
-                      UserService().setContestAlarmTime(
+
+                      userService.setContestAlarmTime(
                           newDateTime.hour, newDateTime.minute);
                     });
                   },
                 ),
                 context),
-          ),
-          CupertinoSwitch(
-            value: _isOnContestAlarm,
-            activeColor: CupertinoTheme.of(context).main,
-            onChanged: (bool value) {
-              // ignore: invalid_use_of_protected_member
-              setState(() {
-                _isOnContestAlarm = value;
-                UserService().setContestAlarm(value);
-              });
-            },
-          ),
+          )
         ],
       ),
     );

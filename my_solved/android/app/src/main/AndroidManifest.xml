@@ -11,10 +11,7 @@
         android:label="my_solved"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
-
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="Notification_channel" />
+        
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
@@ -49,7 +46,7 @@
 
         <service
             android:name="com.dexterous.flutterlocalnotifications.ForegroundService"
-            android:exported="false"
+            android:exported="true"
             android:stopWithTask="false" />
     </application>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />

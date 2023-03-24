@@ -1,7 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:html/dom.dart' as dom;
+import 'package:intl/intl.dart';
+import 'package:my_solved/extensions/color_extension.dart';
+import 'package:my_solved/models/contest.dart';
 import 'package:my_solved/services/network_service.dart';
+import 'package:my_solved/services/notification_service.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class ContestView extends StatefulWidget {
@@ -13,6 +18,7 @@ class ContestView extends StatefulWidget {
 
 class _ContestViewState extends State<ContestView> {
   NetworkService networkService = NetworkService();
+  NotificationService notificationService = NotificationService();
 
   @override
   Widget build(BuildContext context) {
@@ -32,8 +38,8 @@ extension _ContestStateExtension on _ContestViewState {
       future: networkService.requestContests(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.hasData) {
-          List<dom.Element> currentContests = [];
-          List<dom.Element> futureContests = [];
+          List<Contest> currentContests = [];
+          List<Contest> futureContests = [];
 
           if (snapshot.data.body.getElementsByClassName('col-md-12').length <
               5) {
@@ -42,20 +48,122 @@ extension _ContestStateExtension on _ContestViewState {
                 .getElementsByTagName('tbody')
                 .first
                 .getElementsByTagName('tr')
-                .toList();
+                .toList()
+                .map((e) {
+              String venue = e.getElementsByTagName('td')[0].text;
+              String name = e.getElementsByTagName('td')[1].text;
+              String? url = e
+                  .getElementsByTagName('td')[1]
+                  .getElementsByTagName('a')
+                  .first
+                  .attributes['href'];
+              DateTime startTime =
+                  DateTime.parse(e.getElementsByTagName('td')[2].text);
+              DateTime endTime =
+                  DateTime.parse(e.getElementsByTagName('td')[3].text);
+              return Contest(
+                  venue: venue,
+                  name: name,
+                  url: url,
+                  startTime: startTime,
+                  endTime: endTime);
+            }).toList();
           } else {
             currentContests = snapshot.data.body
                 .getElementsByClassName('col-md-12')[2]
                 .getElementsByTagName('tbody')
                 .first
                 .getElementsByTagName('tr')
-                .toList();
+                .toList()
+                .map<Contest>((e) {
+              String venue = e.getElementsByTagName('td')[0].text;
+              String name = e.getElementsByTagName('td')[1].text;
+              String? url;
+              if (e
+                  .getElementsByTagName('td')[1]
+                  .getElementsByTagName('a')
+                  .isNotEmpty) {
+                url = e
+                    .getElementsByTagName('td')[1]
+                    .getElementsByTagName('a')
+                    .first
+                    .attributes['href'];
+              }
+              List<String> startTimeList = e
+                  .getElementsByTagName('td')[2]
+                  .text
+                  .toString()
+                  .replaceAll('년', '')
+                  .replaceAll('월', '')
+                  .replaceAll('일', '')
+                  .split(' ');
+              DateTime startTime = DateTime.parse(
+                  "${startTimeList[0].padLeft(4, "0")}-${startTimeList[1].padLeft(2, "0")}-${startTimeList[2].padLeft(2, "0")}T${startTimeList[3].padLeft(2, "0")}:00+09:00");
+              List<String> endTimeList = e
+                  .getElementsByTagName('td')[3]
+                  .text
+                  .toString()
+                  .replaceAll('년', '')
+                  .replaceAll('월', '')
+                  .replaceAll('일', '')
+                  .split(' ');
+              DateTime endTime = DateTime.parse(
+                  "${endTimeList[0].padLeft(4, "0")}-${endTimeList[1].padLeft(2, "0")}-${endTimeList[2].padLeft(2, "0")}T${endTimeList[3].padLeft(2, "0")}:00+09:00");
+              return Contest(
+                  venue: venue,
+                  name: name,
+                  url: url,
+                  startTime: startTime,
+                  endTime: endTime);
+            }).toList();
+
             futureContests = snapshot.data.body
                 .getElementsByClassName('col-md-12')[4]
                 .getElementsByTagName('tbody')
                 .first
                 .getElementsByTagName('tr')
-                .toList();
+                .toList()
+                .map<Contest>((e) {
+              String venue = e.getElementsByTagName('td')[0].text;
+              String name = e.getElementsByTagName('td')[1].text;
+              String? url;
+              if (e
+                  .getElementsByTagName('td')[1]
+                  .getElementsByTagName('a')
+                  .isNotEmpty) {
+                url = e
+                    .getElementsByTagName('td')[1]
+                    .getElementsByTagName('a')
+                    .first
+                    .attributes['href'];
+              }
+              List<String> startTimeList = e
+                  .getElementsByTagName('td')[2]
+                  .text
+                  .toString()
+                  .replaceAll('년', '')
+                  .replaceAll('월', '')
+                  .replaceAll('일', '')
+                  .split(' ');
+              DateTime startTime = DateTime.parse(
+                  "${startTimeList[0].padLeft(4, "0")}-${startTimeList[1].padLeft(2, "0")}-${startTimeList[2].padLeft(2, "0")}T${startTimeList[3].padLeft(2, "0")}:00+09:00");
+              List<String> endTimeList = e
+                  .getElementsByTagName('td')[3]
+                  .text
+                  .toString()
+                  .replaceAll('년', '')
+                  .replaceAll('월', '')
+                  .replaceAll('일', '')
+                  .split(' ');
+              DateTime endTime = DateTime.parse(
+                  "${endTimeList[0].padLeft(4, "0")}-${endTimeList[1].padLeft(2, "0")}-${endTimeList[2].padLeft(2, "0")}T${endTimeList[3].padLeft(2, "0")}:00+09:00");
+              return Contest(
+                  venue: venue,
+                  name: name,
+                  url: url,
+                  startTime: startTime,
+                  endTime: endTime);
+            }).toList();
           }
 
           return Column(
@@ -87,40 +195,11 @@ extension _ContestStateExtension on _ContestViewState {
                               physics: const NeverScrollableScrollPhysics(),
                               itemCount: currentContests.length,
                               itemBuilder: (BuildContext context, int index) {
-                                Color linkColor = currentContests[index]
-                                            .getElementsByTagName('td')[1]
-                                            .getElementsByTagName('a')
-                                            .first
-                                            .attributes['href'] ==
-                                        null
+                                final contest = currentContests[index];
+                                Color linkColor = contest.url == null
                                     ? Colors.black
                                     : Colors.blue;
-                                late String contestUrl = '';
-                                if (currentContests[index]
-                                    .getElementsByTagName('td')[1]
-                                    .getElementsByTagName('a')
-                                    .isNotEmpty) {
-                                  contestUrl = currentContests[index]
-                                      .getElementsByTagName('td')[1]
-                                      .getElementsByTagName('a')
-                                      .first
-                                      .attributes['href']!;
-                                }
-                                final String contestVenue =
-                                    currentContests[index]
-                                        .getElementsByTagName('td')[0]
-                                        .text;
-                                final String contestName =
-                                    currentContests[index]
-                                        .getElementsByTagName('td')[1]
-                                        .text;
-                                final String contestStart =
-                                    currentContests[index]
-                                        .getElementsByTagName('td')[2]
-                                        .text;
-                                final String contestEnd = currentContests[index]
-                                    .getElementsByTagName('td')[3]
-                                    .text;
+
                                 return Container(
                                     decoration: const BoxDecoration(
                                       borderRadius: BorderRadius.all(
@@ -139,43 +218,44 @@ extension _ContestStateExtension on _ContestViewState {
                                     ),
                                     margin: const EdgeInsets.only(
                                         top: 5, bottom: 5),
+                                    padding: const EdgeInsets.only(
+                                        top: 10, bottom: 10, left: 20),
                                     child: CupertinoButton(
+                                        alignment: Alignment.centerLeft,
                                         minSize: 0,
                                         padding: EdgeInsets.zero,
                                         onPressed: () async {
-                                          if (contestUrl.isNotEmpty) {
-                                            await launchUrlString(contestUrl,
+                                          if (contest.url != null) {
+                                            await launchUrlString(contest.url!,
                                                 mode: LaunchMode
                                                     .externalApplication);
                                           }
                                         },
-                                        child: Container(
-                                            margin: const EdgeInsets.only(
-                                                top: 10, bottom: 10, left: 10),
-                                            child: Row(
-                                              children: [
-                                                Expanded(
-                                                  flex: 1,
-                                                  child: Text(
-                                                    contestVenue,
-                                                    style: TextStyle(
-                                                      color: Colors.black87,
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ),
-                                                Expanded(
-                                                  flex: 3,
-                                                  child: RichText(
-                                                      text: TextSpan(
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              flex: 4,
+                                              child: RichText(
+                                                  textAlign: TextAlign.left,
+                                                  text: TextSpan(
                                                     style: const TextStyle(
                                                       color: Colors.black87,
                                                     ),
                                                     children: [
                                                       TextSpan(
-                                                        text: contestName,
+                                                        text: contest.venue,
+                                                        style: TextStyle(
+                                                          color: Colors.black87,
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      const TextSpan(
+                                                        text: '\n',
+                                                      ),
+                                                      TextSpan(
+                                                        text: contest.name,
                                                         style: TextStyle(
                                                           color: linkColor,
                                                           fontSize: 15,
@@ -188,16 +268,24 @@ extension _ContestStateExtension on _ContestViewState {
                                                       ),
                                                       TextSpan(
                                                         text:
-                                                            '$contestStart ~ $contestEnd',
+                                                            '${DateFormat('yyyy-MM-dd hh:mm').format(contest.startTime)} ~ ${DateFormat('yyyy-MM-dd hh:mm').format(contest.endTime)}',
                                                         style: const TextStyle(
                                                           fontSize: 10,
                                                         ),
                                                       ),
                                                     ],
                                                   )),
-                                                ),
-                                              ],
-                                            ))));
+                                            ),
+                                            Expanded(
+                                              flex: 1,
+                                              child: Icon(
+                                                Icons.arrow_forward_ios,
+                                                size: 15,
+                                                color: Colors.blue,
+                                              ),
+                                            )
+                                          ],
+                                        )));
                               },
                             ),
                     ],
@@ -213,132 +301,144 @@ extension _ContestStateExtension on _ContestViewState {
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
-                      futureContests.isEmpty
-                          ? const Text(
-                              '예정된 대회가 없습니다.',
-                              style: TextStyle(fontSize: 15),
-                            )
-                          : Container(
-                              margin: const EdgeInsets.only(top: 10),
-                              child: ListView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: futureContests.length,
-                                itemBuilder: (BuildContext context, int index) {
-                                  Color linkColor = futureContests[index]
-                                          .getElementsByTagName('td')[1]
-                                          .getElementsByTagName('a')
-                                          .isEmpty
-                                      ? Colors.black
-                                      : Colors.blue;
-                                  late String contestUrl = '';
-                                  if (futureContests[index]
-                                      .getElementsByTagName('td')[1]
-                                      .getElementsByTagName('a')
-                                      .isNotEmpty) {
-                                    contestUrl = futureContests[index]
-                                        .getElementsByTagName('td')[1]
-                                        .getElementsByTagName('a')
-                                        .first
-                                        .attributes['href']!;
-                                  }
-                                  final String contestVenue =
-                                      futureContests[index]
-                                          .getElementsByTagName('td')[0]
-                                          .text;
-                                  final String contestName =
-                                      futureContests[index]
-                                          .getElementsByTagName('td')[1]
-                                          .text;
-                                  final String contestStart =
-                                      futureContests[index]
-                                          .getElementsByTagName('td')[2]
-                                          .text;
-                                  final String contestEnd =
-                                      futureContests[index]
-                                          .getElementsByTagName('td')[3]
-                                          .text;
-                                  return Container(
-                                      decoration: const BoxDecoration(
-                                        border: Border(
-                                          top: BorderSide(
-                                              width: 1.0,
-                                              color: Colors.black26),
-                                          bottom: BorderSide(
-                                              width: 1.0,
-                                              color: Colors.black26),
-                                          left: BorderSide(
-                                              width: 1.0,
-                                              color: Colors.black26),
-                                          right: BorderSide(
-                                              width: 1.0,
-                                              color: Colors.black26),
-                                        ),
-                                        borderRadius: BorderRadius.all(
-                                          Radius.circular(10),
-                                        ),
-                                      ),
-                                      margin: const EdgeInsets.only(
-                                          top: 5, bottom: 5),
-                                      padding: const EdgeInsets.all(10),
+                      if (futureContests.isEmpty)
+                        const Text(
+                          '예정된 대회가 없습니다.',
+                          style: TextStyle(fontSize: 15),
+                        )
+                      else
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: futureContests.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            final contest = futureContests[index];
+                            Color linkColor = contest.url == null
+                                ? Colors.black
+                                : Colors.blue;
+
+                            return Container(
+                                decoration: const BoxDecoration(
+                                  border: Border(
+                                    top: BorderSide(
+                                        width: 1.0, color: Colors.black26),
+                                    bottom: BorderSide(
+                                        width: 1.0, color: Colors.black26),
+                                    left: BorderSide(
+                                        width: 1.0, color: Colors.black26),
+                                    right: BorderSide(
+                                        width: 1.0, color: Colors.black26),
+                                  ),
+                                  borderRadius: BorderRadius.all(
+                                    Radius.circular(10),
+                                  ),
+                                ),
+                                margin:
+                                    const EdgeInsets.only(top: 5, bottom: 5),
+                                padding: const EdgeInsets.only(
+                                    top: 10, bottom: 10, left: 20),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      flex: 4,
                                       child: CupertinoButton(
-                                          padding: EdgeInsets.zero,
-                                          minSize: 0,
-                                          onPressed: () {
-                                            if (contestUrl.isNotEmpty) {
-                                              launchUrlString(contestUrl,
-                                                  mode: LaunchMode
-                                                      .externalApplication);
-                                            }
-                                          },
-                                          child: Row(
-                                            children: [
-                                              Expanded(
-                                                flex: 1,
-                                                child: Text(
-                                                  contestVenue,
+                                        alignment: Alignment.centerLeft,
+                                        padding: EdgeInsets.zero,
+                                        minSize: 0,
+                                        onPressed: () {
+                                          if (contest.url != null) {
+                                            launchUrlString(contest.url!,
+                                                mode: LaunchMode
+                                                    .externalApplication);
+                                          }
+                                        },
+                                        child: RichText(
+                                            textAlign: TextAlign.left,
+                                            text: TextSpan(
+                                              style: const TextStyle(
+                                                color: Colors.black87,
+                                              ),
+                                              children: [
+                                                TextSpan(
+                                                  text: contest.venue,
                                                   style: TextStyle(
-                                                    color: linkColor,
+                                                    color: Colors.black87,
                                                     fontSize: 12,
                                                     fontWeight: FontWeight.bold,
                                                   ),
                                                 ),
-                                              ),
-                                              Expanded(
-                                                flex: 3,
-                                                child: RichText(
-                                                    text: TextSpan(
-                                                  style: const TextStyle(
-                                                    color: Colors.black87,
+                                                const TextSpan(
+                                                  text: '\n',
+                                                ),
+                                                TextSpan(
+                                                  text: contest.name,
+                                                  style: TextStyle(
+                                                    color: linkColor,
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.bold,
                                                   ),
-                                                  children: [
-                                                    TextSpan(
-                                                      text: contestName,
-                                                      style: TextStyle(
-                                                        color: linkColor,
-                                                        fontSize: 15,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                    const TextSpan(
-                                                      text: '\n',
-                                                    ),
-                                                    TextSpan(
-                                                      text:
-                                                          '$contestStart ~ $contestEnd',
-                                                      style: const TextStyle(
-                                                        fontSize: 10,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                )),
-                                              ),
-                                            ],
-                                          )));
-                                },
-                              ),
-                            )
+                                                ),
+                                                const TextSpan(
+                                                  text: '\n',
+                                                ),
+                                                TextSpan(
+                                                  text:
+                                                      '${DateFormat('yyyy-MM-dd hh:mm').format(contest.startTime)} ~ ${DateFormat('yyyy-MM-dd hh:mm').format(contest.endTime)}',
+                                                  style: const TextStyle(
+                                                    fontSize: 10,
+                                                  ),
+                                                ),
+                                              ],
+                                            )),
+                                      ),
+                                    ),
+                                    Expanded(
+                                        flex: 1,
+                                        child: FutureBuilder(
+                                          future: notificationService
+                                              .getContestPush(contest.name),
+                                          builder: (BuildContext context,
+                                              AsyncSnapshot<bool> snapshot) {
+                                            if (snapshot.hasData) {
+                                              bool isOn = snapshot.data!;
+                                              return CupertinoButton(
+                                                onPressed: () async {
+                                                  notificationService
+                                                      .toggleContestPush(
+                                                          contest);
+                                                  Fluttertoast.showToast(
+                                                      msg: isOn
+                                                          ? '알림이 해제되었습니다.'
+                                                          : '알림이 설정되었습니다.');
+                                                  // ignore: invalid_use_of_protected_member
+                                                  setState(() {
+                                                    notificationService
+                                                        .setContestPush(
+                                                            contest.name,
+                                                            !isOn);
+                                                  });
+                                                },
+                                                padding: EdgeInsets.zero,
+                                                minSize: 0,
+                                                child: Icon(
+                                                  CupertinoIcons.alarm,
+                                                  color: snapshot.data!
+                                                      ? CupertinoTheme.of(
+                                                              context)
+                                                          .main
+                                                      : Colors.black26,
+                                                ),
+                                              );
+                                            } else {
+                                              return const SizedBox();
+                                            }
+                                          },
+                                        ))
+                                  ],
+                                ));
+                          },
+                        )
                     ],
                   ))
             ],

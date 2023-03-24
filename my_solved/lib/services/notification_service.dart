@@ -1,17 +1,37 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_app_badger/flutter_app_badger.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_native_timezone/flutter_native_timezone.dart';
+import 'package:my_solved/services/user_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
-class NotificationService {
+import '../models/contest.dart';
+
+class NotificationService extends ChangeNotifier {
   static final NotificationService _instance =
       NotificationService._privateConstructor();
 
   NotificationService._privateConstructor();
 
+  bool _disposed = false;
+
   factory NotificationService() {
     return _instance;
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
   }
 
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
@@ -54,7 +74,7 @@ class NotificationService {
   }
 
   // 스트릭 알림 id: 2
-  Future<void> setStreakPush(int hour, int minute) async {
+  void setStreakPush(int hour, int minute) async {
     NotificationDetails details = NotificationDetails(
       android: AndroidNotificationDetails(
         'Notification_channel',
@@ -85,6 +105,77 @@ class NotificationService {
 
   Future<void> cancelStreakPush() async {
     _flutterLocalNotificationsPlugin.cancel(2);
+  }
+
+  Future<bool> getContestPush(String contestName) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String key = contestName.hashCode.toString();
+    return prefs.getBool(key) ?? false;
+  }
+
+  void setContestPush(String contestName, bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    final String key = contestName.hashCode.toString();
+    prefs.setBool(key, value);
+    notifyListeners();
+  }
+
+  // 대회 알림 id: 대회 해시
+  void toggleContestPush(Contest contest) async {
+    final bool isPush = await getContestPush(contest.name);
+
+    if (isPush) {
+      _flutterLocalNotificationsPlugin.cancel(contest.name.hashCode);
+      setContestPush(contest.name, false);
+    } else {
+      NotificationDetails details = NotificationDetails(
+        android: AndroidNotificationDetails(
+          'Contest_Notification',
+          'Contest_Notification',
+          channelDescription: 'Contest_Notification',
+          importance: Importance.max,
+          playSound: true,
+          enableVibration: true,
+        ),
+        iOS: DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+            badgeNumber: 1,
+            interruptionLevel: InterruptionLevel.timeSensitive),
+      );
+
+      tz.initializeTimeZones();
+      tz.setLocalLocation(tz.getLocation('Asia/Seoul'));
+
+      int beforeHour = UserService().contestAlarmHour;
+      int beforeMinute = UserService().contestAlarmMinute;
+
+      tz.TZDateTime startDate = tz.TZDateTime(
+        tz.local,
+        2023,
+        3,
+        24,
+        23,
+        51,
+      ).subtract(Duration(hours: beforeHour, minutes: beforeMinute));
+
+      await _flutterLocalNotificationsPlugin.zonedSchedule(
+        contest.name.hashCode,
+        beforeHour == 0
+            ? '대회가 $beforeMinute분 뒤 시작됩니다!'
+            : '대회가 $beforeHour시간 $beforeMinute분 뒤 시작됩니다!',
+        contest.name,
+        startDate,
+        details,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        androidAllowWhileIdle: true,
+        matchDateTimeComponents: DateTimeComponents.time,
+      );
+      setContestPush(contest.name, true);
+    }
+    notifyListeners();
   }
 
   tz.TZDateTime _timeZoneSetting(int hour, int minute) {
