@@ -72,7 +72,7 @@
 <th> 스트릭 알림 </th>
 <tr>
 <td>
-<img src="https://user-images.githubusercontent.com/52066828/227566477-93c12788-4879-4e94-8c78-72aba287f312.png" width="300">
+<img src="https://user-images.githubusercontent.com/52066828/227596501-70f7b733-5fee-402c-8ce1-6a01432760f0.png" width="300">
 </td>
 <td>
 <img src="https://user-images.githubusercontent.com/52066828/227567459-1ef4ce50-f87a-4809-a552-aed1588f38ff.png" width="300">
