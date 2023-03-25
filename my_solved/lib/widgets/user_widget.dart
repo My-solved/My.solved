@@ -608,7 +608,7 @@ Widget top100(
     future: future,
     builder: (context, snapshot) {
       if (snapshot.hasData) {
-        int count = min(80, snapshot.data?.count ?? 0);
+        int count = min(100, snapshot.data?.count ?? 0);
         return Column(
           children: [
             Container(
