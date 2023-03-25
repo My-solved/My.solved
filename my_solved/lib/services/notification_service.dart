@@ -171,7 +171,6 @@ class NotificationService extends ChangeNotifier {
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
         androidAllowWhileIdle: true,
-        matchDateTimeComponents: DateTimeComponents.time,
       );
       setContestPush(contest.name, true);
     }
