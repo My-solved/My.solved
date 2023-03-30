@@ -162,9 +162,9 @@ class NotificationService extends ChangeNotifier {
 
       await _flutterLocalNotificationsPlugin.zonedSchedule(
         contest.name.hashCode,
-        beforeHour == 0
-            ? '대회가 $beforeMinute분 뒤 시작됩니다!'
-            : '대회가 $beforeHour시간 $beforeMinute분 뒤 시작됩니다!',
+        beforeHour + beforeMinute == 0
+            ? '대회 시작!'
+            : ('${beforeHour == 0 ? '' : '$beforeHour시간'} ${beforeMinute == 0 ? '$beforeMinute분' : ''} 뒤 대회 시작!'),
         contest.name,
         startDate,
         details,

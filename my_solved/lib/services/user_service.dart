@@ -22,7 +22,7 @@ class UserService extends ChangeNotifier {
   int streakAlarmMinute = 0;
 
   int contestAlarmHour = 0;
-  int contestAlarmMinute = 30;
+  int contestAlarmMinute = 0;
 
   String currentTimeZone = '';
   bool solvedToday = false;
@@ -246,7 +246,7 @@ class UserService extends ChangeNotifier {
 
   Future<DateTime> initContestAlarmTime() async {
     final prefs = await SharedPreferences.getInstance();
-    return DateTime(0, 0, 0, prefs.getInt('contestAlarmHour') ?? 0,
+    return DateTime(0, 0, 0, prefs.getInt('contestAlarmHour') ?? 1,
         prefs.getInt('contestAlarmMinute') ?? 0);
   }
 
