@@ -56,10 +56,28 @@ extension _ContestStateExtension on _ContestViewState {
                   .getElementsByTagName('a')
                   .first
                   .attributes['href'];
-              DateTime startTime =
-                  DateTime.parse(e.getElementsByTagName('td')[2].text);
-              DateTime endTime =
-                  DateTime.parse(e.getElementsByTagName('td')[3].text);
+              List<String> startTimeList = e
+                  .getElementsByTagName('td')[2]
+                  .text
+                  .toString()
+                  .replaceAll('년', '')
+                  .replaceAll('월', '')
+                  .replaceAll('일', '')
+                  .split(' ');
+              DateTime startTime = DateTime.parse(
+                      "${startTimeList[0].padLeft(4, "0")}-${startTimeList[1].padLeft(2, "0")}-${startTimeList[2].padLeft(2, "0")}T${startTimeList[3].padLeft(2, "0")}:00+09:00")
+                  .toLocal();
+              List<String> endTimeList = e
+                  .getElementsByTagName('td')[3]
+                  .text
+                  .toString()
+                  .replaceAll('년', '')
+                  .replaceAll('월', '')
+                  .replaceAll('일', '')
+                  .split(' ');
+              DateTime endTime = DateTime.parse(
+                      "${endTimeList[0].padLeft(4, "0")}-${endTimeList[1].padLeft(2, "0")}-${endTimeList[2].padLeft(2, "0")}T${endTimeList[3].padLeft(2, "0")}:00+09:00")
+                  .toLocal();
               return Contest(
                   venue: venue,
                   name: name,
