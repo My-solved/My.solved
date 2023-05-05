@@ -65,8 +65,9 @@ class NetworkService {
   }
 
   Future<Badge> requestBadge(String badgeId) async {
-    final response = await http
-        .get(Uri.parse("https://solved.ac/api/v3/badge/show?badgeId=$badgeId"));
+    final response = await http.get(
+        Uri.parse("https://solved.ac/api/v3/badge/show?badgeId=$badgeId"),
+        headers: {'x-solvedac-language': 'ko'});
     final statusCode = response.statusCode;
 
     if (statusCode == 200) {
