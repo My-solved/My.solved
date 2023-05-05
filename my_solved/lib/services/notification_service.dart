@@ -164,7 +164,7 @@ class NotificationService extends ChangeNotifier {
         contest.name.hashCode,
         beforeHour + beforeMinute == 0
             ? '대회 시작!'
-            : ('${beforeHour == 0 ? '' : '$beforeHour시간'} ${beforeMinute == 0 ? '$beforeMinute분' : ''} 뒤 대회 시작!'),
+            : ('${beforeHour == 0 ? '' : '$beforeHour시간'} ${beforeMinute == 0 ? '' : '$beforeMinute분'} 뒤 대회 시작!'),
         contest.name,
         startDate,
         details,
