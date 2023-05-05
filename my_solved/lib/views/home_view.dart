@@ -95,7 +95,7 @@ class _HomeViewState extends State<HomeView> {
                       const SizedBox(height: 10),
                       Container(
                         alignment: Alignment.topCenter,
-                        height: MediaQuery.of(context).size.height,
+                        height: 1.5 * MediaQuery.of(context).size.height,
                         child: PageView(
                           controller: pageController,
                           onPageChanged: (int index) {
