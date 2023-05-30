@@ -39,6 +39,7 @@ flutter:
     - lib/assets/classes/
     - lib/assets/tiers/
     - lib/assets/icons/
+    - lib/assets/venues/
 
 fonts:
   - family: SourceCodePro
