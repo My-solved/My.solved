@@ -1,9 +1,11 @@
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:html/dom.dart' as dom;
 import 'package:my_solved/extensions/color_extension.dart';
 import 'package:my_solved/models/contest.dart';
+import 'package:my_solved/services/contest_service.dart';
 import 'package:my_solved/services/network_service.dart';
 import 'package:my_solved/services/notification_service.dart';
 import 'package:url_launcher/url_launcher_string.dart';
@@ -16,8 +18,21 @@ class ContestView extends StatefulWidget {
 }
 
 class _ContestViewState extends State<ContestView> {
+  ContestService contestService = ContestService();
   NetworkService networkService = NetworkService();
   NotificationService notificationService = NotificationService();
+
+  Map _selectedVenues = ContestService().showVenues;
+
+  void updateSelectedVenues() {
+    _selectedVenues = contestService.showVenues;
+    setState(() {
+      _selectedVenues = _selectedVenues;
+    });
+  }
+
+  List<dynamic> currentContests = [];
+  List<dynamic> futureContests = [];
 
   @override
   Widget build(BuildContext context) {
@@ -37,9 +52,6 @@ extension _ContestStateExtension on _ContestViewState {
       future: networkService.requestContests(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.hasData) {
-          List<dynamic> currentContests = [];
-          List<dynamic> futureContests = [];
-
           if (snapshot.data.body.getElementsByClassName('col-md-12').length <
               5) {
             futureContests = snapshot.data.body
@@ -197,6 +209,69 @@ extension _ContestStateExtension on _ContestViewState {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              FutureBuilder(builder: (context, snapshot) {
+                return Container(
+                  margin: EdgeInsets.only(left: 10, right: 10, top: 20),
+                  height: 40,
+                  child: ListView.builder(
+                    itemCount: _selectedVenues.length,
+                    scrollDirection: Axis.horizontal,
+                    shrinkWrap: true,
+                    itemBuilder: (context, index) {
+                      String venue = _selectedVenues.keys.elementAt(index);
+                      bool isSelected = _selectedVenues[venue]!;
+                      bool isOthers = venue == 'Others';
+
+                      return CupertinoButton(
+                        minSize: 0,
+                        padding: EdgeInsets.zero,
+                        child: Container(
+                            margin: EdgeInsets.only(right: 10),
+                            padding: EdgeInsets.symmetric(horizontal: 10),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? Colors.grey[400]
+                                  : Colors.grey[200],
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            alignment: Alignment.center,
+                            child: Row(
+                              children: [
+                                isOthers
+                                    ? Icon(
+                                        Icons.more_horiz,
+                                        size: 20,
+                                        color: isSelected
+                                            ? Colors.grey[200]
+                                            : Colors.grey[400],
+                                      )
+                                    : ExtendedImage.asset(
+                                        'lib/assets/venues/${venue.toLowerCase()}.png',
+                                        fit: BoxFit.fill,
+                                        width: 20,
+                                      ),
+                                SizedBox(
+                                  width: 5,
+                                ),
+                                Text(
+                                  venue,
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      color: isSelected
+                                          ? Colors.grey[200]
+                                          : Colors.grey[400]),
+                                )
+                              ],
+                            )),
+                        onPressed: () {
+                          ContestService().toggleContestShow(venue);
+                          updateSelectedVenues();
+                        },
+                      );
+                    },
+                  ),
+                );
+              }),
               Container(
                   decoration: BoxDecoration(
                     color: Color(0xfff6f6f6),
@@ -255,92 +330,102 @@ extension _ContestStateExtension on _ContestViewState {
                                 .toString()
                                 .padLeft(2, '0');
 
-                            return Container(
-                                decoration: const BoxDecoration(
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(10),
-                                  ),
-                                  border: Border(
-                                    top: BorderSide(
-                                        width: 1.0, color: Colors.black26),
-                                    bottom: BorderSide(
-                                        width: 1.0, color: Colors.black26),
-                                    left: BorderSide(
-                                        width: 1.0, color: Colors.black26),
-                                    right: BorderSide(
-                                        width: 1.0, color: Colors.black26),
-                                  ),
-                                ),
-                                margin:
-                                    const EdgeInsets.only(top: 5, bottom: 5),
-                                padding: const EdgeInsets.only(
-                                    top: 10, bottom: 10, left: 20),
-                                child: CupertinoButton(
-                                    alignment: Alignment.centerLeft,
-                                    minSize: 0,
-                                    padding: EdgeInsets.zero,
-                                    onPressed: () async {
-                                      if (contest.url != null) {
-                                        await launchUrlString(contest.url!,
-                                            mode:
-                                                LaunchMode.externalApplication);
-                                      }
-                                    },
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          flex: 4,
-                                          child: RichText(
-                                              textAlign: TextAlign.left,
-                                              text: TextSpan(
-                                                style: const TextStyle(
-                                                  color: Colors.black87,
-                                                ),
-                                                children: [
-                                                  TextSpan(
-                                                    text: contest.venue,
-                                                    style: TextStyle(
-                                                      color: Colors.black87,
-                                                      fontSize: 12,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                  const TextSpan(
-                                                    text: '\n',
-                                                  ),
-                                                  TextSpan(
-                                                    text: contest.name,
-                                                    style: TextStyle(
-                                                      color: linkColor,
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                  const TextSpan(
-                                                    text: '\n',
-                                                  ),
-                                                  TextSpan(
-                                                    text:
-                                                        '$startYear-$startMonth-$startDay $startHour:$startMinute ~ $endYear-$endMonth-$endDay $endHour:$endMinute',
+                            bool isOther =
+                                _selectedVenues.keys.contains(contest.venue) ==
+                                    false;
+                            if (isOther && _selectedVenues['Others'] == false) {
+                              return Container();
+                            }
+
+                            bool show = _selectedVenues[contest.venue]!;
+                            return show
+                                ? Container(
+                                    decoration: const BoxDecoration(
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(10),
+                                      ),
+                                      border: Border(
+                                        top: BorderSide(
+                                            width: 1.0, color: Colors.black26),
+                                        bottom: BorderSide(
+                                            width: 1.0, color: Colors.black26),
+                                        left: BorderSide(
+                                            width: 1.0, color: Colors.black26),
+                                        right: BorderSide(
+                                            width: 1.0, color: Colors.black26),
+                                      ),
+                                    ),
+                                    margin: const EdgeInsets.only(
+                                        top: 5, bottom: 5),
+                                    padding: const EdgeInsets.only(
+                                        top: 10, bottom: 10, left: 20),
+                                    child: CupertinoButton(
+                                        alignment: Alignment.centerLeft,
+                                        minSize: 0,
+                                        padding: EdgeInsets.zero,
+                                        onPressed: () async {
+                                          if (contest.url != null) {
+                                            await launchUrlString(contest.url!,
+                                                mode: LaunchMode
+                                                    .externalApplication);
+                                          }
+                                        },
+                                        child: Row(
+                                          children: [
+                                            Expanded(
+                                              flex: 4,
+                                              child: RichText(
+                                                  textAlign: TextAlign.left,
+                                                  text: TextSpan(
                                                     style: const TextStyle(
-                                                      fontSize: 10,
+                                                      color: Colors.black87,
                                                     ),
-                                                  ),
-                                                ],
-                                              )),
-                                        ),
-                                        Expanded(
-                                          flex: 1,
-                                          child: Icon(
-                                            Icons.arrow_forward_ios,
-                                            size: 15,
-                                            color: Colors.blue,
-                                          ),
-                                        )
-                                      ],
-                                    )));
+                                                    children: [
+                                                      TextSpan(
+                                                        text: contest.venue,
+                                                        style: TextStyle(
+                                                          color: Colors.black87,
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      const TextSpan(
+                                                        text: '\n',
+                                                      ),
+                                                      TextSpan(
+                                                        text: contest.name,
+                                                        style: TextStyle(
+                                                          color: linkColor,
+                                                          fontSize: 15,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                      const TextSpan(
+                                                        text: '\n',
+                                                      ),
+                                                      TextSpan(
+                                                        text:
+                                                            '$startYear-$startMonth-$startDay $startHour:$startMinute ~ $endYear-$endMonth-$endDay $endHour:$endMinute',
+                                                        style: const TextStyle(
+                                                          fontSize: 10,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  )),
+                                            ),
+                                            Expanded(
+                                              flex: 1,
+                                              child: Icon(
+                                                Icons.arrow_forward_ios,
+                                                size: 15,
+                                                color: Colors.blue,
+                                              ),
+                                            )
+                                          ],
+                                        )))
+                                : Container();
                           },
                         ),
                     ],
@@ -397,126 +482,140 @@ extension _ContestStateExtension on _ContestViewState {
                                 .toString()
                                 .padLeft(2, '0');
 
-                            return Container(
-                                decoration: const BoxDecoration(
-                                  border: Border(
-                                    top: BorderSide(
-                                        width: 1.0, color: Colors.black26),
-                                    bottom: BorderSide(
-                                        width: 1.0, color: Colors.black26),
-                                    left: BorderSide(
-                                        width: 1.0, color: Colors.black26),
-                                    right: BorderSide(
-                                        width: 1.0, color: Colors.black26),
-                                  ),
-                                  borderRadius: BorderRadius.all(
-                                    Radius.circular(10),
-                                  ),
-                                ),
-                                margin:
-                                    const EdgeInsets.only(top: 5, bottom: 5),
-                                padding: const EdgeInsets.only(
-                                    top: 10, bottom: 10, left: 20),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Expanded(
-                                      flex: 4,
-                                      child: CupertinoButton(
-                                        alignment: Alignment.centerLeft,
-                                        padding: EdgeInsets.zero,
-                                        minSize: 0,
-                                        onPressed: () {
-                                          if (contest.url != null) {
-                                            launchUrlString(contest.url!,
-                                                mode: LaunchMode
-                                                    .externalApplication);
-                                          }
-                                        },
-                                        child: RichText(
-                                            textAlign: TextAlign.left,
-                                            text: TextSpan(
-                                              style: const TextStyle(
-                                                color: Colors.black87,
-                                              ),
-                                              children: [
-                                                TextSpan(
-                                                  text: contest.venue,
-                                                  style: TextStyle(
-                                                    color: Colors.black87,
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                const TextSpan(
-                                                  text: '\n',
-                                                ),
-                                                TextSpan(
-                                                  text: contest.name,
-                                                  style: TextStyle(
-                                                    color: linkColor,
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                ),
-                                                const TextSpan(
-                                                  text: '\n',
-                                                ),
-                                                TextSpan(
-                                                  text:
-                                                      '$startYear-$startMonth-$startDay $startHour:$startMinute ~ $endYear-$endMonth-$endDay $endHour:$endMinute',
-                                                  style: const TextStyle(
-                                                    fontSize: 10,
-                                                  ),
-                                                ),
-                                              ],
-                                            )),
+                            bool isOther =
+                                _selectedVenues.keys.contains(contest.venue) ==
+                                    false;
+                            if (isOther && _selectedVenues['Others'] == false) {
+                              return Container();
+                            }
+
+                            bool show = _selectedVenues[contest.venue] ?? true;
+                            return show
+                                ? Container(
+                                    decoration: const BoxDecoration(
+                                      border: Border(
+                                        top: BorderSide(
+                                            width: 1.0, color: Colors.black26),
+                                        bottom: BorderSide(
+                                            width: 1.0, color: Colors.black26),
+                                        left: BorderSide(
+                                            width: 1.0, color: Colors.black26),
+                                        right: BorderSide(
+                                            width: 1.0, color: Colors.black26),
+                                      ),
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(10),
                                       ),
                                     ),
-                                    Expanded(
-                                        flex: 1,
-                                        child: FutureBuilder(
-                                          future: notificationService
-                                              .getContestPush(contest.name),
-                                          builder: (BuildContext context,
-                                              AsyncSnapshot<bool> snapshot) {
-                                            if (snapshot.hasData) {
-                                              bool isOn = snapshot.data!;
-                                              return CupertinoButton(
-                                                onPressed: () async {
-                                                  notificationService
-                                                      .toggleContestPush(
-                                                          contest);
-                                                  Fluttertoast.showToast(
-                                                      msg: isOn
-                                                          ? '알림이 해제되었습니다.'
-                                                          : '알림이 설정되었습니다.');
-                                                  // ignore: invalid_use_of_protected_member
-                                                  setState(() {
-                                                    notificationService
-                                                        .setContestPush(
-                                                            contest.name,
-                                                            !isOn);
-                                                  });
-                                                },
-                                                padding: EdgeInsets.zero,
-                                                minSize: 0,
-                                                child: Icon(
-                                                  CupertinoIcons.alarm,
-                                                  color: snapshot.data!
-                                                      ? CupertinoTheme.of(
-                                                              context)
-                                                          .main
-                                                      : Colors.black26,
-                                                ),
-                                              );
-                                            } else {
-                                              return const SizedBox();
-                                            }
-                                          },
-                                        ))
-                                  ],
-                                ));
+                                    margin: const EdgeInsets.only(
+                                        top: 5, bottom: 5),
+                                    padding: const EdgeInsets.only(
+                                        top: 10, bottom: 10, left: 20),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          flex: 4,
+                                          child: CupertinoButton(
+                                            alignment: Alignment.centerLeft,
+                                            padding: EdgeInsets.zero,
+                                            minSize: 0,
+                                            onPressed: () {
+                                              if (contest.url != null) {
+                                                launchUrlString(contest.url!,
+                                                    mode: LaunchMode
+                                                        .externalApplication);
+                                              }
+                                            },
+                                            child: RichText(
+                                                textAlign: TextAlign.left,
+                                                text: TextSpan(
+                                                  style: const TextStyle(
+                                                    color: Colors.black87,
+                                                  ),
+                                                  children: [
+                                                    TextSpan(
+                                                      text: contest.venue,
+                                                      style: TextStyle(
+                                                        color: Colors.black87,
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                    const TextSpan(
+                                                      text: '\n',
+                                                    ),
+                                                    TextSpan(
+                                                      text: contest.name,
+                                                      style: TextStyle(
+                                                        color: linkColor,
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                    const TextSpan(
+                                                      text: '\n',
+                                                    ),
+                                                    TextSpan(
+                                                      text:
+                                                          '$startYear-$startMonth-$startDay $startHour:$startMinute ~ $endYear-$endMonth-$endDay $endHour:$endMinute',
+                                                      style: const TextStyle(
+                                                        fontSize: 10,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                )),
+                                          ),
+                                        ),
+                                        Expanded(
+                                            flex: 1,
+                                            child: FutureBuilder(
+                                              future: notificationService
+                                                  .getContestPush(contest.name),
+                                              builder: (BuildContext context,
+                                                  AsyncSnapshot<bool>
+                                                      snapshot) {
+                                                if (snapshot.hasData) {
+                                                  bool isOn = snapshot.data!;
+                                                  return CupertinoButton(
+                                                    onPressed: () async {
+                                                      notificationService
+                                                          .toggleContestPush(
+                                                              contest);
+                                                      Fluttertoast.showToast(
+                                                          msg: isOn
+                                                              ? '알림이 해제되었습니다.'
+                                                              : '알림이 설정되었습니다.');
+                                                      // ignore: invalid_use_of_protected_member
+                                                      setState(() {
+                                                        notificationService
+                                                            .setContestPush(
+                                                                contest.name,
+                                                                !isOn);
+                                                      });
+                                                    },
+                                                    padding: EdgeInsets.zero,
+                                                    minSize: 0,
+                                                    child: Icon(
+                                                      CupertinoIcons.alarm,
+                                                      color: snapshot.data!
+                                                          ? CupertinoTheme.of(
+                                                                  context)
+                                                              .main
+                                                          : Colors.black26,
+                                                    ),
+                                                  );
+                                                } else {
+                                                  return const SizedBox();
+                                                }
+                                              },
+                                            ))
+                                      ],
+                                    ))
+                                : Container();
                           },
                         )
                     ],
