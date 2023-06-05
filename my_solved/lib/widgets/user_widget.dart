@@ -854,14 +854,14 @@ Widget badges(BuildContext context, Future<Badges> future) {
         }
         temp[0].sort((a, b) => a['badgeId'].compareTo(b['badgeId']));
 
-        List<dynamic> badges = [];
+        List<dynamic> badges = [[], [], [], []];
         for (int i = 0; i < 4; i++) {
           for (int j = 0; j < temp[i].length; j++) {
-            badges.add(temp[i][j]);
+            badges[i].add(temp[i][j]);
           }
         }
 
-        Widget badgeTier(BuildContext context, dynamic badge, int idx) {
+        Widget badgeTier(BuildContext context, dynamic badge) {
           String tier = badge['badgeTier'];
           bool isContest = badge['badgeCategory'] == 'contest';
           Color tierColor = Colors.white;
@@ -954,20 +954,60 @@ Widget badges(BuildContext context, Future<Badges> future) {
                 );
         }
 
+        const badgeCategory = ['도전과제', '시즌 도전과제', '이벤트', '대회'];
+
+        Widget badgeContainer(BuildContext context, int category) {
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                margin: EdgeInsets.only(
+                    left: MediaQuery.of(context).size.width * 0.05),
+                // padding: const EdgeInsets.all(10),
+                child: Row(
+                  children: [
+                    SvgPicture.asset(
+                      'lib/assets/icons/badge.svg',
+                      width: MediaQuery.of(context).size.width * 0.04,
+                      color: Colors.black45,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      badgeCategory[category],
+                      style: TextStyle(
+                        fontSize: MediaQuery.of(context).size.width * 0.04,
+                        color: Colors.black45,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 6,
+                    childAspectRatio: 1,
+                  ),
+                  shrinkWrap: true,
+                  physics: NeverScrollableScrollPhysics(),
+                  itemCount: badges[category].length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return badgeTier(context, badges[category][index]);
+                  }),
+              Divider(
+                color: Colors.black12,
+                thickness: 1,
+              )
+            ],
+          );
+        }
+
         return Column(
           children: [
             const SizedBox(height: 10),
-            GridView.builder(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 6,
-                  childAspectRatio: 1,
-                ),
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: count,
-                itemBuilder: (BuildContext context, int index) {
-                  return badgeTier(context, badges[index], index);
-                })
+            for (int i = 0; i < 4; i++) badgeContainer(context, i),
           ],
         );
       } else {
