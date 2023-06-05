@@ -8,15 +8,14 @@ class User {
   final int voteCount;
   final int userClass;
   final String? classDecoration;
+  final int rivalCount;
+  final int reverseRivalCount;
   final int tier;
   final int rating;
   final int ratingByProblemsSum;
   final int ratingByClass;
   final int ratingBySolvedCount;
   final int ratingByVoteCount;
-  final int exp;
-  final int rivalCount;
-  final int reverseRivalCount;
   final int maxStreak;
   final int coins;
   final int stardusts;
@@ -41,7 +40,6 @@ class User {
     required this.ratingByClass,
     required this.ratingBySolvedCount,
     required this.ratingByVoteCount,
-    required this.exp,
     required this.rivalCount,
     required this.reverseRivalCount,
     required this.maxStreak,
@@ -70,7 +68,6 @@ class User {
       ratingByClass: json['ratingByClass'],
       ratingBySolvedCount: json['ratingBySolvedCount'],
       ratingByVoteCount: json['ratingByVoteCount'],
-      exp: json['exp'],
       rivalCount: json['rivalCount'],
       reverseRivalCount: json['reverseRivalCount'],
       maxStreak: json['maxStreak'],

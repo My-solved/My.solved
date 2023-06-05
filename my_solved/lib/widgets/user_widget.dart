@@ -1316,18 +1316,6 @@ Widget rank(BuildContext context, AsyncSnapshot<User> snapshot) {
       ));
 }
 
-// 경험치
-Widget exp(BuildContext context, AsyncSnapshot<User> snapshot) {
-  return CupertinoPageScaffold(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        padding: EdgeInsets.only(top: 20),
-        child: Text(
-          snapshot.data?.exp.toString() ?? '',
-        ),
-      ));
-}
-
 //배지
 Widget badge(BuildContext context, Future future) {
   return FutureBuilder(
