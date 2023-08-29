@@ -989,10 +989,13 @@ Widget backgroundImage(BuildContext context, Future<Background> future) {
       if (snapshot.hasData) {
         return Consumer<UserService>(builder: (context, provider, child) {
           bool isIllustration = provider.isIllustration;
+          String backgroundImageUrl = snapshot.data?.backgroundImageUrl ??
+              'https://static.solved.ac/profile_bg/abstract_001/abstract_001_light.png';
+          String fallbackBackgroundImageUrl =
+              snapshot.data?.fallbackBackgroundImageUrl ?? backgroundImageUrl;
+
           return ExtendedImage.network(
-            isIllustration
-                ? snapshot.data?.backgroundImageUrl ?? ''
-                : snapshot.data?.fallbackBackgroundImageUrl ?? '',
+            isIllustration ? backgroundImageUrl : fallbackBackgroundImageUrl,
             cache: true,
             height: MediaQuery.of(context).size.height * 0.25,
             fit: BoxFit.fitHeight,
