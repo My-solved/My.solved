@@ -5,6 +5,13 @@ import 'package:my_solved/models/contest.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 Widget contests(BuildContext context, List<Contest> contests) {
+  if (contests.isEmpty) {
+    return Container(
+        alignment: Alignment.center,
+        child: Text('대회가 없습니다.',
+            style: TextStyle(fontSize: 14, color: Colors.grey)));
+  }
+
   return Container(
       alignment: Alignment.center,
       child: Column(
@@ -12,8 +19,6 @@ Widget contests(BuildContext context, List<Contest> contests) {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('예정된 대회',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           for (var c in contests) contest(context, c),
         ],
       ));

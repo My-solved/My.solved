@@ -3,6 +3,7 @@ import 'package:my_solved/models/contest.dart';
 import 'package:my_solved/services/contest_service.dart';
 import 'package:my_solved/services/network_service.dart';
 import 'package:my_solved/services/notification_service.dart';
+import 'package:my_solved/views/search_view.dart';
 
 import '../widgets/contest_widget.dart';
 
@@ -19,11 +20,18 @@ class _ContestViewState extends State<ContestView> {
   NotificationService notificationService = NotificationService();
 
   Map _selectedVenues = ContestService().showVenues;
+  int _selectedSegment = 0;
 
   void updateSelectedVenues() {
     _selectedVenues = contestService.showVenues;
     setState(() {
       _selectedVenues = _selectedVenues;
+    });
+  }
+
+  void _updateSelectedSegment(int value) {
+    setState(() {
+      _selectedSegment = value;
     });
   }
 
@@ -36,24 +44,35 @@ class _ContestViewState extends State<ContestView> {
     return CupertinoPageScaffold(
         resizeToAvoidBottomInset: false,
         child: SafeArea(
-          child: SingleChildScrollView(
-            child: contestList(),
+            child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              UnderlineSegmentControl(
+                  children: {
+                    0: '진행',
+                    1: '예정',
+                    2: '종료',
+                  },
+                  onValueChanged: (value) {
+                    _updateSelectedSegment(value);
+                  }),
+              contestList(_selectedSegment),
+            ],
           ),
-        ));
+        )));
   }
 }
 
 extension _ContestStateExtension on _ContestViewState {
-  Widget contestList() {
+  Widget contestList(int index) {
     return FutureBuilder<List<List<Contest>>>(
       future: networkService.requestContests(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.hasData) {
-          upcomingContests = snapshot.data[0];
-          ongoingContests = snapshot.data[1];
-          endedContests = snapshot.data[2];
+          List<Contest> contestData = snapshot.data![index];
 
-          return contests(context, endedContests);
+          return contests(context, contestData);
         } else {
           return const Center(child: CupertinoActivityIndicator());
         }

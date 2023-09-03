@@ -288,8 +288,8 @@ class NetworkService {
             .toLocal();
 
         return Contest(
-          venue: 'BOJ OPEN',
-          name: e.getElementsByTagName('td')[0].text,
+          venue: 'BOJ Open',
+          name: e.getElementsByTagName('td')[0].text.trim(),
           url:
               'https://www.acmicpc.net${e.getElementsByTagName('td')[0].getElementsByTagName('a')[0].attributes['href']}',
           startTime: startTime,
@@ -307,8 +307,8 @@ class NetworkService {
     dom.Document docEnded = parser.parse(ended.body);
 
     return [
-      upcomingContests(docOthers.body!),
       ongoingContests(docOthers.body!),
+      upcomingContests(docOthers.body!),
       endedContests(docEnded.body!),
     ];
   }
