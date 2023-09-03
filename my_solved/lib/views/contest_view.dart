@@ -1,5 +1,4 @@
 import 'package:flutter/cupertino.dart';
-import 'package:html/dom.dart' as dom;
 import 'package:my_solved/models/contest.dart';
 import 'package:my_solved/services/contest_service.dart';
 import 'package:my_solved/services/network_service.dart';
@@ -28,8 +27,9 @@ class _ContestViewState extends State<ContestView> {
     });
   }
 
-  List<Contest> currentContests = [];
-  List<Contest> futureContests = [];
+  List<Contest> ongoingContests = [];
+  List<Contest> upcomingContests = [];
+  List<Contest> endedContests = [];
 
   @override
   Widget build(BuildContext context) {
@@ -44,55 +44,16 @@ class _ContestViewState extends State<ContestView> {
 }
 
 extension _ContestStateExtension on _ContestViewState {
-  List<Contest> upcomingContests(dom.Element element) {
-    if (element.getElementsByClassName('col-md-12').length < 5) {
-      return element
-          .getElementsByClassName('col-md-12')[2]
-          .getElementsByTagName('tbody')
-          .first
-          .getElementsByTagName('tr')
-          .toList()
-          .map((e) {
-        return Contest.fromElement(e);
-      }).toList();
-    } else {
-      return element
-          .getElementsByClassName('col-md-12')[4]
-          .getElementsByTagName('tbody')
-          .first
-          .getElementsByTagName('tr')
-          .toList()
-          .map<Contest>((e) {
-        return Contest.fromElement(e);
-      }).toList();
-    }
-  }
-
-  List<Contest> ongoingContests(dom.Element element) {
-    if (element.getElementsByClassName('col-md-12').length < 5) {
-      return element
-          .getElementsByClassName('col-md-12')[2]
-          .getElementsByTagName('tbody')
-          .first
-          .getElementsByTagName('tr')
-          .toList()
-          .map((e) {
-        return Contest.fromElement(e);
-      }).toList();
-    } else {
-      return [];
-    }
-  }
-
   Widget contestList() {
-    return FutureBuilder<dom.Document>(
+    return FutureBuilder<List<List<Contest>>>(
       future: networkService.requestContests(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.hasData) {
-          futureContests = upcomingContests(snapshot.data.body);
-          currentContests = ongoingContests(snapshot.data.body);
+          upcomingContests = snapshot.data[0];
+          ongoingContests = snapshot.data[1];
+          endedContests = snapshot.data[2];
 
-          return contests(context, futureContests);
+          return contests(context, endedContests);
         } else {
           return const Center(child: CupertinoActivityIndicator());
         }
