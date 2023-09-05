@@ -313,6 +313,28 @@ class NetworkService {
     ];
   }
 
+  Future<Set<int>> requestArenaContests() async {
+    final response =
+        await http.get(Uri.parse("https://solved.ac/api/v3/arena/contests"));
+    final statusCode = response.statusCode;
+
+    if (statusCode == 200) {
+      Map<String, dynamic> contestMap = jsonDecode(response.body);
+      Set<int> contestIds = {};
+
+      for (var contests in contestMap.values) {
+        for (var contest in contests) {
+          if (contest['arenaBojContestId'] != null) {
+            contestIds.add(contest['arenaBojContestId']);
+          }
+        }
+      }
+      return contestIds;
+    } else {
+      throw Exception('Fail to load');
+    }
+  }
+
   Future<SiteStats> requestSiteStats() async {
     final response =
         await http.get(Uri.parse("https://solved.ac/api/v3/site/stats"));

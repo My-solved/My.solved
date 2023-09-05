@@ -10,7 +10,7 @@ class ContestService extends ChangeNotifier {
 
   bool _disposed = false;
 
-  Map showVenues = {
+  Map<String, bool> showVenues = {
     'AtCoder': false,
     'BOJ Open': false,
     'Codeforces': false,
@@ -37,10 +37,12 @@ class ContestService extends ChangeNotifier {
 
   Future<void> init() async {
     await _initializeContest();
+    notifyListeners();
   }
 
   Future<void> _initializeContest() async {
     initContestShow();
+    notifyListeners();
   }
 
   Future<void> initContestShow() async {
@@ -50,6 +52,10 @@ class ContestService extends ChangeNotifier {
       showVenues[venue] = show;
     }
     notifyListeners();
+  }
+
+  Future<Map<String, bool>> getContestShow() async {
+    return showVenues;
   }
 
   Future<void> toggleContestShow(String venue) async {

@@ -22,7 +22,9 @@ class _ContestViewState extends State<ContestView> {
   NetworkService networkService = NetworkService();
   NotificationService notificationService = NotificationService();
 
-  Map _selectedVenues = ContestService().showVenues;
+  Map _selectedVenues = {};
+  Set<int> _arenaContests = {};
+
   int _selectedSegment = 0;
   Map<int, String> contestStatus = {
     0: '진행중인 대회',
@@ -32,9 +34,6 @@ class _ContestViewState extends State<ContestView> {
 
   void updateSelectedVenues() {
     _selectedVenues = contestService.showVenues;
-    setState(() {
-      _selectedVenues = _selectedVenues;
-    });
   }
 
   void _updateSelectedSegment(int value) {
@@ -45,6 +44,10 @@ class _ContestViewState extends State<ContestView> {
 
   @override
   Widget build(BuildContext context) {
+    networkService.requestArenaContests().then((value) {
+      _arenaContests = value;
+    });
+
     return CupertinoPageScaffold(
         resizeToAvoidBottomInset: false,
         child: SafeArea(
@@ -53,12 +56,7 @@ class _ContestViewState extends State<ContestView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               venueFilter(context),
-              UnderlineSegmentControl(
-                  children: contestStatus,
-                  fontSize: 14,
-                  onValueChanged: (value) {
-                    _updateSelectedSegment(value);
-                  }),
+              contestTap(context),
               contestBody(_selectedSegment),
             ],
           ),
@@ -69,71 +67,88 @@ class _ContestViewState extends State<ContestView> {
 extension _ContestStateExtension on _ContestViewState {
   /// 대회 필터링 위젯
   Widget venueFilter(BuildContext context) {
-    return FutureBuilder(builder: (context, snapshot) {
-      return Container(
-        margin: EdgeInsets.only(left: 10, right: 10, top: 20),
-        height: 30,
-        child: ListView.builder(
-          itemCount: _selectedVenues.length,
-          scrollDirection: Axis.horizontal,
-          shrinkWrap: true,
-          itemBuilder: (context, index) {
-            String venue = _selectedVenues.keys.elementAt(index);
-            bool isSelected = _selectedVenues[venue]!;
-            bool isOthers = venue == 'Others';
+    updateSelectedVenues();
 
-            return CupertinoButton(
-              minSize: 0,
-              padding: EdgeInsets.zero,
-              child: Container(
-                  margin: EdgeInsets.only(right: 10),
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  decoration: BoxDecoration(
-                    color: isSelected ? Colors.grey[400] : Colors.grey[200],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  alignment: Alignment.center,
-                  child: Row(
-                    children: [
-                      isOthers
-                          ? Icon(
-                              Icons.more_horiz,
-                              size: 14,
-                              color: isSelected
-                                  ? Colors.grey[200]
-                                  : Colors.grey[400],
-                            )
-                          : ExtendedImage.asset(
-                              'lib/assets/venues/${venue.toLowerCase()}.png',
-                              fit: BoxFit.fill,
-                              width: 14,
-                            ),
-                      SizedBox(
-                        width: 5,
+    return FutureBuilder(
+        future: contestService.getContestShow(),
+        builder: (context, snapshot) {
+          return Container(
+            margin: EdgeInsets.only(left: 10, right: 10, top: 20),
+            height: 30,
+            child: ListView.builder(
+              itemCount: snapshot.data!.length,
+              scrollDirection: Axis.horizontal,
+              shrinkWrap: true,
+              itemBuilder: (context, index) {
+                String venue = snapshot.data!.keys.elementAt(index);
+                bool isSelected = snapshot.data![venue]!;
+                bool isOthers = venue == 'Others';
+
+                return CupertinoButton(
+                  minSize: 0,
+                  padding: EdgeInsets.zero,
+                  child: Container(
+                      margin: EdgeInsets.only(right: 10),
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      decoration: BoxDecoration(
+                        color: isSelected ? Colors.grey[400] : Colors.grey[200],
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                      Text(
-                        venue,
-                        style: TextStyle(
-                            fontSize: 14,
-                            color: isSelected
-                                ? Colors.grey[200]
-                                : Colors.grey[400]),
-                      )
-                    ],
-                  )),
-              onPressed: () {
-                ContestService().toggleContestShow(venue);
-                updateSelectedVenues();
+                      alignment: Alignment.center,
+                      child: Row(
+                        children: [
+                          isOthers
+                              ? Icon(
+                                  Icons.more_horiz,
+                                  size: 14,
+                                  color: isSelected
+                                      ? Colors.grey[200]
+                                      : Colors.grey[400],
+                                )
+                              : ExtendedImage.asset(
+                                  'lib/assets/venues/${venue.toLowerCase()}.png',
+                                  fit: BoxFit.fill,
+                                  width: 14,
+                                ),
+                          SizedBox(
+                            width: 5,
+                          ),
+                          Text(
+                            venue,
+                            style: TextStyle(
+                                fontSize: 14,
+                                color: isSelected
+                                    ? Colors.grey[200]
+                                    : Colors.grey[400]),
+                          )
+                        ],
+                      )),
+                  onPressed: () {
+                    snapshot.data![venue] = !isSelected;
+                    contestService.toggleContestShow(venue);
+                    // ignore: invalid_use_of_protected_member
+                    setState(() {
+                      _selectedVenues = snapshot.data!;
+                    });
+                  },
+                );
               },
-            );
-          },
-        ),
-      );
-    });
+            ),
+          );
+        });
   }
 
   /// 대회 탭
-  /// index: 0 - 진행, 1 - 예정, 2 - 종료
+  Widget contestTap(BuildContext context) {
+    return UnderlineSegmentControl(
+        children: contestStatus,
+        fontSize: 14,
+        onValueChanged: (value) {
+          _updateSelectedSegment(value);
+        });
+  }
+
+  /// 대회 목록
   Widget contestBody(int index) {
     return FutureBuilder<List<List<Contest>>>(
       future: networkService.requestContests(),
@@ -169,10 +184,120 @@ extension _ContestStateExtension on _ContestViewState {
   }
 
   /// 대회 위젯
-  /// contest: 대회 정보
-  /// return: 대회 위젯
   Widget contest(BuildContext context, Contest contest) {
     bool hasUrl = contest.url != null;
+    bool isArena = false;
+    if (contest.venue == 'BOJ Open') {
+      int contestId = int.parse(contest.url!.split('/').last);
+      isArena = _arenaContests.contains(contestId);
+    }
+
+    /// 대회 위젯 상단
+    /// 플랫폼 아이콘, 대회 이름, 대회 일정
+    Widget contestTop(Contest contest) {
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          ExtendedImage.asset(
+            'lib/assets/venues/${contest.venue.toLowerCase()}.png',
+            width: 30,
+          ),
+          SizedBox(width: 10),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: MediaQuery.of(context).size.width * 0.7,
+                child: Text(
+                  contest.name,
+                  style: TextStyle(fontSize: 16, color: Colors.black),
+                ),
+              ),
+              Text(
+                '일정: ${contest.startTime.month}월 ${contest.startTime.day}일 ${contest.startTime.hour}:${contest.startTime.minute.toString().padLeft(2, '0')} ~ ${contest.endTime.month}월 ${contest.endTime.day}일 ${contest.endTime.hour}:${contest.endTime.minute.toString().padLeft(2, '0')}',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
+          )
+        ],
+      );
+    }
+
+    /// 대회 위젯 하단
+    /// 대회 정보, 알림 설정, (아레나 대회일 경우) 아레나 아이콘
+    Widget contestBottom(Contest contest) {
+      return Row(
+        children: [
+          TextButton(
+            style: ButtonStyle(
+              shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10))),
+              padding: MaterialStateProperty.all(
+                  EdgeInsets.symmetric(horizontal: 10, vertical: 5)),
+              minimumSize: MaterialStateProperty.all(Size(0, 0)),
+              backgroundColor: MaterialStateProperty.all(
+                hasUrl ? CupertinoTheme.of(context).main : Colors.black12,
+              ),
+            ),
+            child: Text('대회 정보',
+                style: TextStyle(
+                    color: hasUrl ? Colors.white : Colors.grey, fontSize: 12)),
+            onPressed: () {
+              hasUrl
+                  ? launchUrlString(contest.url!,
+                      mode: LaunchMode.externalApplication)
+                  : null;
+            },
+          ),
+          SizedBox(width: 10),
+          FutureBuilder(
+            future: notificationService.getContestPush(contest.name),
+            builder: (context, snapshot) {
+              bool isPush = snapshot.data ?? false;
+              return TextButton(
+                style: ButtonStyle(
+                  shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10))),
+                  minimumSize: MaterialStateProperty.all(Size(0, 0)),
+                  backgroundColor: MaterialStateProperty.all(isPush
+                      ? CupertinoTheme.of(context).main
+                      : Colors.black12),
+                  padding: MaterialStateProperty.all(
+                      EdgeInsets.symmetric(horizontal: 10, vertical: 5)),
+                ),
+                child: Text(isPush ? '알림 설정 완료' : '알림 설정하기',
+                    style: TextStyle(
+                      color: isPush ? Colors.white : Colors.grey,
+                      fontSize: 12,
+                    )),
+                onPressed: () {
+                  // ignore: invalid_use_of_protected_member
+                  setState(() {
+                    notificationService.toggleContestPush(contest);
+                  });
+                  Fluttertoast.showToast(
+                    msg: isPush ? '알림이 해제되었습니다.' : '알림이 설정되었습니다.',
+                    toastLength: Toast.LENGTH_SHORT,
+                    gravity: ToastGravity.BOTTOM,
+                    backgroundColor: Colors.grey[700],
+                    textColor: Colors.white,
+                    fontSize: 14.0,
+                  );
+                },
+              );
+            },
+          ),
+          Spacer(),
+          isArena
+              ? ExtendedImage.asset(
+                  'lib/assets/venues/ac arena.png',
+                  height: 20,
+                )
+              : SizedBox.shrink()
+        ],
+      );
+    }
+
     return Container(
         width: MediaQuery.of(context).size.width * 0.9,
         decoration: BoxDecoration(
@@ -184,72 +309,9 @@ extension _ContestStateExtension on _ContestViewState {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(contest.name,
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
-            Text('주최: ${contest.venue}',
-                style: TextStyle(fontSize: 12, color: Colors.grey)),
-            Text(
-              '일정: ${contest.startTime.month}월 ${contest.startTime.day}일 ${contest.startTime.hour}:${contest.startTime.minute.toString().padLeft(2, '0')} ~ ${contest.endTime.month}월 ${contest.endTime.day}일 ${contest.endTime.hour}:${contest.endTime.minute.toString().padLeft(2, '0')}',
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
+            contestTop(contest),
             SizedBox(height: 5),
-            Row(
-              children: [
-                TextButton(
-                  style: ButtonStyle(
-                      minimumSize: MaterialStateProperty.all(Size(0, 0)),
-                      backgroundColor: MaterialStateProperty.all(
-                        hasUrl
-                            ? CupertinoTheme.of(context).main
-                            : Colors.black12,
-                      ),
-                      foregroundColor: MaterialStateProperty.all(Colors.blue)),
-                  child: Text('대회 정보',
-                      style: TextStyle(
-                          color: hasUrl ? Colors.white : Colors.grey,
-                          fontSize: 12)),
-                  onPressed: () {
-                    hasUrl
-                        ? launchUrlString(contest.url!,
-                            mode: LaunchMode.externalApplication)
-                        : null;
-                  },
-                ),
-                SizedBox(width: 10),
-                FutureBuilder(
-                  future: notificationService.getContestPush(contest.name),
-                  builder: (context, snapshot) {
-                    bool isPush = snapshot.data ?? false;
-                    return TextButton(
-                      style: ButtonStyle(
-                          minimumSize: MaterialStateProperty.all(Size(0, 0)),
-                          backgroundColor: MaterialStateProperty.all(isPush
-                              ? CupertinoTheme.of(context).main
-                              : Colors.black12)),
-                      child: Text(isPush ? '알림 해제' : '알림 켜기',
-                          style: TextStyle(
-                            color: isPush ? Colors.white : Colors.grey,
-                            fontSize: 12,
-                          )),
-                      onPressed: () {
-                        setState(() {
-                          notificationService.toggleContestPush(contest);
-                        });
-                        Fluttertoast.showToast(
-                          msg: isPush ? '알림이 해제되었습니다.' : '알림이 설정되었습니다.',
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.BOTTOM,
-                          backgroundColor: Colors.grey[700],
-                          textColor: Colors.white,
-                          fontSize: 14.0,
-                        );
-                      },
-                    );
-                  },
-                )
-              ],
-            )
+            contestBottom(contest),
           ],
         ));
   }
