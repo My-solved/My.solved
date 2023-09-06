@@ -76,12 +76,12 @@ extension _ContestStateExtension on _ContestViewState {
             margin: EdgeInsets.only(left: 10, right: 10, top: 20),
             height: 30,
             child: ListView.builder(
-              itemCount: snapshot.data!.length,
+              itemCount: snapshot.data?.length,
               scrollDirection: Axis.horizontal,
               shrinkWrap: true,
               itemBuilder: (context, index) {
-                String venue = snapshot.data!.keys.elementAt(index);
-                bool isSelected = snapshot.data![venue]!;
+                String venue = snapshot.data?.keys.elementAt(index) ?? "";
+                bool isSelected = snapshot.data?[venue] ?? true;
                 bool isOthers = venue == 'Others';
 
                 return CupertinoButton(
@@ -97,19 +97,19 @@ extension _ContestStateExtension on _ContestViewState {
                       alignment: Alignment.center,
                       child: Row(
                         children: [
-                          isOthers
-                              ? Icon(
-                                  Icons.more_horiz,
-                                  size: 14,
-                                  color: isSelected
-                                      ? Colors.grey[200]
-                                      : Colors.grey[400],
-                                )
-                              : ExtendedImage.asset(
-                                  'lib/assets/venues/${venue.toLowerCase()}.png',
-                                  fit: BoxFit.fill,
-                                  width: 14,
-                                ),
+                          // isOthers
+                          // ? Icon(
+                          //     Icons.more_horiz,
+                          //     size: 14,
+                          //     color: isSelected
+                          //         ? Colors.grey[200]
+                          //         : Colors.grey[400],
+                          //   )
+                          // : ExtendedImage.asset(
+                          //     'lib/assets/venues/${venue.toLowerCase()}.png',
+                          //     fit: BoxFit.fill,
+                          //     width: 14,
+                          //   ),
                           SizedBox(
                             width: 5,
                           ),
@@ -154,7 +154,7 @@ extension _ContestStateExtension on _ContestViewState {
       future: networkService.requestContests(),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         if (snapshot.hasData) {
-          List<Contest> contests = snapshot.data![index].where((contest) {
+          List<Contest> contests = snapshot.data?[index].where((contest) {
             return _selectedVenues[contest.venue] == true;
           }).toList();
 
@@ -188,7 +188,7 @@ extension _ContestStateExtension on _ContestViewState {
     bool hasUrl = contest.url != null;
     bool isArena = false;
     if (contest.venue == 'BOJ Open') {
-      int contestId = int.parse(contest.url!.split('/').last);
+      int contestId = int.parse(contest.url?.split('/').last ?? "");
       isArena = _arenaContests.contains(contestId);
     }
 
@@ -198,10 +198,10 @@ extension _ContestStateExtension on _ContestViewState {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          ExtendedImage.asset(
-            'lib/assets/venues/${contest.venue.toLowerCase()}.png',
-            width: 30,
-          ),
+          // ExtendedImage.asset(
+          //   'lib/assets/venues/${contest.venue.toLowerCase()}.png',
+          //   width: 30,
+          // ),
           SizedBox(width: 10),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,7 +244,7 @@ extension _ContestStateExtension on _ContestViewState {
                     color: hasUrl ? Colors.white : Colors.grey, fontSize: 12)),
             onPressed: () {
               hasUrl
-                  ? launchUrlString(contest.url!,
+                  ? launchUrlString(contest.url ?? "",
                       mode: LaunchMode.externalApplication)
                   : null;
             },
@@ -288,12 +288,12 @@ extension _ContestStateExtension on _ContestViewState {
             },
           ),
           Spacer(),
-          isArena
-              ? ExtendedImage.asset(
-                  'lib/assets/venues/ac arena.png',
-                  height: 20,
-                )
-              : SizedBox.shrink()
+          // isArena
+          //     ? ExtendedImage.asset(
+          //         'lib/assets/venues/ac arena.png',
+          //         height: 20,
+          //       )
+          //     : SizedBox.shrink()
         ],
       );
     }
