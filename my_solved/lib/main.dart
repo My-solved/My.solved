@@ -51,6 +51,7 @@ class PageRouterState extends State<PageRouter> {
             ),
             theme: const CupertinoThemeData(
               brightness: Brightness.light,
+              scaffoldBackgroundColor: Color(0xFFF9F9F9),
               textTheme: CupertinoTextThemeData(
                 textStyle: TextStyle(
                   fontFamily: 'Pretendard',

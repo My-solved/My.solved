@@ -17,6 +17,8 @@ import 'package:my_solved/models/user/organizations.dart';
 import 'package:my_solved/models/user/tag_ratings.dart';
 import 'package:my_solved/models/user/top_100.dart';
 
+import '../models/contest.dart';
+
 class NetworkService {
   static final NetworkService _instance = NetworkService._privateConstructor();
 
@@ -210,14 +212,124 @@ class NetworkService {
     }
   }
 
-  Future<dom.Document> requestContests() async {
-    final response =
+  Future<List<List<Contest>>> requestContests() async {
+    List<Contest> upcomingContests(dom.Element element) {
+      if (element.getElementsByClassName('col-md-12').length < 5) {
+        return element
+            .getElementsByClassName('col-md-12')[2]
+            .getElementsByTagName('tbody')
+            .first
+            .getElementsByTagName('tr')
+            .toList()
+            .map((e) {
+          return Contest.fromElement(e);
+        }).toList();
+      } else {
+        return element
+            .getElementsByClassName('col-md-12')[4]
+            .getElementsByTagName('tbody')
+            .first
+            .getElementsByTagName('tr')
+            .toList()
+            .map<Contest>((e) {
+          return Contest.fromElement(e);
+        }).toList();
+      }
+    }
+
+    List<Contest> ongoingContests(dom.Element element) {
+      if (element.getElementsByClassName('col-md-12').length < 5) {
+        return element
+            .getElementsByClassName('col-md-12')[2]
+            .getElementsByTagName('tbody')
+            .first
+            .getElementsByTagName('tr')
+            .toList()
+            .map((e) {
+          return Contest.fromElement(e);
+        }).toList();
+      } else {
+        return [];
+      }
+    }
+
+    List<Contest> endedContests(dom.Element element) {
+      final endedContestList = element
+          .getElementsByClassName('col-md-12')[1]
+          .getElementsByTagName('tbody')
+          .first
+          .getElementsByTagName('tr')
+          .where(
+              (element) => element.getElementsByTagName('td')[5].text == '종료')
+          .toList();
+
+      return endedContestList.map((e) {
+        List<String> startTimeList = element
+            .getElementsByTagName('td')[3]
+            .text
+            .toString()
+            .replaceAll('년', '')
+            .replaceAll('월', '')
+            .replaceAll('일', '')
+            .split(' ');
+        DateTime startTime = DateTime.parse(
+                "${startTimeList[0].padLeft(4, "0")}-${startTimeList[1].padLeft(2, "0")}-${startTimeList[2].padLeft(2, "0")}T${startTimeList[3].padLeft(2, "0")}:00+09:00")
+            .toLocal();
+        List<String> endTimeList = element
+            .getElementsByTagName('td')[4]
+            .text
+            .toString()
+            .replaceAll('년', '')
+            .replaceAll('월', '')
+            .replaceAll('일', '')
+            .split(' ');
+        DateTime endTime = DateTime.parse(
+                "${endTimeList[0].padLeft(4, "0")}-${endTimeList[1].padLeft(2, "0")}-${endTimeList[2].padLeft(2, "0")}T${endTimeList[3].padLeft(2, "0")}:00+09:00")
+            .toLocal();
+
+        return Contest(
+          venue: 'BOJ Open',
+          name: e.getElementsByTagName('td')[0].text.trim(),
+          url:
+              'https://www.acmicpc.net${e.getElementsByTagName('td')[0].getElementsByTagName('a')[0].attributes['href']}',
+          startTime: startTime,
+          endTime: endTime,
+        );
+      }).toList();
+    }
+
+    final others =
         await http.get(Uri.parse("https://www.acmicpc.net/contest/other/list"));
+    dom.Document docOthers = parser.parse(others.body);
+
+    final ended = await http
+        .get(Uri.parse("https://www.acmicpc.net/contest/official/list"));
+    dom.Document docEnded = parser.parse(ended.body);
+
+    return [
+      ongoingContests(docOthers.body!),
+      upcomingContests(docOthers.body!),
+      endedContests(docEnded.body!),
+    ];
+  }
+
+  Future<Set<int>> requestArenaContests() async {
+    final response =
+        await http.get(Uri.parse("https://solved.ac/api/v3/arena/contests"));
     final statusCode = response.statusCode;
 
     if (statusCode == 200) {
-      dom.Document document = parser.parse(response.body);
-      return document;
+      Map<String, dynamic> contestMap = jsonDecode(response.body);
+      Set<int> contestIds = {};
+
+      for (var contests in contestMap.values) {
+        for (var contest in contests) {
+          if (contest['arenaBojContestId'] != null) {
+            contestIds.add(contest['arenaBojContestId']);
+          }
+        }
+      }
+      return contestIds;
     } else {
       throw Exception('Fail to load');
     }

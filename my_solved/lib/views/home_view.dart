@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:my_solved/models/user.dart';
 import 'package:my_solved/services/network_service.dart';
 import 'package:my_solved/services/user_service.dart';
@@ -25,6 +26,7 @@ class _HomeViewState extends State<HomeView> {
     });
 
     return CupertinoPageScaffold(
+      backgroundColor: Colors.white,
       child: SafeArea(
         child: SingleChildScrollView(
             scrollDirection: Axis.vertical,
