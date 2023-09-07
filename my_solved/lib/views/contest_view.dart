@@ -97,19 +97,19 @@ extension _ContestStateExtension on _ContestViewState {
                       alignment: Alignment.center,
                       child: Row(
                         children: [
-                          // isOthers
-                          // ? Icon(
-                          //     Icons.more_horiz,
-                          //     size: 14,
-                          //     color: isSelected
-                          //         ? Colors.grey[200]
-                          //         : Colors.grey[400],
-                          //   )
-                          // : ExtendedImage.asset(
-                          //     'lib/assets/venues/${venue.toLowerCase()}.png',
-                          //     fit: BoxFit.fill,
-                          //     width: 14,
-                          //   ),
+                          isOthers
+                          ? Icon(
+                              Icons.more_horiz,
+                              size: 14,
+                              color: isSelected
+                                  ? Colors.grey[200]
+                                  : Colors.grey[400],
+                            )
+                          : ExtendedImage.asset(
+                              'lib/assets/venues/${venue.toLowerCase()}.png',
+                              fit: BoxFit.fill,
+                              width: 14,
+                            ),
                           SizedBox(
                             width: 5,
                           ),
@@ -198,10 +198,10 @@ extension _ContestStateExtension on _ContestViewState {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // ExtendedImage.asset(
-          //   'lib/assets/venues/${contest.venue.toLowerCase()}.png',
-          //   width: 30,
-          // ),
+          ExtendedImage.asset(
+            'lib/assets/venues/${contest.venue.toLowerCase()}.png',
+            width: 30,
+          ),
           SizedBox(width: 10),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -288,12 +288,12 @@ extension _ContestStateExtension on _ContestViewState {
             },
           ),
           Spacer(),
-          // isArena
-          //     ? ExtendedImage.asset(
-          //         'lib/assets/venues/ac arena.png',
-          //         height: 20,
-          //       )
-          //     : SizedBox.shrink()
+          isArena
+              ? ExtendedImage.asset(
+                  'lib/assets/venues/ac arena.png',
+                  height: 20,
+                )
+              : SizedBox.shrink()
         ],
       );
     }
