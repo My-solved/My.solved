@@ -98,18 +98,18 @@ extension _ContestStateExtension on _ContestViewState {
                       child: Row(
                         children: [
                           isOthers
-                          ? Icon(
-                              Icons.more_horiz,
-                              size: 14,
-                              color: isSelected
-                                  ? Colors.grey[200]
-                                  : Colors.grey[400],
-                            )
-                          : ExtendedImage.asset(
-                              'lib/assets/venues/${venue.toLowerCase()}.png',
-                              fit: BoxFit.fill,
-                              width: 14,
-                            ),
+                              ? Icon(
+                                  Icons.more_horiz,
+                                  size: 14,
+                                  color: isSelected
+                                      ? Colors.grey[200]
+                                      : Colors.grey[400],
+                                )
+                              : ExtendedImage.asset(
+                                  'lib/assets/venues/${venue.toLowerCase()}.png',
+                                  fit: BoxFit.fill,
+                                  width: 14,
+                                ),
                           SizedBox(
                             width: 5,
                           ),
@@ -173,7 +173,7 @@ extension _ContestStateExtension on _ContestViewState {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  for (var c in contests) contest(context, c),
+                  for (var c in contests) contest(context, c, index),
                 ],
               ));
         } else {
@@ -184,7 +184,7 @@ extension _ContestStateExtension on _ContestViewState {
   }
 
   /// 대회 위젯
-  Widget contest(BuildContext context, Contest contest) {
+  Widget contest(BuildContext context, Contest contest, int contestType) {
     bool hasUrl = contest.url != null;
     bool isArena = false;
     if (contest.venue == 'BOJ Open') {
@@ -250,43 +250,44 @@ extension _ContestStateExtension on _ContestViewState {
             },
           ),
           SizedBox(width: 10),
-          FutureBuilder(
-            future: notificationService.getContestPush(contest.name),
-            builder: (context, snapshot) {
-              bool isPush = snapshot.data ?? false;
-              return TextButton(
-                style: ButtonStyle(
-                  shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10))),
-                  minimumSize: MaterialStateProperty.all(Size(0, 0)),
-                  backgroundColor: MaterialStateProperty.all(isPush
-                      ? CupertinoTheme.of(context).main
-                      : Colors.black12),
-                  padding: MaterialStateProperty.all(
-                      EdgeInsets.symmetric(horizontal: 10, vertical: 5)),
-                ),
-                child: Text(isPush ? '알림 설정 완료' : '알림 설정하기',
-                    style: TextStyle(
-                      color: isPush ? Colors.white : Colors.grey,
-                      fontSize: 12,
-                    )),
-                onPressed: () {
-                  // ignore: invalid_use_of_protected_member
-                  setState(() {
-                    notificationService.toggleContestPush(contest);
-                  });
-                  Fluttertoast.showToast(
-                    msg: isPush ? '알림이 해제되었습니다.' : '알림이 설정되었습니다.',
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.BOTTOM,
-                    backgroundColor: Colors.grey[700],
-                    textColor: Colors.white,
-                    fontSize: 14.0,
-                  );
-                },
-              );
-            },
-          ),
+          if (contestType == 1)
+            FutureBuilder(
+              future: notificationService.getContestPush(contest.name),
+              builder: (context, snapshot) {
+                bool isPush = snapshot.data ?? false;
+                return TextButton(
+                  style: ButtonStyle(
+                    shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10))),
+                    minimumSize: MaterialStateProperty.all(Size(0, 0)),
+                    backgroundColor: MaterialStateProperty.all(isPush
+                        ? CupertinoTheme.of(context).main
+                        : Colors.black12),
+                    padding: MaterialStateProperty.all(
+                        EdgeInsets.symmetric(horizontal: 10, vertical: 5)),
+                  ),
+                  child: Text(isPush ? '알림 설정 완료' : '알림 설정하기',
+                      style: TextStyle(
+                        color: isPush ? Colors.white : Colors.grey,
+                        fontSize: 12,
+                      )),
+                  onPressed: () {
+                    // ignore: invalid_use_of_protected_member
+                    setState(() {
+                      notificationService.toggleContestPush(contest);
+                    });
+                    Fluttertoast.showToast(
+                      msg: isPush ? '알림이 해제되었습니다.' : '알림이 설정되었습니다.',
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.BOTTOM,
+                      backgroundColor: Colors.grey[700],
+                      textColor: Colors.white,
+                      fontSize: 14.0,
+                    );
+                  },
+                );
+              },
+            ),
           Spacer(),
           isArena
               ? ExtendedImage.asset(
