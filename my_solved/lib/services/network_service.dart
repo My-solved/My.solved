@@ -96,7 +96,7 @@ class NetworkService {
 
   Future<Grass> requestStreak(String handle) async {
     final response = await http.get(Uri.parse(
-        "https://solved.ac/api/v3/user/grass?handle=$handle&topic=today-solved"));
+        "https://solved.ac/api/v3/user/grass?handle=$handle&topic=default"));
     final statusCode = response.statusCode;
 
     if (statusCode == 200) {

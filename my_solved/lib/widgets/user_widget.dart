@@ -126,6 +126,7 @@ Widget grass(BuildContext context, AsyncSnapshot<User> userSnapshot,
           int currentStreak = snapshot.data!.currentStreak;
           int longestStreak = snapshot.data!.longestStreak;
           String theme = snapshot.data!.theme ?? 'default';
+          String topic = snapshot.data!.topic;
 
           bool solvedToday = false;
 
@@ -138,7 +139,8 @@ Widget grass(BuildContext context, AsyncSnapshot<User> userSnapshot,
               month: now.month,
               day: now.day,
               weekDay: now.weekday,
-              solvedCount: 0,
+              solvedCount: -1,
+              isSolved: false,
               isFuture: false,
               isFrozen: false,
               isRepaired: false);
@@ -153,6 +155,7 @@ Widget grass(BuildContext context, AsyncSnapshot<User> userSnapshot,
                   day: now.day,
                   weekDay: now.weekday,
                   solvedCount: grass.last['value'],
+                  isSolved: grass.last['value'] >= 0,
                   isFuture: false,
                   isFrozen: false,
                   isRepaired: false);
@@ -177,6 +180,7 @@ Widget grass(BuildContext context, AsyncSnapshot<User> userSnapshot,
                 day: day,
                 weekDay: weekDay,
                 solvedCount: 0,
+                isSolved: false,
                 isFuture: true,
                 isFrozen: false,
                 isRepaired: false));
@@ -192,7 +196,8 @@ Widget grass(BuildContext context, AsyncSnapshot<User> userSnapshot,
             int month = yesterday.month;
             int day = yesterday.day;
             int weekDay = yesterday.weekday;
-            int solvedCount = 0;
+            int solvedCount = -1;
+            bool isSolved = false;
             bool isFrozen = false;
             bool isRepaired = false;
             String gl = '';
@@ -207,6 +212,7 @@ Widget grass(BuildContext context, AsyncSnapshot<User> userSnapshot,
                   isRepaired = true;
                 } else {
                   solvedCount = grass.last['value'];
+                  isSolved = solvedCount >= 0;
                   maxSolvedCount = max(maxSolvedCount, solvedCount);
                 }
                 grass.removeLast();
@@ -218,6 +224,7 @@ Widget grass(BuildContext context, AsyncSnapshot<User> userSnapshot,
                 day: day,
                 weekDay: weekDay,
                 solvedCount: solvedCount,
+                isSolved: isSolved,
                 isFuture: false,
                 isFrozen: isFrozen,
                 isRepaired: isRepaired));
@@ -275,9 +282,11 @@ Widget grass(BuildContext context, AsyncSnapshot<User> userSnapshot,
                     child: SvgPicture.asset(
                       'lib/assets/icons/streak.svg',
                       width: 20,
-                      color: solvedToday
-                          ? CupertinoTheme.of(context).main
-                          : Color(0xff8a8f95),
+                      colorFilter: ColorFilter.mode(
+                          solvedToday
+                              ? CupertinoTheme.of(context).main
+                              : Color(0xff8a8f95),
+                          BlendMode.srcATop),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -322,6 +331,39 @@ Widget grass(BuildContext context, AsyncSnapshot<User> userSnapshot,
                       itemCount: 35,
                       itemBuilder: (context, index) {
                         var date = streakDates[index];
+
+                        Color color = Color(0xffdddfe0);
+                        if (date.isRepaired) {
+                          color = CupertinoTheme.of(context).tier[0]!;
+                        } else if (date.isSolved) {
+                          if (topic == 'today-solved-max-tier') {
+                            color = CupertinoTheme.of(context)
+                                .tier[date.solvedCount]!;
+                          } else if (topic == 'today-solved') {
+                            color = CupertinoTheme.of(context).streakTheme[
+                                theme]![themeAccent(date.solvedCount)];
+                          }
+                        }
+
+                        String textTooltipBottom = '';
+                        if (date.isFrozen) {
+                          textTooltipBottom = '스트릭 프리즈 사용';
+                        } else if (date.isRepaired) {
+                          textTooltipBottom = '스트릭 리페어 사용';
+                        } else if (!date.isSolved) {
+                          textTooltipBottom = '-';
+                        } else {
+                          if (topic == 'today-solved-max-tier') {
+                            if (date.solvedCount == 0) {
+                              textTooltipBottom = 'Unrated';
+                            } else {
+                              textTooltipBottom = tierStr(date.solvedCount);
+                            }
+                          } else if (topic == 'today-solved') {
+                            textTooltipBottom = '${date.solvedCount}문제 해결';
+                          }
+                        }
+
                         try {
                           return date.isFuture
                               ? SizedBox.shrink()
@@ -336,11 +378,7 @@ Widget grass(BuildContext context, AsyncSnapshot<User> userSnapshot,
                                               '${date.year}/${date.month}/${date.day}\n',
                                         ),
                                         TextSpan(
-                                          text: date.isFrozen
-                                              ? '스트릭 프리즈 사용'
-                                              : date.isRepaired
-                                                  ? '스트릭 리페어 사용'
-                                                  : '${date.solvedCount}문제 해결',
+                                          text: textTooltipBottom,
                                         ),
                                       ]),
                                   triggerMode: TooltipTriggerMode.tap,
@@ -356,13 +394,7 @@ Widget grass(BuildContext context, AsyncSnapshot<User> userSnapshot,
                                           margin: EdgeInsets.all(5),
                                           alignment: Alignment.center,
                                           decoration: BoxDecoration(
-                                            color: date.isRepaired
-                                                ? CupertinoTheme.of(context)
-                                                    .streakTheme[theme]![0]
-                                                : CupertinoTheme.of(context)
-                                                        .streakTheme[theme]![
-                                                    themeAccent(
-                                                        date.solvedCount)],
+                                            color: color,
                                             borderRadius:
                                                 BorderRadius.circular(5),
                                           ),
@@ -411,74 +443,6 @@ Widget top100(
   int rating = snapshot.data?.rating ?? 0;
   int tier = snapshot.data?.tier ?? 0;
   int rank = snapshot.data?.rank ?? 0;
-
-  String tierStr(int tier) {
-    if (tier == 1) {
-      return 'Bronze V';
-    } else if (tier == 2) {
-      return 'Bronze IV';
-    } else if (tier == 3) {
-      return 'Bronze III';
-    } else if (tier == 4) {
-      return 'Bronze II';
-    } else if (tier == 5) {
-      return 'Bronze I';
-    } else if (tier == 6) {
-      return 'Silver V';
-    } else if (tier == 7) {
-      return 'Silver IV';
-    } else if (tier == 8) {
-      return 'Silver III';
-    } else if (tier == 9) {
-      return 'Silver II';
-    } else if (tier == 10) {
-      return 'Silver I';
-    } else if (tier == 11) {
-      return 'Gold V';
-    } else if (tier == 12) {
-      return 'Gold IV';
-    } else if (tier == 13) {
-      return 'Gold III';
-    } else if (tier == 14) {
-      return 'Gold II';
-    } else if (tier == 15) {
-      return 'Gold I';
-    } else if (tier == 16) {
-      return 'Platinum V';
-    } else if (tier == 17) {
-      return 'Platinum IV';
-    } else if (tier == 18) {
-      return 'Platinum III';
-    } else if (tier == 19) {
-      return 'Platinum II';
-    } else if (tier == 20) {
-      return 'Platinum I';
-    } else if (tier == 21) {
-      return 'Diamond V';
-    } else if (tier == 22) {
-      return 'Diamond IV';
-    } else if (tier == 23) {
-      return 'Diamond III';
-    } else if (tier == 24) {
-      return 'Diamond II';
-    } else if (tier == 25) {
-      return 'Diamond I';
-    } else if (tier == 26) {
-      return 'Ruby V';
-    } else if (tier == 27) {
-      return 'Ruby IV';
-    } else if (tier == 28) {
-      return 'Ruby III';
-    } else if (tier == 29) {
-      return 'Ruby II';
-    } else if (tier == 30) {
-      return 'Ruby I';
-    } else if (tier == 31) {
-      return 'Master';
-    } else {
-      return 'Unrated';
-    }
-  }
 
   Widget top100Header(int rating, int tier, int rank, BuildContext context) {
     Color rankBoxColor(int rankNum) {
@@ -972,7 +936,9 @@ Widget badges(BuildContext context, Future<Badges> future) {
                     SvgPicture.asset(
                       'lib/assets/icons/badge.svg',
                       width: MediaQuery.of(context).size.width * 0.04,
-                      color: Colors.black45,
+                      colorFilter: ColorFilter.mode(
+                          CupertinoTheme.of(context).textTheme.textStyle.color!,
+                          BlendMode.srcATop),
                     ),
                     const SizedBox(width: 5),
                     Text(
@@ -1458,6 +1424,74 @@ Widget badge(BuildContext context, Future future) {
           return CupertinoActivityIndicator();
         }
       });
+}
+
+String tierStr(int tier) {
+  if (tier == 1) {
+    return 'Bronze V';
+  } else if (tier == 2) {
+    return 'Bronze IV';
+  } else if (tier == 3) {
+    return 'Bronze III';
+  } else if (tier == 4) {
+    return 'Bronze II';
+  } else if (tier == 5) {
+    return 'Bronze I';
+  } else if (tier == 6) {
+    return 'Silver V';
+  } else if (tier == 7) {
+    return 'Silver IV';
+  } else if (tier == 8) {
+    return 'Silver III';
+  } else if (tier == 9) {
+    return 'Silver II';
+  } else if (tier == 10) {
+    return 'Silver I';
+  } else if (tier == 11) {
+    return 'Gold V';
+  } else if (tier == 12) {
+    return 'Gold IV';
+  } else if (tier == 13) {
+    return 'Gold III';
+  } else if (tier == 14) {
+    return 'Gold II';
+  } else if (tier == 15) {
+    return 'Gold I';
+  } else if (tier == 16) {
+    return 'Platinum V';
+  } else if (tier == 17) {
+    return 'Platinum IV';
+  } else if (tier == 18) {
+    return 'Platinum III';
+  } else if (tier == 19) {
+    return 'Platinum II';
+  } else if (tier == 20) {
+    return 'Platinum I';
+  } else if (tier == 21) {
+    return 'Diamond V';
+  } else if (tier == 22) {
+    return 'Diamond IV';
+  } else if (tier == 23) {
+    return 'Diamond III';
+  } else if (tier == 24) {
+    return 'Diamond II';
+  } else if (tier == 25) {
+    return 'Diamond I';
+  } else if (tier == 26) {
+    return 'Ruby V';
+  } else if (tier == 27) {
+    return 'Ruby IV';
+  } else if (tier == 28) {
+    return 'Ruby III';
+  } else if (tier == 29) {
+    return 'Ruby II';
+  } else if (tier == 30) {
+    return 'Ruby I';
+  } else if (tier == 31) {
+    return 'Master';
+  } else {
+    return 'Unrated';
+  }
 }
 
 Color levelColor(int level) {
