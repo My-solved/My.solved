@@ -239,6 +239,8 @@ class NetworkService {
 
     List<Contest> ongoingContests(dom.Element element) {
       if (element.getElementsByClassName('col-md-12').length < 5) {
+        return [];
+      } else {
         return element
             .getElementsByClassName('col-md-12')[2]
             .getElementsByTagName('tbody')
@@ -248,8 +250,6 @@ class NetworkService {
             .map((e) {
           return Contest.fromElement(e);
         }).toList();
-      } else {
-        return [];
       }
     }
 
