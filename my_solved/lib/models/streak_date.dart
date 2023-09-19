@@ -4,6 +4,7 @@ class StreakDate {
   final int year;
   final int weekDay;
   final int solvedCount;
+  final bool isSolved;
   final bool isFuture;
   final bool isFrozen;
   final bool isRepaired;
@@ -14,6 +15,7 @@ class StreakDate {
       required this.year,
       required this.weekDay,
       required this.solvedCount,
+      required this.isSolved,
       required this.isFuture,
       required this.isFrozen,
       required this.isRepaired});
