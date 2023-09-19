@@ -80,7 +80,8 @@ extension _ContestStateExtension on _ContestViewState {
               scrollDirection: Axis.horizontal,
               shrinkWrap: true,
               itemBuilder: (context, index) {
-                String venue = snapshot.data?.keys.elementAt(index) ?? "";
+                String venue =
+                    snapshot.data?.keys.elementAt(index) ?? "boj open";
                 bool isSelected = snapshot.data?[venue] ?? true;
                 bool isOthers = venue == 'Others';
 
@@ -195,11 +196,12 @@ extension _ContestStateExtension on _ContestViewState {
     /// 대회 위젯 상단
     /// 플랫폼 아이콘, 대회 이름, 대회 일정
     Widget contestTop(Contest contest) {
+      String venue = contest.venue?.toLowerCase() ?? "boj open";
       return Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           ExtendedImage.asset(
-            'lib/assets/venues/${contest.venue.toLowerCase()}.png',
+            'lib/assets/venues/$venue.png',
             width: 30,
           ),
           SizedBox(width: 10),

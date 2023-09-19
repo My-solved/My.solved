@@ -127,7 +127,7 @@ class NetworkService {
 
     if (statusCode == 200) {
       List<TagRatings> tagRatings =
-          json.decode(response.body).map<TagRatings>((json) {
+      json.decode(response.body).map<TagRatings>((json) {
         return TagRatings.fromJson(json);
       }).toList();
       return tagRatings;
@@ -144,7 +144,7 @@ class NetworkService {
 
     if (statusCode == 200) {
       SearchSuggestion search =
-          SearchSuggestion.fromJson(jsonDecode(response.body));
+      SearchSuggestion.fromJson(jsonDecode(response.body));
       return search;
     } else {
       throw Exception('Fail to load');
@@ -152,8 +152,8 @@ class NetworkService {
   }
 
   // 문제 검색
-  Future<SearchObject> requestSearchProblem(
-      String query, int? page, String? sort, String? direction) async {
+  Future<SearchObject> requestSearchProblem(String query, int? page,
+      String? sort, String? direction) async {
     String url = "https://solved.ac/api/v3/search/problem?query=$query";
     if (page != null) {
       url += "&page=$page";
@@ -214,7 +214,9 @@ class NetworkService {
 
   Future<List<List<Contest>>> requestContests() async {
     List<Contest> upcomingContests(dom.Element element) {
-      if (element.getElementsByClassName('col-md-12').length < 5) {
+      if (element
+          .getElementsByClassName('col-md-12')
+          .length < 5) {
         return element
             .getElementsByClassName('col-md-12')[2]
             .getElementsByTagName('tbody')
@@ -238,7 +240,9 @@ class NetworkService {
     }
 
     List<Contest> ongoingContests(dom.Element element) {
-      if (element.getElementsByClassName('col-md-12').length < 5) {
+      if (element
+          .getElementsByClassName('col-md-12')
+          .length < 5) {
         return [];
       } else {
         return element
@@ -273,7 +277,9 @@ class NetworkService {
             .replaceAll('일', '')
             .split(' ');
         DateTime startTime = DateTime.parse(
-                "${startTimeList[0].padLeft(4, "0")}-${startTimeList[1].padLeft(2, "0")}-${startTimeList[2].padLeft(2, "0")}T${startTimeList[3].padLeft(2, "0")}:00+09:00")
+            "${startTimeList[0].padLeft(4, "0")}-${startTimeList[1].padLeft(
+                2, "0")}-${startTimeList[2].padLeft(2, "0")}T${startTimeList[3]
+                .padLeft(2, "0")}:00+09:00")
             .toLocal();
         List<String> endTimeList = element
             .getElementsByTagName('td')[4]
@@ -284,14 +290,17 @@ class NetworkService {
             .replaceAll('일', '')
             .split(' ');
         DateTime endTime = DateTime.parse(
-                "${endTimeList[0].padLeft(4, "0")}-${endTimeList[1].padLeft(2, "0")}-${endTimeList[2].padLeft(2, "0")}T${endTimeList[3].padLeft(2, "0")}:00+09:00")
+            "${endTimeList[0].padLeft(4, "0")}-${endTimeList[1].padLeft(
+                2, "0")}-${endTimeList[2].padLeft(2, "0")}T${endTimeList[3]
+                .padLeft(2, "0")}:00+09:00")
             .toLocal();
 
         return Contest(
           venue: 'BOJ Open',
           name: e.getElementsByTagName('td')[0].text.trim(),
           url:
-              'https://www.acmicpc.net${e.getElementsByTagName('td')[0].getElementsByTagName('a')[0].attributes['href']}',
+          'https://www.acmicpc.net${e.getElementsByTagName('td')[0]
+              .getElementsByTagName('a')[0].attributes['href']}',
           startTime: startTime,
           endTime: endTime,
         );
@@ -299,12 +308,18 @@ class NetworkService {
     }
 
     final others =
-        await http.get(Uri.parse("https://www.acmicpc.net/contest/other/list"));
+    await http.get(Uri.parse("https://www.acmicpc.net/contest/other/list"));
     dom.Document docOthers = parser.parse(others.body);
+    final othersStatus = others.statusCode;
 
     final ended = await http
         .get(Uri.parse("https://www.acmicpc.net/contest/official/list"));
     dom.Document docEnded = parser.parse(ended.body);
+    final endedStatus = ended.statusCode;
+
+    if (othersStatus != 200 || endedStatus != 200) {
+      throw Exception('Failed to load');
+    }
 
     return [
       ongoingContests(docOthers.body!),
@@ -315,7 +330,7 @@ class NetworkService {
 
   Future<Set<int>> requestArenaContests() async {
     final response =
-        await http.get(Uri.parse("https://solved.ac/api/v3/arena/contests"));
+    await http.get(Uri.parse("https://solved.ac/api/v3/arena/contests"));
     final statusCode = response.statusCode;
 
     if (statusCode == 200) {
@@ -337,7 +352,7 @@ class NetworkService {
 
   Future<SiteStats> requestSiteStats() async {
     final response =
-        await http.get(Uri.parse("https://solved.ac/api/v3/site/stats"));
+    await http.get(Uri.parse("https://solved.ac/api/v3/site/stats"));
     final statusCode = response.statusCode;
     debugPrint(response.body);
 

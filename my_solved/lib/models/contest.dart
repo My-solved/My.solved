@@ -1,7 +1,7 @@
 import 'package:html/dom.dart';
 
 class Contest {
-  final String venue;
+  final String? venue;
   final String name;
   final String? url;
   final DateTime startTime;
