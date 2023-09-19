@@ -3,12 +3,14 @@ class Grass {
   final dynamic theme;
   final int currentStreak;
   final int longestStreak;
+  final String topic;
 
   const Grass({
     required this.grass,
     required this.theme,
     required this.currentStreak,
     required this.longestStreak,
+    required this.topic,
   });
 
   factory Grass.fromJson(Map<String, dynamic> json) {
@@ -17,6 +19,7 @@ class Grass {
       theme: json['theme'],
       currentStreak: json['currentStreak'],
       longestStreak: json['longestStreak'],
+      topic: json['topic'],
     );
   }
 }
