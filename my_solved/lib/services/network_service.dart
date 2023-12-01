@@ -267,7 +267,7 @@ class NetworkService {
           .toList();
 
       return endedContestList.map((e) {
-        List<String> startTimeList = element
+        List<String> startTimeList = e
             .getElementsByTagName('td')[3]
             .text
             .toString()
@@ -275,10 +275,7 @@ class NetworkService {
             .replaceAll('월', '')
             .replaceAll('일', '')
             .split(' ');
-        DateTime startTime = DateTime.parse(
-                "${startTimeList[0].padLeft(4, "0")}-${startTimeList[1].padLeft(2, "0")}-${startTimeList[2].padLeft(2, "0")}T${startTimeList[3].padLeft(2, "0")}:00+09:00")
-            .toLocal();
-        List<String> endTimeList = element
+        List<String> endTimeList = e
             .getElementsByTagName('td')[4]
             .text
             .toString()
@@ -286,6 +283,10 @@ class NetworkService {
             .replaceAll('월', '')
             .replaceAll('일', '')
             .split(' ');
+
+        DateTime startTime = DateTime.parse(
+                "${startTimeList[0].padLeft(4, "0")}-${startTimeList[1].padLeft(2, "0")}-${startTimeList[2].padLeft(2, "0")}T${startTimeList[3].padLeft(2, "0")}:00+09:00")
+            .toLocal();
         DateTime endTime = DateTime.parse(
                 "${endTimeList[0].padLeft(4, "0")}-${endTimeList[1].padLeft(2, "0")}-${endTimeList[2].padLeft(2, "0")}T${endTimeList[3].padLeft(2, "0")}:00+09:00")
             .toLocal();

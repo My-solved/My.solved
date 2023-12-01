@@ -133,7 +133,8 @@ Widget grass(BuildContext context, AsyncSnapshot<User> userSnapshot,
           grass.sort((a, b) => a['date'].compareTo(b['date']));
 
           List<StreakDate> streakDates = [];
-          DateTime now = DateTime.now().subtract(Duration(hours: 6));
+          DateTime now = DateTime.now().toUtc().add(Duration(hours: 3));
+
           StreakDate today = StreakDate(
               year: now.year,
               month: now.month,
