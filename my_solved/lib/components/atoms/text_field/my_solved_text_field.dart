@@ -20,14 +20,18 @@ class MySolvedTextField extends StatelessWidget {
       style: MySolvedTextStyle.body1,
       cursorColor: MySolvedColor.main,
       decoration: InputDecoration(
+        isDense: true,
+        contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
         hintStyle: MySolvedTextStyle.body1,
         hintText: hintText,
-        enabledBorder: UnderlineInputBorder(
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(
             color: MySolvedColor.textFieldBorder,
           ),
         ),
-        focusedBorder: UnderlineInputBorder(
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(
             color: MySolvedColor.main,
           ),

@@ -20,18 +20,19 @@ class MySolvedSearchField extends StatelessWidget {
       style: MySolvedTextStyle.body1,
       cursorColor: MySolvedColor.main,
       decoration: InputDecoration(
-        prefixIcon: Padding(
-          padding: const EdgeInsets.all(0.0),
-          child: Icon(Icons.search, size: 20),
-        ),
+        isDense: true,
+        contentPadding: EdgeInsets.zero,
+        prefixIcon: Icon(Icons.search, size: 20),
         hintStyle: MySolvedTextStyle.body1,
         hintText: hintText,
-        enabledBorder: UnderlineInputBorder(
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(
             color: MySolvedColor.textFieldBorder,
           ),
         ),
-        focusedBorder: UnderlineInputBorder(
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(
             color: MySolvedColor.main,
           ),
