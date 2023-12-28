@@ -1,5 +1,3 @@
-// TODO
-
 class StreakDate {
   final int day;
   final int month;

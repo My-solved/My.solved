@@ -1,4 +1,3 @@
-// TODO
 class User {
   final String? handle;
   final String? bio;
