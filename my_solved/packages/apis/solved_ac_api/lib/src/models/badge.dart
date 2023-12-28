@@ -1,3 +1,4 @@
+// TODO
 class Badge {
   final String badgeId;
   final String badgeImageUrl;
