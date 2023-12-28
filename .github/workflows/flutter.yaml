@@ -32,8 +32,13 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
-          flutter-version: "3.13.3"
-      - name: Analyze
+          flutter-version: "3.16.3"
+      - name: solved.ac api Analyze
+        run: |
+          cd my_solved/packages/apis/solved_ac_api
+          flutter pub get
+          flutter analyze
+      - name: My.solved Analyze
         run: |
           cd my_solved
           flutter pub get
