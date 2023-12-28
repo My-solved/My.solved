@@ -3,6 +3,7 @@ export 'contest.dart';
 export 'problem.dart';
 export 'search/object.dart';
 export 'search/suggestion.dart';
+export 'site_stats.dart';
 export 'streak_date.dart';
 export 'tag.dart';
 export 'user.dart';
