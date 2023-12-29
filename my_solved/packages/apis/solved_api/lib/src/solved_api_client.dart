@@ -4,17 +4,17 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:solved_api/solved_api.dart';
 
-class userRequestFailed implements Exception {}
+class UserRequestFailed implements Exception {}
 
-class backgroundRequestFailed implements Exception {}
+class BackgroundRequestFailed implements Exception {}
 
-class badgeRequestFailed implements Exception {}
+class BadgeRequestFailed implements Exception {}
 
-class searchRequestFailed implements Exception {}
+class SearchRequestFailed implements Exception {}
 
-class arenaRequestFailed implements Exception {}
+class ArenaRequestFailed implements Exception {}
 
-class siteRequestFailed implements Exception {}
+class SiteRequestFailed implements Exception {}
 
 class SolvedApiClient {
   SolvedApiClient({http.Client? httpClient})
@@ -31,7 +31,7 @@ class SolvedApiClient {
     final userResponse = await _httpClient.get(userRequest);
 
     if (userResponse.statusCode != 200) {
-      throw userRequestFailed();
+      throw UserRequestFailed();
     }
 
     final userJson = jsonDecode(userResponse.body);
@@ -46,7 +46,7 @@ class SolvedApiClient {
     final userResponse = await _httpClient.get(userRequest);
 
     if (userResponse.statusCode != 200) {
-      throw userRequestFailed();
+      throw UserRequestFailed();
     }
 
     final userJson = jsonDecode(userResponse.body);
@@ -61,7 +61,7 @@ class SolvedApiClient {
     final userResponse = await _httpClient.get(userRequest);
 
     if (userResponse.statusCode != 200) {
-      throw userRequestFailed();
+      throw UserRequestFailed();
     }
 
     final userJson = jsonDecode(userResponse.body);
@@ -76,7 +76,7 @@ class SolvedApiClient {
     final userResponse = await _httpClient.get(userRequest);
 
     if (userResponse.statusCode != 200) {
-      throw userRequestFailed();
+      throw UserRequestFailed();
     }
 
     final userJson = jsonDecode(userResponse.body);
@@ -91,7 +91,7 @@ class SolvedApiClient {
     final userResponse = await _httpClient.get(userRequest);
 
     if (userResponse.statusCode != 200) {
-      throw userRequestFailed();
+      throw UserRequestFailed();
     }
 
     final userJson = jsonDecode(userResponse.body);
@@ -106,7 +106,7 @@ class SolvedApiClient {
     final userResponse = await _httpClient.get(userRequest);
 
     if (userResponse.statusCode != 200) {
-      throw userRequestFailed();
+      throw UserRequestFailed();
     }
 
     final userJson = jsonDecode(userResponse.body);
@@ -121,7 +121,7 @@ class SolvedApiClient {
     final backgroundResponse = await _httpClient.get(backgroundRequest);
 
     if (backgroundResponse.statusCode != 200) {
-      throw backgroundRequestFailed();
+      throw BackgroundRequestFailed();
     }
 
     final backgroundJson = jsonDecode(backgroundResponse.body);
@@ -136,7 +136,7 @@ class SolvedApiClient {
     final badgeResponse = await _httpClient.get(badgeRequest);
 
     if (badgeResponse.statusCode != 200) {
-      throw badgeRequestFailed();
+      throw BadgeRequestFailed();
     }
 
     final badgeJson = jsonDecode(badgeResponse.body);
@@ -151,7 +151,7 @@ class SolvedApiClient {
     final searchResponse = await _httpClient.get(searchRequest);
 
     if (searchResponse.statusCode != 200) {
-      throw searchRequestFailed();
+      throw SearchRequestFailed();
     }
 
     final searchJson = jsonDecode(searchResponse.body);
@@ -171,7 +171,7 @@ class SolvedApiClient {
     final searchResponse = await _httpClient.get(searchRequest);
 
     if (searchResponse.statusCode != 200) {
-      throw searchRequestFailed();
+      throw SearchRequestFailed();
     }
 
     final searchJson = jsonDecode(searchResponse.body);
@@ -186,7 +186,7 @@ class SolvedApiClient {
     final searchResponse = await _httpClient.get(searchRequest);
 
     if (searchResponse.statusCode != 200) {
-      throw searchRequestFailed();
+      throw SearchRequestFailed();
     }
 
     final searchJson = jsonDecode(searchResponse.body);
@@ -200,7 +200,7 @@ class SolvedApiClient {
     final arenaResponse = await _httpClient.get(arenaRequest);
 
     if (arenaResponse.statusCode != 200) {
-      throw arenaRequestFailed();
+      throw ArenaRequestFailed();
     }
 
     final arenaJson = jsonDecode(arenaResponse.body);
@@ -214,7 +214,7 @@ class SolvedApiClient {
     final siteResponse = await _httpClient.get(siteRequest);
 
     if (siteResponse.statusCode != 200) {
-      throw siteRequestFailed();
+      throw SiteRequestFailed();
     }
 
     final siteJson = jsonDecode(siteResponse.body);
