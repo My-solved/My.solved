@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:solved_ac_api/solved_ac_api.dart';
+import 'package:solved_api/solved_api.dart';
 
 class userRequestFailed implements Exception {}
 
@@ -16,16 +16,17 @@ class arenaRequestFailed implements Exception {}
 
 class siteRequestFailed implements Exception {}
 
-class SolvedAcApiClient {
-  SolvedAcApiClient({http.Client? httpClient})
+class SolvedApiClient {
+  SolvedApiClient({http.Client? httpClient})
       : _httpClient = httpClient ?? http.Client();
 
-  static const String _baseUrl = 'solved.ac/api/v3';
+  static const String _baseUrl = 'solved.ac';
 
   final http.Client _httpClient;
 
   Future<User> userShow(String handle) async {
-    final userRequest = Uri.https(_baseUrl, '/user/show', {'handle': handle});
+    final userRequest =
+        Uri.https(_baseUrl, '/api/v3/user/show', {'handle': handle});
 
     final userResponse = await _httpClient.get(userRequest);
 
@@ -40,7 +41,7 @@ class SolvedAcApiClient {
 
   Future<Organizations> userOrganizations(String handle) async {
     final userRequest =
-        Uri.https(_baseUrl, '/user/organizations', {'handle': handle});
+        Uri.https(_baseUrl, '/api/v3/user/organizations', {'handle': handle});
 
     final userResponse = await _httpClient.get(userRequest);
 
@@ -54,8 +55,8 @@ class SolvedAcApiClient {
   }
 
   Future<Badges> userAvailableBadges(String handle) async {
-    final userRequest =
-        Uri.https(_baseUrl, '/user/available_badges', {'handle': handle});
+    final userRequest = Uri.https(
+        _baseUrl, '/api/v3/user/available_badges', {'handle': handle});
 
     final userResponse = await _httpClient.get(userRequest);
 
@@ -69,7 +70,8 @@ class SolvedAcApiClient {
   }
 
   Future<Grass> userGrass(String handle) async {
-    final userRequest = Uri.https(_baseUrl, '/user/grass', {'handle': handle});
+    final userRequest =
+        Uri.https(_baseUrl, '/api/v3/user/grass', {'handle': handle});
 
     final userResponse = await _httpClient.get(userRequest);
 
@@ -84,7 +86,7 @@ class SolvedAcApiClient {
 
   Future<Top100> userTop100(String handle) async {
     final userRequest =
-        Uri.https(_baseUrl, '/user/top_100', {'handle': handle});
+        Uri.https(_baseUrl, '/api/v3/user/top_100', {'handle': handle});
 
     final userResponse = await _httpClient.get(userRequest);
 
@@ -99,7 +101,7 @@ class SolvedAcApiClient {
 
   Future<List<TagRatings>> userTagRatings(String handle) async {
     final userRequest =
-        Uri.https(_baseUrl, '/user/tag_ratings', {'handle': handle});
+        Uri.https(_baseUrl, '/api/v3/user/tag_ratings', {'handle': handle});
 
     final userResponse = await _httpClient.get(userRequest);
 
@@ -113,8 +115,8 @@ class SolvedAcApiClient {
   }
 
   Future<Background> backgroundShow(String backgroundId) async {
-    final backgroundRequest =
-        Uri.https(_baseUrl, '/background/show', {'backgroundId': backgroundId});
+    final backgroundRequest = Uri.https(
+        _baseUrl, '/api/v3/background/show', {'backgroundId': backgroundId});
 
     final backgroundResponse = await _httpClient.get(backgroundRequest);
 
@@ -129,7 +131,7 @@ class SolvedAcApiClient {
 
   Future<Badge> badgeShow(String badgeId) async {
     final badgeRequest =
-        Uri.https(_baseUrl, '/badge/show', {'badgeId': badgeId});
+        Uri.https(_baseUrl, '/api/v3/badge/show', {'badgeId': badgeId});
 
     final badgeResponse = await _httpClient.get(badgeRequest);
 
@@ -144,7 +146,7 @@ class SolvedAcApiClient {
 
   Future<SearchSuggestion> searchSuggestion(String query) async {
     final searchRequest =
-        Uri.https(_baseUrl, '/search/suggestion', {'query': query});
+        Uri.https(_baseUrl, '/api/v3/search/suggestion', {'query': query});
 
     final searchResponse = await _httpClient.get(searchRequest);
 
@@ -159,7 +161,7 @@ class SolvedAcApiClient {
 
   Future<SearchObject> searchProblem(
       String query, int? page, String? sort, String? direction) async {
-    final searchRequest = Uri.https(_baseUrl, '/search/problem', {
+    final searchRequest = Uri.https(_baseUrl, '/api/v3/search/problem', {
       'query': query,
       'page': page.toString(),
       'sort': sort,
@@ -178,8 +180,8 @@ class SolvedAcApiClient {
   }
 
   Future<SearchObject> searchTag(String query, int? page) async {
-    final searchRequest = Uri.https(
-        _baseUrl, '/search/tag', {'query': query, 'page': page.toString()});
+    final searchRequest = Uri.https(_baseUrl, '/api/v3/search/tag',
+        {'query': query, 'page': page.toString()});
 
     final searchResponse = await _httpClient.get(searchRequest);
 
@@ -193,7 +195,7 @@ class SolvedAcApiClient {
   }
 
   Future<Set<int>> arenaContests() async {
-    final arenaRequest = Uri.https(_baseUrl, '/arena/contests');
+    final arenaRequest = Uri.https(_baseUrl, '/api/v3/arena/contests');
 
     final arenaResponse = await _httpClient.get(arenaRequest);
 
@@ -207,7 +209,7 @@ class SolvedAcApiClient {
   }
 
   Future<SiteStats> siteStats() async {
-    final siteRequest = Uri.https(_baseUrl, '/site/stats');
+    final siteRequest = Uri.https(_baseUrl, '/api/v3/site/stats');
 
     final siteResponse = await _httpClient.get(siteRequest);
 
