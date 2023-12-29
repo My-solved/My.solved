@@ -33,21 +33,21 @@ jobs:
         with:
           channel: "stable"
           flutter-version: "3.16.3"
-      - name: solved.ac api Analyze
+      - name: solved.ac API Analyze
         run: |
           cd my_solved/packages/apis/solved_api
           flutter pub get
           flutter analyze
-      - name: solved.ac api Test
+      - name: solved.ac API Test
         run: |
           cd my_solved/packages/apis/solved_api
           flutter test
-      - name: BOJ api Analyze
+      - name: BOJ API Analyze
         run: |
           cd my_solved/packages/apis/boj_api
           flutter pub get
           flutter analyze
-      - name: BOJ api Test
+      - name: BOJ API Test
         run: |
           cd my_solved/packages/apis/boj_api
           flutter test
