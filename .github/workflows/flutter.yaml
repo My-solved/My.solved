@@ -10,8 +10,8 @@ on:
       - dev
       - main
 env:
-  JAVA_VERSION: "12.x"
-  FLUTTER_VERSION: "3.13.3"
+  JAVA_VERSION: "16.x"
+  FLUTTER_VERSION: "3.16.3"
 jobs:
   analyze:
     name: Analyze Flutter 🔍
