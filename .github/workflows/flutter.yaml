@@ -33,11 +33,12 @@ jobs:
         with:
           channel: "stable"
           flutter-version: "3.16.3"
-      - name: solved.ac api Analyze
+      - name: solved.ac api Analyze & Test
         run: |
-          cd my_solved/packages/apis/solved_ac_api
+          cd my_solved/packages/apis/solved_api
           flutter pub get
           flutter analyze
+          flutter test
       - name: My.solved Analyze
         run: |
           cd my_solved
