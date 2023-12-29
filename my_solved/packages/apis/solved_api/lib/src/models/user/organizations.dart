@@ -8,11 +8,11 @@ class Organizations {
   });
 
   factory Organizations.fromJson(List<dynamic> json) {
-    List<Organization> organizations = <Organization>[];
-    organizations = json.map((i) => Organization.fromJson(i)).toList();
-
     return Organizations(
-      organizations: organizations,
+      organizations: json
+          .map((i) => Organization.fromJson(i))
+          .toList()
+          .cast<Organization>(),
     );
   }
 }
