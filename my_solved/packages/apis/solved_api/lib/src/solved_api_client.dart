@@ -69,9 +69,9 @@ class SolvedApiClient {
     return Badges.fromJson(userJson);
   }
 
-  Future<Grass> userGrass(String handle) async {
-    final userRequest =
-        Uri.https(_baseUrl, '/api/v3/user/grass', {'handle': handle});
+  Future<Grass> userGrass(String handle, String? topic) async {
+    final userRequest = Uri.https(_baseUrl, '/api/v3/user/grass',
+        {'handle': handle, 'topic': topic ?? 'default'});
 
     final userResponse = await _httpClient.get(userRequest);
 
