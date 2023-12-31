@@ -90,7 +90,7 @@ final class SolvedApiClient {
     return Streak.fromJson(userJson);
   }
 
-  Future<Top100> userTop100(String handle) async {
+  Future<List<Problem>> userTop100(String handle) async {
     final userRequest =
         Uri.https(_baseUrl, '/api/v3/user/top_100', {'handle': handle});
 
@@ -102,7 +102,10 @@ final class SolvedApiClient {
 
     final userJson = jsonDecode(userResponse.body);
 
-    return Top100.fromJson(userJson);
+    return userJson['items']
+        .map((i) => Problem.fromJson(i))
+        .cast<Problem>()
+        .toList();
   }
 
   Future<List<TagRatings>> userTagRatings(String handle) async {
