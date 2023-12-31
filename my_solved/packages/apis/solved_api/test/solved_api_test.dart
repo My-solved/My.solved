@@ -17971,7 +17971,71 @@ void main() {
       });
     });
 
-    group('searchTag', () {});
+    group('searchTag', () {
+      const query = 'number_theory';
+      const page = 1;
+      test('makes correct http request', () async {
+        final response = MockResponse();
+        when(() => response.statusCode).thenReturn(200);
+        when(() => response.body).thenReturn('{}');
+        when(() => httpClient.get(any())).thenAnswer((_) async => response);
+        try {
+          await apiClient.searchTag(query, page);
+        } catch (_) {}
+        verify(
+          () => httpClient.get(
+            Uri.https(
+              'solved.ac',
+              '/api/v3/search/tag',
+              {'query': query, 'page': page.toString()},
+            ),
+          ),
+        ).called(1);
+      });
+
+      test('returns SearchObject on valid response', () async {
+        final response = MockResponse();
+        when(() => response.statusCode).thenReturn(200);
+        when(() => response.body).thenReturn(
+          '''
+{
+  "count": 1,
+  "items": [
+    {
+      "key": "number_theory",
+      "isMeta": false,
+      "bojTagId": 95,
+      "problemCount": 1314,
+      "displayNames": [
+        {
+          "language": "ko",
+          "name": "정수론",
+          "short": "정수론"
+        },
+        {
+          "language": "en",
+          "name": "number theory",
+          "short": "number theory"
+        },
+        {
+          "language": "ja",
+          "name": "整数論",
+          "short": "整数論"
+        }
+      ],
+      "aliases": [
+        
+      ]
+    }
+  ]
+}
+        ''',
+        );
+        when(() => httpClient.get(any())).thenAnswer((_) async => response);
+        final actual = await apiClient.searchTag(query, page);
+        expect(actual, isA<SearchObject>());
+      });
+    });
 
     group('arenaContests', () {});
 
