@@ -194,7 +194,7 @@ class SolvedApiClient {
     return SearchObject.fromJson(searchJson);
   }
 
-  Future<Set<int>> arenaContests() async {
+  Future<List<ArenaContest>> arenaContests() async {
     final arenaRequest = Uri.https(_baseUrl, '/api/v3/arena/contests');
 
     final arenaResponse = await _httpClient.get(arenaRequest);
@@ -205,7 +205,13 @@ class SolvedApiClient {
 
     final arenaJson = jsonDecode(arenaResponse.body);
 
-    return Set<int>.from(arenaJson.map((x) => x['arenaBojContestId']));
+    final List<ArenaContest> arenaContests = [];
+    for (var status in arenaJson.keys) {
+      arenaJson[status].forEach((contest) {
+        arenaContests.add(ArenaContest.fromJson(contest));
+      });
+    }
+    return arenaContests;
   }
 
   Future<SiteStats> siteStats() async {
