@@ -75,7 +75,7 @@ final class SolvedApiClient {
         .cast<Badge>();
   }
 
-  Future<Grass> userGrass(String handle, String? topic) async {
+  Future<Streak> userGrass(String handle, String? topic) async {
     final userRequest = Uri.https(_baseUrl, '/api/v3/user/grass',
         {'handle': handle, 'topic': topic ?? 'default'});
 
@@ -87,7 +87,7 @@ final class SolvedApiClient {
 
     final userJson = jsonDecode(userResponse.body);
 
-    return Grass.fromJson(userJson);
+    return Streak.fromJson(userJson);
   }
 
   Future<Top100> userTop100(String handle) async {

@@ -7,7 +7,7 @@ export 'problem.dart';
 export 'search/object.dart';
 export 'search/suggestion.dart';
 export 'site_stats.dart';
-export 'streak_date.dart';
+export 'streak.dart';
 export 'tag.dart';
 export 'tag_ratings.dart';
 export 'top_100.dart';

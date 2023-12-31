@@ -264,7 +264,7 @@ void main() {
         ).called(1);
       });
 
-      test('returns Grass on valid response', () async {
+      test('returns Streak on valid response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(() => response.body).thenReturn('''
@@ -2263,7 +2263,10 @@ void main() {
         ''');
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
         final actual = await apiClient.userGrass(handle, topic);
-        expect(actual, isA<Grass>());
+        expect(
+            actual,
+            isA<Streak>()
+                .having((streak) => streak.grass, 'grass', isA<List<Grass>>()));
       });
     });
 
