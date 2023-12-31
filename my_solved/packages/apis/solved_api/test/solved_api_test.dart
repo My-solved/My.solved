@@ -15185,7 +15185,49 @@ void main() {
       });
     });
 
-    group('badgeShow', () {});
+    group('badgeShow', () {
+      const badgeId = 'boardgame';
+      test('makes correct http request', () async {
+        final response = MockResponse();
+        when(() => response.statusCode).thenReturn(200);
+        when(() => response.body).thenReturn('{}');
+        when(() => httpClient.get(any())).thenAnswer((_) async => response);
+        try {
+          await apiClient.badgeShow(badgeId);
+        } catch (_) {}
+        verify(
+          () => httpClient.get(
+            Uri.https(
+              'solved.ac',
+              '/api/v3/badge/show',
+              {'badgeId': badgeId},
+            ),
+          ),
+        ).called(1);
+      });
+
+      test('returns Badge on valid response', () async {
+        final response = MockResponse();
+        when(() => response.statusCode).thenReturn(200);
+        when(() => response.body).thenReturn('''
+        {
+  "badgeId": "boardgame",
+  "badgeImageUrl": "https://static.solved.ac/profile_badge/boardgame.png",
+  "unlockedUserCount": 584,
+  "displayName": "Boardgame Cup (2023)",
+  "displayDescription": "Solved 1 or more problems in Boardgame Cup",
+  "badgeTier": "bronze",
+  "badgeCategory": "contest",
+  "solvedCompanyRights": true,
+  "createdAt": "2023-01-09T07:54:03.000Z"
+}
+''');
+        when(() => httpClient.get(any())).thenAnswer((_) async => response);
+        final actual = await apiClient.badgeShow(badgeId);
+        expect(
+            actual, isA<Badge>().having((b) => b.badgeId, 'badgeId', badgeId));
+      });
+    });
 
     group('searchSuggestions', () {});
 
