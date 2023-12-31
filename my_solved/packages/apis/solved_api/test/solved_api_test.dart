@@ -18866,6 +18866,40 @@ void main() {
       });
     });
 
-    group('siteStats', () {});
+    group('siteStats', () {
+      test('makes correct http request', () async {
+        final response = MockResponse();
+        when(() => response.statusCode).thenReturn(200);
+        when(() => response.body).thenReturn('{}');
+        when(() => httpClient.get(any())).thenAnswer((_) async => response);
+        try {
+          await apiClient.siteStats();
+        } catch (_) {}
+        verify(
+          () => httpClient.get(
+            Uri.https(
+              'solved.ac',
+              '/api/v3/site/stats',
+            ),
+          ),
+        ).called(1);
+      });
+
+      test('returns SiteStats on valid response', () async {
+        final response = MockResponse();
+        when(() => response.statusCode).thenReturn(200);
+        when(() => response.body).thenReturn('''
+{
+  "problemCount": 29378,
+  "problemVotedCount": 21917,
+  "userCount": 121493,
+  "contributorCount": 3480,
+  "contributionCount": 385079
+}''');
+        when(() => httpClient.get(any())).thenAnswer((_) async => response);
+        final actual = await apiClient.siteStats();
+        expect(actual, isA<SiteStats>());
+      });
+    });
   });
 }
