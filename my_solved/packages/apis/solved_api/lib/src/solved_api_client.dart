@@ -16,7 +16,7 @@ class ArenaRequestFailed implements Exception {}
 
 class SiteRequestFailed implements Exception {}
 
-class SolvedApiClient {
+final class SolvedApiClient {
   SolvedApiClient({http.Client? httpClient})
       : _httpClient = httpClient ?? http.Client();
 
@@ -39,7 +39,7 @@ class SolvedApiClient {
     return User.fromJson(userJson);
   }
 
-  Future<Organizations> userOrganizations(String handle) async {
+  Future<List<Organization>> userOrganizations(String handle) async {
     final userRequest =
         Uri.https(_baseUrl, '/api/v3/user/organizations', {'handle': handle});
 
@@ -51,7 +51,10 @@ class SolvedApiClient {
 
     final userJson = jsonDecode(userResponse.body);
 
-    return Organizations.fromJson(userJson);
+    return userJson
+        .map((i) => Organization.fromJson(i))
+        .toList()
+        .cast<Organization>();
   }
 
   Future<Badges> userAvailableBadges(String handle) async {

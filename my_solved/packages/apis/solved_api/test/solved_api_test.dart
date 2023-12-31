@@ -115,7 +115,7 @@ void main() {
         ).called(1);
       });
 
-      test('returns Organizations on valid response', () async {
+      test('returns List<Organization> on valid response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(() => response.body).thenReturn('''
@@ -156,10 +156,10 @@ void main() {
         final actual = await apiClient.userOrganizations(handle);
         expect(
           actual,
-          isA<Organizations>().having(
-            (l) => l.organizations,
-            'organizations',
-            isA<List<Organization>>(),
+          isA<List<Organization>>().having(
+            (l) => l.length,
+            'length',
+            3,
           ),
         );
       });
