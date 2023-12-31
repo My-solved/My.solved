@@ -1,5 +1,5 @@
+export 'arena_contest.dart';
 export 'badge.dart';
-export 'contest.dart';
 export 'problem.dart';
 export 'search/object.dart';
 export 'search/suggestion.dart';
