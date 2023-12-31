@@ -18,38 +18,38 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Java
+      - name: Setup Java ☕
         uses: actions/setup-java@v4
         with:
           distribution: "zulu"
           java-version: ${{ env.JAVA_VERSION }}
-      - name: Setup Flutter
+      - name: Setup Flutter 🐦
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
           flutter-version: ${{ env.FLUTTER_VERSION }}
 
-      - name: solved.ac API Analyze
+      - name: solved.ac API Analyze 🔍
         run: |
           cd my_solved/packages/apis/solved_api
           flutter pub get
           flutter analyze
-      - name: solved.ac API Test
+      - name: solved.ac API Test 🛰️
         run: |
           cd my_solved/packages/apis/solved_api
           flutter test
 
-      - name: BOJ API Analyze
+      - name: BOJ API Analyze 🔍
         run: |
           cd my_solved/packages/apis/boj_api
           flutter pub get
           flutter analyze
-      - name: BOJ API Test
+      - name: BOJ API Test 🛰️
         run: |
           cd my_solved/packages/apis/boj_api
           flutter test
 
-      - name: My.solved Analyze
+      - name: My.solved Analyze 🔍
         run: |
           cd my_solved
           flutter pub get
