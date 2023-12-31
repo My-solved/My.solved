@@ -12,6 +12,5 @@ export 'user/badges.dart';
 export 'user/grass.dart';
 export 'user/organization.dart';
 export 'user/organizations.dart';
-export 'user/problem_stats.dart';
 export 'user/tag_ratings.dart';
 export 'user/top_100.dart';
