@@ -8,7 +8,6 @@ export 'streak_date.dart';
 export 'tag.dart';
 export 'user.dart';
 export 'user/background.dart';
-export 'user/badges.dart';
 export 'user/grass.dart';
 export 'user/organization.dart';
 export 'user/tag_ratings.dart';

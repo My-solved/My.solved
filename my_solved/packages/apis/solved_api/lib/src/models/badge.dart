@@ -6,6 +6,8 @@ class Badge {
   final String displayDescription;
   final String badgeTier;
   final String badgeCategory;
+  final bool solvedCompanyRights;
+  final DateTime createdAt;
 
   const Badge({
     required this.badgeId,
@@ -15,6 +17,8 @@ class Badge {
     required this.displayDescription,
     required this.badgeTier,
     required this.badgeCategory,
+    required this.solvedCompanyRights,
+    required this.createdAt,
   });
 
   factory Badge.fromJson(Map<String, dynamic> json) {
@@ -26,6 +30,8 @@ class Badge {
       displayDescription: json['displayDescription'],
       badgeTier: json['badgeTier'],
       badgeCategory: json['badgeCategory'],
+      solvedCompanyRights: json['solvedCompanyRights'],
+      createdAt: DateTime.parse(json['createdAt']),
     );
   }
 }

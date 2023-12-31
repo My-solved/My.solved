@@ -57,7 +57,7 @@ final class SolvedApiClient {
         .cast<Organization>();
   }
 
-  Future<Badges> userAvailableBadges(String handle) async {
+  Future<List<Badge>> userAvailableBadges(String handle) async {
     final userRequest = Uri.https(
         _baseUrl, '/api/v3/user/available_badges', {'handle': handle});
 
@@ -69,7 +69,10 @@ final class SolvedApiClient {
 
     final userJson = jsonDecode(userResponse.body);
 
-    return Badges.fromJson(userJson);
+    return userJson['items']
+        .map((i) => Badge.fromJson(i))
+        .toList()
+        .cast<Badge>();
   }
 
   Future<Grass> userGrass(String handle, String? topic) async {

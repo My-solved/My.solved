@@ -186,7 +186,7 @@ void main() {
         ).called(1);
       });
 
-      test('returns Badges on valid response', () async {
+      test('returns List<Badge> on valid response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(() => response.body).thenReturn('''
@@ -233,10 +233,10 @@ void main() {
         final actual = await apiClient.userAvailableBadges(handle);
         expect(
           actual,
-          isA<Badges>().having(
-            (l) => l.items,
-            'items',
-            isA<List<Badge>>(),
+          isA<List<Badge>>().having(
+            (l) => l.length,
+            'length',
+            3,
           ),
         );
       });
