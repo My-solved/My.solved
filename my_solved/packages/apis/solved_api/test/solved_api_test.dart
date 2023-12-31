@@ -15125,7 +15125,65 @@ void main() {
       });
     });
 
-    group('backgroundShow', () {});
+    group('backgroundShow', () {
+      const backgroundId = 'anniversary_1st';
+      test('makes correct http request', () async {
+        final response = MockResponse();
+        when(() => response.statusCode).thenReturn(200);
+        when(() => response.body).thenReturn('{}');
+        when(() => httpClient.get(any())).thenAnswer((_) async => response);
+        try {
+          await apiClient.backgroundShow(backgroundId);
+        } catch (_) {}
+        verify(
+          () => httpClient.get(
+            Uri.https(
+              'solved.ac',
+              '/api/v3/background/show',
+              {'backgroundId': backgroundId},
+            ),
+          ),
+        ).called(1);
+      });
+
+      test('returns Background on valid response', () async {
+        final response = MockResponse();
+        when(() => response.statusCode).thenReturn(200);
+        when(() => response.body).thenReturn('''
+        {
+  "backgroundId": "anniversary_1st",
+  "backgroundImageUrl": "https://static.solved.ac/profile_bg/anniversary_1st/anniversary_1st.png",
+  "fallbackBackgroundImageUrl": null,
+  "backgroundVideoUrl": null,
+  "unlockedUserCount": 5041,
+  "displayName": "Standard Library",
+  "displayDescription": "Celebrated the 1st anniversary of solved.ac",
+  "conditions": "Solved previously unsolved problem at between May 31st, 2021 00:00 and June 8th, 2021 00:00 (KST)",
+  "hiddenConditions": false,
+  "isIllust": true,
+  "backgroundCategory": "season",
+  "solvedCompanyRights": true,
+  "authors": [
+    {
+      "authorId": "havana723",
+      "role": "Illustration",
+      "authorUrl": null,
+      "handle": "havana723",
+      "twitter": null,
+      "instagram": null,
+      "displayName": "havana723"
+    }
+  ]
+}
+        ''');
+        when(() => httpClient.get(any())).thenAnswer((_) async => response);
+        final actual = await apiClient.backgroundShow(backgroundId);
+        expect(
+            actual,
+            isA<Background>()
+                .having((b) => b.backgroundId, 'backgroundId', backgroundId));
+      });
+    });
 
     group('badgeShow', () {});
 
