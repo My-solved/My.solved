@@ -15229,7 +15229,137 @@ void main() {
       });
     });
 
-    group('searchSuggestions', () {});
+    group('searchSuggestions', () {
+      const query = 'rsa';
+      test('makes correct http request', () async {
+        final response = MockResponse();
+        when(() => response.statusCode).thenReturn(200);
+        when(() => response.body).thenReturn('{}');
+        when(() => httpClient.get(any())).thenAnswer((_) async => response);
+        try {
+          await apiClient.searchSuggestion(query);
+        } catch (_) {}
+        verify(
+          () => httpClient.get(
+            Uri.https(
+              'solved.ac',
+              '/api/v3/search/suggestion',
+              {'query': query},
+            ),
+          ),
+        ).called(1);
+      });
+
+      test('returns SearchSuggestion on valid response', () async {
+        final response = MockResponse();
+        when(() => response.statusCode).thenReturn(200);
+        when(() => response.body).thenReturn('''
+{
+  "autocomplete": [
+    {
+      "caption": "rsa",
+      "description": ""
+    }
+  ],
+  "problems": [
+    {
+      "id": 3734,
+      "title": "RSA 인수 분해",
+      "level": 16,
+      "solved": 28,
+      "caption": "RSA 인수 분해",
+      "description": "#3734",
+      "href": "https://www.acmicpc.net/problem/3734"
+    },
+    {
+      "id": 6283,
+      "title": "Universal Question Answering System",
+      "level": 0,
+      "solved": 1,
+      "caption": "Universal Question Answering System",
+      "description": "#6283",
+      "href": "https://www.acmicpc.net/problem/6283"
+    },
+    {
+      "id": 6872,
+      "title": "RSA Numbers",
+      "level": 6,
+      "solved": 33,
+      "caption": "RSA Numbers",
+      "description": "#6872",
+      "href": "https://www.acmicpc.net/problem/6872"
+    },
+    {
+      "id": 7656,
+      "title": "만능 오라클",
+      "level": 6,
+      "solved": 114,
+      "caption": "만능 오라클",
+      "description": "#7656",
+      "href": "https://www.acmicpc.net/problem/7656"
+    },
+    {
+      "id": 9093,
+      "title": "단어 뒤집기",
+      "level": 5,
+      "solved": 14453,
+      "caption": "단어 뒤집기",
+      "description": "#9093",
+      "href": "https://www.acmicpc.net/problem/9093"
+    }
+  ],
+  "problemCount": 21,
+  "tags": [
+    {
+      "key": "graph_traversal",
+      "name": "그래프 탐색",
+      "problemCount": 1864,
+      "caption": "tag:graph_traversal",
+      "description": "1864 problems",
+      "href": "/problems/tags/graph_traversal"
+    }
+  ],
+  "tagCount": 1,
+  "users": [
+    {
+      "handle": "rsatang5",
+      "bio": "",
+      "badgeId": null,
+      "backgroundId": "balloon_004",
+      "profileImageUrl": null,
+      "solvedCount": 112,
+      "voteCount": 0,
+      "class": 2,
+      "classDecoration": "none",
+      "rivalCount": 0,
+      "reverseRivalCount": 0,
+      "tier": 11,
+      "rating": 824,
+      "ratingByProblemsSum": 699,
+      "ratingByClass": 50,
+      "ratingBySolvedCount": 75,
+      "ratingByVoteCount": 0,
+      "arenaTier": 0,
+      "arenaRating": 0,
+      "arenaMaxTier": 0,
+      "arenaMaxRating": 0,
+      "arenaCompetedRoundCount": 0,
+      "maxStreak": 0,
+      "coins": 0,
+      "stardusts": 0,
+      "joinedAt": "2021-09-17T09:32:29.000Z",
+      "bannedUntil": "1970-01-01T00:00:00.000Z",
+      "proUntil": "1970-01-01T00:00:00.000Z"
+    }
+  ],
+  "userCount": 1
+}
+''');
+        when(() => httpClient.get(any())).thenAnswer((_) async => response);
+        final actual = await apiClient.searchSuggestion(query);
+        expect(actual, isA<SearchSuggestion>());
+      });
+    });
 
     group('searchProblems', () {});
 
