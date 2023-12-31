@@ -2291,7 +2291,7 @@ void main() {
         ).called(1);
       });
 
-      test('returns UserTop100 on valid response', () async {
+      test('returns List<Problem> on valid response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(() => response.body).thenReturn('''
@@ -13972,7 +13972,11 @@ void main() {
         ''');
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
         final actual = await apiClient.userTop100(handle);
-        expect(actual, isA<Top100>());
+        expect(actual, isA<List<Problem>>());
+        for (final problem in actual) {
+          expect(problem, isA<Problem>());
+          expect(problem.tags, isA<List<Tag>>());
+        }
       });
     });
 
