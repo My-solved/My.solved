@@ -108,7 +108,7 @@ final class SolvedApiClient {
         .toList();
   }
 
-  Future<List<TagRatings>> userTagRatings(String handle) async {
+  Future<List<TagRating>> userTagRatings(String handle) async {
     final userRequest =
         Uri.https(_baseUrl, '/api/v3/user/tag_ratings', {'handle': handle});
 
@@ -120,7 +120,8 @@ final class SolvedApiClient {
 
     final userJson = jsonDecode(userResponse.body);
 
-    return List<TagRatings>.from(userJson.map((x) => TagRatings.fromJson(x)));
+    return List<TagRating>.from(
+        userJson.map((tagRating) => TagRating.fromJson(tagRating)));
   }
 
   Future<Background> backgroundShow(String backgroundId) async {

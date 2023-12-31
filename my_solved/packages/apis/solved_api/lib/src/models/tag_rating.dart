@@ -1,6 +1,7 @@
-class TagRatings {
-  final dynamic tag;
-  final dynamic aliases;
+import 'models.dart';
+
+class TagRating {
+  final Tag tag;
   final int solvedCount;
   final int rating;
   final int ratingByProblemsSum;
@@ -8,9 +9,8 @@ class TagRatings {
   final int ratingBySolvedCount;
   final int ratingProblemsCutoff;
 
-  const TagRatings(
+  const TagRating(
       {required this.tag,
-      required this.aliases,
       required this.solvedCount,
       required this.rating,
       required this.ratingByProblemsSum,
@@ -18,10 +18,9 @@ class TagRatings {
       required this.ratingBySolvedCount,
       required this.ratingProblemsCutoff});
 
-  factory TagRatings.fromJson(Map<String, dynamic> json) {
-    return TagRatings(
-        tag: json['tag'],
-        aliases: json['aliases'],
+  factory TagRating.fromJson(Map<String, dynamic> json) {
+    return TagRating(
+        tag: Tag.fromJson(json['tag']),
         solvedCount: json['solvedCount'],
         rating: json['rating'],
         ratingByProblemsSum: json['ratingByProblemsSum'],

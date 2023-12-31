@@ -86,6 +86,7 @@ void main() {
 }''',
         );
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
+
         final actual = await apiClient.userShow(handle);
         expect(
           actual,
@@ -153,6 +154,7 @@ void main() {
 ]
 ''');
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
+
         final actual = await apiClient.userOrganizations(handle);
         expect(
           actual,
@@ -230,6 +232,7 @@ void main() {
 }
 ''');
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
+
         final actual = await apiClient.userAvailableBadges(handle);
         expect(
           actual,
@@ -2262,6 +2265,7 @@ void main() {
 }
         ''');
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
+
         final actual = await apiClient.userGrass(handle, topic);
         expect(
             actual,
@@ -13971,6 +13975,7 @@ void main() {
 }
         ''');
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
+
         final actual = await apiClient.userTop100(handle);
         expect(actual, isA<List<Problem>>());
         for (final problem in actual) {
@@ -14001,7 +14006,7 @@ void main() {
         ).called(1);
       });
 
-      test('returns TagRatings on valid response', () async {
+      test('returns List<TagRating> on valid response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(() => response.body).thenReturn('''
@@ -15127,8 +15132,12 @@ void main() {
 ]
 ''');
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
+
         final actual = await apiClient.userTagRatings(handle);
-        expect(actual, isA<List<TagRatings>>());
+        expect(actual, isA<List<TagRating>>());
+        for (final tagRating in actual) {
+          expect(tagRating.tag, isA<Tag>());
+        }
       });
     });
 
@@ -15184,6 +15193,7 @@ void main() {
 }
         ''');
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
+
         final actual = await apiClient.backgroundShow(backgroundId);
         expect(
             actual,
@@ -15230,6 +15240,7 @@ void main() {
 }
 ''');
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
+
         final actual = await apiClient.badgeShow(badgeId);
         expect(
             actual, isA<Badge>().having((b) => b.badgeId, 'badgeId', badgeId));
@@ -15363,6 +15374,7 @@ void main() {
 }
 ''');
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
+
         final actual = await apiClient.searchSuggestion(query);
         expect(actual, isA<SearchSuggestion>());
       });
@@ -17972,6 +17984,7 @@ void main() {
 }
 ''');
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
+
         final actual =
             await apiClient.searchProblem(query, page, sort, direction);
         expect(actual, isA<SearchObject>());
@@ -18039,6 +18052,7 @@ void main() {
         ''',
         );
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
+
         final actual = await apiClient.searchTag(query, page);
         expect(actual, isA<SearchObject>());
       });
@@ -18868,6 +18882,7 @@ void main() {
   ]
 }''');
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
+
         final actual = await apiClient.arenaContests();
         expect(actual, isA<List<ArenaContest>>());
       });
@@ -18904,6 +18919,7 @@ void main() {
   "contributionCount": 385079
 }''');
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
+
         final actual = await apiClient.siteStats();
         expect(actual, isA<SiteStats>());
       });
