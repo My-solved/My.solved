@@ -1,3 +1,5 @@
+import 'models.dart';
+
 class Problem {
   final int problemId;
   final String titleKo;
@@ -6,9 +8,11 @@ class Problem {
   final int acceptedUserCount;
   final int level;
   final int votedUserCount;
+  final bool sprout;
+  final bool givesNoRating;
   final bool isLevelLocked;
-  final num averageTries;
-  final List<dynamic> tags;
+  final double averageTries;
+  final List<Tag> tags;
 
   const Problem({
     required this.problemId,
@@ -18,6 +22,8 @@ class Problem {
     required this.acceptedUserCount,
     required this.level,
     required this.votedUserCount,
+    required this.sprout,
+    required this.givesNoRating,
     required this.isLevelLocked,
     required this.averageTries,
     required this.tags,
@@ -32,9 +38,11 @@ class Problem {
       acceptedUserCount: json['acceptedUserCount'],
       level: json['level'],
       votedUserCount: json['votedUserCount'],
+      sprout: json['sprout'],
+      givesNoRating: json['givesNoRating'],
       isLevelLocked: json['isLevelLocked'],
       averageTries: json['averageTries'],
-      tags: json['tags'],
+      tags: json['tags'].map<Tag>((e) => Tag.fromJson(e)).cast<Tag>().toList(),
     );
   }
 }
