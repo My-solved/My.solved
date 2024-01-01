@@ -1,8 +1,8 @@
 class User {
-  final String? handle;
+  final String handle;
   final String? bio;
   final String? badgeId;
-  final String? backgroundId;
+  final String backgroundId;
   final String? profileImageUrl;
   final int solvedCount;
   final int voteCount;
@@ -19,9 +19,9 @@ class User {
   final int maxStreak;
   final int coins;
   final int stardusts;
-  final String? joinedAt;
-  final String? bannedUntil;
-  final String? proUntil;
+  final DateTime joinedAt;
+  final DateTime bannedUntil;
+  final DateTime proUntil;
   final int rank;
 
   const User({
@@ -73,9 +73,9 @@ class User {
       maxStreak: json['maxStreak'],
       coins: json['coins'],
       stardusts: json['stardusts'],
-      joinedAt: json['joinedAt'],
-      bannedUntil: json['bannedUntil'],
-      proUntil: json['proUntil'],
+      joinedAt: DateTime.parse(json['joinedAt']),
+      bannedUntil: DateTime.parse(json['bannedUntil']),
+      proUntil: DateTime.parse(json['proUntil']),
       rank: json['rank'],
     );
   }

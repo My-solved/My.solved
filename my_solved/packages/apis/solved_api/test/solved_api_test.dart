@@ -15388,6 +15388,7 @@ void main() {
       const page = 1;
       const sort = 'id';
       const direction = 'asc';
+
       test('makes correct http request', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
@@ -15412,7 +15413,7 @@ void main() {
         ).called(1);
       });
 
-      test('returns List<Problem> on valid response', () async {
+      test('returns SearchObject on valid response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(() => response.body).thenReturn('''
@@ -17990,13 +17991,15 @@ void main() {
 
         final actual =
             await apiClient.searchProblem(query, page, sort, direction);
-        expect(actual, isA<List<Problem>>());
+        expect(actual, isA<SearchObject>());
+        expect(actual.items, isA<List<Problem>>());
       });
     });
 
     group('searchTag', () {
       const query = 'number_theory';
       const page = 1;
+
       test('makes correct http request', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
@@ -18058,6 +18061,7 @@ void main() {
 
         final actual = await apiClient.searchTag(query, page);
         expect(actual, isA<SearchObject>());
+        expect(actual.items, isA<List<Tag>>());
       });
     });
 
@@ -18114,7 +18118,7 @@ void main() {
       "needsAclToRegister": false,
       "cancellationDisabled": false,
       "languages": [
-        
+
       ],
       "isRegistered": false
     },
@@ -18146,7 +18150,7 @@ void main() {
       "needsAclToRegister": false,
       "cancellationDisabled": true,
       "languages": [
-        
+
       ],
       "isRegistered": true
     },
@@ -18178,7 +18182,7 @@ void main() {
       "needsAclToRegister": true,
       "cancellationDisabled": true,
       "languages": [
-        
+
       ],
       "isRegistered": false
     },
@@ -18210,7 +18214,7 @@ void main() {
       "needsAclToRegister": true,
       "cancellationDisabled": true,
       "languages": [
-        
+
       ],
       "isRegistered": true
     },
@@ -18242,7 +18246,7 @@ void main() {
       "needsAclToRegister": false,
       "cancellationDisabled": false,
       "languages": [
-        
+
       ],
       "isRegistered": false
     },
@@ -18274,13 +18278,13 @@ void main() {
       "needsAclToRegister": false,
       "cancellationDisabled": false,
       "languages": [
-        
+
       ],
       "isRegistered": false
     }
   ],
   "ongoing": [
-    
+
   ],
   "ended": [
     {

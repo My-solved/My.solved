@@ -3,7 +3,7 @@ export 'background.dart';
 export 'badge.dart';
 export 'organization.dart';
 export 'problem.dart';
-export 'search/object.dart';
+export 'search_object.dart';
 export 'search_suggestion.dart';
 export 'site_stats.dart';
 export 'streak.dart';
