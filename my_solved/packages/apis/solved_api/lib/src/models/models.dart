@@ -4,7 +4,7 @@ export 'badge.dart';
 export 'organization.dart';
 export 'problem.dart';
 export 'search/object.dart';
-export 'search/suggestion.dart';
+export 'search_suggestion.dart';
 export 'site_stats.dart';
 export 'streak.dart';
 export 'tag.dart';

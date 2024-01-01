@@ -15377,6 +15377,9 @@ void main() {
 
         final actual = await apiClient.searchSuggestion(query);
         expect(actual, isA<SearchSuggestion>());
+        expect(actual.problems, isA<List<ProblemSuggestion>>());
+        expect(actual.tags, isA<List<TagSuggestion>>());
+        expect(actual.users, isA<List<UserSuggestion>>());
       });
     });
 
