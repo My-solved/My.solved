@@ -1,7 +1,6 @@
 export 'arena_contest.dart';
 export 'background.dart';
 export 'badge.dart';
-export 'grass.dart';
 export 'organization.dart';
 export 'problem.dart';
 export 'search/object.dart';
