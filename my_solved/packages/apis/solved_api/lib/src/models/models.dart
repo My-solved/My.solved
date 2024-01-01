@@ -8,5 +8,4 @@ export 'search/suggestion.dart';
 export 'site_stats.dart';
 export 'streak.dart';
 export 'tag.dart';
-export 'tag_rating.dart';
 export 'user.dart';
