@@ -169,7 +169,7 @@ final class SolvedApiClient {
     return SearchSuggestion.fromJson(searchJson);
   }
 
-  Future<SearchObject> searchProblem(
+  Future<List<Problem>> searchProblem(
       String query, int? page, String? sort, String? direction) async {
     final searchRequest = Uri.https(_baseUrl, '/api/v3/search/problem', {
       'query': query,
@@ -186,7 +186,9 @@ final class SolvedApiClient {
 
     final searchJson = jsonDecode(searchResponse.body);
 
-    return SearchObject.fromJson(searchJson);
+    return List<Problem>.from(
+            searchJson['items'].map((problem) => Problem.fromJson(problem)))
+        .toList();
   }
 
   Future<SearchObject> searchTag(String query, int? page) async {

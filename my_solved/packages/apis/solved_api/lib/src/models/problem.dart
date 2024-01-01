@@ -12,7 +12,7 @@ class Problem {
   final bool sprout;
   final bool givesNoRating;
   final bool isLevelLocked;
-  final double averageTries;
+  final num averageTries;
   final bool official;
   final List<Tag> tags;
 

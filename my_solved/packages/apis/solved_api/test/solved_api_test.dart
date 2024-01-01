@@ -15412,7 +15412,7 @@ void main() {
         ).called(1);
       });
 
-      test('returns SearchObject on valid response', () async {
+      test('returns List<Problem> on valid response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(() => response.body).thenReturn('''
@@ -17990,7 +17990,7 @@ void main() {
 
         final actual =
             await apiClient.searchProblem(query, page, sort, direction);
-        expect(actual, isA<SearchObject>());
+        expect(actual, isA<List<Problem>>());
       });
     });
 
