@@ -49,6 +49,36 @@ jobs:
           cd my_solved/packages/apis/boj_api
           flutter test
 
+      - name: User Repository Analyze 🔍
+        run: |
+          cd my_solved/packages/repositories/user_repository
+          flutter pub get
+          flutter analyze
+      - name: User Repository Test 🛰️
+        run: |
+          cd my_solved/packages/repositories/user_repository
+          flutter test
+
+      - name: Search Repository Analyze 🔍
+        run: |
+          cd my_solved/packages/repositories/search_repository
+          flutter pub get
+          flutter analyze
+      - name: Search Repository Test 🛰️
+        run: |
+          cd my_solved/packages/repositories/search_repository
+          flutter test
+
+      - name: Contest Repository Analyze 🔍
+        run: |
+          cd my_solved/packages/repositories/contest_repository
+          flutter pub get
+          flutter analyze
+      - name: Contest Repository Test 🛰️
+        run: |
+          cd my_solved/packages/repositories/contest_repository
+          flutter test
+
       - name: My.solved Analyze 🔍
         run: |
           cd my_solved
