@@ -27,15 +27,20 @@ dependencies:
   flutter_app_badger: ^1.5.0
   intl: ^0.18.0
 
+  flutter_bloc: ^8.1.3
+  meta: ^1.9.1
+  go_router: ^13.0.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^2.0.0
+  flutter_lints: ^3.0.1
 
 flutter:
   uses-material-design: true
   assets:
+    - assets/images/logo.png
     - assets/images/classes/
     - assets/images/tiers/
     - assets/images/icons/
