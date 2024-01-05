@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
+import 'package:my_solved/features/home/screen/home_screen.dart';
 import 'package:my_solved/features/root/bloc/root_bloc.dart';
 
 class RootScreen extends StatelessWidget {
@@ -41,7 +42,7 @@ class _RootViewState extends State<RootView> {
       ),
     ];
     List<Widget> bottomNaviScreen = [
-      Text("Home"),
+      HomeScreen(),
       Text("Search"),
       Text("Contest"),
     ];
