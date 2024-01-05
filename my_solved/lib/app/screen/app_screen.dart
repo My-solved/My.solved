@@ -38,7 +38,7 @@ class _AppViewState extends State<AppView> {
             case AppLoggedOut:
               return LoginScreen();
             default:
-              return RootView();
+              return RootScreen();
           }
         },
       ),

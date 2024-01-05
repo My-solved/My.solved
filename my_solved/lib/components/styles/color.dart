@@ -11,4 +11,6 @@ class MySolvedColor {
   static const Color disabledButtonBackground = Color(0xFFD9D9D9);
 
   static const Color textFieldBorder = Color(0xFFD9D9D9);
+
+  static const Color bottomNavigationBarUnselected = Color(0xFFC4C4C4);
 }
