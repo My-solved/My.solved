@@ -1,16 +1,32 @@
 part of 'login_bloc.dart';
 
 @immutable
-abstract class LoginEvent {}
+abstract class LoginEvent extends Equatable {}
 
-class LoginHandleFieldOnChanged extends LoginEvent {
+class HandleTextFieldOnChanged extends LoginEvent {
   final String handle;
 
-  LoginHandleFieldOnChanged({required this.handle});
+  HandleTextFieldOnChanged({required this.handle});
+
+  @override
+  List<Object?> get props => [handle];
 }
 
-class LoginHandleFieldOnSummited extends LoginEvent {
+class HandleTextFieldOnSummited extends LoginEvent {
   final String handle;
 
-  LoginHandleFieldOnSummited({required this.handle});
+  HandleTextFieldOnSummited({required this.handle});
+
+  @override
+  List<Object?> get props => [handle];
+}
+
+class LoginButtonTapped extends LoginEvent {
+  final BuildContext context;
+  final String handle;
+
+  LoginButtonTapped({required this.context, required this.handle});
+
+  @override
+  List<Object?> get props => [context];
 }

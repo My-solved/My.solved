@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-import 'package:my_solved/components/utils/routes.dart';
+import 'package:my_solved/app/bloc/app_bloc.dart';
 
 part 'splash_event.dart';
 part 'splash_state.dart';
@@ -16,8 +15,6 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
     Emitter<SplashState> emit,
   ) async {
     Future.delayed(Duration(seconds: 1));
-
-    // TODO: 로그인 상태에 따라 분기
-    event.context.pushNamed(Routes.login.name);
+    event.context.read<AppBloc>().add(AppInit());
   }
 }

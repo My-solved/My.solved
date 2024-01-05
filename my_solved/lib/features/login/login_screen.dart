@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 import 'package:my_solved/components/atoms/button/button.dart';
 import 'package:my_solved/components/atoms/text_field/text_field.dart';
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
-import 'package:my_solved/components/utils/routes.dart';
 import 'package:my_solved/features/login/login_bloc.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -62,15 +60,20 @@ class _LoginViewState extends State<LoginView> {
                           hintText: "아이디를 입력해주세요",
                           onChange: (text) => context
                               .read<LoginBloc>()
-                              .add(LoginHandleFieldOnChanged(handle: text)),
+                              .add(HandleTextFieldOnChanged(handle: text)),
                           onSubmitted: (text) => context
                               .read<LoginBloc>()
-                              .add(LoginHandleFieldOnSummited(handle: text)),
+                              .add(HandleTextFieldOnSummited(handle: text)),
                         ),
                         MySolvedFillButton(
                           onPressed: state.handle.isEmpty
                               ? null
-                              : () => context.goNamed(Routes.root.name),
+                              : () => context
+                                  .read<LoginBloc>()
+                                  .add(LoginButtonTapped(
+                                    context: context,
+                                    handle: state.handle,
+                                  )),
                           text: "로그인",
                         ),
                       ],

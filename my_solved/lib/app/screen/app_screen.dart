@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_solved/app/bloc/app_bloc.dart';
-import 'package:my_solved/app/routes/app_router.dart';
+import 'package:my_solved/features/login/login_screen.dart';
+import 'package:my_solved/features/root/root_screen.dart';
+import 'package:my_solved/features/splash/splash_screen.dart';
+import 'package:my_solved/packages/user_repository/lib/user_repository.dart';
 
 class AppScreen extends StatelessWidget {
   const AppScreen({super.key});
@@ -9,21 +12,36 @@ class AppScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => AppBloc(),
+      create: (context) => AppBloc(userRepository: UserRepository()),
       child: AppView(),
     );
   }
 }
 
-class AppView extends StatelessWidget {
+class AppView extends StatefulWidget {
   const AppView({super.key});
 
   @override
+  State<AppView> createState() => _AppViewState();
+}
+
+class _AppViewState extends State<AppView> {
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      routeInformationProvider: AppRouter.router.routeInformationProvider,
-      routeInformationParser: AppRouter.router.routeInformationParser,
-      routerDelegate: AppRouter.router.routerDelegate,
+    return MaterialApp(
+      home: BlocBuilder<AppBloc, AppState>(
+        bloc: context.read<AppBloc>(),
+        builder: (context, state) {
+          switch (state.runtimeType) {
+            case AppInitial:
+              return SplashScreen();
+            case AppLoggedOut:
+              return LoginScreen();
+            default:
+              return RootView();
+          }
+        },
+      ),
     );
   }
 }
