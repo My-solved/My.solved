@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_solved/components/styles/color.dart';
-import 'package:my_solved/features/root/root_bloc.dart';
+import 'package:my_solved/components/styles/font.dart';
+import 'package:my_solved/features/root/bloc/root_bloc.dart';
 
 class RootScreen extends StatelessWidget {
   const RootScreen({super.key});
@@ -54,7 +55,9 @@ class _RootViewState extends State<RootView> {
             items: bottomNavItems,
             currentIndex: state.tabIndex,
             selectedItemColor: MySolvedColor.main,
+            selectedLabelStyle: MySolvedTextStyle.caption2,
             unselectedItemColor: MySolvedColor.bottomNavigationBarUnselected,
+            unselectedLabelStyle: MySolvedTextStyle.caption2,
             onTap: (index) {
               context
                   .read<RootBloc>()

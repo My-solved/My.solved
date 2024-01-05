@@ -29,4 +29,10 @@ class MySolvedTextStyle {
     fontWeight: FontWeight.w300,
     fontFamily: MySolvedFont.pretendard,
   );
+
+  static const TextStyle caption2 = TextStyle(
+    fontSize: 10.0,
+    fontWeight: FontWeight.w300,
+    fontFamily: MySolvedFont.pretendard,
+  );
 }

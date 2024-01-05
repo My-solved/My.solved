@@ -4,7 +4,7 @@ import 'package:my_solved/components/atoms/button/button.dart';
 import 'package:my_solved/components/atoms/text_field/text_field.dart';
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
-import 'package:my_solved/features/login/login_bloc.dart';
+import 'package:my_solved/features/login/bloc/login_bloc.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});

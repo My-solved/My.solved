@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_solved/app/bloc/app_bloc.dart';
-import 'package:my_solved/features/login/login_screen.dart';
-import 'package:my_solved/features/root/root_screen.dart';
-import 'package:my_solved/features/splash/splash_screen.dart';
+import 'package:my_solved/features/login/screen/login_screen.dart';
+import 'package:my_solved/features/root/screen/root_screen.dart';
+import 'package:my_solved/features/splash/screen/splash_screen.dart';
 import 'package:my_solved/packages/user_repository/lib/user_repository.dart';
 
 class AppScreen extends StatelessWidget {
