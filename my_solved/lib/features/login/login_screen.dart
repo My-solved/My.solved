@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:my_solved/components/atoms/button/button.dart';
 import 'package:my_solved/components/atoms/text_field/text_field.dart';
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
+import 'package:my_solved/components/utils/routes.dart';
 import 'package:my_solved/features/login/login_bloc.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -36,39 +38,46 @@ class _LoginViewState extends State<LoginView> {
               const EdgeInsets.only(top: 100, right: 20, left: 20, bottom: 40),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "계정 연결하기",
-                    style: MySolvedTextStyle.title1,
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    "백준 아이디를 입력해주세요!",
-                    style: MySolvedTextStyle.body2.copyWith(
-                      color: MySolvedColor.secondaryFont,
-                    ),
-                  ),
-                  SizedBox(height: 42),
-                  BlocBuilder(
-                    bloc: BlocProvider.of<LoginBloc>(context),
-                    builder: (context, state) {
-                      return MySolvedTextField(
-                        hintText: "아이디를 입력해주세요",
-                        onChange: (text) {},
-                        onSubmitted: (text) {},
-                      );
-                    },
-                  ),
-                ],
+            children: [
+              Text(
+                "계정 연결하기",
+                style: MySolvedTextStyle.title1,
               ),
-              MySolvedFillButton(
-                onPressed: () {},
-                text: "로그인",
-              )
+              SizedBox(height: 4),
+              Text(
+                "백준 아이디를 입력해주세요!",
+                style: MySolvedTextStyle.body2.copyWith(
+                  color: MySolvedColor.secondaryFont,
+                ),
+              ),
+              SizedBox(height: 42),
+              BlocBuilder<LoginBloc, LoginState>(
+                bloc: BlocProvider.of<LoginBloc>(context),
+                builder: (context, state) {
+                  return Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        MySolvedTextField(
+                          hintText: "아이디를 입력해주세요",
+                          onChange: (text) => context
+                              .read<LoginBloc>()
+                              .add(LoginHandleFieldOnChanged(handle: text)),
+                          onSubmitted: (text) => context
+                              .read<LoginBloc>()
+                              .add(LoginHandleFieldOnSummited(handle: text)),
+                        ),
+                        MySolvedFillButton(
+                          onPressed: state.handle.isEmpty
+                              ? null
+                              : () => context.goNamed(Routes.root.name),
+                          text: "로그인",
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ],
           ),
         ),

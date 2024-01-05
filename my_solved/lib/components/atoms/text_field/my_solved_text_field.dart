@@ -7,8 +7,8 @@ class MySolvedTextField extends StatelessWidget {
     required this.hintText,
     required this.onChange,
     required this.onSubmitted,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final String hintText;
   final Function(String value) onChange;
