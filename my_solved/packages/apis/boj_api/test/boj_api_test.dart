@@ -78,9 +78,15 @@ void main() {
         expect(
             contests[0].url, equals('https://acmicpc.net/contest/view/1084'));
         expect(
-            contests[0].startTime, equals(DateTime(2023, 8, 15, 16).toLocal()));
+            contests[0].startTime,
+            equals(DateTime.fromMillisecondsSinceEpoch(1692082800 * 1000,
+                    isUtc: true)
+                .toLocal()));
         expect(
-            contests[0].endTime, equals(DateTime(2023, 8, 15, 20).toLocal()));
+            contests[0].endTime,
+            equals(DateTime.fromMillisecondsSinceEpoch(1692097200 * 1000,
+                    isUtc: true)
+                .toLocal()));
       });
     });
   });
