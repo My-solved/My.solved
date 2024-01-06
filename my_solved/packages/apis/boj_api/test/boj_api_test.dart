@@ -77,8 +77,10 @@ void main() {
                 '제3회 고려대학교 MatKor Cup : 2023 Summer Open Contest - Phase 1 · Arena #3'));
         expect(
             contests[0].url, equals('https://acmicpc.net/contest/view/1084'));
-        expect(contests[0].startTime, equals(DateTime(2023, 8, 15, 16)));
-        expect(contests[0].endTime, equals(DateTime(2023, 8, 15, 20)));
+        expect(
+            contests[0].startTime, equals(DateTime(2023, 8, 15, 16).toLocal()));
+        expect(
+            contests[0].endTime, equals(DateTime(2023, 8, 15, 20).toLocal()));
       });
     });
   });
