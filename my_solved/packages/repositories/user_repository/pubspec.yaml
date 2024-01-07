@@ -1,6 +1,7 @@
 name: user_repository
 description: "A new Flutter package project."
 version: 0.0.1
+publish_to: 'none'
 
 environment:
   sdk: '>=3.2.3 <4.0.0'
