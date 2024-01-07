@@ -16,7 +16,7 @@ class ArenaRequestFailed implements Exception {}
 
 class SiteRequestFailed implements Exception {}
 
-final class SolvedApiClient {
+class SolvedApiClient {
   SolvedApiClient({http.Client? httpClient})
       : _httpClient = httpClient ?? http.Client();
 

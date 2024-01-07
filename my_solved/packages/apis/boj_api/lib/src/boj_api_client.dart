@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 
 class ContestRequestFailed implements Exception {}
 
-final class BojApiClient {
+class BojApiClient {
   BojApiClient({http.Client? httpClient})
       : _httpClient = httpClient ?? http.Client();
 
