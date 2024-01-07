@@ -18084,7 +18084,7 @@ void main() {
         ).called(1);
       });
 
-      test('returns ArenaContests on valid response', () async {
+      test('returns List<ArenaContest> on valid response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(() => response.body).thenReturn('''
