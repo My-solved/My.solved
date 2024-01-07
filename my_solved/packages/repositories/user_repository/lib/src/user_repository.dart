@@ -31,4 +31,16 @@ class UserRepository {
   Future<List<TagRating>> getTagRatings(String handle) async {
     return await _solvedApiClient.userTagRatings(handle);
   }
+
+  Future<Background> getBackground(String backgroundId) async {
+    return await _solvedApiClient.backgroundShow(backgroundId);
+  }
+
+  Future<Badge> getBadge(String badgeId) async {
+    return await _solvedApiClient.badgeShow(badgeId);
+  }
+
+  Future<SiteStats> getSiteStats() async {
+    return await _solvedApiClient.siteStats();
+  }
 }

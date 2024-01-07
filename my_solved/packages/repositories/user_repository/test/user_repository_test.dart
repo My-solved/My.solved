@@ -17,6 +17,10 @@ class MockProblem extends Mock implements solved_api.Problem {}
 
 class MockTagRating extends Mock implements solved_api.TagRating {}
 
+class MockBackground extends Mock implements solved_api.Background {}
+
+class MockSiteStats extends Mock implements solved_api.SiteStats {}
+
 void main() {
   group('UserRepository', () {
     late solved_api.SolvedApiClient solvedApiClient;
@@ -142,6 +146,61 @@ void main() {
             .thenAnswer((_) async => tagRatings);
 
         expect(await userRepository.getTagRatings(handle), tagRatings);
+      });
+    });
+
+    group('getBackground', () {
+      const backgroundId = 'boardgame_5';
+
+      test('calls backgroundShow with correct backgroundId', () async {
+        try {
+          await userRepository.getBackground(backgroundId);
+        } catch (_) {}
+        verify(() => solvedApiClient.backgroundShow(backgroundId)).called(1);
+      });
+
+      test('returns correct background on success', () async {
+        final background = MockBackground();
+        when(() => solvedApiClient.backgroundShow(backgroundId))
+            .thenAnswer((_) async => background);
+
+        expect(await userRepository.getBackground(backgroundId), background);
+      });
+    });
+
+    group('getBadge', () {
+      const badgeId = 'boardgame';
+
+      test('calls badgeShow with correct badgeId', () async {
+        try {
+          await userRepository.getBadge(badgeId);
+        } catch (_) {}
+        verify(() => solvedApiClient.badgeShow(badgeId)).called(1);
+      });
+
+      test('returns correct badge on success', () async {
+        final badge = MockBadge();
+        when(() => solvedApiClient.badgeShow(badgeId))
+            .thenAnswer((_) async => badge);
+
+        expect(await userRepository.getBadge(badgeId), badge);
+      });
+    });
+
+    group('getSiteStats', () {
+      test('calls siteStats', () async {
+        try {
+          await userRepository.getSiteStats();
+        } catch (_) {}
+        verify(() => solvedApiClient.siteStats()).called(1);
+      });
+
+      test('returns correct siteStats on success', () async {
+        final siteStats = MockSiteStats();
+        when(() => solvedApiClient.siteStats())
+            .thenAnswer((_) async => siteStats);
+
+        expect(await userRepository.getSiteStats(), siteStats);
       });
     });
   });
