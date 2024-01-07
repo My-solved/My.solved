@@ -34,13 +34,18 @@ class Contest {
             isUtc: true)
         .toLocal();
 
+    String? url =
+        element.getElementsByTagName('td')[1].getElementsByTagName('a').isEmpty
+            ? null
+            : element
+                .getElementsByTagName('td')[1]
+                .getElementsByTagName('a')[0]
+                .attributes['href'];
+
     return Contest(
       venue: element.getElementsByTagName('td')[0].text,
       name: element.getElementsByTagName('td')[1].text,
-      url: element
-          .getElementsByTagName('td')[1]
-          .getElementsByTagName('a')[0]
-          .attributes['href'],
+      url: url,
       startTime: startTime,
       endTime: endTime,
     );

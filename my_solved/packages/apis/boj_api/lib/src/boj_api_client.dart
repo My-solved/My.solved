@@ -34,7 +34,7 @@ final class BojApiClient {
         .where((element) => element.getElementsByTagName('td')[4].text == '종료')
         .toList();
 
-    return contestListElement
+    final endedContestList = contestListElement
         .map((element) {
           element
               .getElementsByTagName('td')
@@ -53,5 +53,45 @@ final class BojApiClient {
         })
         .toList()
         .cast<Contest>();
+
+    return endedContestList;
+  }
+
+  Future<(List<Contest>, List<Contest>)> otherContestList() async {
+    final contestRequest = Uri.https(_baseUrl, '/contest/other/list');
+
+    final contestResponse = await _httpClient.get(contestRequest);
+
+    if (contestResponse.statusCode != 200) {
+      throw ContestRequestFailed();
+    }
+
+    dom.Document document = parser.parse(contestResponse.body);
+
+    final upcomingContestListElement = document
+        .getElementsByClassName('col-md-12')[
+            document.getElementsByClassName('col-md-12').length < 5 ? 2 : 4]
+        .getElementsByTagName('tbody')
+        .first
+        .getElementsByTagName('tr')
+        .toList()
+        .map((e) => Contest.fromElement(e))
+        .toList()
+        .cast<Contest>();
+
+    final endedContestListElement =
+        document.getElementsByClassName('col-md-12').length < 5
+            ? [].cast<Contest>()
+            : document
+                .getElementsByClassName('col-md-12')[2]
+                .getElementsByTagName('tbody')
+                .first
+                .getElementsByTagName('tr')
+                .toList()
+                .map((e) => Contest.fromElement(e))
+                .toList()
+                .cast<Contest>();
+
+    return (upcomingContestListElement, endedContestListElement);
   }
 }
