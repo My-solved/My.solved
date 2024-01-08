@@ -2,38 +2,84 @@ on:
   push:
     branches:
       - dev
-      - main
     paths-ignore:
       - '**/README.md'
   pull_request:
     branches:
       - dev
-      - main
+
 env:
-  JAVA_VERSION: "12.x"
-  FLUTTER_VERSION: "3.13.3"
+  JAVA_VERSION: "21.x"
+  FLUTTER_VERSION: "3.16.3"
+
 jobs:
   analyze:
     name: Analyze Flutter 🔍
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Setup Java
-        uses: actions/setup-java@v2
+      - uses: actions/checkout@v4
+      - name: Setup Java ☕
+        uses: actions/setup-java@v4
         with:
           distribution: "zulu"
           java-version: ${{ env.JAVA_VERSION }}
-      - name: Load cache
-        uses: actions/cache@v2
-        with:
-          path: ${{ runner.tool_cache }}/flutter
-          key: flutter-${{ env.flutter_version }}-stable
-      - name: Setup Flutter
+      - name: Setup Flutter 🐦
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
-          flutter-version: "3.13.3"
-      - name: Analyze
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: solved.ac API Analyze 🔍
+        run: |
+          cd my_solved/packages/apis/solved_api
+          flutter pub get
+          flutter analyze
+      - name: solved.ac API Test 🛰️
+        run: |
+          cd my_solved/packages/apis/solved_api
+          flutter test
+
+      - name: BOJ API Analyze 🔍
+        run: |
+          cd my_solved/packages/apis/boj_api
+          flutter pub get
+          flutter analyze
+      - name: BOJ API Test 🛰️
+        run: |
+          cd my_solved/packages/apis/boj_api
+          flutter test
+
+      - name: User Repository Analyze 🔍
+        run: |
+          cd my_solved/packages/repositories/user_repository
+          flutter pub get
+          flutter analyze
+      - name: User Repository Test 🛰️
+        run: |
+          cd my_solved/packages/repositories/user_repository
+          flutter test
+
+      - name: Search Repository Analyze 🔍
+        run: |
+          cd my_solved/packages/repositories/search_repository
+          flutter pub get
+          flutter analyze
+      - name: Search Repository Test 🛰️
+        run: |
+          cd my_solved/packages/repositories/search_repository
+          flutter test
+
+      - name: Contest Repository Analyze 🔍
+        run: |
+          cd my_solved/packages/repositories/contest_repository
+          flutter pub get
+          flutter analyze
+      - name: Contest Repository Test 🛰️
+        run: |
+          cd my_solved/packages/repositories/contest_repository
+          flutter test
+
+      - name: My.solved Analyze 🔍
         run: |
           cd my_solved
           flutter pub get
