@@ -7,6 +7,7 @@ import 'package:my_solved/components/styles/font.dart';
 import 'package:my_solved/features/contest/screen/contest_screen.dart';
 import 'package:my_solved/features/home/screen/home_screen.dart';
 import 'package:my_solved/features/root/bloc/root_bloc.dart';
+import 'package:my_solved/features/search/screen/search_screen.dart';
 import 'package:my_solved/features/setting/screen/setting_screen.dart';
 
 class RootScreen extends StatelessWidget {
@@ -52,7 +53,7 @@ class _RootViewState extends State<RootView> {
       HomeScreen(
         scaffoldKey: _scaffoldKey,
       ),
-      Text("Search"),
+      SearchScreen(),
       ContestScreen(),
     ];
     return BlocBuilder<RootBloc, RootState>(
