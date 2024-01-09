@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:my_solved/app/bloc/app_bloc.dart';
 import 'package:my_solved/components/atoms/button/my_solved_text_button.dart';
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
 import 'package:my_solved/features/home/screen/home_screen.dart';
 import 'package:my_solved/features/root/bloc/root_bloc.dart';
+import 'package:my_solved/features/setting/screen/setting_screen.dart';
 
 class RootScreen extends StatelessWidget {
   const RootScreen({super.key});
@@ -104,9 +106,19 @@ class HomeDrawer extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    MySolvedTextButton(onPressed: () {}, text: "설정"),
+                    MySolvedTextButton(
+                      onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => SettingScreen()),
+                      ),
+                      text: "설정",
+                    ),
                     SizedBox(height: 16),
-                    MySolvedTextButton(onPressed: () {}, text: "로그아웃"),
+                    MySolvedTextButton(
+                      onPressed: () => context.read<AppBloc>().add(Logout()),
+                      text: "로그아웃",
+                    ),
                   ],
                 ),
               ),
