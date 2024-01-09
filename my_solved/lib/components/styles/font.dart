@@ -18,6 +18,12 @@ class MySolvedTextStyle {
     fontFamily: MySolvedFont.pretendard,
   );
 
+  static const TextStyle title5 = TextStyle(
+    fontSize: 16.0,
+    fontWeight: FontWeight.w600,
+    fontFamily: MySolvedFont.pretendard,
+  );
+
   static const TextStyle body1 = TextStyle(
     fontSize: 16.0,
     fontWeight: FontWeight.w400,

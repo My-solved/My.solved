@@ -37,6 +37,7 @@ class RootView extends StatefulWidget {
 
 class _RootViewState extends State<RootView> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     List<BottomNavigationBarItem> bottomNavItems = [
