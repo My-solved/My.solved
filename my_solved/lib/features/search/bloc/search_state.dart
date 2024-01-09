@@ -1,5 +1,6 @@
 part of 'search_bloc.dart';
 
+@immutable
 abstract class SearchState extends Equatable {
   final String text;
 

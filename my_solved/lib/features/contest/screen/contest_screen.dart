@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_solved/components/molecules/segmented_control/segmented_control.dart';
+import 'package:my_solved/features/contest/bloc/contest_bloc.dart';
 
 class ContestScreen extends StatelessWidget {
   const ContestScreen({super.key});
@@ -10,11 +12,17 @@ class ContestScreen extends StatelessWidget {
       appBar: AppBar(
         leading: Padding(
           padding: const EdgeInsets.only(left: 16),
-          child: MySolvedSegmentedControl(
-            defaultIndex: 0,
-            screenTitles: ["진행중인 대회", "예정된 대회"],
-            onSelected: (index) {
-              print(index);
+          child: BlocBuilder<ContestBloc, ContestState>(
+            builder: (context, state) {
+              return MySolvedSegmentedControl(
+                defaultIndex: 0,
+                screenTitles: ["진행중인 대회", "예정된 대회"],
+                onSelected: (index) {
+                  context
+                      .read<ContestBloc>()
+                      .add(SegmentedControlTapped(index: index));
+                },
+              );
             },
           ),
         ),

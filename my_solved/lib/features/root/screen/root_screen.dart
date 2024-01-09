@@ -4,6 +4,7 @@ import 'package:my_solved/app/bloc/app_bloc.dart';
 import 'package:my_solved/components/atoms/button/my_solved_text_button.dart';
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
+import 'package:my_solved/features/contest/bloc/contest_bloc.dart';
 import 'package:my_solved/features/contest/screen/contest_screen.dart';
 import 'package:my_solved/features/home/screen/home_screen.dart';
 import 'package:my_solved/features/root/bloc/root_bloc.dart';
@@ -22,6 +23,7 @@ class RootScreen extends StatelessWidget {
       providers: [
         BlocProvider(create: (context) => RootBloc(handle: handle)),
         BlocProvider(create: (context) => SearchBloc()),
+        BlocProvider(create: (context) => ContestBloc()),
       ],
       child: RootView(),
     );
