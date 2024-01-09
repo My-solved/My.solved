@@ -8,10 +8,7 @@ class SearchScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => SearchBloc(),
-      child: SearchScreen(),
-    );
+    return SearchView();
   }
 }
 
@@ -29,14 +26,48 @@ class _SearchViewState extends State<SearchView> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              MySolvedSearchField(
-                hintText: "문제, 사용자, 태그를 입력해주세요",
-                onChange: (text) {},
-                onSubmitted: (text) {},
-              ),
-            ],
+          child: BlocConsumer<SearchBloc, SearchState>(
+            listener: (context, state) {
+              if (state is SearchFailure) {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: Text("네트워크 오류가 발생했어요"),
+                      content: Text("잠시 후 다시 시도해주세요\n${state.errorMessage}"),
+                      actions: [
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text("확인"),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              }
+            },
+            bloc: BlocProvider.of<SearchBloc>(context),
+            builder: (context, state) {
+              return Column(
+                children: [
+                  MySolvedSearchField(
+                    hintText: "문제, 사용자, 태그를 입력해주세요",
+                    onChange: (text) => context
+                        .read<SearchBloc>()
+                        .add(SearchTextFieldOnChanged(text: text)),
+                    onSubmitted: (text) => context
+                        .read<SearchBloc>()
+                        .add(SearchTextFieldOnSummited(text: text)),
+                  ),
+                  if (state is SearchSuccess)
+                    Center(
+                      child: Text("Success"),
+                    ),
+                ],
+              );
+            },
           ),
         ),
       ),

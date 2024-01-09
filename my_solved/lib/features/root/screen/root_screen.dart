@@ -7,17 +7,21 @@ import 'package:my_solved/components/styles/font.dart';
 import 'package:my_solved/features/contest/screen/contest_screen.dart';
 import 'package:my_solved/features/home/screen/home_screen.dart';
 import 'package:my_solved/features/root/bloc/root_bloc.dart';
+import 'package:my_solved/features/search/bloc/search_bloc.dart';
 import 'package:my_solved/features/search/screen/search_screen.dart';
 import 'package:my_solved/features/setting/screen/setting_screen.dart';
 
 class RootScreen extends StatelessWidget {
-  const RootScreen({super.key});
+  final String handle;
+
+  const RootScreen({required this.handle, super.key});
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => RootBloc()),
+        BlocProvider(create: (context) => RootBloc(handle: handle)),
+        BlocProvider(create: (context) => SearchBloc()),
       ],
       child: RootView(),
     );
@@ -102,6 +106,13 @@ class HomeDrawer extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                child: Text(
+                  context.read<RootBloc>().handle,
+                  style: MySolvedTextStyle.title3,
+                ),
+              ),
               Divider(color: MySolvedColor.divider),
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),

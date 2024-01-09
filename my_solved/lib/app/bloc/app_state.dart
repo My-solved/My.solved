@@ -14,6 +14,10 @@ class AppLoggedOut extends AppState {
 }
 
 class AppLoggedIn extends AppState {
+  final String handle;
+
+  AppLoggedIn({required this.handle});
+
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [handle];
 }

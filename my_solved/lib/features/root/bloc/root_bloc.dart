@@ -6,7 +6,10 @@ part 'root_state.dart';
 part 'root_event.dart';
 
 class RootBloc extends Bloc<RootEvent, RootState> {
-  RootBloc() : super(RootInitial(tabIndex: 0)) {
+  final String handle;
+
+  RootBloc({required this.handle})
+      : super(RootInitial(handle: handle, tabIndex: 0)) {
     on<NavigationBarItemTapped>(_onNavigationBarItemTppaed);
   }
 
@@ -14,6 +17,6 @@ class RootBloc extends Bloc<RootEvent, RootState> {
     NavigationBarItemTapped event,
     Emitter<RootState> emit,
   ) {
-    emit(RootInitial(tabIndex: event.tabIndex));
+    emit(RootInitial(handle: handle, tabIndex: event.tabIndex));
   }
 }

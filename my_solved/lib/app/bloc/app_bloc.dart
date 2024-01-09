@@ -24,7 +24,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     if (handle == null) {
       emit(AppLoggedOut());
     } else {
-      emit(AppLoggedIn());
+      emit(AppLoggedIn(handle: handle));
     }
   }
 
@@ -32,8 +32,8 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     Login event,
     Emitter<AppState> emit,
   ) async {
-    // await userRepository.login(handle: event.handle);
-    emit(AppLoggedIn());
+    await userRepository.login(handle: event.handle);
+    emit(AppLoggedIn(handle: event.handle));
   }
 
   Future<void> _logout(

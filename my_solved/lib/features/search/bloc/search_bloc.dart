@@ -22,5 +22,8 @@ Future<void> _onSummmitSearchTextField(
   SearchTextFieldOnSummited event,
   Emitter<SearchState> emit,
 ) async {
-  emit(SearchInitial(text: event.text));
+  emit(SearchLoading(text: event.text));
+  Future.delayed(Duration(seconds: 1));
+  emit(SearchSuccess(text: ""));
+  // emit(SearchFailure(text: "", errorMessage: "네트워크 에러"));
 }

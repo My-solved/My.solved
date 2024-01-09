@@ -32,13 +32,12 @@ class _AppViewState extends State<AppView> {
       home: BlocBuilder<AppBloc, AppState>(
         bloc: context.read<AppBloc>(),
         builder: (context, state) {
-          switch (state.runtimeType) {
-            case AppInitial:
-              return SplashScreen();
-            case AppLoggedOut:
-              return LoginScreen();
-            default:
-              return RootScreen();
+          if (state is AppInitial) {
+            return SplashScreen();
+          } else if (state is AppLoggedIn) {
+            return RootScreen(handle: state.handle);
+          } else {
+            return LoginScreen();
           }
         },
       ),

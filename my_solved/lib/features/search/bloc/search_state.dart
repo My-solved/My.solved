@@ -12,3 +12,26 @@ class SearchInitial extends SearchState {
   @override
   List<Object?> get props => [super.text];
 }
+
+class SearchLoading extends SearchState {
+  const SearchLoading({required super.text});
+
+  @override
+  List<Object?> get props => [super.text];
+}
+
+class SearchSuccess extends SearchState {
+  const SearchSuccess({required super.text});
+
+  @override
+  List<Object?> get props => [super.text];
+}
+
+class SearchFailure extends SearchState {
+  final String errorMessage;
+
+  const SearchFailure({required super.text, required this.errorMessage});
+
+  @override
+  List<Object?> get props => [super.text, errorMessage];
+}
