@@ -4,8 +4,8 @@ class MySolvedIconButton extends StatelessWidget {
   const MySolvedIconButton({
     required this.onPressed,
     required this.icon,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final VoidCallback? onPressed;
   final Widget icon;

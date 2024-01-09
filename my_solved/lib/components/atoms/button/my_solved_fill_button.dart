@@ -6,8 +6,8 @@ class MySolvedFillButton extends StatelessWidget {
   const MySolvedFillButton({
     required this.onPressed,
     required this.text,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final VoidCallback? onPressed;
   final String text;

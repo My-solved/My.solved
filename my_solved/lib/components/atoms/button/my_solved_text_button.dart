@@ -6,8 +6,8 @@ class MySolvedTextButton extends StatelessWidget {
   const MySolvedTextButton({
     required this.onPressed,
     required this.text,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final VoidCallback? onPressed;
   final String text;
@@ -16,6 +16,11 @@ class MySolvedTextButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return TextButton(
       onPressed: onPressed,
+      style: TextButton.styleFrom(
+        minimumSize: Size.zero,
+        padding: EdgeInsets.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
       child: Text(
         text,
         style: MySolvedTextStyle.body2.copyWith(
