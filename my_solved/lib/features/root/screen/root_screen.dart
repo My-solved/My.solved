@@ -4,6 +4,7 @@ import 'package:my_solved/app/bloc/app_bloc.dart';
 import 'package:my_solved/components/atoms/button/my_solved_text_button.dart';
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
+import 'package:my_solved/features/contest/screen/contest_screen.dart';
 import 'package:my_solved/features/home/screen/home_screen.dart';
 import 'package:my_solved/features/root/bloc/root_bloc.dart';
 import 'package:my_solved/features/setting/screen/setting_screen.dart';
@@ -52,7 +53,7 @@ class _RootViewState extends State<RootView> {
         scaffoldKey: _scaffoldKey,
       ),
       Text("Search"),
-      Text("Contest"),
+      ContestScreen(),
     ];
     return BlocBuilder<RootBloc, RootState>(
       builder: (context, state) {
