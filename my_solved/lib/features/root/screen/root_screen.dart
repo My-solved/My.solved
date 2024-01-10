@@ -64,6 +64,7 @@ class _RootViewState extends State<RootView> {
       ContestScreen(),
     ];
     return BlocBuilder<RootBloc, RootState>(
+      bloc: BlocProvider.of<RootBloc>(context),
       builder: (context, state) {
         return Scaffold(
           key: _scaffoldKey,

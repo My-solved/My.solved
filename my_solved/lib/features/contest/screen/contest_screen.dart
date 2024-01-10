@@ -16,6 +16,7 @@ class ContestScreen extends StatelessWidget {
         leading: Padding(
           padding: const EdgeInsets.only(left: 16),
           child: BlocBuilder<ContestBloc, ContestState>(
+            bloc: BlocProvider.of<ContestBloc>(context),
             builder: (context, state) {
               return MySolvedSegmentedControl(
                 defaultIndex: 0,
