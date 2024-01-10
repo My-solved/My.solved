@@ -4,6 +4,7 @@ import 'package:my_solved/components/molecules/segmented_control/segmented_contr
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
 import 'package:my_solved/features/contest/bloc/contest_bloc.dart';
+import 'package:my_solved/features/contest_filter/screen/contest_filter_screen.dart';
 
 class ContestScreen extends StatelessWidget {
   const ContestScreen({super.key});
@@ -33,9 +34,7 @@ class ContestScreen extends StatelessWidget {
             onPressed: () {
               showModalBottomSheet(
                 context: context,
-                builder: (context) => Center(
-                  child: Text("Contest Filter View"),
-                ),
+                builder: (context) => ContestFilterScreen(),
               );
             },
             icon: Icon(Icons.filter_list),
