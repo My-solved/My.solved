@@ -1,16 +1,21 @@
 part of 'root_bloc.dart';
 
-@immutable
-abstract class RootState extends Equatable {
+class RootState extends Equatable {
   final String handle;
   final int tabIndex;
 
-  const RootState({required this.handle, required this.tabIndex});
-}
+  const RootState({required this.handle, this.tabIndex = 0});
 
-class RootInitial extends RootState {
-  const RootInitial({required super.handle, required super.tabIndex});
+  RootState copyWith({
+    String? handle,
+    int? tabIndex,
+  }) {
+    return RootState(
+      handle: handle ?? this.handle,
+      tabIndex: tabIndex ?? this.tabIndex,
+    );
+  }
 
   @override
-  List<Object?> get props => [super.tabIndex];
+  List<Object?> get props => [handle, tabIndex];
 }

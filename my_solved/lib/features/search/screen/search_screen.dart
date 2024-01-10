@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_solved/components/atoms/text_field/text_field.dart';
+import 'package:my_solved/components/molecules/segmented_control/segmented_control.dart';
+import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/features/search/bloc/search_bloc.dart';
 
 class SearchScreen extends StatelessWidget {
@@ -38,13 +40,13 @@ class _SearchViewState extends State<SearchView> {
       padding: const EdgeInsets.all(16),
       child: BlocConsumer<SearchBloc, SearchState>(
         listener: (context, state) {
-          if (state is SearchFailure) {
+          if (state.status.isFailure) {
             showDialog(
               context: context,
               builder: (context) {
                 return AlertDialog(
                   title: Text("네트워크 오류가 발생했어요"),
-                  content: Text("잠시 후 다시 시도해주세요\n${state.errorMessage}"),
+                  content: Text("잠시 후 다시 시도해주세요"),
                   actions: [
                     ElevatedButton(
                       onPressed: () {
@@ -71,9 +73,22 @@ class _SearchViewState extends State<SearchView> {
                     .read<SearchBloc>()
                     .add(SearchTextFieldOnSummited(text: text)),
               ),
-              if (state is SearchSuccess)
+              if (state.status.isSuccess)
+                Column(
+                  children: [
+                    SizedBox(height: 32),
+                    MySolvedSegmentedControl(
+                      screenTitles: ["문제", "사용자", "태그"],
+                      defaultIndex: state.currentIndex,
+                      onSelected: (index) => context
+                          .read<SearchBloc>()
+                          .add(SearchSegmentedControlTapped(index: index)),
+                    ),
+                  ],
+                ),
+              if (state.status.isLoading)
                 Center(
-                  child: Text("Success"),
+                  child: CircularProgressIndicator(color: MySolvedColor.main),
                 ),
             ],
           );

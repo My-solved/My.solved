@@ -6,29 +6,13 @@ part 'contest_event.dart';
 part 'contest_state.dart';
 
 class ContestBloc extends Bloc<ContestEvent, ContestState> {
-  ContestBloc() : super(ContestInitial()) {
-    on<InitContest>(_onContestInit);
-    on<SegmentedControlTapped>(_onSegmentedControlTapped);
+  ContestBloc() : super(ContestState()) {
+    on<InitContest>((event, emit) async {
+      await Future.delayed(Duration(seconds: 1));
+      emit(state.copyWith(status: ContestStatus.success));
+    });
+    on<SegmentedControlTapped>(
+      (event, emit) => emit(state.copyWith(currentIndex: event.index)),
+    );
   }
-}
-
-Future<void> _onContestInit(
-  InitContest event,
-  Emitter<ContestState> emit,
-) async {
-  Future.delayed(Duration(seconds: 1));
-  emit(ContestSuccess(processingContest: [], expiredContest: []));
-}
-
-Future<void> _onSegmentedControlTapped(
-  SegmentedControlTapped event,
-  Emitter<ContestState> emit,
-) async {
-  emit(ContestInitial(current: event.index));
-  Future.delayed(Duration(seconds: 1));
-  emit(ContestSuccess(
-    current: event.index,
-    processingContest: [],
-    expiredContest: [],
-  ));
 }

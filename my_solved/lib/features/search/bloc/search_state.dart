@@ -1,38 +1,37 @@
 part of 'search_bloc.dart';
 
-@immutable
-abstract class SearchState extends Equatable {
+enum SearchStatus { initial, loading, success, failure }
+
+extension SearchStatusX on SearchStatus {
+  bool get isInitial => this == SearchStatus.initial;
+  bool get isLoading => this == SearchStatus.loading;
+  bool get isSuccess => this == SearchStatus.success;
+  bool get isFailure => this == SearchStatus.failure;
+}
+
+class SearchState extends Equatable {
+  final SearchStatus status;
   final String text;
+  final int currentIndex;
 
-  const SearchState({required this.text});
-}
+  const SearchState({
+    this.status = SearchStatus.initial,
+    this.text = "",
+    this.currentIndex = 0,
+  });
 
-class SearchInitial extends SearchState {
-  const SearchInitial({required super.text});
-
-  @override
-  List<Object?> get props => [super.text];
-}
-
-class SearchLoading extends SearchState {
-  const SearchLoading({required super.text});
-
-  @override
-  List<Object?> get props => [super.text];
-}
-
-class SearchSuccess extends SearchState {
-  const SearchSuccess({required super.text});
-
-  @override
-  List<Object?> get props => [super.text];
-}
-
-class SearchFailure extends SearchState {
-  final String errorMessage;
-
-  const SearchFailure({required super.text, required this.errorMessage});
+  SearchState copyWith({
+    SearchStatus? status,
+    String? text,
+    int? currentIndex,
+  }) {
+    return SearchState(
+      status: status ?? this.status,
+      text: text ?? this.text,
+      currentIndex: currentIndex ?? this.currentIndex,
+    );
+  }
 
   @override
-  List<Object?> get props => [super.text, errorMessage];
+  List<Object?> get props => [status, text, currentIndex];
 }

@@ -14,7 +14,8 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
     SplashInit event,
     Emitter<SplashState> emit,
   ) async {
-    Future.delayed(Duration(seconds: 1));
+    await Future.delayed(Duration(seconds: 1));
+    if (!event.context.mounted) return;
     event.context.read<AppBloc>().add(AppInit());
   }
 }

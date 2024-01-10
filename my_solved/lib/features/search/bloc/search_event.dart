@@ -20,3 +20,12 @@ class SearchTextFieldOnSummited extends SearchEvent {
   @override
   List<Object?> get props => [text];
 }
+
+class SearchSegmentedControlTapped extends SearchEvent {
+  final int index;
+
+  SearchSegmentedControlTapped({required this.index});
+
+  @override
+  List<Object?> get props => [index];
+}

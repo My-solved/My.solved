@@ -1,42 +1,46 @@
 part of 'contest_bloc.dart';
 
-@immutable
-abstract class ContestState extends Equatable {
-  final int current;
+enum ContestStatus { initial, loading, success, failure }
 
-  const ContestState({required this.current});
+extension ContestStatusX on ContestStatus {
+  bool get isInitial => this == ContestStatus.initial;
+  bool get isLoading => this == ContestStatus.loading;
+  bool get isSuccess => this == ContestStatus.success;
+  bool get isFailure => this == ContestStatus.failure;
 }
 
-class ContestInitial extends ContestState {
-  const ContestInitial({super.current = 0});
+class ContestState extends Equatable {
+  final ContestStatus status;
+  final int currentIndex;
+  final List<String> processingContests;
+  final List<String> expiredContests;
 
-  @override
-  List<Object?> get props => [super.current];
-}
-
-class ContestSuccess extends ContestState {
-  final List<String> processingContest;
-  final List<String> expiredContest;
-
-  const ContestSuccess({
-    super.current = 0,
-    required this.processingContest,
-    required this.expiredContest,
+  const ContestState({
+    this.status = ContestStatus.initial,
+    this.currentIndex = 0,
+    this.processingContests = const [],
+    this.expiredContests = const [],
   });
+
+  ContestState copyWith({
+    ContestStatus? status,
+    int? currentIndex,
+    List<String>? processingContests,
+    List<String>? expiredContests,
+  }) {
+    return ContestState(
+      status: status ?? this.status,
+      currentIndex: currentIndex ?? this.currentIndex,
+      processingContests: processingContests ?? this.processingContests,
+      expiredContests: expiredContests ?? this.expiredContests,
+    );
+  }
 
   @override
   List<Object?> get props => [
-        super.current,
-        processingContest,
-        expiredContest,
+        status,
+        currentIndex,
+        processingContests,
+        expiredContests,
       ];
-}
-
-class ContestFailure extends ContestState {
-  final String errorMessage;
-
-  const ContestFailure({super.current = 0, required this.errorMessage});
-
-  @override
-  List<Object?> get props => [super.current, errorMessage];
 }

@@ -49,7 +49,7 @@ class ContestScreen extends StatelessWidget {
           SliverFillRemaining(
             hasScrollBody: false,
             child: ContestView(),
-          )
+          ),
         ],
       ),
     );
@@ -74,13 +74,13 @@ class _ContestViewState extends State<ContestView> {
   Widget build(BuildContext context) {
     return BlocConsumer<ContestBloc, ContestState>(
       listener: (context, state) {
-        if (state is ContestFailure) {
+        if (state.status.isFailure) {
           showDialog(
             context: context,
             builder: (context) {
               return AlertDialog(
                 title: Text("네트워크 오류가 발생했어요"),
-                content: Text("잠시 후 다시 시도해주세요\n${state.errorMessage}"),
+                content: Text("잠시 후 다시 시도해주세요"),
                 actions: [
                   ElevatedButton(
                     onPressed: () {
@@ -96,10 +96,10 @@ class _ContestViewState extends State<ContestView> {
       },
       bloc: BlocProvider.of<ContestBloc>(context),
       builder: (context, state) {
-        if (state is ContestSuccess) {
-          final contests = state.current == 0
-              ? state.processingContest
-              : state.expiredContest;
+        if (state.status.isSuccess) {
+          final contests = state.currentIndex == 0
+              ? state.processingContests
+              : state.expiredContests;
           if (contests.isEmpty) {
             return Center(
               child: Text(
@@ -119,7 +119,9 @@ class _ContestViewState extends State<ContestView> {
           }
         } else {
           return Center(
-            child: CircularProgressIndicator(),
+            child: CircularProgressIndicator(
+              color: MySolvedColor.main,
+            ),
           );
         }
       },

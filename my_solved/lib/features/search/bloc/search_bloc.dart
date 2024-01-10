@@ -6,25 +6,17 @@ part 'search_event.dart';
 part 'search_state.dart';
 
 class SearchBloc extends Bloc<SearchEvent, SearchState> {
-  SearchBloc() : super(SearchInitial(text: "")) {
-    on<SearchTextFieldOnChanged>(_onChangeSearchTextField);
-    on<SearchTextFieldOnSummited>(_onSummmitSearchTextField);
+  SearchBloc() : super(SearchState()) {
+    on<SearchTextFieldOnChanged>(
+      (event, emit) => emit(state.copyWith(text: event.text)),
+    );
+    on<SearchTextFieldOnSummited>((event, emit) async {
+      emit(state.copyWith(status: SearchStatus.loading));
+      await Future.delayed(Duration(seconds: 1));
+      emit(state.copyWith(status: SearchStatus.success));
+    });
+    on<SearchSegmentedControlTapped>(
+      (event, emit) => emit(state.copyWith(currentIndex: event.index)),
+    );
   }
-}
-
-Future<void> _onChangeSearchTextField(
-  SearchTextFieldOnChanged event,
-  Emitter<SearchState> emit,
-) async {
-  emit(SearchInitial(text: event.text));
-}
-
-Future<void> _onSummmitSearchTextField(
-  SearchTextFieldOnSummited event,
-  Emitter<SearchState> emit,
-) async {
-  emit(SearchLoading(text: event.text));
-  Future.delayed(Duration(seconds: 1));
-  emit(SearchSuccess(text: ""));
-  // emit(SearchFailure(text: "", errorMessage: "네트워크 에러"));
 }
