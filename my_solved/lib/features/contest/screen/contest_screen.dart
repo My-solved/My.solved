@@ -30,7 +30,14 @@ class ContestScreen extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => Center(
+                  child: Text("Contest Filter View"),
+                ),
+              );
+            },
             icon: Icon(Icons.filter_list),
           ),
         ],
