@@ -30,7 +30,7 @@ class _AppViewState extends State<AppView> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: BlocBuilder<AppBloc, AppState>(
-        bloc: context.read<AppBloc>(),
+        bloc: BlocProvider.of<AppBloc>(context),
         builder: (context, state) {
           if (state is AppInitial) {
             return SplashScreen();

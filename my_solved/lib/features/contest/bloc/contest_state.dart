@@ -13,3 +13,30 @@ class ContestInitial extends ContestState {
   @override
   List<Object?> get props => [super.current];
 }
+
+class ContestSuccess extends ContestState {
+  final List<String> processingContest;
+  final List<String> expiredContest;
+
+  const ContestSuccess({
+    super.current = 0,
+    required this.processingContest,
+    required this.expiredContest,
+  });
+
+  @override
+  List<Object?> get props => [
+        super.current,
+        processingContest,
+        expiredContest,
+      ];
+}
+
+class ContestFailure extends ContestState {
+  final String errorMessage;
+
+  const ContestFailure({super.current = 0, required this.errorMessage});
+
+  @override
+  List<Object?> get props => [super.current, errorMessage];
+}
