@@ -1,15 +1,15 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
-import 'package:my_solved/packages/user_repository/lib/user_repository.dart';
+import 'package:my_solved/packages/repositories/shared_preferences_repository/lib/shared_preferences_repository.dart';
 
 part 'app_state.dart';
 part 'app_event.dart';
 
 class AppBloc extends Bloc<AppEvent, AppState> {
-  final UserRepository userRepository;
+  final SharedPreferencesRepository sharedPreferencesRepository;
 
-  AppBloc({required this.userRepository}) : super(AppInitial()) {
+  AppBloc({required this.sharedPreferencesRepository}) : super(AppInitial()) {
     on<AppInit>(_initApp);
     on<Login>(_login);
     on<Logout>(_logout);
@@ -19,7 +19,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     AppInit event,
     Emitter<AppState> emit,
   ) async {
-    final handle = await userRepository.requestHandle();
+    final handle = await sharedPreferencesRepository.requestHandle();
 
     if (handle == null) {
       emit(AppLoggedOut());
@@ -32,7 +32,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     Login event,
     Emitter<AppState> emit,
   ) async {
-    await userRepository.login(handle: event.handle);
+    await sharedPreferencesRepository.login(handle: event.handle);
     emit(AppLoggedIn(handle: event.handle));
   }
 
@@ -40,7 +40,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
     Logout event,
     Emitter<AppState> emit,
   ) async {
-    await userRepository.logout();
+    await sharedPreferencesRepository.logout();
     emit(AppLoggedOut());
   }
 }

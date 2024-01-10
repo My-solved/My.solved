@@ -1,8 +1,8 @@
-library user_repository;
+library shared_preferences_repository;
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-class UserRepository {
+class SharedPreferencesRepository {
   Future<String?> requestHandle() async {
     await Future.delayed(const Duration(seconds: 1));
     final prefs = await SharedPreferences.getInstance();
