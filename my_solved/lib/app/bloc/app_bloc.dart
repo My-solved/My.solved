@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
-import 'package:my_solved/packages/repositories/shared_preferences_repository/lib/shared_preferences_repository.dart';
+import 'package:shared_preferences_repository/shared_preferences_repository.dart';
 
 part 'app_state.dart';
 part 'app_event.dart';

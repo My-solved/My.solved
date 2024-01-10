@@ -11,6 +11,7 @@ import 'package:my_solved/features/root/bloc/root_bloc.dart';
 import 'package:my_solved/features/search/bloc/search_bloc.dart';
 import 'package:my_solved/features/search/screen/search_screen.dart';
 import 'package:my_solved/features/setting/screen/setting_screen.dart';
+import 'package:search_repository/search_repository.dart';
 
 class RootScreen extends StatelessWidget {
   final String handle;
@@ -22,7 +23,9 @@ class RootScreen extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => RootBloc(handle: handle)),
-        BlocProvider(create: (context) => SearchBloc()),
+        BlocProvider(
+            create: (context) =>
+                SearchBloc(searchRepository: SearchRepository())),
         BlocProvider(create: (context) => ContestBloc()),
       ],
       child: RootView(),

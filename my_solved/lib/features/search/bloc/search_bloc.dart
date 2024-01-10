@@ -1,12 +1,15 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
+import 'package:search_repository/search_repository.dart';
 
 part 'search_event.dart';
 part 'search_state.dart';
 
 class SearchBloc extends Bloc<SearchEvent, SearchState> {
-  SearchBloc() : super(SearchState()) {
+  final SearchRepository searchRepository;
+
+  SearchBloc({required this.searchRepository}) : super(SearchState()) {
     on<SearchTextFieldOnChanged>(
       (event, emit) => emit(state.copyWith(text: event.text)),
     );

@@ -4,7 +4,7 @@ import 'package:my_solved/app/bloc/app_bloc.dart';
 import 'package:my_solved/features/login/screen/login_screen.dart';
 import 'package:my_solved/features/root/screen/root_screen.dart';
 import 'package:my_solved/features/splash/screen/splash_screen.dart';
-import 'package:my_solved/packages/repositories/shared_preferences_repository/lib/shared_preferences_repository.dart';
+import 'package:shared_preferences_repository/shared_preferences_repository.dart';
 
 class AppScreen extends StatelessWidget {
   const AppScreen({super.key});
