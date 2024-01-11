@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_solved/components/atoms/text_field/text_field.dart';
 import 'package:my_solved/components/molecules/segmented_control/segmented_control.dart';
 import 'package:my_solved/components/styles/color.dart';
+import 'package:my_solved/components/styles/font.dart';
 import 'package:my_solved/features/search/bloc/search_bloc.dart';
 
 class SearchScreen extends StatelessWidget {
@@ -11,6 +12,7 @@ class SearchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: MySolvedColor.secondaryBackground,
       body: SafeArea(
         child: CustomScrollView(
           physics: BouncingScrollPhysics(),
@@ -64,14 +66,20 @@ class _SearchViewState extends State<SearchView> {
         builder: (context, state) {
           return Column(
             children: [
-              MySolvedSearchField(
-                hintText: "문제, 사용자, 태그를 입력해주세요",
-                onChange: (text) => context
-                    .read<SearchBloc>()
-                    .add(SearchTextFieldOnChanged(text: text)),
-                onSubmitted: (text) => context
-                    .read<SearchBloc>()
-                    .add(SearchTextFieldOnSummited(text: text)),
+              Container(
+                decoration: BoxDecoration(
+                  color: MySolvedColor.background,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: MySolvedSearchField(
+                  hintText: "문제, 사용자, 태그를 입력해주세요",
+                  onChange: (text) => context
+                      .read<SearchBloc>()
+                      .add(SearchTextFieldOnChanged(text: text)),
+                  onSubmitted: (text) => context
+                      .read<SearchBloc>()
+                      .add(SearchTextFieldOnSummited(text: text)),
+                ),
               ),
               if (state.status.isSuccess)
                 Column(
@@ -84,14 +92,104 @@ class _SearchViewState extends State<SearchView> {
                           .read<SearchBloc>()
                           .add(SearchSegmentedControlTapped(index: index)),
                     ),
+                    SizedBox(
+                      height: 16,
+                    ),
                     if (state.result != null)
                       if (state.currentIndex == 0)
                         Column(
                           children: List.generate(
-                              state.result!.problemCount,
-                              (index) =>
-                                  Text(state.result!.problems[index].title)),
+                            state.result!.problems.length,
+                            (index) => Column(
+                              children: [
+                                Container(
+                                  width: double.infinity,
+                                  padding: EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: MySolvedColor.background,
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "${state.result!.problems[index].id}번",
+                                      ),
+                                      SizedBox(
+                                        height: 4,
+                                      ),
+                                      Text(
+                                        state.result!.problems[index].title,
+                                        style: MySolvedTextStyle.title5,
+                                      ),
+                                      SizedBox(
+                                        height: 4,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(
+                                  height: 16,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
+                    if (state.currentIndex == 1)
+                      Column(
+                        children: List.generate(
+                          state.result!.users.length,
+                          (index) => Column(
+                            children: [
+                              Container(
+                                width: double.infinity,
+                                padding: EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: MySolvedColor.background,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      state.result!.users[index].handle,
+                                      style: MySolvedTextStyle.body1,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(
+                                height: 16,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    if (state.currentIndex == 2)
+                      Column(
+                        children: List.generate(
+                          state.result!.tags.length,
+                          (index) => Column(
+                            children: [
+                              Container(
+                                width: double.infinity,
+                                padding: EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: MySolvedColor.background,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Text(
+                                  "${state.result!.tags[index].key}:${state.result!.tags[index].problemCount}",
+                                  style: MySolvedTextStyle.body1,
+                                ),
+                              ),
+                              SizedBox(
+                                height: 16,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               if (state.status.isLoading)

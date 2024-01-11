@@ -7,6 +7,7 @@ class MySolvedColor {
   static const Color secondaryFont = Color(0xFF767676);
 
   static const Color background = Color(0xFFFFFFFF);
+  static const Color secondaryBackground = Color(0xFFF9F9F9);
 
   static const Color primaryButtonForeground = Color(0xFFFFFFFF);
   static const Color disabledButtonForeground = Color(0xFF767676);
