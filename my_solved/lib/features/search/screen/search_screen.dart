@@ -84,6 +84,14 @@ class _SearchViewState extends State<SearchView> {
                           .read<SearchBloc>()
                           .add(SearchSegmentedControlTapped(index: index)),
                     ),
+                    if (state.result != null)
+                      if (state.currentIndex == 0)
+                        Column(
+                          children: List.generate(
+                              state.result!.problemCount,
+                              (index) =>
+                                  Text(state.result!.problems[index].title)),
+                        ),
                   ],
                 ),
               if (state.status.isLoading)

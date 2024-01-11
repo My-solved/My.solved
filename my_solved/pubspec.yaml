@@ -30,10 +30,18 @@ dependencies:
   meta: ^1.9.1
   equatable: ^2.0.5
 
+  boj_api:
+    path: packages/apis/boj_api
+  solved_api:
+    path: packages/apis/solved_api
+  contest_repository:
+    path: packages/repositories/contest_repository
   search_repository:
     path: packages/repositories/search_repository
   shared_preferences_repository:
     path: packages/repositories/shared_preferences_repository
+  user_repository:
+    path: packages/repositories/user_repository
 
 dev_dependencies:
   flutter_test:
