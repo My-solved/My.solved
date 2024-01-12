@@ -1,3 +1,4 @@
+import 'package:contest_repository/contest_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_solved/app/bloc/app_bloc.dart';
@@ -22,11 +23,16 @@ class RootScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => RootBloc(handle: handle)),
         BlocProvider(
-            create: (context) =>
-                SearchBloc(searchRepository: SearchRepository())),
-        BlocProvider(create: (context) => ContestBloc()),
+          create: (context) => RootBloc(handle: handle),
+        ),
+        BlocProvider(
+          create: (context) => SearchBloc(searchRepository: SearchRepository()),
+        ),
+        BlocProvider(
+          create: (context) =>
+              ContestBloc(contestRepository: ContestRepository()),
+        ),
       ],
       child: RootView(),
     );

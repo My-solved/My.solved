@@ -1,3 +1,4 @@
+import 'package:boj_api/boj_api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_solved/components/molecules/segmented_control/segmented_control.dart';
@@ -19,8 +20,8 @@ class ContestScreen extends StatelessWidget {
             bloc: BlocProvider.of<ContestBloc>(context),
             builder: (context, state) {
               return MySolvedSegmentedControl(
-                defaultIndex: 0,
-                screenTitles: ["진행중인 대회", "예정된 대회"],
+                defaultIndex: 1,
+                screenTitles: ["종료된 대회", "진행중인 대회", "예정된 대회"],
                 onSelected: (index) {
                   context
                       .read<ContestBloc>()
@@ -41,7 +42,7 @@ class ContestScreen extends StatelessWidget {
             icon: Icon(Icons.filter_list),
           ),
         ],
-        leadingWidth: 240,
+        leadingWidth: 320,
       ),
       body: CustomScrollView(
         physics: BouncingScrollPhysics(),
@@ -97,9 +98,7 @@ class _ContestViewState extends State<ContestView> {
       bloc: BlocProvider.of<ContestBloc>(context),
       builder: (context, state) {
         if (state.status.isSuccess) {
-          final contests = state.currentIndex == 0
-              ? state.processingContests
-              : state.expiredContests;
+          final contests = _fetchContests(state);
           if (contests.isEmpty) {
             return Center(
               child: Text(
@@ -113,7 +112,7 @@ class _ContestViewState extends State<ContestView> {
             return Column(
               children: List.generate(
                 contests.length,
-                (index) => Text(contests[index]),
+                (index) => Text(contests[index].name),
               ),
             );
           }
@@ -126,5 +125,16 @@ class _ContestViewState extends State<ContestView> {
         }
       },
     );
+  }
+
+  List<Contest> _fetchContests(ContestState state) {
+    switch (state.currentIndex) {
+      case 0:
+        return state.endedContests;
+      case 1:
+        return state.ongoingContests;
+      default:
+        return state.upcomingContests;
+    }
   }
 }

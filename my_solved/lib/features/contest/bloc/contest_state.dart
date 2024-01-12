@@ -12,27 +12,31 @@ extension ContestStatusX on ContestStatus {
 class ContestState extends Equatable {
   final ContestStatus status;
   final int currentIndex;
-  final List<String> processingContests;
-  final List<String> expiredContests;
+  final List<Contest> endedContests;
+  final List<Contest> ongoingContests;
+  final List<Contest> upcomingContests;
 
   const ContestState({
     this.status = ContestStatus.initial,
     this.currentIndex = 0,
-    this.processingContests = const [],
-    this.expiredContests = const [],
+    this.endedContests = const [],
+    this.ongoingContests = const [],
+    this.upcomingContests = const [],
   });
 
   ContestState copyWith({
     ContestStatus? status,
     int? currentIndex,
-    List<String>? processingContests,
-    List<String>? expiredContests,
+    List<Contest>? endedContests,
+    List<Contest>? ongoingContests,
+    List<Contest>? upcomingContests,
   }) {
     return ContestState(
       status: status ?? this.status,
       currentIndex: currentIndex ?? this.currentIndex,
-      processingContests: processingContests ?? this.processingContests,
-      expiredContests: expiredContests ?? this.expiredContests,
+      endedContests: endedContests ?? this.endedContests,
+      ongoingContests: ongoingContests ?? this.ongoingContests,
+      upcomingContests: upcomingContests ?? this.upcomingContests,
     );
   }
 
@@ -40,7 +44,8 @@ class ContestState extends Equatable {
   List<Object?> get props => [
         status,
         currentIndex,
-        processingContests,
-        expiredContests,
+        endedContests,
+        ongoingContests,
+        upcomingContests,
       ];
 }

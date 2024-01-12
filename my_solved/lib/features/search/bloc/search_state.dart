@@ -45,5 +45,12 @@ class SearchState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [status, text, currentIndex];
+  List<Object?> get props => [
+        status,
+        text,
+        currentIndex,
+        problems,
+        users,
+        tags,
+      ];
 }

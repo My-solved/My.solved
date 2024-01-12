@@ -81,7 +81,7 @@ class _SearchViewState extends State<SearchView> {
                       .add(SearchTextFieldOnSummited(text: text)),
                 ),
               ),
-              SizedBox(height: 32),
+              SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

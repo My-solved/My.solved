@@ -1,3 +1,5 @@
+import 'package:boj_api/boj_api.dart';
+import 'package:contest_repository/contest_repository.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
@@ -6,10 +8,25 @@ part 'contest_event.dart';
 part 'contest_state.dart';
 
 class ContestBloc extends Bloc<ContestEvent, ContestState> {
-  ContestBloc() : super(ContestState()) {
+  final ContestRepository contestRepository;
+
+  ContestBloc({required this.contestRepository}) : super(ContestState()) {
     on<InitContest>((event, emit) async {
-      await Future.delayed(Duration(seconds: 1));
-      emit(state.copyWith(status: ContestStatus.success));
+      try {
+        final result = await contestRepository.getContests();
+        final endedContests = result[ContestType.ended];
+        final ongoingContests = result[ContestType.ongoing];
+        final upcomingContests = result[ContestType.upcoming];
+
+        emit(state.copyWith(
+          status: ContestStatus.success,
+          endedContests: endedContests,
+          ongoingContests: ongoingContests,
+          upcomingContests: upcomingContests,
+        ));
+      } catch (e) {
+        emit(state.copyWith(status: ContestStatus.failure));
+      }
     });
     on<SegmentedControlTapped>(
       (event, emit) => emit(state.copyWith(currentIndex: event.index)),
