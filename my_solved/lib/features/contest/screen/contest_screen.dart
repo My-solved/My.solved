@@ -13,7 +13,9 @@ class ContestScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: MySolvedColor.secondaryBackground,
       appBar: AppBar(
+        backgroundColor: MySolvedColor.secondaryBackground,
         leading: Padding(
           padding: const EdgeInsets.only(left: 16),
           child: BlocBuilder<ContestBloc, ContestState>(
@@ -95,7 +97,6 @@ class _ContestViewState extends State<ContestView> {
           );
         }
       },
-      bloc: BlocProvider.of<ContestBloc>(context),
       builder: (context, state) {
         if (state.status.isSuccess) {
           final contests = _fetchContests(state);
@@ -109,10 +110,48 @@ class _ContestViewState extends State<ContestView> {
               ),
             );
           } else {
-            return Column(
-              children: List.generate(
-                contests.length,
-                (index) => Text(contests[index].name),
+            return Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: List.generate(
+                  contests.length,
+                  (index) => Column(
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: MySolvedColor.background,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              contests[index].name,
+                              style: MySolvedTextStyle.title5,
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              "주최: ${contests[index].venue ?? ""}",
+                              style: MySolvedTextStyle.body2.copyWith(
+                                color: MySolvedColor.secondaryFont,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              '일정: ${contests[index].startTime.month}월 ${contests[index].startTime.day}일 ${contests[index].startTime.hour}:${contests[index].startTime.minute.toString().padLeft(2, '0')} ~ ${contests[index].endTime.month}월 ${contests[index].endTime.day}일 ${contests[index].endTime.hour}:${contests[index].endTime.minute.toString().padLeft(2, '0')}',
+                              style: MySolvedTextStyle.body2.copyWith(
+                                color: MySolvedColor.secondaryFont,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                    ],
+                  ),
+                ),
               ),
             );
           }
