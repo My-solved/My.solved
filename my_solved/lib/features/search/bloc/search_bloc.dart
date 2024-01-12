@@ -16,12 +16,24 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     );
     on<SearchTextFieldOnSummited>((event, emit) async {
       emit(state.copyWith(status: SearchStatus.loading));
-      final result = await searchRepository.getSuggestions(event.text);
-      await Future.delayed(Duration(seconds: 1));
-      emit(state.copyWith(
-        status: SearchStatus.success,
-        result: result,
-      ));
+
+      try {
+        final problems =
+            await searchRepository.getProblems(event.text, null, "id", "asc");
+        final result = await searchRepository.getSuggestions(event.text);
+        final users = result.users;
+        final tags = await searchRepository.getTags(event.text, null);
+
+        emit(state.copyWith(
+          status: SearchStatus.success,
+          problems: problems,
+          users: users,
+          tags: tags,
+        ));
+      } catch (e) {
+        print(e);
+        emit(state.copyWith(status: SearchStatus.failure));
+      }
     });
     on<SearchSegmentedControlTapped>(
       (event, emit) => emit(state.copyWith(currentIndex: event.index)),

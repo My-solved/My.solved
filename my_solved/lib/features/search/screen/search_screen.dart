@@ -95,51 +95,43 @@ class _SearchViewState extends State<SearchView> {
                     SizedBox(
                       height: 16,
                     ),
-                    if (state.result != null)
-                      if (state.currentIndex == 0)
-                        Column(
-                          children: List.generate(
-                            state.result!.problems.length,
-                            (index) => Column(
-                              children: [
-                                Container(
-                                  width: double.infinity,
-                                  padding: EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: MySolvedColor.background,
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "${state.result!.problems[index].id}번",
-                                      ),
-                                      SizedBox(
-                                        height: 4,
-                                      ),
-                                      Text(
-                                        state.result!.problems[index].title,
-                                        style: MySolvedTextStyle.title5,
-                                      ),
-                                      SizedBox(
-                                        height: 4,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(
-                                  height: 16,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                    if (state.currentIndex == 1)
+                    if (state.currentIndex == 0 && state.problems != null)
                       Column(
                         children: List.generate(
-                          state.result!.users.length,
+                          state.problems!.items.length,
+                          (index) => Column(
+                            children: [
+                              Container(
+                                width: double.infinity,
+                                padding: EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: MySolvedColor.background,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "${state.problems!.items[index]["problemId"]}번",
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      state.problems!.items[index]["titleKo"],
+                                      style: MySolvedTextStyle.title5,
+                                    ),
+                                    SizedBox(height: 4),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(height: 16),
+                            ],
+                          ),
+                        ),
+                      ),
+                    if (state.currentIndex == 1 && state.users != null)
+                      Column(
+                        children: List.generate(
+                          state.users!.length,
                           (index) => Column(
                             children: [
                               Container(
@@ -152,23 +144,21 @@ class _SearchViewState extends State<SearchView> {
                                 child: Row(
                                   children: [
                                     Text(
-                                      state.result!.users[index].handle,
+                                      state.users![index].handle,
                                       style: MySolvedTextStyle.body1,
                                     ),
                                   ],
                                 ),
                               ),
-                              SizedBox(
-                                height: 16,
-                              ),
+                              SizedBox(height: 16),
                             ],
                           ),
                         ),
                       ),
-                    if (state.currentIndex == 2)
+                    if (state.currentIndex == 2 && state.tags != null)
                       Column(
                         children: List.generate(
-                          state.result!.tags.length,
+                          state.tags!.items.length,
                           (index) => Column(
                             children: [
                               Container(
@@ -179,7 +169,7 @@ class _SearchViewState extends State<SearchView> {
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Text(
-                                  "${state.result!.tags[index].key}:${state.result!.tags[index].problemCount}",
+                                  "${state.tags!.items[index]["key"]}:${state.tags!.items[index]["problemCount"]}",
                                   style: MySolvedTextStyle.body1,
                                 ),
                               ),

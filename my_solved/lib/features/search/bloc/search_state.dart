@@ -13,26 +13,34 @@ class SearchState extends Equatable {
   final SearchStatus status;
   final String text;
   final int currentIndex;
-  final SearchSuggestion? result;
+  final SearchObject? problems;
+  final List<UserSuggestion>? users;
+  final SearchObject? tags;
 
   const SearchState({
     this.status = SearchStatus.initial,
     this.text = "",
     this.currentIndex = 0,
-    this.result,
+    this.problems,
+    this.users,
+    this.tags,
   });
 
   SearchState copyWith({
     SearchStatus? status,
     String? text,
     int? currentIndex,
-    SearchSuggestion? result,
+    SearchObject? problems,
+    List<UserSuggestion>? users,
+    SearchObject? tags,
   }) {
     return SearchState(
       status: status ?? this.status,
       text: text ?? this.text,
       currentIndex: currentIndex ?? this.currentIndex,
-      result: result ?? this.result,
+      problems: problems ?? this.problems,
+      users: users ?? this.users,
+      tags: tags ?? this.tags,
     );
   }
 
