@@ -1,5 +1,7 @@
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:my_solved/components/atoms/text_field/text_field.dart';
 import 'package:my_solved/components/molecules/segmented_control/segmented_control.dart';
 import 'package:my_solved/components/styles/color.dart';
@@ -162,16 +164,40 @@ class _SearchViewState extends State<SearchView> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        "${state.problems!.items[index].problemId}번",
-                                        style: MySolvedTextStyle.body2,
+                                      Row(
+                                        children: [
+                                          SvgPicture.asset(
+                                            'assets/images/tiers/${state.problems!.items[index].level}.svg',
+                                            width: 18,
+                                            height: 18,
+                                          ),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            "${state.problems!.items[index].problemId}번",
+                                            style: MySolvedTextStyle.body2,
+                                          ),
+                                        ],
                                       ),
                                       SizedBox(height: 4),
                                       Text(
                                         state.problems!.items[index].titleKo,
                                         style: MySolvedTextStyle.title5,
                                       ),
-                                      SizedBox(height: 4),
+                                      SizedBox(height: 8),
+                                      Wrap(
+                                        children: List.generate(
+                                          state.problems!.items[index].tags
+                                              .length,
+                                          (subIndex) => Text(
+                                            "#${state.problems!.items[index].tags[subIndex].displayNames[0]["name"]} ",
+                                            style: MySolvedTextStyle.caption1
+                                                .copyWith(
+                                              color:
+                                                  MySolvedColor.secondaryFont,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -201,10 +227,27 @@ class _SearchViewState extends State<SearchView> {
                                   ),
                                   child: Row(
                                     children: [
+                                      SvgPicture.asset(
+                                        "assets/images/tiers/${state.users![index].tier}.svg",
+                                        width: 24,
+                                        height: 24,
+                                      ),
+                                      SizedBox(width: 8),
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: ExtendedImage.network(
+                                          state.users![index].profileImageUrl ??
+                                              "https://static.solved.ac/misc/360x360/default_profile.png",
+                                          width: 24,
+                                          height: 24,
+                                        ),
+                                      ),
+                                      SizedBox(width: 8),
                                       Text(
                                         state.users![index].handle,
                                         style: MySolvedTextStyle.body1,
                                       ),
+                                      SizedBox(width: 8),
                                     ],
                                   ),
                                 ),
