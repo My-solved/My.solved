@@ -6,6 +6,7 @@ import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
 import 'package:my_solved/features/search/bloc/search_bloc.dart';
 import 'package:my_solved/features/search_filter/screen/search_filter_screen.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class SearchScreen extends StatelessWidget {
   const SearchScreen({super.key});
@@ -119,18 +120,29 @@ class _SearchViewState extends State<SearchView> {
                           state.problems!.items.length,
                           (index) => Column(
                             children: [
-                              Container(
-                                width: double.infinity,
-                                padding: EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: MySolvedColor.background,
-                                  borderRadius: BorderRadius.circular(16),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  String urlString =
+                                      "https://acmicpc.net/problem/${state.problems!.items[index].problemId}";
+                                  launchUrlString(urlString);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  alignment: Alignment.centerLeft,
+                                  padding: EdgeInsets.all(16),
+                                  backgroundColor: MySolvedColor.background,
+                                  foregroundColor: MySolvedColor.font,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  minimumSize: Size.fromHeight(52),
                                 ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       "${state.problems!.items[index].problemId}번",
+                                      style: MySolvedTextStyle.body2,
                                     ),
                                     SizedBox(height: 4),
                                     Text(
@@ -152,12 +164,18 @@ class _SearchViewState extends State<SearchView> {
                           state.users!.length,
                           (index) => Column(
                             children: [
-                              Container(
-                                width: double.infinity,
-                                padding: EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: MySolvedColor.background,
-                                  borderRadius: BorderRadius.circular(16),
+                              ElevatedButton(
+                                onPressed: () {},
+                                style: ElevatedButton.styleFrom(
+                                  alignment: Alignment.centerLeft,
+                                  padding: EdgeInsets.all(16),
+                                  backgroundColor: MySolvedColor.background,
+                                  foregroundColor: MySolvedColor.font,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  minimumSize: Size.fromHeight(52),
                                 ),
                                 child: Row(
                                   children: [
@@ -179,12 +197,22 @@ class _SearchViewState extends State<SearchView> {
                           state.tags!.items.length,
                           (index) => Column(
                             children: [
-                              Container(
-                                width: double.infinity,
-                                padding: EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: MySolvedColor.background,
-                                  borderRadius: BorderRadius.circular(16),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  String urlString =
+                                      "https://solved.ac/search?query=%23${state.tags!.items[index].key}";
+                                  launchUrlString(urlString);
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  alignment: Alignment.centerLeft,
+                                  padding: EdgeInsets.all(16),
+                                  backgroundColor: MySolvedColor.background,
+                                  foregroundColor: MySolvedColor.font,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  minimumSize: Size.fromHeight(52),
                                 ),
                                 child: Text(
                                   "${state.tags!.items[index].key}:${state.tags!.items[index].problemCount}",
