@@ -81,20 +81,27 @@ class _SearchViewState extends State<SearchView> {
                       .add(SearchTextFieldOnSummited(text: text)),
                 ),
               ),
+              SizedBox(height: 32),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  MySolvedSegmentedControl(
+                    screenTitles: ["문제", "사용자", "태그"],
+                    defaultIndex: state.currentIndex,
+                    onSelected: (index) => context
+                        .read<SearchBloc>()
+                        .add(SearchSegmentedControlTapped(index: index)),
+                  ),
+                  IconButton(
+                    onPressed: () {},
+                    icon: Icon(Icons.filter_list),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
               if (state.status.isSuccess)
                 Column(
                   children: [
-                    SizedBox(height: 32),
-                    MySolvedSegmentedControl(
-                      screenTitles: ["문제", "사용자", "태그"],
-                      defaultIndex: state.currentIndex,
-                      onSelected: (index) => context
-                          .read<SearchBloc>()
-                          .add(SearchSegmentedControlTapped(index: index)),
-                    ),
-                    SizedBox(
-                      height: 16,
-                    ),
                     if (state.currentIndex == 0 && state.problems != null)
                       Column(
                         children: List.generate(
@@ -173,9 +180,7 @@ class _SearchViewState extends State<SearchView> {
                                   style: MySolvedTextStyle.body1,
                                 ),
                               ),
-                              SizedBox(
-                                height: 16,
-                              ),
+                              SizedBox(height: 16),
                             ],
                           ),
                         ),
