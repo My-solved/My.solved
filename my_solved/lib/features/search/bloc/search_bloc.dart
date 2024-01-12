@@ -21,23 +21,22 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       if (event.text.isNotEmpty) {
         emit(state.copyWith(status: SearchStatus.loading));
 
-        // try {
-        final problems =
-            await searchRepository.getProblems(event.text, null, null, null);
-        // final result = await searchRepository.getSuggestions(event.text);
-        // final users = result.users;
-        // final tags = await searchRepository.getTags(event.text, null);
-        print(problems);
+        try {
+          final problems =
+              await searchRepository.getProblems(event.text, null, null, null);
+          final result = await searchRepository.getSuggestions(event.text);
+          final users = result.users;
+          final tags = await searchRepository.getTags(event.text, null);
 
-        emit(state.copyWith(
-          status: SearchStatus.success,
-          problems: problems,
-          // users: users,
-          // tags: tags,
-        ));
-        // } catch (e) {
-        //   emit(state.copyWith(status: SearchStatus.failure));
-        // }
+          emit(state.copyWith(
+            status: SearchStatus.success,
+            problems: problems,
+            users: users,
+            tags: tags,
+          ));
+        } catch (e) {
+          emit(state.copyWith(status: SearchStatus.failure));
+        }
       }
     });
     on<SearchSegmentedControlTapped>(

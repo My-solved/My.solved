@@ -195,7 +195,7 @@ class SolvedApiClient {
 
   Future<SearchObject> searchTag(String query, int? page) async {
     final searchRequest = Uri.https(_baseUrl, '/api/v3/search/tag',
-        {'query': query, 'page': page.toString()});
+        {'query': query, 'page': page?.toString() ?? '1'});
 
     final searchResponse = await _httpClient.get(searchRequest);
 

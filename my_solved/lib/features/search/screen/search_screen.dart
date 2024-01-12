@@ -187,7 +187,7 @@ class _SearchViewState extends State<SearchView> {
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: Text(
-                                  "${state.tags!.items[index]["key"]}:${state.tags!.items[index]["problemCount"]}",
+                                  "${state.tags!.items[index].key}:${state.tags!.items[index].problemCount}",
                                   style: MySolvedTextStyle.body1,
                                 ),
                               ),
