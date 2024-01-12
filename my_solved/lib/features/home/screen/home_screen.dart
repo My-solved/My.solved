@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:my_solved/components/styles/color.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key, required this.scaffoldKey});
@@ -8,7 +9,9 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: MySolvedColor.background,
       appBar: AppBar(
+        backgroundColor: MySolvedColor.background,
         actions: [
           IconButton(
             onPressed: () => scaffoldKey.currentState?.openEndDrawer(),

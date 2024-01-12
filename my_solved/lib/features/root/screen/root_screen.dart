@@ -77,11 +77,13 @@ class _RootViewState extends State<RootView> {
       builder: (context, state) {
         return Scaffold(
           key: _scaffoldKey,
+          backgroundColor: MySolvedColor.background,
           endDrawer: HomeDrawer(),
           body: bottomNaviScreen.elementAt(state.tabIndex),
           bottomNavigationBar: BottomNavigationBar(
             items: bottomNavItems,
             currentIndex: state.tabIndex,
+            backgroundColor: MySolvedColor.background,
             selectedItemColor: MySolvedColor.main,
             selectedLabelStyle: MySolvedTextStyle.caption2,
             unselectedItemColor: MySolvedColor.bottomNavigationBarUnselected,
@@ -110,6 +112,7 @@ class HomeDrawer extends StatelessWidget {
           bottomLeft: Radius.circular(16),
         ),
       ),
+      backgroundColor: MySolvedColor.background,
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(
