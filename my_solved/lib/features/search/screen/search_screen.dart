@@ -5,6 +5,7 @@ import 'package:my_solved/components/molecules/segmented_control/segmented_contr
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
 import 'package:my_solved/features/search/bloc/search_bloc.dart';
+import 'package:my_solved/features/search_filter/screen/search_filter_screen.dart';
 
 class SearchScreen extends StatelessWidget {
   const SearchScreen({super.key});
@@ -93,7 +94,17 @@ class _SearchViewState extends State<SearchView> {
                         .add(SearchSegmentedControlTapped(index: index)),
                   ),
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isDismissible: true,
+                        isScrollControlled: true,
+                        builder: (contest) => SizedBox(
+                          height: MediaQuery.of(context).size.height * 0.9,
+                          child: SearchFilterScreen(),
+                        ),
+                      );
+                    },
                     icon: Icon(Icons.filter_list),
                   ),
                 ],

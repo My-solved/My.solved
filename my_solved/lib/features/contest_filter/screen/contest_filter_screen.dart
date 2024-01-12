@@ -53,8 +53,10 @@ class _ContestFilterViewState extends State<ContestFilterView> {
         body: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text("주최", style: MySolvedTextStyle.body2),
+              Divider(),
             ],
           ),
         ),
