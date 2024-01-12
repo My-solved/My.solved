@@ -119,11 +119,11 @@ class _SearchViewState extends State<SearchView> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      "${state.problems!.items[index]["problemId"]}번",
+                                      "${state.problems!.items[index].problemId}번",
                                     ),
                                     SizedBox(height: 4),
                                     Text(
-                                      state.problems!.items[index]["titleKo"],
+                                      state.problems!.items[index].titleKo,
                                       style: MySolvedTextStyle.title5,
                                     ),
                                     SizedBox(height: 4),

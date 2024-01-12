@@ -173,9 +173,9 @@ class SolvedApiClient {
       String query, int? page, String? sort, String? direction) async {
     final searchRequest = Uri.https(_baseUrl, '/api/v3/search/problem', {
       'query': query,
-      'page': page.toString(),
-      'sort': sort,
-      'direction': direction
+      'page': page?.toString() ?? '1',
+      'sort': sort ?? 'solved',
+      'direction': direction ?? 'descending',
     });
 
     final searchResponse = await _httpClient.get(searchRequest);
