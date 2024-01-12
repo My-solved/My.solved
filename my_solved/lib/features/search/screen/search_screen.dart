@@ -16,15 +16,7 @@ class SearchScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: MySolvedColor.secondaryBackground,
       body: SafeArea(
-        child: CustomScrollView(
-          physics: BouncingScrollPhysics(),
-          slivers: [
-            SliverFillRemaining(
-              hasScrollBody: false,
-              child: SearchView(),
-            )
-          ],
-        ),
+        child: SearchView(),
       ),
     );
   }
@@ -40,200 +32,255 @@ class SearchView extends StatefulWidget {
 class _SearchViewState extends State<SearchView> {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: BlocConsumer<SearchBloc, SearchState>(
-        listener: (context, state) {
-          if (state.status.isFailure) {
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: Text("네트워크 오류가 발생했어요"),
-                  content: Text("잠시 후 다시 시도해주세요"),
-                  actions: [
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Text("확인"),
-                    ),
-                  ],
+    return CustomScrollView(
+      physics: BouncingScrollPhysics(),
+      slivers: [
+        SliverPersistentHeader(
+          pinned: true,
+          delegate: SearchHeaderDelegate(
+            body: BlocBuilder<SearchBloc, SearchState>(
+              bloc: BlocProvider.of<SearchBloc>(context),
+              builder: (context, state) {
+                return Container(
+                  padding: EdgeInsets.only(top: 16, left: 16, right: 16),
+                  decoration: BoxDecoration(
+                    color: MySolvedColor.secondaryBackground,
+                  ),
+                  child: Column(
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: MySolvedColor.background,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: MySolvedSearchField(
+                          hintText: "문제, 사용자, 태그를 입력해주세요",
+                          onChange: (text) => context
+                              .read<SearchBloc>()
+                              .add(SearchTextFieldOnChanged(text: text)),
+                          onSubmitted: (text) => context
+                              .read<SearchBloc>()
+                              .add(SearchTextFieldOnSummited(text: text)),
+                        ),
+                      ),
+                      SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          MySolvedSegmentedControl(
+                            screenTitles: ["문제", "사용자", "태그"],
+                            defaultIndex: state.currentIndex,
+                            onSelected: (index) => context
+                                .read<SearchBloc>()
+                                .add(
+                                    SearchSegmentedControlTapped(index: index)),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              showModalBottomSheet(
+                                context: context,
+                                isDismissible: true,
+                                isScrollControlled: true,
+                                builder: (contest) => SizedBox(
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.9,
+                                  child: SearchFilterScreen(),
+                                ),
+                              );
+                            },
+                            icon: Icon(Icons.filter_list),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 );
               },
-            );
-          }
-        },
-        bloc: BlocProvider.of<SearchBloc>(context),
-        builder: (context, state) {
-          return Column(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: MySolvedColor.background,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: MySolvedSearchField(
-                  hintText: "문제, 사용자, 태그를 입력해주세요",
-                  onChange: (text) => context
-                      .read<SearchBloc>()
-                      .add(SearchTextFieldOnChanged(text: text)),
-                  onSubmitted: (text) => context
-                      .read<SearchBloc>()
-                      .add(SearchTextFieldOnSummited(text: text)),
-                ),
-              ),
-              SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  MySolvedSegmentedControl(
-                    screenTitles: ["문제", "사용자", "태그"],
-                    defaultIndex: state.currentIndex,
-                    onSelected: (index) => context
-                        .read<SearchBloc>()
-                        .add(SearchSegmentedControlTapped(index: index)),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        isDismissible: true,
-                        isScrollControlled: true,
-                        builder: (contest) => SizedBox(
-                          height: MediaQuery.of(context).size.height * 0.9,
-                          child: SearchFilterScreen(),
+            ),
+          ),
+        ),
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: BlocConsumer<SearchBloc, SearchState>(
+            bloc: BlocProvider.of<SearchBloc>(context),
+            listener: (context, state) {
+              if (state.status.isFailure) {
+                showDialog(
+                  context: context,
+                  builder: (context) {
+                    return AlertDialog(
+                      title: Text("네트워크 오류가 발생했어요"),
+                      content: Text("잠시 후 다시 시도해주세요"),
+                      actions: [
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text("확인"),
                         ),
-                      );
-                    },
-                    icon: Icon(Icons.filter_list),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16),
-              if (state.status.isSuccess)
-                Column(
-                  children: [
-                    if (state.currentIndex == 0 && state.problems != null)
-                      Column(
-                        children: List.generate(
-                          state.problems!.items.length,
-                          (index) => Column(
-                            children: [
-                              ElevatedButton(
-                                onPressed: () async {
-                                  String urlString =
-                                      "https://acmicpc.net/problem/${state.problems!.items[index].problemId}";
-                                  launchUrlString(urlString);
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  alignment: Alignment.centerLeft,
-                                  padding: EdgeInsets.all(16),
-                                  backgroundColor: MySolvedColor.background,
-                                  foregroundColor: MySolvedColor.font,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  minimumSize: Size.fromHeight(52),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "${state.problems!.items[index].problemId}번",
-                                      style: MySolvedTextStyle.body2,
-                                    ),
-                                    SizedBox(height: 4),
-                                    Text(
-                                      state.problems!.items[index].titleKo,
-                                      style: MySolvedTextStyle.title5,
-                                    ),
-                                    SizedBox(height: 4),
-                                  ],
-                                ),
-                              ),
-                              SizedBox(height: 16),
-                            ],
-                          ),
-                        ),
-                      ),
-                    if (state.currentIndex == 1 && state.users != null)
-                      Column(
-                        children: List.generate(
-                          state.users!.length,
-                          (index) => Column(
-                            children: [
-                              ElevatedButton(
-                                onPressed: () {},
-                                style: ElevatedButton.styleFrom(
-                                  alignment: Alignment.centerLeft,
-                                  padding: EdgeInsets.all(16),
-                                  backgroundColor: MySolvedColor.background,
-                                  foregroundColor: MySolvedColor.font,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  minimumSize: Size.fromHeight(52),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      state.users![index].handle,
-                                      style: MySolvedTextStyle.body1,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              SizedBox(height: 16),
-                            ],
-                          ),
-                        ),
-                      ),
-                    if (state.currentIndex == 2 && state.tags != null)
-                      Column(
-                        children: List.generate(
-                          state.tags!.items.length,
-                          (index) => Column(
-                            children: [
-                              ElevatedButton(
-                                onPressed: () async {
-                                  String urlString =
-                                      "https://solved.ac/search?query=%23${state.tags!.items[index].key}";
-                                  launchUrlString(urlString);
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  alignment: Alignment.centerLeft,
-                                  padding: EdgeInsets.all(16),
-                                  backgroundColor: MySolvedColor.background,
-                                  foregroundColor: MySolvedColor.font,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  minimumSize: Size.fromHeight(52),
-                                ),
-                                child: Text(
-                                  "${state.tags!.items[index].key}:${state.tags!.items[index].problemCount}",
-                                  style: MySolvedTextStyle.body1,
-                                ),
-                              ),
-                              SizedBox(height: 16),
-                            ],
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              if (state.status.isLoading)
-                Center(
+                      ],
+                    );
+                  },
+                );
+              }
+            },
+            builder: (context, state) {
+              if (state.status.isLoading) {
+                return Center(
                   child: CircularProgressIndicator(color: MySolvedColor.main),
-                ),
-            ],
-          );
-        },
-      ),
+                );
+              } else {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: [
+                      SizedBox(height: 16),
+                      if (state.currentIndex == 0 && state.problems != null)
+                        Column(
+                          children: List.generate(
+                            state.problems!.items.length,
+                            (index) => Column(
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    String urlString =
+                                        "https://acmicpc.net/problem/${state.problems!.items[index].problemId}";
+                                    launchUrlString(urlString);
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    alignment: Alignment.centerLeft,
+                                    padding: EdgeInsets.all(16),
+                                    backgroundColor: MySolvedColor.background,
+                                    foregroundColor: MySolvedColor.font,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    minimumSize: Size.fromHeight(52),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "${state.problems!.items[index].problemId}번",
+                                        style: MySolvedTextStyle.body2,
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        state.problems!.items[index].titleKo,
+                                        style: MySolvedTextStyle.title5,
+                                      ),
+                                      SizedBox(height: 4),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: 16),
+                              ],
+                            ),
+                          ),
+                        ),
+                      if (state.currentIndex == 1 && state.users != null)
+                        Column(
+                          children: List.generate(
+                            state.users!.length,
+                            (index) => Column(
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () {},
+                                  style: ElevatedButton.styleFrom(
+                                    alignment: Alignment.centerLeft,
+                                    padding: EdgeInsets.all(16),
+                                    backgroundColor: MySolvedColor.background,
+                                    foregroundColor: MySolvedColor.font,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    minimumSize: Size.fromHeight(52),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        state.users![index].handle,
+                                        style: MySolvedTextStyle.body1,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: 16),
+                              ],
+                            ),
+                          ),
+                        ),
+                      if (state.currentIndex == 2 && state.tags != null)
+                        Column(
+                          children: List.generate(
+                            state.tags!.items.length,
+                            (index) => Column(
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    String urlString =
+                                        "https://solved.ac/search?query=%23${state.tags!.items[index].key}";
+                                    launchUrlString(urlString);
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    alignment: Alignment.centerLeft,
+                                    padding: EdgeInsets.all(16),
+                                    backgroundColor: MySolvedColor.background,
+                                    foregroundColor: MySolvedColor.font,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    minimumSize: Size.fromHeight(52),
+                                  ),
+                                  child: Text(
+                                    "${state.tags!.items[index].key}:${state.tags!.items[index].problemCount}",
+                                    style: MySolvedTextStyle.body1,
+                                  ),
+                                ),
+                                SizedBox(height: 16),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              }
+            },
+          ),
+        ),
+      ],
     );
+    // return
+  }
+}
+
+class SearchHeaderDelegate extends SliverPersistentHeaderDelegate {
+  Widget body;
+
+  SearchHeaderDelegate({required this.body});
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return body;
+  }
+
+  @override
+  double get maxExtent => 144 - 16;
+
+  @override
+  double get minExtent => 144 - 16;
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
+    return false;
   }
 }

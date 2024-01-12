@@ -15,6 +15,7 @@ class ContestScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: MySolvedColor.secondaryBackground,
       appBar: AppBar(
+        scrolledUnderElevation: 0,
         backgroundColor: MySolvedColor.secondaryBackground,
         leading: Padding(
           padding: const EdgeInsets.only(left: 16),
