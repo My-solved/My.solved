@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
+import 'package:my_solved/features/search_filter/bloc/search_filter_bloc.dart';
 
 class SearchFilterScreen extends StatelessWidget {
   const SearchFilterScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SearchFilterView();
+    return BlocProvider(
+      create: (context) => SearchFilterBloc(),
+      child: SearchFilterView(),
+    );
   }
 }
 
@@ -53,9 +58,49 @@ class _SearchFilterViewState extends State<SearchFilterView> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("정렬 기준", style: MySolvedTextStyle.body2),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("정렬 기준", style: MySolvedTextStyle.body2),
+                  PopupMenuButton(
+                    child: Text("정렬기준"),
+                    itemBuilder: (context) {
+                      final sorts =
+                          context.read<SearchFilterBloc>().state.sorts;
+                      return List.generate(
+                        sorts.length,
+                        (index) => PopupMenuItem<String>(
+                          value: sorts[index].value,
+                          child: Text(sorts[index].displayName),
+                        ),
+                      );
+                    },
+                    onSelected: (value) {},
+                  )
+                ],
+              ),
               SizedBox(height: 24),
-              Text("정렬 방법", style: MySolvedTextStyle.body2),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("정렬 방법", style: MySolvedTextStyle.body2),
+                  PopupMenuButton(
+                    child: Text("정렬방법"),
+                    itemBuilder: (context) {
+                      final directions =
+                          context.read<SearchFilterBloc>().state.directions;
+                      return List.generate(
+                        directions.length,
+                        (index) => PopupMenuItem<String>(
+                          value: directions[index].value,
+                          child: Text(directions[index].displayName),
+                        ),
+                      );
+                    },
+                    onSelected: (value) {},
+                  ),
+                ],
+              ),
               SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
