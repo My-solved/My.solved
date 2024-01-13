@@ -41,5 +41,5 @@ class SearchFilterState extends Equatable {
   final List<SearchDirection> directions = SearchDirection.allCases;
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [sorts, directions];
 }

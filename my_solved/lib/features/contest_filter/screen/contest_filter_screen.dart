@@ -38,19 +38,6 @@ class _ContestFilterViewState extends State<ContestFilterView> {
           automaticallyImplyLeading: false,
           centerTitle: true,
           title: Text("대회 필터 설정", style: MySolvedTextStyle.title5),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text(
-                "저장",
-                style: MySolvedTextStyle.body1.copyWith(
-                  color: MySolvedColor.main,
-                ),
-              ),
-            ),
-          ],
         ),
         body: Padding(
           padding: const EdgeInsets.all(16),
@@ -59,6 +46,31 @@ class _ContestFilterViewState extends State<ContestFilterView> {
             children: [
               Text("주최", style: MySolvedTextStyle.body2),
               Divider(),
+              SizedBox(height: 16),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: List.generate(
+                  context.read<ContestFilterBloc>().state.venues.length,
+                  (index) {
+                    final venues =
+                        context.read<ContestFilterBloc>().state.venues;
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: MySolvedColor.main,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding:
+                          EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                      child: Text(
+                        venues[index].displayName,
+                        style: MySolvedTextStyle.body1
+                            .copyWith(color: MySolvedColor.background),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ],
           ),
         ),

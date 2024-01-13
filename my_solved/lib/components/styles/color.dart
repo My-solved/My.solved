@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 class MySolvedColor {
   static const Color main = Color(0xFF11CE3C);
 
+  static const Color warning = Colors.red;
+
   static const Color font = Color(0xFF000000);
   static const Color secondaryFont = Color(0xFF767676);
 
