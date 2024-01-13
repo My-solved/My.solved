@@ -86,7 +86,9 @@ class _SearchViewState extends State<SearchView> {
                                 builder: (contest) => SizedBox(
                                   height:
                                       MediaQuery.of(context).size.height * 0.9,
-                                  child: SearchFilterScreen(),
+                                  child: SearchFilterScreen(
+                                    searchBLoc: context.read<SearchBloc>(),
+                                  ),
                                 ),
                               );
                             },

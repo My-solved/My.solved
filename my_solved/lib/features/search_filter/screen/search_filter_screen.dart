@@ -2,22 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
+import 'package:my_solved/features/search/bloc/search_bloc.dart';
 import 'package:my_solved/features/search_filter/bloc/search_filter_bloc.dart';
 
 class SearchFilterScreen extends StatelessWidget {
-  const SearchFilterScreen({super.key});
+  final SearchBloc searchBLoc;
+
+  const SearchFilterScreen({super.key, required this.searchBLoc});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => SearchFilterBloc(),
-      child: SearchFilterView(),
+      child: SearchFilterView(searchBLoc: searchBLoc),
     );
   }
 }
 
 class SearchFilterView extends StatefulWidget {
-  const SearchFilterView({super.key});
+  final SearchBloc searchBLoc;
+
+  const SearchFilterView({super.key, required this.searchBLoc});
 
   @override
   State<SearchFilterView> createState() => _SearchFilterViewState();
@@ -32,26 +37,15 @@ class _SearchFilterViewState extends State<SearchFilterView> {
         topRight: Radius.circular(16),
       ),
       child: Scaffold(
+        backgroundColor: MySolvedColor.background,
         appBar: AppBar(
+          backgroundColor: MySolvedColor.background,
           automaticallyImplyLeading: false,
           centerTitle: true,
           title: Text(
             "검색 설정",
             style: MySolvedTextStyle.title5,
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text(
-                "저장",
-                style: MySolvedTextStyle.body1.copyWith(
-                  color: MySolvedColor.main,
-                ),
-              ),
-            ),
-          ],
         ),
         body: Padding(
           padding: const EdgeInsets.all(16),
@@ -62,20 +56,34 @@ class _SearchFilterViewState extends State<SearchFilterView> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text("정렬 기준", style: MySolvedTextStyle.body2),
-                  PopupMenuButton(
-                    child: Text("정렬기준"),
-                    itemBuilder: (context) {
-                      final sorts =
-                          context.read<SearchFilterBloc>().state.sorts;
-                      return List.generate(
-                        sorts.length,
-                        (index) => PopupMenuItem<String>(
-                          value: sorts[index].value,
-                          child: Text(sorts[index].displayName),
+                  BlocBuilder<SearchBloc, SearchState>(
+                    bloc: widget.searchBLoc,
+                    builder: (context, state) {
+                      return PopupMenuButton(
+                        child: Container(
+                          padding:
+                              EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: MySolvedColor.secondaryBackground,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(state.sort.displayName,
+                              style: MySolvedTextStyle.body1),
                         ),
+                        itemBuilder: (context) {
+                          final sorts =
+                              context.read<SearchFilterBloc>().state.sorts;
+                          return List.generate(
+                            sorts.length,
+                            (index) => PopupMenuItem<String>(
+                              value: sorts[index].value,
+                              child: Text(sorts[index].displayName),
+                            ),
+                          );
+                        },
+                        onSelected: (value) {},
                       );
                     },
-                    onSelected: (value) {},
                   )
                 ],
               ),
@@ -84,20 +92,36 @@ class _SearchFilterViewState extends State<SearchFilterView> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text("정렬 방법", style: MySolvedTextStyle.body2),
-                  PopupMenuButton(
-                    child: Text("정렬방법"),
-                    itemBuilder: (context) {
-                      final directions =
-                          context.read<SearchFilterBloc>().state.directions;
-                      return List.generate(
-                        directions.length,
-                        (index) => PopupMenuItem<String>(
-                          value: directions[index].value,
-                          child: Text(directions[index].displayName),
+                  BlocBuilder<SearchBloc, SearchState>(
+                    bloc: widget.searchBLoc,
+                    builder: (context, state) {
+                      return PopupMenuButton(
+                        child: Container(
+                          padding:
+                              EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: MySolvedColor.secondaryBackground,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            state.direction.displayName,
+                            style: MySolvedTextStyle.body1,
+                          ),
                         ),
+                        itemBuilder: (context) {
+                          final directions =
+                              context.read<SearchFilterBloc>().state.directions;
+                          return List.generate(
+                            directions.length,
+                            (index) => PopupMenuItem<String>(
+                              value: directions[index].value,
+                              child: Text(directions[index].displayName),
+                            ),
+                          );
+                        },
+                        onSelected: (value) {},
                       );
                     },
-                    onSelected: (value) {},
                   ),
                 ],
               ),

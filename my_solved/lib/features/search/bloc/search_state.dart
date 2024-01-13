@@ -11,6 +11,8 @@ extension SearchStatusX on SearchStatus {
 
 class SearchState extends Equatable {
   final SearchStatus status;
+  final SearchSortMethod sort;
+  final SearchDirection direction;
   final String text;
   final int currentIndex;
   final SearchObject? problems;
@@ -19,6 +21,8 @@ class SearchState extends Equatable {
 
   const SearchState({
     this.status = SearchStatus.initial,
+    required this.sort,
+    required this.direction,
     this.text = "",
     this.currentIndex = 0,
     this.problems,
@@ -28,6 +32,8 @@ class SearchState extends Equatable {
 
   SearchState copyWith({
     SearchStatus? status,
+    SearchSortMethod? sort,
+    SearchDirection? direction,
     String? text,
     int? currentIndex,
     SearchObject? problems,
@@ -36,6 +42,8 @@ class SearchState extends Equatable {
   }) {
     return SearchState(
       status: status ?? this.status,
+      sort: sort ?? this.sort,
+      direction: direction ?? this.direction,
       text: text ?? this.text,
       currentIndex: currentIndex ?? this.currentIndex,
       problems: problems ?? this.problems,
