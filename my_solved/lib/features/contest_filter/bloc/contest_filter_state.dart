@@ -1,9 +1,7 @@
 part of 'contest_filter_bloc.dart';
 
 @immutable
-abstract class ContestFilterState extends Equatable {}
-
-class ContestFilterInitial extends ContestFilterState {
+class ContestFilterState extends Equatable {
   @override
   List<Object?> get props => [];
 }

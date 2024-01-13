@@ -6,5 +6,5 @@ part 'contest_filter_event.dart';
 part 'contest_filter_state.dart';
 
 class ContestFilterBloc extends Bloc<ContestFilterEvent, ContestFilterState> {
-  ContestFilterBloc() : super(ContestFilterInitial());
+  ContestFilterBloc() : super(ContestFilterState());
 }

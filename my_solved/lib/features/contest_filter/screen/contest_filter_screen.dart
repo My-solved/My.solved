@@ -32,7 +32,9 @@ class _ContestFilterViewState extends State<ContestFilterView> {
         topRight: Radius.circular(16),
       ),
       child: Scaffold(
+        backgroundColor: MySolvedColor.background,
         appBar: AppBar(
+          backgroundColor: MySolvedColor.background,
           automaticallyImplyLeading: false,
           centerTitle: true,
           title: Text("대회 필터 설정", style: MySolvedTextStyle.title5),

@@ -23,7 +23,7 @@ class ContestScreen extends StatelessWidget {
             bloc: BlocProvider.of<ContestBloc>(context),
             builder: (context, state) {
               return MySolvedSegmentedControl(
-                defaultIndex: 1,
+                defaultIndex: state.currentIndex,
                 screenTitles: ["종료된 대회", "진행중인 대회", "예정된 대회"],
                 onSelected: (index) {
                   context
