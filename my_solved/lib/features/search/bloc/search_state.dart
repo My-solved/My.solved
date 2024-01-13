@@ -55,6 +55,8 @@ class SearchState extends Equatable {
   @override
   List<Object?> get props => [
         status,
+        sort,
+        direction,
         text,
         currentIndex,
         problems,

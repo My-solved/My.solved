@@ -29,8 +29,12 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
         emit(state.copyWith(status: SearchStatus.loading));
 
         try {
-          final problems =
-              await searchRepository.getProblems(event.text, null, null, null);
+          final problems = await searchRepository.getProblems(
+            event.text,
+            null,
+            state.sort.value,
+            state.direction.value,
+          );
           final result = await searchRepository.getSuggestions(event.text);
           final users = result.users;
           final tags = await searchRepository.getTags(event.text, null);
@@ -48,6 +52,11 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     });
     on<SearchSegmentedControlTapped>(
       (event, emit) => emit(state.copyWith(currentIndex: event.index)),
+    );
+    on<SearchFilterSortMethodSelected>(
+        (event, emit) => emit(state.copyWith(sort: event.sort)));
+    on<SearchFilterDirectionSelected>(
+      (event, emit) => emit(state.copyWith(direction: event.direction)),
     );
   }
 }

@@ -29,3 +29,21 @@ class SearchSegmentedControlTapped extends SearchEvent {
   @override
   List<Object?> get props => [index];
 }
+
+class SearchFilterSortMethodSelected extends SearchEvent {
+  final SearchSortMethod sort;
+
+  SearchFilterSortMethodSelected({required this.sort});
+
+  @override
+  List<Object?> get props => [sort];
+}
+
+class SearchFilterDirectionSelected extends SearchEvent {
+  final SearchDirection direction;
+
+  SearchFilterDirectionSelected({required this.direction});
+
+  @override
+  List<Object?> get props => [direction];
+}

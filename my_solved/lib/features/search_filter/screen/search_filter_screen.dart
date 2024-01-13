@@ -75,19 +75,20 @@ class _SearchFilterViewState extends State<SearchFilterView> {
                               context.read<SearchFilterBloc>().state.sorts;
                           return List.generate(
                             sorts.length,
-                            (index) => PopupMenuItem<String>(
-                              value: sorts[index].value,
+                            (index) => PopupMenuItem<SearchSortMethod>(
+                              value: sorts[index],
                               child: Text(sorts[index].displayName),
                             ),
                           );
                         },
-                        onSelected: (value) {},
+                        onSelected: (value) => widget.searchBLoc
+                            .add(SearchFilterSortMethodSelected(sort: value)),
                       );
                     },
                   )
                 ],
               ),
-              SizedBox(height: 24),
+              SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -113,19 +114,20 @@ class _SearchFilterViewState extends State<SearchFilterView> {
                               context.read<SearchFilterBloc>().state.directions;
                           return List.generate(
                             directions.length,
-                            (index) => PopupMenuItem<String>(
-                              value: directions[index].value,
+                            (index) => PopupMenuItem<SearchDirection>(
+                              value: directions[index],
                               child: Text(directions[index].displayName),
                             ),
                           );
                         },
-                        onSelected: (value) {},
+                        onSelected: (value) => widget.searchBLoc.add(
+                            SearchFilterDirectionSelected(direction: value)),
                       );
                     },
                   ),
                 ],
               ),
-              SizedBox(height: 24),
+              SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
