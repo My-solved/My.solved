@@ -2,22 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
+import 'package:my_solved/features/contest/bloc/contest_bloc.dart';
 import 'package:my_solved/features/contest_filter/bloc/contest_filter_bloc.dart';
 
 class ContestFilterScreen extends StatelessWidget {
-  const ContestFilterScreen({super.key});
+  final ContestBloc contestBloc;
+
+  const ContestFilterScreen({super.key, required this.contestBloc});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider<ContestFilterBloc>(
       create: (context) => ContestFilterBloc(),
-      child: ContestFilterView(),
+      child: ContestFilterView(contestBloc: contestBloc),
     );
   }
 }
 
 class ContestFilterView extends StatefulWidget {
-  const ContestFilterView({super.key});
+  final ContestBloc contestBloc;
+
+  const ContestFilterView({super.key, required this.contestBloc});
 
   @override
   State<ContestFilterView> createState() => _ContestFilterViewState();
@@ -55,17 +60,29 @@ class _ContestFilterViewState extends State<ContestFilterView> {
                   (index) {
                     final venues =
                         context.read<ContestFilterBloc>().state.venues;
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: MySolvedColor.main,
-                        borderRadius: BorderRadius.circular(8),
+                    final filter =
+                        widget.contestBloc.state.filters[venues[index]] ??
+                            false;
+                    return ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        elevation: 0,
+                        backgroundColor: filter
+                            ? MySolvedColor.main
+                            : MySolvedColor.disabledButtonBackground,
+                        padding:
+                            EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
-                      padding:
-                          EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                       child: Text(
                         venues[index].displayName,
-                        style: MySolvedTextStyle.body1
-                            .copyWith(color: MySolvedColor.background),
+                        style: MySolvedTextStyle.body1.copyWith(
+                          color: filter
+                              ? MySolvedColor.background
+                              : MySolvedColor.disabledButtonForeground,
+                        ),
                       ),
                     );
                   },

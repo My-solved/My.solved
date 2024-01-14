@@ -12,49 +12,50 @@ class ContestScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: MySolvedColor.secondaryBackground,
-      appBar: AppBar(
-        scrolledUnderElevation: 0,
+    final bloc = BlocProvider.of<ContestBloc>(context);
+    return BlocBuilder<ContestBloc, ContestState>(
+      bloc: bloc,
+      builder: (context, state) => Scaffold(
         backgroundColor: MySolvedColor.secondaryBackground,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 16),
-          child: BlocBuilder<ContestBloc, ContestState>(
-            bloc: BlocProvider.of<ContestBloc>(context),
-            builder: (context, state) {
-              return MySolvedSegmentedControl(
-                defaultIndex: state.currentIndex,
-                screenTitles: ["진행중인 대회", "예정된 대회", "종료된 대회"],
-                onSelected: (index) {
-                  context
-                      .read<ContestBloc>()
-                      .add(SegmentedControlTapped(index: index));
-                },
-              );
-            },
+        appBar: AppBar(
+          scrolledUnderElevation: 0,
+          backgroundColor: MySolvedColor.secondaryBackground,
+          leading: Padding(
+            padding: const EdgeInsets.only(left: 16),
+            child: MySolvedSegmentedControl(
+              defaultIndex: state.currentIndex,
+              screenTitles: ["진행중인 대회", "예정된 대회", "종료된 대회"],
+              onSelected: (index) {
+                context
+                    .read<ContestBloc>()
+                    .add(SegmentedControlTapped(index: index));
+              },
+            ),
           ),
+          actions: [
+            IconButton(
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) => ContestFilterScreen(
+                    contestBloc: bloc,
+                  ),
+                );
+              },
+              icon: Icon(Icons.filter_list),
+            ),
+          ],
+          leadingWidth: 320,
         ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                builder: (context) => ContestFilterScreen(),
-              );
-            },
-            icon: Icon(Icons.filter_list),
-          ),
-        ],
-        leadingWidth: 320,
-      ),
-      body: CustomScrollView(
-        physics: BouncingScrollPhysics(),
-        slivers: [
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: ContestView(),
-          ),
-        ],
+        body: CustomScrollView(
+          physics: BouncingScrollPhysics(),
+          slivers: [
+            SliverFillRemaining(
+              hasScrollBody: false,
+              child: ContestView(),
+            ),
+          ],
+        ),
       ),
     );
   }

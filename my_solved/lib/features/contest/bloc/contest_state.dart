@@ -66,5 +66,9 @@ class ContestState extends Equatable {
         ongoingContests,
         upcomingContests,
         filters,
+        selectedVenues,
+        filteredEndedContests,
+        filteredOngoingContests,
+        filteredUpcomingContests,
       ];
 }
