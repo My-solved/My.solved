@@ -35,8 +35,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
             state.sort.value,
             state.direction.value,
           );
-          final result = await searchRepository.getSuggestions(event.text);
-          final users = result.users;
+          final users = await searchRepository.getUsers(event.text, null);
           final tags = await searchRepository.getTags(event.text, null);
 
           emit(state.copyWith(
