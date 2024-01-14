@@ -2,8 +2,8 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
 
-part 'root_state.dart';
 part 'root_event.dart';
+part 'root_state.dart';
 
 class RootBloc extends Bloc<RootEvent, RootState> {
   final String handle;

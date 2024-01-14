@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:shared_preferences_repository/shared_preferences_repository.dart';
 
-part 'app_state.dart';
 part 'app_event.dart';
+part 'app_state.dart';
 
 class AppBloc extends Bloc<AppEvent, AppState> {
   final SharedPreferencesRepository sharedPreferencesRepository;

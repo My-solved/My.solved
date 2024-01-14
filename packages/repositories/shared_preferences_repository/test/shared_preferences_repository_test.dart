@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:shared_preferences_repository/shared_preferences_repository.dart';
 
 void main() {
