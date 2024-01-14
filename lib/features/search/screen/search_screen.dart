@@ -1,8 +1,9 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:my_solved/components/atoms/text_field/text_field.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
+import 'package:my_solved/components/atoms/text_field/my_solved_search_field.dart';
 import 'package:my_solved/components/molecules/segmented_control/segmented_control.dart';
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
@@ -181,10 +182,20 @@ class _SearchViewState extends State<SearchView> {
                                         ],
                                       ),
                                       SizedBox(height: 4),
-                                      Text(
-                                        state.problems!.items[index].titleKo,
-                                        style: MySolvedTextStyle.title5,
-                                      ),
+                                      // 문제 제목에 HTML 태그가 포함되어 있을 경우
+                                      state.problems!.items[index].titleKo
+                                              .contains("</")
+                                          ? HtmlWidget(
+                                              state.problems!.items[index]
+                                                  .titleKo,
+                                              textStyle:
+                                                  MySolvedTextStyle.body1,
+                                            )
+                                          : Text(
+                                              state.problems!.items[index]
+                                                  .titleKo,
+                                              style: MySolvedTextStyle.body1,
+                                            ),
                                       SizedBox(height: 8),
                                       Wrap(
                                         children: List.generate(
