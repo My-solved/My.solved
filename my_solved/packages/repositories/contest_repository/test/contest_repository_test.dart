@@ -41,9 +41,9 @@ void main() {
             .thenAnswer((_) async => officialContests);
 
         expect(await contestRepository.getContests(), {
-          ContestType.ongoing: otherContests.$1,
-          ContestType.upcoming: otherContests.$2,
           ContestType.ended: officialContests,
+          ContestType.upcoming: otherContests.$1,
+          ContestType.ongoing: otherContests.$2,
         });
       });
     });

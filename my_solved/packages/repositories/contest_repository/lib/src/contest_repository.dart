@@ -15,9 +15,9 @@ class ContestRepository {
     final endedContests = await _bojApiClient.officialContestList();
 
     return {
-      ContestType.ongoing: otherContests.$1,
-      ContestType.upcoming: otherContests.$2,
       ContestType.ended: endedContests,
+      ContestType.upcoming: otherContests.$1,
+      ContestType.ongoing: otherContests.$2,
     };
   }
 }

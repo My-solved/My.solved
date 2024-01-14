@@ -1,9 +1,10 @@
 import 'dart:async';
 
-import 'package:boj_api/boj_api.dart';
 import 'package:html/dom.dart' as dom;
 import 'package:html/parser.dart' as parser;
 import 'package:http/http.dart' as http;
+
+import '../boj_api.dart';
 
 class ContestRequestFailed implements Exception {}
 
@@ -31,29 +32,20 @@ class BojApiClient {
         .getElementsByTagName('tbody')
         .first
         .getElementsByTagName('tr')
-        .where((element) => element.getElementsByTagName('td')[4].text == '종료')
+        .where((element) => element.getElementsByTagName('td')[5].text == '종료')
         .toList();
 
     final endedContestList = contestListElement
         .map((element) {
-          element
-              .getElementsByTagName('td')
-              .insert(0, dom.Element.tag('td')..text = 'BOJ Open');
-
-          final String url =
-              'https://acmicpc.net${element.getElementsByTagName('td')[1].getElementsByTagName('a')[0].attributes['href']}';
-          element
-              .getElementsByTagName('td')[1]
-              .getElementsByTagName('a')[0]
-              .attributes['href'] = url;
-
-          element.getElementsByTagName('td').removeRange(2, 4);
-
+          element.insertBefore(
+              dom.Element.tag('td')..text = 'BOJ Open', element.firstChild);
+          element.getElementsByTagName('td')[2].remove();
+          element.getElementsByTagName('td')[2].remove();
           return Contest.fromElement(element);
         })
         .toList()
         .cast<Contest>();
-
+    print(endedContestList[0].name);
     return endedContestList;
   }
 
@@ -79,7 +71,7 @@ class BojApiClient {
         .toList()
         .cast<Contest>();
 
-    final endedContestListElement =
+    final ongoingContestList =
         document.getElementsByClassName('col-md-12').length < 5
             ? [].cast<Contest>()
             : document
@@ -92,6 +84,6 @@ class BojApiClient {
                 .toList()
                 .cast<Contest>();
 
-    return (upcomingContestListElement, endedContestListElement);
+    return (upcomingContestListElement, ongoingContestList);
   }
 }
