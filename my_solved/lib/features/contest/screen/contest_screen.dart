@@ -24,7 +24,7 @@ class ContestScreen extends StatelessWidget {
             builder: (context, state) {
               return MySolvedSegmentedControl(
                 defaultIndex: state.currentIndex,
-                screenTitles: ["종료된 대회", "진행중인 대회", "예정된 대회"],
+                screenTitles: ["진행중인 대회", "예정된 대회", "종료된 대회"],
                 onSelected: (index) {
                   context
                       .read<ContestBloc>()
@@ -170,11 +170,11 @@ class _ContestViewState extends State<ContestView> {
   List<Contest> _fetchContests(ContestState state) {
     switch (state.currentIndex) {
       case 0:
-        return state.endedContests;
-      case 1:
         return state.ongoingContests;
-      default:
+      case 1:
         return state.upcomingContests;
+      default:
+        return state.endedContests;
     }
   }
 }

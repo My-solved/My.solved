@@ -18,7 +18,7 @@ class ContestState extends Equatable {
 
   const ContestState({
     this.status = ContestStatus.initial,
-    this.currentIndex = 1,
+    this.currentIndex = 0,
     this.endedContests = const [],
     this.ongoingContests = const [],
     this.upcomingContests = const [],

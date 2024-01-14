@@ -1,11 +1,11 @@
 part of 'contest_filter_bloc.dart';
 
 enum ContestVenues {
-  atCoder("", "AtCoder"),
-  bojOpen("", "BOJ Open"),
-  codeForces("", "Codeforces"),
-  programmers("", "Programmers"),
-  others("", "Others");
+  atCoder("AtCoder", "AtCoder"),
+  bojOpen("BOJ Open", "BOJ Open"),
+  codeForces("Codeforces", "Codeforces"),
+  programmers("Programmers", "Programmers"),
+  others("Others", "Others");
 
   const ContestVenues(this.value, this.displayName);
 
