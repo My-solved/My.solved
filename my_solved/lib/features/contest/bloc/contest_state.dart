@@ -15,6 +15,21 @@ class ContestState extends Equatable {
   final List<Contest> endedContests;
   final List<Contest> ongoingContests;
   final List<Contest> upcomingContests;
+  final Map<ContestVenue, bool> filters;
+
+  List<String> get selectedVenues => ContestVenue.allCases
+      .where((venue) => filters[venue] ?? false)
+      .map((venue) => venue.value)
+      .toList();
+  List<Contest> get filteredEndedContests => endedContests
+      .where((contest) => selectedVenues.contains(contest.venue))
+      .toList();
+  List<Contest> get filteredOngoingContests => ongoingContests
+      .where((contest) => selectedVenues.contains(contest.venue))
+      .toList();
+  List<Contest> get filteredUpcomingContests => upcomingContests
+      .where((contest) => selectedVenues.contains(contest.venue))
+      .toList();
 
   const ContestState({
     this.status = ContestStatus.initial,
@@ -22,6 +37,7 @@ class ContestState extends Equatable {
     this.endedContests = const [],
     this.ongoingContests = const [],
     this.upcomingContests = const [],
+    required this.filters,
   });
 
   ContestState copyWith({
@@ -30,6 +46,7 @@ class ContestState extends Equatable {
     List<Contest>? endedContests,
     List<Contest>? ongoingContests,
     List<Contest>? upcomingContests,
+    Map<ContestVenue, bool>? filters,
   }) {
     return ContestState(
       status: status ?? this.status,
@@ -37,6 +54,7 @@ class ContestState extends Equatable {
       endedContests: endedContests ?? this.endedContests,
       ongoingContests: ongoingContests ?? this.ongoingContests,
       upcomingContests: upcomingContests ?? this.upcomingContests,
+      filters: filters ?? this.filters,
     );
   }
 
@@ -47,5 +65,6 @@ class ContestState extends Equatable {
         endedContests,
         ongoingContests,
         upcomingContests,
+        filters,
       ];
 }

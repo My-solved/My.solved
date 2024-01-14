@@ -170,11 +170,11 @@ class _ContestViewState extends State<ContestView> {
   List<Contest> _fetchContests(ContestState state) {
     switch (state.currentIndex) {
       case 0:
-        return state.ongoingContests;
+        return state.filteredOngoingContests;
       case 1:
-        return state.upcomingContests;
+        return state.filteredUpcomingContests;
       default:
-        return state.endedContests;
+        return state.filteredEndedContests;
     }
   }
 }
