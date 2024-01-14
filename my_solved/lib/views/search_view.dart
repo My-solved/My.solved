@@ -13,7 +13,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class SearchView extends StatefulWidget {
-  const SearchView({Key? key}) : super(key: key);
+  const SearchView({super.key});
 
   @override
   State<SearchView> createState() => _SearchViewState();
@@ -118,7 +118,7 @@ class _SearchViewState extends State<SearchView> {
                                                                     .showTier
                                                                 ? Container(
                                                                     margin: const EdgeInsets
-                                                                            .only(
+                                                                        .only(
                                                                         right:
                                                                             5),
                                                                     child: SvgPicture
@@ -249,14 +249,14 @@ class _SearchViewState extends State<SearchView> {
                                                           switch (state
                                                               .extendedImageLoadState) {
                                                             case LoadState
-                                                                .loading:
+                                                                  .loading:
                                                               return CupertinoActivityIndicator();
                                                             case LoadState
-                                                                .completed:
+                                                                  .completed:
                                                               return state
                                                                   .completedWidget;
                                                             case LoadState
-                                                                .failed:
+                                                                  .failed:
                                                               return SizedBox
                                                                   .shrink();
                                                           }

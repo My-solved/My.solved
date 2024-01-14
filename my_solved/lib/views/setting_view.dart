@@ -7,7 +7,7 @@ import 'package:my_solved/services/user_service.dart';
 const _sortList = ['ID', '레벨', '제목', '푼 사람 수', '평균 시도'];
 
 class SettingView extends StatefulWidget {
-  const SettingView({Key? key}) : super(key: key);
+  const SettingView({super.key});
 
   @override
   State<SettingView> createState() => _SettingViewState();
