@@ -117,7 +117,6 @@ class _SettingViewState extends State<SettingView> {
                           context: context,
                           initialTime: state.streakTime,
                         );
-                        print(timeOfDay);
                       },
                       style: TextButton.styleFrom(
                         minimumSize: Size.zero,

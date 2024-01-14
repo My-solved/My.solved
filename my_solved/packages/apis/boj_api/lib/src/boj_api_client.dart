@@ -45,7 +45,7 @@ class BojApiClient {
         })
         .toList()
         .cast<Contest>();
-    print(endedContestList[0].name);
+
     return endedContestList;
   }
 
