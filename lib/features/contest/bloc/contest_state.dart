@@ -4,8 +4,11 @@ enum ContestStatus { initial, loading, success, failure }
 
 extension ContestStatusX on ContestStatus {
   bool get isInitial => this == ContestStatus.initial;
+
   bool get isLoading => this == ContestStatus.loading;
+
   bool get isSuccess => this == ContestStatus.success;
+
   bool get isFailure => this == ContestStatus.failure;
 }
 
@@ -21,12 +24,15 @@ class ContestState extends Equatable {
       .where((venue) => filters[venue] ?? false)
       .map((venue) => venue.value)
       .toList();
+
   List<Contest> get filteredEndedContests => endedContests
       .where((contest) => selectedVenues.contains(contest.venue))
       .toList();
+
   List<Contest> get filteredOngoingContests => ongoingContests
       .where((contest) => selectedVenues.contains(contest.venue))
       .toList();
+
   List<Contest> get filteredUpcomingContests => upcomingContests
       .where((contest) => selectedVenues.contains(contest.venue))
       .toList();

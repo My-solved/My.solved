@@ -4,8 +4,11 @@ enum SearchStatus { initial, loading, success, failure }
 
 extension SearchStatusX on SearchStatus {
   bool get isInitial => this == SearchStatus.initial;
+
   bool get isLoading => this == SearchStatus.loading;
+
   bool get isSuccess => this == SearchStatus.success;
+
   bool get isFailure => this == SearchStatus.failure;
 }
 
