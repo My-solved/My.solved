@@ -44,7 +44,7 @@ class Contest {
 
     return Contest(
       venue: element.getElementsByTagName('td')[0].text,
-      name: element.getElementsByTagName('td')[1].text,
+      name: element.getElementsByTagName('td')[1].text.trim(),
       url: url,
       startTime: startTime,
       endTime: endTime,

@@ -11,7 +11,7 @@ import 'package:my_solved/views/search_view.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class ContestView extends StatefulWidget {
-  const ContestView({Key? key}) : super(key: key);
+  const ContestView({super.key});
 
   @override
   State<ContestView> createState() => _ContestViewState();

@@ -26,55 +26,72 @@ dependencies:
   flutter_local_notifications: ^13.0.0
   flutter_app_badger: ^1.5.0
   intl: ^0.18.0
+  flutter_bloc: ^8.1.3
+  meta: ^1.9.1
+  equatable: ^2.0.5
+
+  boj_api:
+    path: packages/apis/boj_api
+  solved_api:
+    path: packages/apis/solved_api
+  contest_repository:
+    path: packages/repositories/contest_repository
+  search_repository:
+    path: packages/repositories/search_repository
+  shared_preferences_repository:
+    path: packages/repositories/shared_preferences_repository
+  user_repository:
+    path: packages/repositories/user_repository
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^2.0.0
+  flutter_lints: ^3.0.1
 
 flutter:
   uses-material-design: true
   assets:
-    - lib/assets/classes/
-    - lib/assets/tiers/
-    - lib/assets/icons/
-    - lib/assets/venues/
+    - assets/images/logo.png
+    - assets/images/classes/
+    - assets/images/tiers/
+    - assets/images/icons/
+    - assets/images/venues/
 
 fonts:
   - family: SourceCodePro
     fonts:
-      - asset: lib/assets/fonts/SourceCodePro-ExtraLight.ttf
+      - asset: assets/fonts/SourceCodePro-ExtraLight.ttf
         weight: 200
-      - asset: lib/assets/fonts/SourceCodePro-Light.ttf
+      - asset: assets/fonts/SourceCodePro-Light.ttf
         weight: 300
-      - asset: lib/assets/fonts/SourceCodePro-Regular.ttf
+      - asset: assets/fonts/SourceCodePro-Regular.ttf
         weight: 400
-      - asset: lib/assets/fonts/SourceCodePro-Medium.ttf
+      - asset: assets/fonts/SourceCodePro-Medium.ttf
         weight: 500
-      - asset: lib/assets/fonts/SourceCodePro-SemiBold.ttf
+      - asset: assets/fonts/SourceCodePro-SemiBold.ttf
         weight: 600
-      - asset: lib/assets/fonts/SourceCodePro-Bold.ttf
+      - asset: assets/fonts/SourceCodePro-Bold.ttf
         weight: 700
-      - asset: lib/assets/fonts/SourceCodePro-Black.ttf
+      - asset: assets/fonts/SourceCodePro-Black.ttf
         weight: 900
   - family: Pretendard
     fonts:
-      - asset: lib/assets/fonts/Pretendard-Thin.ttf
+      - asset: assets/fonts/Pretendard-Thin.ttf
         weight: 100
-      - asset: lib/assets/fonts/Pretendard-ExtraLight.ttf
+      - asset: assets/fonts/Pretendard-ExtraLight.ttf
         weight: 200
-      - asset: lib/assets/fonts/Pretendard-Light.ttf
+      - asset: assets/fonts/Pretendard-Light.ttf
         weight: 300
-      - asset: lib/assets/fonts/Pretendard-Regular.ttf
+      - asset: assets/fonts/Pretendard-Regular.ttf
         weight: 400
-      - asset: lib/assets/fonts/Pretendard-Medium.ttf
+      - asset: assets/fonts/Pretendard-Medium.ttf
         weight: 500
-      - asset: lib/assets/fonts/Pretendard-SemiBold.ttf
+      - asset: assets/fonts/Pretendard-SemiBold.ttf
         weight: 600
-      - asset: lib/assets/fonts/Pretendard-Bold.ttf
+      - asset: assets/fonts/Pretendard-Bold.ttf
         weight: 700
-      - asset: lib/assets/fonts/Pretendard-ExtraBold.ttf
+      - asset: assets/fonts/Pretendard-ExtraBold.ttf
         weight: 800
-      - asset: lib/assets/fonts/Pretendard-Black.ttf
+      - asset: assets/fonts/Pretendard-Black.ttf
         weight: 900

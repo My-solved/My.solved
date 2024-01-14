@@ -6,7 +6,7 @@ import 'package:my_solved/widgets/user_widget.dart';
 import 'package:provider/provider.dart';
 
 class UserView extends StatefulWidget {
-  const UserView({Key? key, required this.username}) : super(key: key);
+  const UserView({super.key, required this.username});
 
   final String username;
 

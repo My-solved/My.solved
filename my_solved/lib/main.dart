@@ -1,76 +1,8 @@
 import 'package:flutter/cupertino.dart';
-import 'package:my_solved/services/notification_service.dart';
-import 'package:my_solved/services/user_service.dart';
-import 'package:my_solved/views/login_view.dart';
-import 'package:my_solved/views/main_tab_view.dart';
-import 'package:provider/provider.dart';
+import 'package:my_solved/app/screen/app_screen.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return const CupertinoApp(
-      home: PageRouter(),
-    );
-  }
-}
-
-class PageRouter extends StatefulWidget {
-  const PageRouter({super.key});
-
-  @override
-  State<PageRouter> createState() => PageRouterState();
-}
-
-class PageRouterState extends State<PageRouter> {
-  UserService userService = UserService();
-  NotificationService notificationService = NotificationService();
-
-  @override
-  void initState() {
-    super.initState();
-    notificationService.init();
-    notificationService.removeBadge();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => UserService(),
-      child: CupertinoPageScaffold(
-        child: CupertinoApp(
-            home: Consumer<UserService>(
-              builder: (context, provider, child) =>
-                  route(Provider.of<UserService>(context).state),
-            ),
-            theme: const CupertinoThemeData(
-              brightness: Brightness.light,
-              scaffoldBackgroundColor: Color(0xFFF9F9F9),
-              textTheme: CupertinoTextThemeData(
-                textStyle: TextStyle(
-                  fontFamily: 'Pretendard',
-                  color: CupertinoColors.black,
-                ),
-              ),
-            )),
-      ),
-    );
-  }
-
-  Widget route(UserState state) {
-    switch (state) {
-      case UserState.unknown:
-        return LoginView();
-      case UserState.loggedIn:
-        return MainTabView();
-      default:
-        return Center(child: Text('loading'));
-    }
-  }
+  runApp(AppScreen());
 }

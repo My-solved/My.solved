@@ -5,7 +5,7 @@ import 'package:my_solved/views/home_view.dart';
 import 'package:my_solved/views/search_view.dart';
 
 class MainTabView extends StatelessWidget {
-  MainTabView({Key? key}) : super(key: key);
+  MainTabView({super.key});
 
   final List<Widget> options = <Widget>[
     const HomeView(),
