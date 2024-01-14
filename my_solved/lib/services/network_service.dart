@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
-port 'package:html/parser.dart' as parser;
+
+import 'package:html/dom.dart' as dom;
+import 'package:html/parser.dart' as parser;
 import 'package:http/http.dart' as http;
 import 'package:my_solved/models/badge.dart';
 import 'package:my_solved/models/search/object.dart';
