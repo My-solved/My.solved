@@ -193,6 +193,25 @@ class SolvedApiClient {
     return SearchObject.fromJson(searchJson);
   }
 
+  Future<SearchObject> searchUser(String query, int? page) async {
+    final searchRequest = Uri.https(_baseUrl, '/api/v3/search/user',
+        {'query': query, 'page': page?.toString() ?? '1'});
+
+    final searchResponse = await _httpClient.get(searchRequest);
+
+    if (searchResponse.statusCode != 200) {
+      throw SearchRequestFailed();
+    }
+
+    final searchJson = jsonDecode(utf8.decode(searchResponse.bodyBytes));
+    searchJson['items'] = searchJson['items']
+        .map((user) => User.fromJson(user))
+        .toList()
+        .cast<User>();
+
+    return SearchObject.fromJson(searchJson);
+  }
+
   Future<SearchObject> searchTag(String query, int? page) async {
     final searchRequest = Uri.https(_baseUrl, '/api/v3/search/tag',
         {'query': query, 'page': page?.toString() ?? '1'});
