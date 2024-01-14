@@ -65,6 +65,26 @@ void main() {
       });
     });
 
+    group('getUsers', () {
+      const query = 'fdsa';
+      const page = 1;
+
+      test('calls searchUser with correct query, page', () async {
+        try {
+          await searchRepository.getUsers(query, page);
+        } catch (_) {}
+        verify(() => solvedApiClient.searchUser(query, page)).called(1);
+      });
+
+      test('returns correct searchObject on success', () async {
+        final searchObject = MockSearchObject();
+        when(() => solvedApiClient.searchUser(query, page))
+            .thenAnswer((_) async => searchObject);
+
+        expect(await searchRepository.getUsers(query, page), searchObject);
+      });
+    });
+
     group('getTags', () {
       const query = 'graph';
       const page = 1;
