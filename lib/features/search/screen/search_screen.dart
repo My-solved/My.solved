@@ -211,7 +211,7 @@ class _SearchViewState extends State<SearchView> {
                       if (state.currentIndex == 1 && state.users != null)
                         Column(
                           children: List.generate(
-                            state.users!.length,
+                            state.users!.items.length,
                             (index) => Column(
                               children: [
                                 ElevatedButton(
@@ -230,7 +230,7 @@ class _SearchViewState extends State<SearchView> {
                                   child: Row(
                                     children: [
                                       SvgPicture.asset(
-                                        "assets/images/tiers/${state.users![index].tier}.svg",
+                                        "assets/images/tiers/${state.users!.items[index].tier}.svg",
                                         width: 24,
                                         height: 24,
                                       ),
@@ -238,7 +238,8 @@ class _SearchViewState extends State<SearchView> {
                                       ClipRRect(
                                         borderRadius: BorderRadius.circular(12),
                                         child: ExtendedImage.network(
-                                          state.users![index].profileImageUrl ??
+                                          state.users!.items[index]
+                                                  .profileImageUrl ??
                                               "https://static.solved.ac/misc/360x360/default_profile.png",
                                           width: 24,
                                           height: 24,
@@ -246,7 +247,7 @@ class _SearchViewState extends State<SearchView> {
                                       ),
                                       SizedBox(width: 8),
                                       Text(
-                                        state.users![index].handle,
+                                        state.users!.items[index].handle,
                                         style: MySolvedTextStyle.body1,
                                       ),
                                       SizedBox(width: 8),

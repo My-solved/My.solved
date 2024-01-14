@@ -19,7 +19,7 @@ class SearchState extends Equatable {
   final String text;
   final int currentIndex;
   final SearchObject? problems;
-  final List<UserSuggestion>? users;
+  final SearchObject? users;
   final SearchObject? tags;
 
   const SearchState({
@@ -40,7 +40,7 @@ class SearchState extends Equatable {
     String? text,
     int? currentIndex,
     SearchObject? problems,
-    List<UserSuggestion>? users,
+    SearchObject? users,
     SearchObject? tags,
   }) {
     return SearchState(
