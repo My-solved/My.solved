@@ -1,9 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
-
-import 'package:flutter/foundation.dart';
-import 'package:html/dom.dart' as dom;
-import 'package:html/parser.dart' as parser;
+port 'package:html/parser.dart' as parser;
 import 'package:http/http.dart' as http;
 import 'package:my_solved/models/badge.dart';
 import 'package:my_solved/models/search/object.dart';
@@ -349,7 +346,6 @@ class NetworkService {
     final response =
         await http.get(Uri.parse("https://solved.ac/api/v3/site/stats"));
     final statusCode = response.statusCode;
-    debugPrint(response.body);
 
     if (statusCode == 200) {
       SiteStats siteStats = SiteStats.fromJson(jsonDecode(response.body));
