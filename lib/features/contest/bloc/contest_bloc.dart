@@ -41,5 +41,12 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
     on<SegmentedControlTapped>(
       (event, emit) => emit(state.copyWith(currentIndex: event.index)),
     );
+    on<ContestFilterToggleTapped>((event, emit) {
+      emit(state.copyWith(status: ContestStatus.loading));
+      var filters = state.filters;
+      final current = filters[event.venue] ?? true;
+      current ? filters[event.venue] = false : filters[event.venue] = true;
+      emit(state.copyWith(status: ContestStatus.success, filters: filters));
+    });
   }
 }
