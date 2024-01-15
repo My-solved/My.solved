@@ -52,41 +52,47 @@ class _ContestFilterViewState extends State<ContestFilterView> {
               Text("주최", style: MySolvedTextStyle.body2),
               Divider(),
               SizedBox(height: 16),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: List.generate(
-                  context.read<ContestFilterBloc>().state.venues.length,
-                  (index) {
-                    final venues =
-                        context.read<ContestFilterBloc>().state.venues;
-                    final filter =
-                        widget.contestBloc.state.filters[venues[index]] ??
-                            false;
-                    return ElevatedButton(
-                      onPressed: () {},
-                      style: ElevatedButton.styleFrom(
-                        elevation: 0,
-                        backgroundColor: filter
-                            ? MySolvedColor.main
-                            : MySolvedColor.disabledButtonBackground,
-                        padding:
-                            EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      child: Text(
-                        venues[index].displayName,
-                        style: MySolvedTextStyle.body1.copyWith(
-                          color: filter
-                              ? MySolvedColor.background
-                              : MySolvedColor.disabledButtonForeground,
-                        ),
-                      ),
-                    );
-                  },
-                ),
+              BlocBuilder(
+                bloc: widget.contestBloc,
+                builder: (context, state) {
+                  return Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: List.generate(
+                      context.read<ContestFilterBloc>().state.venues.length,
+                      (index) {
+                        final venues =
+                            context.read<ContestFilterBloc>().state.venues;
+                        final filter =
+                            widget.contestBloc.state.filters[venues[index]] ??
+                                false;
+                        return ElevatedButton(
+                          onPressed: () => widget.contestBloc.add(
+                              ContestFilterToggleTapped(venue: venues[index])),
+                          style: ElevatedButton.styleFrom(
+                            elevation: 0,
+                            backgroundColor: filter
+                                ? MySolvedColor.main
+                                : MySolvedColor.disabledButtonBackground,
+                            padding: EdgeInsets.symmetric(
+                                vertical: 8, horizontal: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Text(
+                            venues[index].displayName,
+                            style: MySolvedTextStyle.body1.copyWith(
+                              color: filter
+                                  ? MySolvedColor.background
+                                  : MySolvedColor.disabledButtonForeground,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
               ),
             ],
           ),

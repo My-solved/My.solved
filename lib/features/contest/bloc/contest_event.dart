@@ -16,3 +16,12 @@ class SegmentedControlTapped extends ContestEvent {
   @override
   List<Object?> get props => [index];
 }
+
+class ContestFilterToggleTapped extends ContestEvent {
+  final ContestVenue venue;
+
+  ContestFilterToggleTapped({required this.venue});
+
+  @override
+  List<Object?> get props => [venue];
+}
