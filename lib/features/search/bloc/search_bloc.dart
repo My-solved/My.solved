@@ -16,6 +16,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
           SearchState(
             sort: SearchSortMethod.id,
             direction: SearchDirection.asc,
+            isNotShowSolvedProblem: true,
           ),
         ) {
     on<SearchTextFieldOnChanged>(
@@ -56,6 +57,9 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
         (event, emit) => emit(state.copyWith(sort: event.sort)));
     on<SearchFilterDirectionSelected>(
       (event, emit) => emit(state.copyWith(direction: event.direction)),
+    );
+    on<SearchFilterIsNotShowSolvedProblemChanged>(
+      (event, emit) => emit(state.copyWith(isNotShowSolvedProblem: event.isOn)),
     );
   }
 }

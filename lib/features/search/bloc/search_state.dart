@@ -4,11 +4,8 @@ enum SearchStatus { initial, loading, success, failure }
 
 extension SearchStatusX on SearchStatus {
   bool get isInitial => this == SearchStatus.initial;
-
   bool get isLoading => this == SearchStatus.loading;
-
   bool get isSuccess => this == SearchStatus.success;
-
   bool get isFailure => this == SearchStatus.failure;
 }
 
@@ -16,6 +13,7 @@ class SearchState extends Equatable {
   final SearchStatus status;
   final SearchSortMethod sort;
   final SearchDirection direction;
+  final bool isNotShowSolvedProblem;
   final String text;
   final int currentIndex;
   final SearchObject? problems;
@@ -26,6 +24,7 @@ class SearchState extends Equatable {
     this.status = SearchStatus.initial,
     required this.sort,
     required this.direction,
+    required this.isNotShowSolvedProblem,
     this.text = "",
     this.currentIndex = 0,
     this.problems,
@@ -37,6 +36,7 @@ class SearchState extends Equatable {
     SearchStatus? status,
     SearchSortMethod? sort,
     SearchDirection? direction,
+    bool? isNotShowSolvedProblem,
     String? text,
     int? currentIndex,
     SearchObject? problems,
@@ -47,6 +47,8 @@ class SearchState extends Equatable {
       status: status ?? this.status,
       sort: sort ?? this.sort,
       direction: direction ?? this.direction,
+      isNotShowSolvedProblem:
+          isNotShowSolvedProblem ?? this.isNotShowSolvedProblem,
       text: text ?? this.text,
       currentIndex: currentIndex ?? this.currentIndex,
       problems: problems ?? this.problems,
@@ -60,6 +62,7 @@ class SearchState extends Equatable {
         status,
         sort,
         direction,
+        isNotShowSolvedProblem,
         text,
         currentIndex,
         problems,

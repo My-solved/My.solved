@@ -47,3 +47,12 @@ class SearchFilterDirectionSelected extends SearchEvent {
   @override
   List<Object?> get props => [direction];
 }
+
+class SearchFilterIsNotShowSolvedProblemChanged extends SearchEvent {
+  final bool isOn;
+
+  SearchFilterIsNotShowSolvedProblemChanged({required this.isOn});
+
+  @override
+  List<Object?> get props => [isOn];
+}

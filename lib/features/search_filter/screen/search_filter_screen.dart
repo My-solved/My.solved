@@ -132,11 +132,28 @@ class _SearchFilterViewState extends State<SearchFilterView> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text("내가 푼 문제 보지 않기", style: MySolvedTextStyle.body2),
-                  Switch(
-                    value: true,
-                    onChanged: ((value) {}),
-                    activeColor: MySolvedColor.background,
-                    activeTrackColor: MySolvedColor.main,
+                  BlocBuilder<SearchBloc, SearchState>(
+                    bloc: widget.searchBLoc,
+                    builder: (context, state) {
+                      return Switch(
+                        value: state.isNotShowSolvedProblem,
+                        onChanged: (isOn) => widget.searchBLoc.add(
+                            SearchFilterIsNotShowSolvedProblemChanged(
+                                isOn: isOn)),
+                        activeColor: MySolvedColor.background,
+                        activeTrackColor: MySolvedColor.main,
+                        inactiveThumbColor: MySolvedColor.background,
+                        inactiveTrackColor:
+                            MySolvedColor.disabledButtonBackground,
+                        trackOutlineColor:
+                            MaterialStateProperty.resolveWith((states) {
+                          if (states.contains(MaterialState.selected)) {
+                            return null;
+                          }
+                          return MySolvedColor.disabledButtonBackground;
+                        }),
+                      );
+                    },
                   ),
                 ],
               ),
