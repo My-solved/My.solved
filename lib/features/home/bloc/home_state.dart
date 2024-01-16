@@ -10,6 +10,24 @@ extension HomeStatusX on HomeStatus {
 }
 
 class HomeState extends Equatable {
+  final HomeStatus status;
+  final String handle;
+
+  const HomeState({
+    this.status = HomeStatus.initial,
+    required this.handle,
+  });
+
+  HomeState copyWith({
+    HomeStatus? status,
+    String? handle,
+  }) {
+    return HomeState(
+      status: status ?? this.status,
+      handle: handle ?? this.handle,
+    );
+  }
+
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [status, handle];
 }
