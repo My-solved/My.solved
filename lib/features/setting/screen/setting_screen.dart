@@ -2,22 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
+import 'package:my_solved/features/home/bloc/home_bloc.dart';
 import 'package:my_solved/features/setting/bloc/setting_bloc.dart';
 
 class SettingScreen extends StatelessWidget {
-  const SettingScreen({super.key});
+  final HomeBloc homeBloc;
+
+  const SettingScreen({super.key, required this.homeBloc});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => SettingBloc(),
-      child: SettingView(),
+      child: SettingView(
+        homeBloc: homeBloc,
+      ),
     );
   }
 }
 
 class SettingView extends StatefulWidget {
-  const SettingView({super.key});
+  final HomeBloc homeBloc;
+
+  const SettingView({super.key, required this.homeBloc});
 
   @override
   State<SettingView> createState() => _SettingViewState();
@@ -29,30 +36,14 @@ class _SettingViewState extends State<SettingView> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        leading: TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: Text(
-            "취소",
-            style: MySolvedTextStyle.body1.copyWith(
-              color: MySolvedColor.font,
-            ),
-          ),
-        ),
         centerTitle: true,
         title: Text("설정", style: MySolvedTextStyle.title5),
         actions: [
-          TextButton(
+          IconButton(
             onPressed: () {
               Navigator.pop(context);
             },
-            child: Text(
-              "저장",
-              style: MySolvedTextStyle.body1.copyWith(
-                color: MySolvedColor.main,
-              ),
-            ),
+            icon: Icon(Icons.close),
           ),
         ],
       ),
@@ -77,11 +68,28 @@ class _SettingViewState extends State<SettingView> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text("일러스트 배경", style: MySolvedTextStyle.body2),
-                    Switch(
-                      value: true,
-                      onChanged: ((value) {}),
-                      activeColor: MySolvedColor.background,
-                      activeTrackColor: MySolvedColor.main,
+                    BlocBuilder<HomeBloc, HomeState>(
+                      bloc: widget.homeBloc,
+                      builder: (context, state) {
+                        return Switch(
+                          value: state.isShowIllustBackground,
+                          onChanged: (isOn) => widget.homeBloc
+                              .add(SettingIsShowIllustBackground(isOn: isOn)),
+                          activeColor: MySolvedColor.background,
+                          activeTrackColor: MySolvedColor.main,
+                          inactiveThumbColor: MySolvedColor.background,
+                          inactiveTrackColor:
+                              MySolvedColor.disabledButtonBackground,
+                          trackOutlineColor: MaterialStateProperty.resolveWith(
+                            (states) {
+                              if (states.contains(MaterialState.selected)) {
+                                return null;
+                              }
+                              return MySolvedColor.disabledButtonBackground;
+                            },
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

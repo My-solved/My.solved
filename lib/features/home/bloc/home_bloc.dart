@@ -12,7 +12,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   HomeBloc({
     required this.userRepository,
     required String handle,
-  }) : super(HomeState(handle: handle)) {
+  }) : super(HomeState(
+          handle: handle,
+          isShowIllustBackground: true,
+        )) {
     on<InitHome>((event, emit) async {
       state.copyWith(status: HomeStatus.loading);
 
@@ -24,5 +27,10 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         emit(state.copyWith(status: HomeStatus.failure));
       }
     });
+    on<SettingIsShowIllustBackground>(
+      (event, emit) {
+        emit(state.copyWith(isShowIllustBackground: event.isOn));
+      },
+    );
   }
 }

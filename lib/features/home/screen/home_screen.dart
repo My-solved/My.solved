@@ -28,7 +28,7 @@ class HomeScreen extends StatelessWidget {
           SliverFillRemaining(
             hasScrollBody: false,
             child: HomeView(),
-          )
+          ),
         ],
       ),
     );
@@ -76,8 +76,11 @@ class _HomeViewState extends State<HomeView> {
       },
       builder: (context, state) {
         if (state.status.isSuccess) {
-          return Center(
-            child: Text("Home View"),
+          return Column(
+            children: [
+              _profileAndBackgroundImage(),
+              Text(state.isShowIllustBackground.toString()),
+            ],
           );
         } else {
           return Center(
@@ -87,6 +90,35 @@ class _HomeViewState extends State<HomeView> {
           );
         }
       },
+    );
+  }
+
+  Widget _profileAndBackgroundImage() {
+    return Stack(
+      alignment: Alignment.bottomLeft,
+      children: [
+        Column(
+          children: [
+            Container(
+              width: double.infinity,
+              height: 160,
+              decoration: BoxDecoration(color: Colors.red),
+            ),
+            SizedBox(height: 50),
+          ],
+        ),
+        Row(
+          children: [
+            SizedBox(width: 16),
+            Container(
+              width: 80,
+              height: 80,
+              decoration:
+                  BoxDecoration(shape: BoxShape.circle, color: Colors.blue),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
