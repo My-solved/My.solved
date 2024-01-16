@@ -78,6 +78,7 @@ class _ContestViewState extends State<ContestView> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ContestBloc, ContestState>(
+      bloc: BlocProvider.of<ContestBloc>(context),
       listener: (context, state) {
         if (state.status.isFailure) {
           showDialog(

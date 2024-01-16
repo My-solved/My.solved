@@ -51,8 +51,42 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Text("Home"),
+    return BlocConsumer<HomeBloc, HomeState>(
+      bloc: BlocProvider.of<HomeBloc>(context),
+      listener: (context, state) {
+        if (state.status.isFailure) {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text("네트워크 오류가 발생했어요"),
+                content: Text("잠시 후 다시 시도해주세요"),
+                actions: [
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text("확인"),
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      },
+      builder: (context, state) {
+        if (state.status.isSuccess) {
+          return Center(
+            child: Text("Home View"),
+          );
+        } else {
+          return Center(
+            child: CircularProgressIndicator(
+              color: MySolvedColor.main,
+            ),
+          );
+        }
+      },
     );
   }
 }

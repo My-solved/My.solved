@@ -22,9 +22,9 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
           },
         )) {
     on<InitContest>((event, emit) async {
-      try {
-        emit(state.copyWith(status: ContestStatus.loading));
+      emit(state.copyWith(status: ContestStatus.loading));
 
+      try {
         final result = await contestRepository.getContests();
         final endedContests = result[ContestType.ended];
         final ongoingContests = result[ContestType.ongoing];
