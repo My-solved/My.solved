@@ -23,6 +23,8 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
         )) {
     on<InitContest>((event, emit) async {
       try {
+        emit(state.copyWith(status: ContestStatus.loading));
+
         final result = await contestRepository.getContests();
         final endedContests = result[ContestType.ended];
         final ongoingContests = result[ContestType.ongoing];
@@ -43,9 +45,11 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
     );
     on<ContestFilterToggleTapped>((event, emit) {
       emit(state.copyWith(status: ContestStatus.loading));
+
       var filters = state.filters;
       final current = filters[event.venue] ?? true;
       current ? filters[event.venue] = false : filters[event.venue] = true;
+
       emit(state.copyWith(status: ContestStatus.success, filters: filters));
     });
   }

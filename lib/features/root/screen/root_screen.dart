@@ -7,6 +7,7 @@ import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
 import 'package:my_solved/features/contest/bloc/contest_bloc.dart';
 import 'package:my_solved/features/contest/screen/contest_screen.dart';
+import 'package:my_solved/features/home/bloc/home_bloc.dart';
 import 'package:my_solved/features/home/screen/home_screen.dart';
 import 'package:my_solved/features/root/bloc/root_bloc.dart';
 import 'package:my_solved/features/search/bloc/search_bloc.dart';
@@ -25,6 +26,9 @@ class RootScreen extends StatelessWidget {
       providers: [
         BlocProvider(
           create: (context) => RootBloc(handle: handle),
+        ),
+        BlocProvider(
+          create: (context) => HomeBloc(),
         ),
         BlocProvider(
           create: (context) => SearchBloc(searchRepository: SearchRepository()),
