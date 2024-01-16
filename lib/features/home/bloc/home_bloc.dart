@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
+import 'package:solved_api/solved_api.dart';
 import 'package:user_repository/user_repository.dart';
 
 part "home_event.dart";
@@ -21,8 +22,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
       try {
         final user = await userRepository.getUser(handle);
-        print(user);
-        emit(state.copyWith(status: HomeStatus.success));
+        emit(state.copyWith(status: HomeStatus.success, user: user));
       } catch (e) {
         emit(state.copyWith(status: HomeStatus.failure));
       }

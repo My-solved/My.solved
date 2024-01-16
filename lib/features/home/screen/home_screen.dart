@@ -1,6 +1,8 @@
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_solved/components/styles/color.dart';
+import 'package:my_solved/components/styles/font.dart';
 import 'package:my_solved/features/home/bloc/home_bloc.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -11,10 +13,10 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: MySolvedColor.background,
+      backgroundColor: MySolvedColor.secondaryBackground,
       appBar: AppBar(
         scrolledUnderElevation: 0,
-        backgroundColor: MySolvedColor.background,
+        backgroundColor: MySolvedColor.secondaryBackground,
         actions: [
           IconButton(
             onPressed: () => scaffoldKey.currentState?.openEndDrawer(),
@@ -75,11 +77,34 @@ class _HomeViewState extends State<HomeView> {
         }
       },
       builder: (context, state) {
-        if (state.status.isSuccess) {
+        if (state.status.isSuccess && state.user != null) {
           return Column(
             children: [
-              _profileAndBackgroundImage(),
-              Text(state.isShowIllustBackground.toString()),
+              _profileAndBackgroundImage(
+                profileImageURL: state.user!.profileImageUrl ??
+                    "https://static.solved.ac/misc/360x360/default_profile.png",
+              ),
+              SizedBox(height: 16),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: MySolvedColor.background,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        state.handle,
+                        style: MySolvedTextStyle.title5,
+                      ),
+                    ),
+                    Text(state.isShowIllustBackground.toString()),
+                  ],
+                ),
+              ),
             ],
           );
         } else {
@@ -93,7 +118,7 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _profileAndBackgroundImage() {
+  Widget _profileAndBackgroundImage({required String profileImageURL}) {
     return Stack(
       alignment: Alignment.bottomLeft,
       children: [
@@ -110,11 +135,12 @@ class _HomeViewState extends State<HomeView> {
         Row(
           children: [
             SizedBox(width: 16),
-            Container(
+            SizedBox(
               width: 80,
               height: 80,
-              decoration:
-                  BoxDecoration(shape: BoxShape.circle, color: Colors.blue),
+              child: ClipOval(
+                child: ExtendedImage.network(profileImageURL),
+              ),
             ),
           ],
         ),
