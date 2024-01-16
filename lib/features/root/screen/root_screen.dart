@@ -91,7 +91,7 @@ class _RootViewState extends State<RootView> {
         return Scaffold(
           key: _scaffoldKey,
           backgroundColor: MySolvedColor.background,
-          endDrawer: HomeDrawer(),
+          endDrawer: HomeDrawer(homeBloc: context.read<HomeBloc>()),
           body: bottomNaviScreen.elementAt(state.tabIndex),
           bottomNavigationBar: BottomNavigationBar(
             items: bottomNavItems,
@@ -114,7 +114,9 @@ class _RootViewState extends State<RootView> {
 }
 
 class HomeDrawer extends StatelessWidget {
-  const HomeDrawer({super.key});
+  final HomeBloc homeBloc;
+
+  const HomeDrawer({super.key, required this.homeBloc});
 
   @override
   Widget build(BuildContext context) {
@@ -152,7 +154,9 @@ class HomeDrawer extends StatelessWidget {
                       onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => SettingScreen()),
+                          builder: (context) =>
+                              SettingScreen(homeBloc: homeBloc),
+                        ),
                       ),
                       text: "설정",
                     ),
