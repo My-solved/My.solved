@@ -2,10 +2,11 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
 import 'package:my_solved/features/home/bloc/home_bloc.dart';
-import 'package:solved_api/solved_api.dart';
+import 'package:solved_api/solved_api.dart' as solved_api;
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key, required this.scaffoldKey});
@@ -83,13 +84,28 @@ class _HomeViewState extends State<HomeView> {
                     isShowIllustBackground: state.isShowIllustBackground,
                     background: state.background,
                   ),
-                  SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: _handleAndBio(
-                        handle: state.handle, bio: state.user?.bio),
+                    child: Column(
+                      children: [
+                        SizedBox(height: 16),
+                        _handleAndBio(
+                          handle: state.handle,
+                          bio: state.user!.bio,
+                        ),
+                        SizedBox(height: 16),
+                        if (state.organizations.isNotEmpty)
+                          _organizations(organizations: state.organizations),
+                        SizedBox(height: 16),
+                        _badgeAndClass(
+                          badge: state.badge,
+                          userClass: state.user!.userClass,
+                          classDecoration: state.user!.classDecoration,
+                        ),
+                        SizedBox(height: 16),
+                      ],
+                    ),
                   ),
-                  SizedBox(height: 16),
                 ]),
               ),
               SliverPadding(
@@ -137,7 +153,7 @@ class _HomeViewState extends State<HomeView> {
   Widget _profileAndBackgroundImage({
     required String profileImageURL,
     required bool isShowIllustBackground,
-    required Background? background,
+    required solved_api.Background? background,
   }) {
     final backgroundImageUrl = background?.backgroundImageUrl ??
         "https://static.solved.ac/profile_bg/abstract_001/abstract_001_light.png";
@@ -190,12 +206,75 @@ class _HomeViewState extends State<HomeView> {
             handle,
             style: MySolvedTextStyle.title3,
           ),
-          SizedBox(height: 4),
-          Text(
-            bio ?? "",
-            style: MySolvedTextStyle.caption1.copyWith(
+          if (bio != null)
+            Column(
+              children: [
+                SizedBox(height: 4),
+                Text(
+                  bio,
+                  style: MySolvedTextStyle.body2.copyWith(
+                    color: MySolvedColor.secondaryFont,
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _organizations(
+      {required List<solved_api.Organization> organizations}) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: MySolvedColor.background,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Wrap(
+        children: List.generate(
+          organizations.length,
+          (index) => Text(
+            index != organizations.length - 1
+                ? "${organizations[index].name}, "
+                : organizations[index].name,
+            style: MySolvedTextStyle.body2.copyWith(
               color: MySolvedColor.secondaryFont,
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _badgeAndClass({
+    required solved_api.Badge? badge,
+    required int userClass,
+    required String? classDecoration,
+  }) {
+    String classText = userClass.toString();
+    if (classDecoration == "silver") classText += "s";
+    if (classDecoration == "gold") classText += "g";
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: MySolvedColor.background,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          if (badge != null)
+            ExtendedImage.network(
+              width: 40,
+              height: 40,
+              badge.badgeImageUrl,
+            ),
+          SvgPicture.asset(
+            width: 40,
+            height: 40,
+            "assets/images/classes/c$classText.svg",
           ),
         ],
       ),
