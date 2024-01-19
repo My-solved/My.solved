@@ -14,12 +14,14 @@ class HomeState extends Equatable {
   final String handle;
   final bool isShowIllustBackground;
   final User? user;
+  final Background? background;
 
   const HomeState({
     this.status = HomeStatus.initial,
     required this.handle,
     required this.isShowIllustBackground,
     this.user,
+    this.background,
   });
 
   HomeState copyWith({
@@ -27,6 +29,7 @@ class HomeState extends Equatable {
     String? handle,
     bool? isShowIllustBackground,
     User? user,
+    Background? background,
   }) {
     return HomeState(
       status: status ?? this.status,
@@ -34,6 +37,7 @@ class HomeState extends Equatable {
       isShowIllustBackground:
           isShowIllustBackground ?? this.isShowIllustBackground,
       user: user ?? this.user,
+      background: background ?? this.background,
     );
   }
 
@@ -43,5 +47,6 @@ class HomeState extends Equatable {
         handle,
         isShowIllustBackground,
         user,
+        background,
       ];
 }

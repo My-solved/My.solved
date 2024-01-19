@@ -1,9 +1,11 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
 import 'package:my_solved/features/home/bloc/home_bloc.dart';
+import 'package:solved_api/solved_api.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key, required this.scaffoldKey});
@@ -24,15 +26,7 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: CustomScrollView(
-        physics: BouncingScrollPhysics(),
-        slivers: [
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: HomeView(),
-          ),
-        ],
-      ),
+      body: HomeView(),
     );
   }
 }
@@ -78,31 +72,53 @@ class _HomeViewState extends State<HomeView> {
       },
       builder: (context, state) {
         if (state.status.isSuccess && state.user != null) {
-          return Column(
-            children: [
-              _profileAndBackgroundImage(
-                profileImageURL: state.user!.profileImageUrl ??
-                    "https://static.solved.ac/misc/360x360/default_profile.png",
+          return CustomScrollView(
+            physics: BouncingScrollPhysics(),
+            slivers: [
+              SliverList(
+                delegate: SliverChildListDelegate([
+                  _profileAndBackgroundImage(
+                    profileImageURL: state.user!.profileImageUrl ??
+                        "https://static.solved.ac/misc/360x360/default_profile.png",
+                    isShowIllustBackground: state.isShowIllustBackground,
+                    background: state.background,
+                  ),
+                  SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: _handleAndBio(
+                        handle: state.handle, bio: state.user?.bio),
+                  ),
+                  SizedBox(height: 16),
+                ]),
               ),
-              SizedBox(height: 16),
-              Padding(
+              SliverPadding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.all(20),
+                sliver: SliverGrid(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) => Container(
+                      height: 120,
                       decoration: BoxDecoration(
-                        color: MySolvedColor.background,
-                        borderRadius: BorderRadius.circular(16),
+                        color: MySolvedColor.main,
                       ),
-                      child: Text(
-                        state.handle,
-                        style: MySolvedTextStyle.title5,
-                      ),
+                      child: Text("$index"),
                     ),
-                    Text(state.isShowIllustBackground.toString()),
-                  ],
+                    childCount: 9,
+                  ),
+                  gridDelegate: SliverQuiltedGridDelegate(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    pattern: [
+                      QuiltedGridTile(1, 1),
+                      QuiltedGridTile(1, 2),
+                      QuiltedGridTile(1, 1),
+                      QuiltedGridTile(1, 1),
+                      QuiltedGridTile(1, 1),
+                      QuiltedGridTile(1, 2),
+                      QuiltedGridTile(1, 1),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -118,7 +134,17 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _profileAndBackgroundImage({required String profileImageURL}) {
+  Widget _profileAndBackgroundImage({
+    required String profileImageURL,
+    required bool isShowIllustBackground,
+    required Background? background,
+  }) {
+    final backgroundImageUrl = background?.backgroundImageUrl ??
+        "https://static.solved.ac/profile_bg/abstract_001/abstract_001_light.png";
+    final illustBackgroundImageUrl = background?.fallbackBackgroundImageUrl;
+    final url = isShowIllustBackground && illustBackgroundImageUrl != null
+        ? illustBackgroundImageUrl
+        : backgroundImageUrl;
     return Stack(
       alignment: Alignment.bottomLeft,
       children: [
@@ -127,7 +153,8 @@ class _HomeViewState extends State<HomeView> {
             Container(
               width: double.infinity,
               height: 160,
-              decoration: BoxDecoration(color: Colors.red),
+              color: MySolvedColor.background,
+              child: ExtendedImage.network(url),
             ),
             SizedBox(height: 50),
           ],
@@ -145,6 +172,33 @@ class _HomeViewState extends State<HomeView> {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _handleAndBio({required String handle, required String? bio}) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: MySolvedColor.background,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            handle,
+            style: MySolvedTextStyle.title3,
+          ),
+          SizedBox(height: 4),
+          Text(
+            bio ?? "",
+            style: MySolvedTextStyle.caption1.copyWith(
+              color: MySolvedColor.secondaryFont,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
