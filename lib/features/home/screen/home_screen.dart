@@ -73,6 +73,41 @@ class _HomeViewState extends State<HomeView> {
       },
       builder: (context, state) {
         if (state.status.isSuccess && state.user != null) {
+          final gridItem = [
+            GridItem(
+              title: "문제 해결",
+              value: state.user!.solvedCount.toString(),
+              unit: "개",
+            ),
+            GridItem(
+              title: "문제 기여",
+              value: state.user!.voteCount.toString(),
+              unit: "개",
+            ),
+            GridItem(
+              title: "라이벌",
+              value: state.user!.reverseRivalCount.toString(),
+              unit: "명",
+            ),
+            GridItem(
+              title: "스트릭",
+              value: state.user!.maxStreak.toString(),
+              unit: "일",
+              foregroundColor: MySolvedColor.background,
+              backgroundColor: MySolvedColor.main,
+            ),
+            GridItem(
+              title: "레이팅",
+              value: state.user!.rank.toString(),
+              unit: "#",
+              isPrefixUnit: true,
+            ),
+            GridItem(
+              title: "뱃지",
+              value: state.badges.length.toString(),
+              unit: "개",
+            ),
+          ];
           return CustomScrollView(
             physics: BouncingScrollPhysics(),
             slivers: [
@@ -102,24 +137,19 @@ class _HomeViewState extends State<HomeView> {
                           userClass: state.user!.userClass,
                           classDecoration: state.user!.classDecoration,
                         ),
-                        SizedBox(height: 16),
                       ],
                     ),
                   ),
                 ]),
               ),
               SliverPadding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
+                padding: EdgeInsets.all(16),
                 sliver: SliverGrid(
                   delegate: SliverChildBuilderDelegate(
-                    (context, index) => Container(
-                      height: 120,
-                      decoration: BoxDecoration(
-                        color: MySolvedColor.main,
-                      ),
-                      child: Text("$index"),
-                    ),
-                    childCount: 9,
+                    (context, index) {
+                      return _gridItem(item: gridItem[index]);
+                    },
+                    childCount: gridItem.length,
                   ),
                   gridDelegate: SliverQuiltedGridDelegate(
                     crossAxisCount: 3,
@@ -127,10 +157,10 @@ class _HomeViewState extends State<HomeView> {
                     crossAxisSpacing: 16,
                     pattern: [
                       QuiltedGridTile(1, 1),
+                      QuiltedGridTile(1, 1),
+                      QuiltedGridTile(1, 1),
+                      QuiltedGridTile(1, 1),
                       QuiltedGridTile(1, 2),
-                      QuiltedGridTile(1, 1),
-                      QuiltedGridTile(1, 1),
-                      QuiltedGridTile(1, 1),
                       QuiltedGridTile(1, 2),
                       QuiltedGridTile(1, 1),
                     ],
@@ -280,4 +310,83 @@ class _HomeViewState extends State<HomeView> {
       ),
     );
   }
+
+  Widget _gridItem({required GridItem item}) {
+    return Container(
+      padding: EdgeInsets.only(top: 20, left: 16, right: 16, bottom: 20),
+      decoration: BoxDecoration(
+        color: item.backgroundColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            item.title,
+            style: MySolvedTextStyle.body2.copyWith(
+              color: item.foregroundColor,
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              if (item.isPrefixUnit)
+                Column(
+                  children: [
+                    Text(
+                      item.unit,
+                      style: MySolvedTextStyle.body1.copyWith(
+                        color: item.foregroundColor,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                  ],
+                ),
+              if (item.isPrefixUnit) SizedBox(width: 2),
+              Text(
+                item.value,
+                style: MySolvedTextStyle.title1.copyWith(
+                  fontSize: 24,
+                  color: item.foregroundColor,
+                ),
+              ),
+              if (!item.isPrefixUnit) SizedBox(width: 2),
+              if (!item.isPrefixUnit)
+                Column(
+                  children: [
+                    Text(
+                      item.unit,
+                      style: MySolvedTextStyle.body1.copyWith(
+                        color: item.foregroundColor,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                  ],
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class GridItem {
+  String title;
+  String value;
+  String unit;
+  bool isPrefixUnit;
+  Color foregroundColor;
+  Color backgroundColor;
+
+  GridItem({
+    required this.title,
+    required this.value,
+    required this.unit,
+    this.isPrefixUnit = false,
+    this.foregroundColor = MySolvedColor.font,
+    this.backgroundColor = MySolvedColor.background,
+  });
 }
