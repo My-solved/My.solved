@@ -22,7 +22,13 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
       try {
         final user = await userRepository.getUser(handle);
-        emit(state.copyWith(status: HomeStatus.success, user: user));
+        final background =
+            await userRepository.getBackground(user.backgroundId);
+        emit(state.copyWith(
+          status: HomeStatus.success,
+          user: user,
+          background: background,
+        ));
       } catch (e) {
         emit(state.copyWith(status: HomeStatus.failure));
       }
