@@ -16,6 +16,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   }) : super(HomeState(
           handle: handle,
           isShowIllustBackground: true,
+          organizations: [],
         )) {
     on<InitHome>((event, emit) async {
       state.copyWith(status: HomeStatus.loading);
@@ -24,10 +25,19 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         final user = await userRepository.getUser(handle);
         final background =
             await userRepository.getBackground(user.backgroundId);
+        final organizations = await userRepository.getOrganizations(handle);
+        Badge? badge;
+
+        if (user.badgeId != null) {
+          badge = await userRepository.getBadge(user.badgeId!);
+        }
+
         emit(state.copyWith(
           status: HomeStatus.success,
           user: user,
           background: background,
+          organizations: organizations,
+          badge: badge,
         ));
       } catch (e) {
         emit(state.copyWith(status: HomeStatus.failure));

@@ -15,6 +15,8 @@ class HomeState extends Equatable {
   final bool isShowIllustBackground;
   final User? user;
   final Background? background;
+  final List<Organization> organizations;
+  final Badge? badge;
 
   const HomeState({
     this.status = HomeStatus.initial,
@@ -22,6 +24,8 @@ class HomeState extends Equatable {
     required this.isShowIllustBackground,
     this.user,
     this.background,
+    required this.organizations,
+    this.badge,
   });
 
   HomeState copyWith({
@@ -30,6 +34,8 @@ class HomeState extends Equatable {
     bool? isShowIllustBackground,
     User? user,
     Background? background,
+    List<Organization>? organizations,
+    Badge? badge,
   }) {
     return HomeState(
       status: status ?? this.status,
@@ -38,6 +44,8 @@ class HomeState extends Equatable {
           isShowIllustBackground ?? this.isShowIllustBackground,
       user: user ?? this.user,
       background: background ?? this.background,
+      organizations: organizations ?? this.organizations,
+      badge: badge ?? this.badge,
     );
   }
 
@@ -48,5 +56,7 @@ class HomeState extends Equatable {
         isShowIllustBackground,
         user,
         background,
+        organizations,
+        badge,
       ];
 }
