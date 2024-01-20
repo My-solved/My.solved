@@ -90,7 +90,7 @@ class _HomeViewState extends State<HomeView> {
               unit: "명",
             ),
             GridItem(
-              title: "스트릭",
+              title: "스트릭(최대)",
               value: state.user!.maxStreak.toString(),
               unit: "일",
               foregroundColor: MySolvedColor.background,
@@ -101,6 +101,7 @@ class _HomeViewState extends State<HomeView> {
               value: state.user!.rank.toString(),
               unit: "#",
               isPrefixUnit: true,
+              backgroundColor: MySolvedColor.disabledButtonBackground,
             ),
             GridItem(
               title: "뱃지",
@@ -128,6 +129,9 @@ class _HomeViewState extends State<HomeView> {
                           handle: state.handle,
                           bio: state.user!.bio,
                         ),
+                        SizedBox(height: 16),
+                        _tier(
+                            tier: state.user!.tier, rating: state.user!.rating),
                         SizedBox(height: 16),
                         if (state.organizations.isNotEmpty)
                           _organizations(organizations: state.organizations),
@@ -278,6 +282,61 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
+  Widget _tier({required int tier, required int rating}) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: MySolvedColor.background,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: rating < 3000
+          ? Row(
+              children: [
+                Text(
+                  _tierText(tier),
+                  style: MySolvedTextStyle.title5.copyWith(
+                    color: _ratingColor(rating),
+                  ),
+                ),
+                SizedBox(width: 4),
+                Text(
+                  rating.toString(),
+                  style: MySolvedTextStyle.body1.copyWith(
+                    color: _ratingColor(rating),
+                  ),
+                ),
+              ],
+            )
+          : ShaderMask(
+              shaderCallback: (rect) {
+                return LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF7cf9ff),
+                    Color(0xFFb491ff),
+                    Color(0xFFff7ca8)
+                  ],
+                ).createShader(Rect.fromLTRB(0, 0, rect.width, rect.height));
+              },
+              blendMode: BlendMode.srcATop,
+              child: Row(
+                children: [
+                  Text(
+                    "Master",
+                    style: MySolvedTextStyle.title5,
+                  ),
+                  Text(
+                    rating.toString(),
+                    style: MySolvedTextStyle.body1,
+                  ),
+                ],
+              ),
+            ),
+    );
+  }
+
   Widget _badgeAndClass({
     required solved_api.Badge? badge,
     required int userClass,
@@ -370,6 +429,101 @@ class _HomeViewState extends State<HomeView> {
         ],
       ),
     );
+  }
+
+  Color _ratingColor(int rating) {
+    if (rating < 30) {
+      return Color(0xFF2D2D2D);
+    } else if (rating < 200) {
+      // bronze
+      return Color(0xffad5600);
+    } else if (rating < 800) {
+      // silver
+      return Color(0xFF425E79);
+    } else if (rating < 1600) {
+      // gold
+      return Color(0xffec9a00);
+    } else if (rating < 2200) {
+      // platinum
+      return Color(0xff00c78b);
+    } else if (rating < 2700) {
+      // diamond
+      return Color(0xff00b4fc);
+    } else if (rating < 3000) {
+      // ruby
+      return Color(0xffff0062);
+    } else {
+      // master
+      return Color(0xffb300e0);
+    }
+  }
+
+  String _tierText(int tier) {
+    if (tier == 1) {
+      return 'Bronze V';
+    } else if (tier == 2) {
+      return 'Bronze IV';
+    } else if (tier == 3) {
+      return 'Bronze III';
+    } else if (tier == 4) {
+      return 'Bronze II';
+    } else if (tier == 5) {
+      return 'Bronze I';
+    } else if (tier == 6) {
+      return 'Silver V';
+    } else if (tier == 7) {
+      return 'Silver IV';
+    } else if (tier == 8) {
+      return 'Silver III';
+    } else if (tier == 9) {
+      return 'Silver II';
+    } else if (tier == 10) {
+      return 'Silver I';
+    } else if (tier == 11) {
+      return 'Gold V';
+    } else if (tier == 12) {
+      return 'Gold IV';
+    } else if (tier == 13) {
+      return 'Gold III';
+    } else if (tier == 14) {
+      return 'Gold II';
+    } else if (tier == 15) {
+      return 'Gold I';
+    } else if (tier == 16) {
+      return 'Platinum V';
+    } else if (tier == 17) {
+      return 'Platinum IV';
+    } else if (tier == 18) {
+      return 'Platinum III';
+    } else if (tier == 19) {
+      return 'Platinum II';
+    } else if (tier == 20) {
+      return 'Platinum I';
+    } else if (tier == 21) {
+      return 'Diamond V';
+    } else if (tier == 22) {
+      return 'Diamond IV';
+    } else if (tier == 23) {
+      return 'Diamond III';
+    } else if (tier == 24) {
+      return 'Diamond II';
+    } else if (tier == 25) {
+      return 'Diamond I';
+    } else if (tier == 26) {
+      return 'Ruby V';
+    } else if (tier == 27) {
+      return 'Ruby IV';
+    } else if (tier == 28) {
+      return 'Ruby III';
+    } else if (tier == 29) {
+      return 'Ruby II';
+    } else if (tier == 30) {
+      return 'Ruby I';
+    } else if (tier == 31) {
+      return 'Master';
+    } else {
+      return 'Unrated';
+    }
   }
 }
 
