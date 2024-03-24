@@ -6,6 +6,7 @@ import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
 import 'package:my_solved/features/contest/bloc/contest_bloc.dart';
 import 'package:my_solved/features/contest_filter/screen/contest_filter_screen.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class ContestScreen extends StatelessWidget {
   const ContestScreen({super.key});
@@ -120,19 +121,31 @@ class _ContestViewState extends State<ContestView> {
                   contests.length,
                   (index) => Column(
                     children: [
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: MySolvedColor.background,
-                          borderRadius: BorderRadius.circular(16),
+                      ElevatedButton(
+                        onPressed: () async {
+                          final urlString = contests[index].url;
+                          if (urlString != null) {
+                            launchUrlString(urlString);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: Size.fromHeight(128),
+                          padding: EdgeInsets.all(16),
+                          backgroundColor: MySolvedColor.background,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          alignment: Alignment.centerLeft,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               contests[index].name,
-                              style: MySolvedTextStyle.title5,
+                              style: MySolvedTextStyle.title5.copyWith(
+                                color: MySolvedColor.font,
+                              ),
                             ),
                             SizedBox(height: 16),
                             Text(
