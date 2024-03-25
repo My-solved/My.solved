@@ -62,6 +62,52 @@ class NotificationApiClient {
     );
   }
 
+  Future<void> setInstanceNotification({
+    required int id,
+    required DateTime dateTime,
+    required String title,
+    required String content,
+  }) async {
+    await _requestPermission();
+    _flutterLocalNotificationsPlugin.cancel(id);
+    NotificationDetails details = const NotificationDetails(
+      android: AndroidNotificationDetails(
+        'Notification_channel',
+        'Notification_channel',
+        channelDescription: 'Notification_channel',
+        importance: Importance.max,
+        playSound: true,
+        enableVibration: true,
+      ),
+      iOS: DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
+    );
+
+    tz.initializeTimeZones();
+    tz.TZDateTime tzDateTime = tz.TZDateTime(
+      tz.local,
+      dateTime.year,
+      dateTime.month,
+      dateTime.day,
+      dateTime.hour,
+      dateTime.minute,
+    );
+
+    await _flutterLocalNotificationsPlugin.zonedSchedule(
+      id,
+      title,
+      content,
+      tzDateTime,
+      details,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+      androidAllowWhileIdle: true,
+    );
+  }
+
   tz.TZDateTime _timeZoneSetting(int hour, int minute) {
     tz.initializeTimeZones();
     tz.setLocalLocation(tz.getLocation('Asia/Seoul'));

@@ -30,7 +30,7 @@ class ContestScreen extends StatelessWidget {
               onSelected: (index) {
                 context
                     .read<ContestBloc>()
-                    .add(SegmentedControlTapped(index: index));
+                    .add(ContestSegmentedControlPressed(index: index));
               },
             ),
           ),
@@ -74,7 +74,7 @@ class _ContestViewState extends State<ContestView> {
   @override
   void initState() {
     super.initState();
-    context.read<ContestBloc>().add(InitContest());
+    context.read<ContestBloc>().add(ContestInit());
   }
 
   @override
@@ -170,8 +170,21 @@ class _ContestViewState extends State<ContestView> {
                                 children: [
                                   SizedBox(height: 8),
                                   MySolvedFitButton(
-                                    onPressed: () {},
-                                    text: "알림 설정하기",
+                                    onPressed: () => context
+                                        .read<ContestBloc>()
+                                        .add(ContestNotificationButtonPressed(
+                                          index: index,
+                                        )),
+                                    buttonStyle:
+                                        state.isOnNotificationUpcomingContests[
+                                                index]
+                                            ? MySolvedButtonStyle.secondary
+                                            : MySolvedButtonStyle.primary,
+                                    text:
+                                        state.isOnNotificationUpcomingContests[
+                                                index]
+                                            ? "알림 취소하기"
+                                            : "알림 설정하기",
                                   ),
                                 ],
                               ),

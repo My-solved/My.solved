@@ -1,5 +1,6 @@
 part of 'setting_bloc.dart';
 
+@immutable
 abstract class SettingEvent {}
 
 class SettingInit extends SettingEvent {}

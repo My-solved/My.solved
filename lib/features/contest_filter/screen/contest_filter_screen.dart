@@ -68,7 +68,7 @@ class _ContestFilterViewState extends State<ContestFilterView> {
                                 false;
                         return ElevatedButton(
                           onPressed: () => widget.contestBloc.add(
-                              ContestFilterToggleTapped(venue: venues[index])),
+                              ContestFilterTogglePressed(venue: venues[index])),
                           style: ElevatedButton.styleFrom(
                             elevation: 0,
                             backgroundColor: filter
