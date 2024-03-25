@@ -1,14 +1,13 @@
-name: shared_preferences_repository
+name: shared_preferences_api
 description: "A new Flutter package project."
 version: 0.0.1
 publish_to: "none"
 
 environment:
-  sdk: ">=3.2.0 <4.0.0"
+  sdk: '>=3.3.1 <4.0.0'
 
 dependencies:
-  shared_preferences_api:
-    path: ../../apis/shared_preferences_api
+  shared_preferences: ^2.0.18
 
 dev_dependencies:
   flutter_test:
