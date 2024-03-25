@@ -11,6 +11,7 @@ class SharedPreferencesRepository {
   final String _isOnStreakNotificationKey = "is_on_streak_notification";
   final String _streakNotificationHourKey = "streak_notification_hour";
   final String _streakNotificationMinuteKey = "streak_notification_minute";
+  final String _contestNotificationMinuteKey = "contest_notification_minute";
 
   Future<String?> requestHandle() async {
     await Future.delayed(const Duration(seconds: 1));
@@ -63,6 +64,20 @@ class SharedPreferencesRepository {
   Future<void> setStreakNotificationMinute({required int minute}) async {
     await _sharedPreferencesApiClient.setInt(
       key: _streakNotificationMinuteKey,
+      value: minute,
+    );
+  }
+
+  Future<int> getContestNotificationMinute() async {
+    return await _sharedPreferencesApiClient.getInt(
+          key: _contestNotificationMinuteKey,
+        ) ??
+        60;
+  }
+
+  Future<void> setContestNotificationMinute({required int minute}) async {
+    await _sharedPreferencesApiClient.setInt(
+      key: _contestNotificationMinuteKey,
       value: minute,
     );
   }

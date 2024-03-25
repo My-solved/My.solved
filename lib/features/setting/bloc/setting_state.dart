@@ -2,32 +2,34 @@ part of 'setting_bloc.dart';
 
 class SettingState extends Equatable {
   final bool isOnStreakNotification;
-  final TimeOfDay streakTime;
-  final TimeOfDay contestTime;
+  final TimeOfDay streakNotificationTime;
+  final int contestNotificationMinute;
 
   const SettingState({
     required this.isOnStreakNotification,
-    required this.streakTime,
-    required this.contestTime,
+    required this.streakNotificationTime,
+    required this.contestNotificationMinute,
   });
 
   SettingState copyWith({
     bool? isOnStreakNotification,
-    TimeOfDay? streakTime,
-    TimeOfDay? contestTime,
+    TimeOfDay? streakNotificationTime,
+    int? contestNotificationMinute,
   }) {
     return SettingState(
       isOnStreakNotification:
           isOnStreakNotification ?? this.isOnStreakNotification,
-      streakTime: streakTime ?? this.streakTime,
-      contestTime: contestTime ?? this.contestTime,
+      streakNotificationTime:
+          streakNotificationTime ?? this.streakNotificationTime,
+      contestNotificationMinute:
+          contestNotificationMinute ?? this.contestNotificationMinute,
     );
   }
 
   @override
   List<Object?> get props => [
         isOnStreakNotification,
-        streakTime,
-        contestTime,
+        streakNotificationTime,
+        contestNotificationMinute,
       ];
 }

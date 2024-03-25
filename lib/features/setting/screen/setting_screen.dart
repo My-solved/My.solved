@@ -136,7 +136,7 @@ class _SettingViewState extends State<SettingView> {
                           ? () async {
                               final TimeOfDay? timeOfDay = await showTimePicker(
                                 context: context,
-                                initialTime: state.streakTime,
+                                initialTime: state.streakNotificationTime,
                               );
                               if (timeOfDay != null) {
                                 context.read<SettingBloc>().add(
@@ -146,21 +146,19 @@ class _SettingViewState extends State<SettingView> {
                             }
                           : null,
                       style: TextButton.styleFrom(
-                        minimumSize: Size.zero,
-                        padding: EdgeInsets.zero,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         foregroundColor: MySolvedColor.font,
-                      ),
-                      child: Container(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: MySolvedColor.textFieldBorder,
+                        backgroundColor: MySolvedColor.textFieldBorder,
+                        shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(
-                          "${state.streakTime.hour}:${state.streakTime.minute}",
-                          style: MySolvedTextStyle.body1,
-                        ),
+                      ),
+                      child: Text(
+                        "${state.streakNotificationTime.hour}:${state.streakNotificationTime.minute}",
+                        style: MySolvedTextStyle.body1,
                       ),
                     )
                   ],
@@ -171,22 +169,41 @@ class _SettingViewState extends State<SettingView> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("대회 시작 알림", style: MySolvedTextStyle.body2),
-                    Switch(
-                      value: true,
-                      onChanged: ((value) {}),
-                      activeColor: MySolvedColor.background,
-                      activeTrackColor: MySolvedColor.main,
-                    ),
-                  ],
-                ),
-                SizedBox(
-                  height: 8,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
                     Text("대회 시작 알림 시간", style: MySolvedTextStyle.body2),
+                    MenuAnchor(
+                      builder: (context, controller, child) {
+                        return TextButton(
+                          onPressed: () {
+                            if (controller.isOpen) {
+                              controller.close();
+                            } else {
+                              controller.open();
+                            }
+                          },
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            foregroundColor: MySolvedColor.font,
+                            backgroundColor: MySolvedColor.textFieldBorder,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text("${state.contestNotificationMinute}분 전"),
+                        );
+                      },
+                      menuChildren: List.generate(
+                        6,
+                        (index) => MenuItemButton(
+                          onPressed: () => context.read<SettingBloc>().add(
+                              SettingContestNotificationMinuteChanged(
+                                  minute: (index + 1) * 10)),
+                          child: Text("${(index + 1) * 10}분 전"),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 Text(

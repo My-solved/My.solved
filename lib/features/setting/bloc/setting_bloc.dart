@@ -15,12 +15,13 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
         _streakNotificationRepository = streakNotificationRepository,
         super(SettingState(
           isOnStreakNotification: true,
-          streakTime: TimeOfDay.now(),
-          contestTime: TimeOfDay.now(),
+          streakNotificationTime: TimeOfDay.now(),
+          contestNotificationMinute: 60,
         )) {
     on<SettingInit>(_onInit);
     on<SettingStreakNotificationTimeChanged>(_onChangeStreakTime);
     on<SettingStreakNotificationSwitchChanged>(_onChangeIsOnStreakNotification);
+    on<SettingContestNotificationMinuteChanged>(_onChangeContestNotificationMinute);
   }
 
   final SharedPreferencesRepository _sharedPreferencesRepository;
@@ -37,7 +38,9 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     final streakNotificationMinute =
         await _sharedPreferencesRepository.getStreakNotificationMinute();
     final now = TimeOfDay.now();
-    final streakTime =
+    final contestNotificationMinute =
+        await _sharedPreferencesRepository.getContestNotificationMinute();
+    final streakNotificationTime =
         (streakNotificationHour != null) && (streakNotificationMinute != null)
             ? TimeOfDay(
                 hour: streakNotificationHour, minute: streakNotificationMinute)
@@ -45,7 +48,8 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
 
     emit(state.copyWith(
       isOnStreakNotification: isOnStreakNotification,
-      streakTime: streakTime,
+      streakNotificationTime: streakNotificationTime,
+      contestNotificationMinute: contestNotificationMinute,
     ));
   }
 
@@ -63,7 +67,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
       hour: event.timeOfDay.hour,
       minute: event.timeOfDay.minute,
     );
-    emit(state.copyWith(streakTime: event.timeOfDay));
+    emit(state.copyWith(streakNotificationTime: event.timeOfDay));
   }
 
   Future<void> _onChangeIsOnStreakNotification(
@@ -72,8 +76,8 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
   ) async {
     if (event.isOn) {
       await _streakNotificationRepository.setStreakNotification(
-        hour: state.streakTime.hour,
-        minute: state.streakTime.minute,
+        hour: state.streakNotificationTime.hour,
+        minute: state.streakNotificationTime.minute,
       );
       await _sharedPreferencesRepository.setIsOnStreakNotification(
         isOn: event.isOn,
@@ -86,5 +90,15 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
       );
       emit(state.copyWith(isOnStreakNotification: event.isOn));
     }
+  }
+
+  Future<void> _onChangeContestNotificationMinute(
+    SettingContestNotificationMinuteChanged event,
+    Emitter<SettingState> emit,
+  ) async {
+    await _sharedPreferencesRepository.setContestNotificationMinute(
+      minute: event.minute,
+    );
+    emit(state.copyWith(contestNotificationMinute: event.minute));
   }
 }

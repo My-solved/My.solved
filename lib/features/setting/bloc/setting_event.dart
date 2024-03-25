@@ -15,3 +15,9 @@ class SettingStreakNotificationTimeChanged extends SettingEvent {
 
   SettingStreakNotificationTimeChanged({required this.timeOfDay});
 }
+
+class SettingContestNotificationMinuteChanged extends SettingEvent {
+  final int minute;
+
+  SettingContestNotificationMinuteChanged({required this.minute});
+}
