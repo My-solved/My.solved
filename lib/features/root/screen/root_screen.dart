@@ -14,6 +14,7 @@ import 'package:my_solved/features/search/bloc/search_bloc.dart';
 import 'package:my_solved/features/search/screen/search_screen.dart';
 import 'package:my_solved/features/setting/screen/setting_screen.dart';
 import 'package:search_repository/search_repository.dart';
+import 'package:shared_preferences_repository/shared_preferences_repository.dart';
 import 'package:user_repository/user_repository.dart';
 
 class RootScreen extends StatelessWidget {
@@ -33,6 +34,7 @@ class RootScreen extends StatelessWidget {
         BlocProvider(
           create: (context) => HomeBloc(
             userRepository: UserRepository(),
+            sharedPreferencesRepository: SharedPreferencesRepository(),
             handle: handle,
           ),
         ),

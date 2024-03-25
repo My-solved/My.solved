@@ -12,7 +12,7 @@ extension HomeStatusX on HomeStatus {
 class HomeState extends Equatable {
   final HomeStatus status;
   final String handle;
-  final bool isShowIllustBackground;
+  final bool isOnIllustBackground;
   final User? user;
   final Background? background;
   final List<Organization> organizations;
@@ -22,7 +22,7 @@ class HomeState extends Equatable {
   const HomeState({
     this.status = HomeStatus.initial,
     required this.handle,
-    required this.isShowIllustBackground,
+    required this.isOnIllustBackground,
     this.user,
     this.background,
     required this.organizations,
@@ -33,7 +33,7 @@ class HomeState extends Equatable {
   HomeState copyWith({
     HomeStatus? status,
     String? handle,
-    bool? isShowIllustBackground,
+    bool? isOnIllustBackground,
     User? user,
     Background? background,
     List<Organization>? organizations,
@@ -43,8 +43,8 @@ class HomeState extends Equatable {
     return HomeState(
       status: status ?? this.status,
       handle: handle ?? this.handle,
-      isShowIllustBackground:
-          isShowIllustBackground ?? this.isShowIllustBackground,
+      isOnIllustBackground:
+      isOnIllustBackground ?? this.isOnIllustBackground,
       user: user ?? this.user,
       background: background ?? this.background,
       organizations: organizations ?? this.organizations,
@@ -57,7 +57,7 @@ class HomeState extends Equatable {
   List<Object?> get props => [
         status,
         handle,
-        isShowIllustBackground,
+    isOnIllustBackground,
         user,
         background,
         organizations,

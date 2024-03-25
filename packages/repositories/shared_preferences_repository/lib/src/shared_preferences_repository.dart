@@ -12,6 +12,7 @@ class SharedPreferencesRepository {
   final String _streakNotificationHourKey = "streak_notification_hour";
   final String _streakNotificationMinuteKey = "streak_notification_minute";
   final String _contestNotificationMinuteKey = "contest_notification_minute";
+  final String _isOnIllustBackgroundKey = "is_on_illust_background";
 
   Future<String?> requestHandle() async {
     await Future.delayed(const Duration(seconds: 1));
@@ -79,6 +80,20 @@ class SharedPreferencesRepository {
     await _sharedPreferencesApiClient.setInt(
       key: _contestNotificationMinuteKey,
       value: minute,
+    );
+  }
+
+  Future<bool> getIsOnIllustBackground() async {
+    return await _sharedPreferencesApiClient.getBool(
+          key: _isOnIllustBackgroundKey,
+        ) ??
+        true;
+  }
+
+  Future<void> setIsOnIllustBackground({required bool isShow}) async {
+    await _sharedPreferencesApiClient.setBool(
+      key: _isOnIllustBackgroundKey,
+      value: isShow,
     );
   }
 }

@@ -83,9 +83,13 @@ class _SettingViewState extends State<SettingView> {
                       bloc: widget.homeBloc,
                       builder: (context, state) {
                         return Switch(
-                          value: state.isShowIllustBackground,
-                          onChanged: (isOn) => widget.homeBloc
-                              .add(SettingIsShowIllustBackground(isOn: isOn)),
+                          value: state.isOnIllustBackground,
+                          onChanged: (isOn) {
+                            context.read<SettingBloc>().add(
+                                SettingIsOnIllustBackgroundChanged(isOn: isOn));
+                            widget.homeBloc.add(
+                                HomeIsOnIllustBackgroundChanged(isOn: isOn));
+                          },
                           activeColor: MySolvedColor.background,
                           activeTrackColor: MySolvedColor.main,
                           inactiveThumbColor: MySolvedColor.background,
