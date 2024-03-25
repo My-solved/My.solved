@@ -4,6 +4,12 @@ abstract class SettingEvent {}
 
 class SettingInit extends SettingEvent {}
 
+class SettingIsOnIllustBackgroundChanged extends SettingEvent {
+  final bool isOn;
+
+  SettingIsOnIllustBackgroundChanged({required this.isOn});
+}
+
 class SettingStreakNotificationSwitchChanged extends SettingEvent {
   final bool isOn;
 

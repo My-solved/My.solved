@@ -43,7 +43,7 @@ class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     super.initState();
-    context.read<HomeBloc>().add(InitHome());
+    context.read<HomeBloc>().add(HomeInit());
   }
 
   @override
@@ -117,7 +117,7 @@ class _HomeViewState extends State<HomeView> {
                   _profileAndBackgroundImage(
                     profileImageURL: state.user!.profileImageUrl ??
                         "https://static.solved.ac/misc/360x360/default_profile.png",
-                    isShowIllustBackground: state.isShowIllustBackground,
+                    isShowIllustBackground: state.isOnIllustBackground,
                     background: state.background,
                   ),
                   Padding(

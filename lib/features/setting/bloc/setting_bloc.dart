@@ -19,6 +19,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
           contestNotificationMinute: 60,
         )) {
     on<SettingInit>(_onInit);
+    on<SettingIsOnIllustBackgroundChanged>(_onIsOnIllustBackgroundChanged);
     on<SettingStreakNotificationTimeChanged>(_onChangeStreakTime);
     on<SettingStreakNotificationSwitchChanged>(_onChangeIsOnStreakNotification);
     on<SettingContestNotificationMinuteChanged>(_onChangeContestNotificationMinute);
@@ -51,6 +52,15 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
       streakNotificationTime: streakNotificationTime,
       contestNotificationMinute: contestNotificationMinute,
     ));
+  }
+
+  Future<void> _onIsOnIllustBackgroundChanged(
+    SettingIsOnIllustBackgroundChanged event,
+    Emitter<SettingState> emit,
+  ) async {
+    await _sharedPreferencesRepository.setIsOnIllustBackground(
+      isShow: event.isOn,
+    );
   }
 
   Future<void> _onChangeStreakTime(

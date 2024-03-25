@@ -1,18 +1,12 @@
 part of "home_bloc.dart";
 
 @immutable
-abstract class HomeEvent extends Equatable {}
+abstract class HomeEvent {}
 
-class InitHome extends HomeEvent {
-  @override
-  List<Object?> get props => [];
-}
+class HomeInit extends HomeEvent {}
 
-class SettingIsShowIllustBackground extends HomeEvent {
+class HomeIsOnIllustBackgroundChanged extends HomeEvent {
   final bool isOn;
 
-  SettingIsShowIllustBackground({required this.isOn});
-
-  @override
-  List<Object?> get props => [isOn];
+  HomeIsOnIllustBackgroundChanged({required this.isOn});
 }
