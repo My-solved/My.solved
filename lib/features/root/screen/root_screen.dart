@@ -1,3 +1,4 @@
+import 'package:contest_notification_repository/contest_notification_repository.dart';
 import 'package:contest_repository/contest_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -45,7 +46,9 @@ class RootScreen extends StatelessWidget {
         ),
         BlocProvider(
           create: (context) => ContestBloc(
+            contestNotificationRepository: ContestNotificationRepository(),
             contestRepository: ContestRepository(),
+            sharedPreferencesRepository: SharedPreferencesRepository(),
           ),
         ),
       ],

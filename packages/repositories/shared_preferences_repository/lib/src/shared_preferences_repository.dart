@@ -96,4 +96,15 @@ class SharedPreferencesRepository {
       value: isShow,
     );
   }
+
+  Future<bool> getIsOnContestNotification({required String title}) async {
+    return await _sharedPreferencesApiClient.getBool(key: title) ?? false;
+  }
+
+  Future<void> setIsOnContestNotification({
+    required String title,
+    required bool isOn,
+  }) async {
+    await _sharedPreferencesApiClient.setBool(key: title, value: isOn);
+  }
 }

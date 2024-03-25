@@ -1,27 +1,24 @@
 part of 'contest_bloc.dart';
 
 @immutable
-abstract class ContestEvent extends Equatable {}
+abstract class ContestEvent {}
 
-class InitContest extends ContestEvent {
-  @override
-  List<Object?> get props => [];
-}
+class ContestInit extends ContestEvent {}
 
-class SegmentedControlTapped extends ContestEvent {
+class ContestSegmentedControlPressed extends ContestEvent {
   final int index;
 
-  SegmentedControlTapped({required this.index});
-
-  @override
-  List<Object?> get props => [index];
+  ContestSegmentedControlPressed({required this.index});
 }
 
-class ContestFilterToggleTapped extends ContestEvent {
+class ContestNotificationButtonPressed extends ContestEvent {
+  final int index;
+
+  ContestNotificationButtonPressed({required this.index});
+}
+
+class ContestFilterTogglePressed extends ContestEvent {
   final ContestVenue venue;
 
-  ContestFilterToggleTapped({required this.venue});
-
-  @override
-  List<Object?> get props => [venue];
+  ContestFilterTogglePressed({required this.venue});
 }
