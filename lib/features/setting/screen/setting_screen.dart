@@ -4,6 +4,8 @@ import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
 import 'package:my_solved/features/home/bloc/home_bloc.dart';
 import 'package:my_solved/features/setting/bloc/setting_bloc.dart';
+import 'package:shared_preferences_repository/shared_preferences_repository.dart';
+import 'package:streak_notification_repository/streak_notification_repository.dart';
 
 class SettingScreen extends StatelessWidget {
   final HomeBloc homeBloc;
@@ -13,7 +15,10 @@ class SettingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => SettingBloc(),
+      create: (context) => SettingBloc(
+        sharedPreferencesRepository: SharedPreferencesRepository(),
+        streakNotificationRepository: StreakNotificationRepository(),
+      ),
       child: SettingView(
         homeBloc: homeBloc,
       ),
@@ -31,6 +36,12 @@ class SettingView extends StatefulWidget {
 }
 
 class _SettingViewState extends State<SettingView> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<SettingBloc>().add(SettingInit());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -105,8 +116,9 @@ class _SettingViewState extends State<SettingView> {
                   children: [
                     Text("스트릭 알림", style: MySolvedTextStyle.body2),
                     Switch(
-                      value: true,
-                      onChanged: ((value) {}),
+                      value: state.isOnStreakNotification,
+                      onChanged: (value) => context.read<SettingBloc>().add(
+                          SettingStreakNotificationSwitchChanged(isOn: value)),
                       activeColor: MySolvedColor.background,
                       activeTrackColor: MySolvedColor.main,
                     ),
@@ -120,12 +132,19 @@ class _SettingViewState extends State<SettingView> {
                   children: [
                     Text("스트릭 알림 시간", style: MySolvedTextStyle.body2),
                     TextButton(
-                      onPressed: () async {
-                        // final TimeOfDay? timeOfDay = await showTimePicker(
-                        //   context: context,
-                        //   initialTime: state.streakTime,
-                        // );
-                      },
+                      onPressed: state.isOnStreakNotification
+                          ? () async {
+                              final TimeOfDay? timeOfDay = await showTimePicker(
+                                context: context,
+                                initialTime: state.streakTime,
+                              );
+                              if (timeOfDay != null) {
+                                context.read<SettingBloc>().add(
+                                    SettingStreakNotificationTimeChanged(
+                                        timeOfDay: timeOfDay));
+                              }
+                            }
+                          : null,
                       style: TextButton.styleFrom(
                         minimumSize: Size.zero,
                         padding: EdgeInsets.zero,

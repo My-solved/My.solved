@@ -1,22 +1,69 @@
 import 'package:shared_preferences_api/shared_preferences_api.dart';
 
 class SharedPreferencesRepository {
-  SharedPreferencesRepository({SharedPreferencesApiClient? sharedPreferencesApiClient}) : _sharedPreferencesApiClient = sharedPreferencesApiClient ?? SharedPreferencesApiClient();
+  SharedPreferencesRepository({
+    SharedPreferencesApiClient? sharedPreferencesApiClient,
+  }) : _sharedPreferencesApiClient =
+            sharedPreferencesApiClient ?? SharedPreferencesApiClient();
 
   final SharedPreferencesApiClient _sharedPreferencesApiClient;
+  final String _handleKey = "handle";
+  final String _isOnStreakNotificationKey = "is_on_streak_notification";
+  final String _streakNotificationHourKey = "streak_notification_hour";
+  final String _streakNotificationMinuteKey = "streak_notification_minute";
 
   Future<String?> requestHandle() async {
     await Future.delayed(const Duration(seconds: 1));
-    return await _sharedPreferencesApiClient.getString(key: "handle");
+    return await _sharedPreferencesApiClient.getString(key: _handleKey);
   }
 
   Future<void> login({required String handle}) async {
     await Future.delayed(const Duration(seconds: 1));
-    await _sharedPreferencesApiClient.setString(key: "handle", value: handle);
+    await _sharedPreferencesApiClient.setString(key: _handleKey, value: handle);
   }
 
   Future<void> logout() async {
     await Future.delayed(const Duration(seconds: 1));
-    await _sharedPreferencesApiClient.removeByKey(key: "handle");
+    await _sharedPreferencesApiClient.removeByKey(key: _handleKey);
+  }
+
+  Future<bool> getIsOnStreakNotification() async {
+    return await _sharedPreferencesApiClient.getBool(
+          key: _isOnStreakNotificationKey,
+        ) ??
+        false;
+  }
+
+  Future<void> setIsOnStreakNotification({required bool isOn}) async {
+    await _sharedPreferencesApiClient.setBool(
+      key: _isOnStreakNotificationKey,
+      value: isOn,
+    );
+  }
+
+  Future<int?> getStreakNotificationHour() async {
+    return await _sharedPreferencesApiClient.getInt(
+      key: _streakNotificationHourKey,
+    );
+  }
+
+  Future<void> setStreakNotificationHour({required int hour}) async {
+    await _sharedPreferencesApiClient.setInt(
+      key: _streakNotificationHourKey,
+      value: hour,
+    );
+  }
+
+  Future<int?> getStreakNotificationMinute() async {
+    return await _sharedPreferencesApiClient.getInt(
+      key: _streakNotificationMinuteKey,
+    );
+  }
+
+  Future<void> setStreakNotificationMinute({required int minute}) async {
+    await _sharedPreferencesApiClient.setInt(
+      key: _streakNotificationMinuteKey,
+      value: minute,
+    );
   }
 }

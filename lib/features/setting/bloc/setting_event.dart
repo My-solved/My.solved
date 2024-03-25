@@ -1,13 +1,17 @@
 part of 'setting_bloc.dart';
 
-@immutable
-abstract class SettingEvent extends Equatable {}
+abstract class SettingEvent {}
 
-class StreakTimeOfDayChanged extends SettingEvent {
+class SettingInit extends SettingEvent {}
+
+class SettingStreakNotificationSwitchChanged extends SettingEvent {
+  final bool isOn;
+
+  SettingStreakNotificationSwitchChanged({required this.isOn});
+}
+
+class SettingStreakNotificationTimeChanged extends SettingEvent {
   final TimeOfDay timeOfDay;
 
-  StreakTimeOfDayChanged({required this.timeOfDay});
-
-  @override
-  List<Object?> get props => [timeOfDay];
+  SettingStreakNotificationTimeChanged({required this.timeOfDay});
 }

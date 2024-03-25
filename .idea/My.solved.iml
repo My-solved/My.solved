@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/apis/boj_api/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/apis/boj_api/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/apis/boj_api/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/apis/solved_api/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/apis/solved_api/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/apis/solved_api/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/repositories/contest_repository/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/repositories/contest_repository/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/repositories/contest_repository/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/repositories/search_repository/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/repositories/search_repository/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/repositories/search_repository/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/repositories/shared_preferences_repository/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/repositories/shared_preferences_repository/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/repositories/shared_preferences_repository/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/repositories/user_repository/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/repositories/user_repository/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/repositories/user_repository/build" />
+      <excludeFolder url="file://$MODULE_DIR$/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/build" />
+      <excludeFolder url="file://$MODULE_DIR$/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/example/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/windows/flutter/ephemeral/.plugin_symlinks/path_provider_windows/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/windows/flutter/ephemeral/.plugin_symlinks/shared_preferences_windows/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/windows/flutter/ephemeral/.plugin_symlinks/shared_preferences_windows/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/windows/flutter/ephemeral/.plugin_symlinks/shared_preferences_windows/build" />
+      <excludeFolder url="file://$MODULE_DIR$/windows/flutter/ephemeral/.plugin_symlinks/shared_preferences_windows/example/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/windows/flutter/ephemeral/.plugin_symlinks/shared_preferences_windows/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/windows/flutter/ephemeral/.plugin_symlinks/shared_preferences_windows/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/windows/flutter/ephemeral/.plugin_symlinks/url_launcher_windows/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/windows/flutter/ephemeral/.plugin_symlinks/url_launcher_windows/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/windows/flutter/ephemeral/.plugin_symlinks/url_launcher_windows/build" />
+      <excludeFolder url="file://$MODULE_DIR$/windows/flutter/ephemeral/.plugin_symlinks/url_launcher_windows/example/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/windows/flutter/ephemeral/.plugin_symlinks/url_launcher_windows/example/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/windows/flutter/ephemeral/.plugin_symlinks/url_launcher_windows/example/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/apis/notification_api/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/apis/notification_api/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/apis/notification_api/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/repositories/streak_notification_repository/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/repositories/streak_notification_repository/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/repositories/streak_notification_repository/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/apis/shared_preferences_api/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/apis/shared_preferences_api/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/apis/shared_preferences_api/build" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Dart SDK" level="project" />
+    <orderEntry type="library" name="Dart Packages" level="project" />
+    <orderEntry type="library" name="Flutter Plugins" level="project" />
+  </component>
+</module>
