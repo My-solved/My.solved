@@ -1,6 +1,7 @@
 import 'package:boj_api/boj_api.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:my_solved/components/atoms/button/button.dart';
 import 'package:my_solved/components/molecules/segmented_control/segmented_control.dart';
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
@@ -122,16 +123,19 @@ class _ContestViewState extends State<ContestView> {
                   (index) => Column(
                     children: [
                       ElevatedButton(
-                        onPressed: () async {
-                          final urlString = contests[index].url;
-                          if (urlString != null) {
-                            launchUrlString(urlString);
-                          }
-                        },
+                        onPressed: state.currentIndex == 2
+                            ? null
+                            : () async {
+                                final urlString = contests[index].url;
+                                if (urlString != null) {
+                                  launchUrlString(urlString);
+                                }
+                              },
                         style: ElevatedButton.styleFrom(
                           minimumSize: Size.fromHeight(128),
                           padding: EdgeInsets.all(16),
                           backgroundColor: MySolvedColor.background,
+                          disabledBackgroundColor: MySolvedColor.background,
                           elevation: 0,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
@@ -161,6 +165,16 @@ class _ContestViewState extends State<ContestView> {
                                 color: MySolvedColor.secondaryFont,
                               ),
                             ),
+                            if (state.currentIndex == 1)
+                              Column(
+                                children: [
+                                  SizedBox(height: 8),
+                                  MySolvedFitButton(
+                                    onPressed: () {},
+                                    text: "알림 설정하기",
+                                  ),
+                                ],
+                              ),
                           ],
                         ),
                       ),
