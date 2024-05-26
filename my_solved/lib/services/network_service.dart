@@ -302,13 +302,20 @@ class NetworkService {
       }).toList();
     }
 
-    final others =
-        await http.get(Uri.parse("https://www.acmicpc.net/contest/other/list"));
+    final others = await http
+        .get(Uri.parse("https://www.acmicpc.net/contest/other/list"), headers: {
+      'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'
+    });
     dom.Document docOthers = parser.parse(others.body);
     final othersStatus = others.statusCode;
 
-    final ended = await http
-        .get(Uri.parse("https://www.acmicpc.net/contest/official/list"));
+    final ended = await http.get(
+        Uri.parse("https://www.acmicpc.net/contest/official/list"),
+        headers: {
+          'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36'
+        });
     dom.Document docEnded = parser.parse(ended.body);
     final endedStatus = ended.statusCode;
 
