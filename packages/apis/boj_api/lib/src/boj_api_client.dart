@@ -19,7 +19,15 @@ class BojApiClient {
   Future<List<Contest>> officialContestList() async {
     final contestRequest = Uri.https(_baseUrl, '/contest/official/list');
 
-    final contestResponse = await _httpClient.get(contestRequest);
+    final contestResponse = await http.get(
+      contestRequest,
+      headers: {
+        'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
+      },
+    );
+    print('officialContestList');
+    print(contestResponse.body);
 
     if (contestResponse.statusCode != 200) {
       throw ContestRequestFailed();
@@ -51,7 +59,15 @@ class BojApiClient {
   Future<(List<Contest>, List<Contest>)> otherContestList() async {
     final contestRequest = Uri.https(_baseUrl, '/contest/other/list');
 
-    final contestResponse = await _httpClient.get(contestRequest);
+    final contestResponse = await http.get(
+      contestRequest,
+      headers: {
+        'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
+      },
+    );
+    print('otherContestList');
+    print(contestResponse.body);
 
     if (contestResponse.statusCode != 200) {
       throw ContestRequestFailed();
