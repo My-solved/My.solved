@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:http/http.dart';
 import 'package:solved_api/solved_api.dart';
 
 class UserRequestFailed implements Exception {}
@@ -21,6 +22,7 @@ class SolvedApiClient {
       : _httpClient = httpClient ?? http.Client();
 
   static const String _baseUrl = 'solved.ac';
+  static const String _bypassUrl = 'codepoker.w8385.dev';
 
   final http.Client _httpClient;
 
@@ -28,9 +30,16 @@ class SolvedApiClient {
     final userRequest =
         Uri.https(_baseUrl, '/api/v3/user/show', {'handle': handle});
 
-    final userResponse = await _httpClient.get(userRequest);
+    http.Response userResponse;
 
-    if (userResponse.statusCode != 200) {
+    try {
+      userResponse = await _httpClient.get(userRequest);
+    } on ClientException {
+      final bypassRequest =
+          Uri.https(_bypassUrl, '/solved/user/show', {'handle': handle});
+
+      userResponse = await _httpClient.get(bypassRequest);
+    } catch (e) {
       throw UserRequestFailed();
     }
 
@@ -43,9 +52,16 @@ class SolvedApiClient {
     final userRequest =
         Uri.https(_baseUrl, '/api/v3/user/organizations', {'handle': handle});
 
-    final userResponse = await _httpClient.get(userRequest);
+    http.Response userResponse;
 
-    if (userResponse.statusCode != 200) {
+    try {
+      userResponse = await _httpClient.get(userRequest);
+    } on ClientException {
+      final bypassRequest = Uri.https(
+          _bypassUrl, '/solved/user/organizations', {'handle': handle});
+
+      userResponse = await _httpClient.get(bypassRequest);
+    } catch (e) {
       throw UserRequestFailed();
     }
 
@@ -61,9 +77,16 @@ class SolvedApiClient {
     final userRequest = Uri.https(
         _baseUrl, '/api/v3/user/available_badges', {'handle': handle});
 
-    final userResponse = await _httpClient.get(userRequest);
+    http.Response userResponse;
 
-    if (userResponse.statusCode != 200) {
+    try {
+      userResponse = await _httpClient.get(userRequest);
+    } on ClientException {
+      final bypassRequest = Uri.https(
+          _bypassUrl, '/solved/user/available_badges', {'handle': handle});
+
+      userResponse = await _httpClient.get(bypassRequest);
+    } catch (e) {
       throw UserRequestFailed();
     }
 
@@ -79,9 +102,16 @@ class SolvedApiClient {
     final userRequest = Uri.https(_baseUrl, '/api/v3/user/grass',
         {'handle': handle, 'topic': topic ?? 'default'});
 
-    final userResponse = await _httpClient.get(userRequest);
+    http.Response userResponse;
 
-    if (userResponse.statusCode != 200) {
+    try {
+      userResponse = await _httpClient.get(userRequest);
+    } on ClientException {
+      final bypassRequest = Uri.https(_bypassUrl, '/solved/user/grass',
+          {'handle': handle, 'topic': topic ?? 'default'});
+
+      userResponse = await _httpClient.get(bypassRequest);
+    } catch (e) {
       throw UserRequestFailed();
     }
 
@@ -94,9 +124,16 @@ class SolvedApiClient {
     final userRequest =
         Uri.https(_baseUrl, '/api/v3/user/top_100', {'handle': handle});
 
-    final userResponse = await _httpClient.get(userRequest);
+    http.Response userResponse;
 
-    if (userResponse.statusCode != 200) {
+    try {
+      userResponse = await _httpClient.get(userRequest);
+    } on ClientException {
+      final bypassRequest =
+          Uri.https(_bypassUrl, '/solved/user/top_100', {'handle': handle});
+
+      userResponse = await _httpClient.get(bypassRequest);
+    } catch (e) {
       throw UserRequestFailed();
     }
 
@@ -112,9 +149,16 @@ class SolvedApiClient {
     final userRequest =
         Uri.https(_baseUrl, '/api/v3/user/tag_ratings', {'handle': handle});
 
-    final userResponse = await _httpClient.get(userRequest);
+    http.Response userResponse;
 
-    if (userResponse.statusCode != 200) {
+    try {
+      userResponse = await _httpClient.get(userRequest);
+    } on ClientException {
+      final bypassRequest =
+          Uri.https(_bypassUrl, '/solved/user/tag_ratings', {'handle': handle});
+
+      userResponse = await _httpClient.get(bypassRequest);
+    } catch (e) {
       throw UserRequestFailed();
     }
 
@@ -128,9 +172,16 @@ class SolvedApiClient {
     final backgroundRequest = Uri.https(
         _baseUrl, '/api/v3/background/show', {'backgroundId': backgroundId});
 
-    final backgroundResponse = await _httpClient.get(backgroundRequest);
+    http.Response backgroundResponse;
 
-    if (backgroundResponse.statusCode != 200) {
+    try {
+      backgroundResponse = await _httpClient.get(backgroundRequest);
+    } on ClientException {
+      final bypassRequest = Uri.https(_bypassUrl, '/solved/background/show',
+          {'backgroundId': backgroundId});
+
+      backgroundResponse = await _httpClient.get(bypassRequest);
+    } catch (e) {
       throw BackgroundRequestFailed();
     }
 
@@ -143,9 +194,16 @@ class SolvedApiClient {
     final badgeRequest =
         Uri.https(_baseUrl, '/api/v3/badge/show', {'badgeId': badgeId});
 
-    final badgeResponse = await _httpClient.get(badgeRequest);
+    http.Response badgeResponse;
 
-    if (badgeResponse.statusCode != 200) {
+    try {
+      badgeResponse = await _httpClient.get(badgeRequest);
+    } on ClientException {
+      final bypassRequest =
+          Uri.https(_bypassUrl, '/solved/badge/show', {'badgeId': badgeId});
+
+      badgeResponse = await _httpClient.get(bypassRequest);
+    } catch (e) {
       throw BadgeRequestFailed();
     }
 
@@ -158,9 +216,16 @@ class SolvedApiClient {
     final searchRequest =
         Uri.https(_baseUrl, '/api/v3/search/suggestion', {'query': query});
 
-    final searchResponse = await _httpClient.get(searchRequest);
+    http.Response searchResponse;
 
-    if (searchResponse.statusCode != 200) {
+    try {
+      searchResponse = await _httpClient.get(searchRequest);
+    } on ClientException {
+      final bypassRequest =
+          Uri.https(_bypassUrl, '/solved/search/suggestion', {'query': query});
+
+      searchResponse = await _httpClient.get(bypassRequest);
+    } catch (e) {
       throw SearchRequestFailed();
     }
 
@@ -178,9 +243,20 @@ class SolvedApiClient {
       'direction': direction ?? 'descending',
     });
 
-    final searchResponse = await _httpClient.get(searchRequest);
+    http.Response searchResponse;
 
-    if (searchResponse.statusCode != 200) {
+    try {
+      searchResponse = await _httpClient.get(searchRequest);
+    } on ClientException {
+      final bypassRequest = Uri.https(_bypassUrl, '/solved/search/problem', {
+        'query': query,
+        'page': page?.toString() ?? '1',
+        'sort': sort ?? 'solved',
+        'direction': direction ?? 'descending',
+      });
+
+      searchResponse = await _httpClient.get(bypassRequest);
+    } catch (e) {
       throw SearchRequestFailed();
     }
 
@@ -197,9 +273,18 @@ class SolvedApiClient {
     final searchRequest = Uri.https(_baseUrl, '/api/v3/search/user',
         {'query': query, 'page': page?.toString() ?? '1'});
 
-    final searchResponse = await _httpClient.get(searchRequest);
+    http.Response searchResponse;
 
-    if (searchResponse.statusCode != 200) {
+    try {
+      searchResponse = await _httpClient.get(searchRequest);
+    } on ClientException {
+      final bypassRequest = Uri.https(_bypassUrl, '/solved/search/user', {
+        'query': query,
+        'page': page?.toString() ?? '1',
+      });
+
+      searchResponse = await _httpClient.get(bypassRequest);
+    } catch (e) {
       throw SearchRequestFailed();
     }
 
@@ -216,9 +301,18 @@ class SolvedApiClient {
     final searchRequest = Uri.https(_baseUrl, '/api/v3/search/tag',
         {'query': query, 'page': page?.toString() ?? '1'});
 
-    final searchResponse = await _httpClient.get(searchRequest);
+    http.Response searchResponse;
 
-    if (searchResponse.statusCode != 200) {
+    try {
+      searchResponse = await _httpClient.get(searchRequest);
+    } on ClientException {
+      final bypassRequest = Uri.https(_bypassUrl, '/solved/search/tag', {
+        'query': query,
+        'page': page?.toString() ?? '1',
+      });
+
+      searchResponse = await _httpClient.get(bypassRequest);
+    } catch (e) {
       throw SearchRequestFailed();
     }
 
@@ -234,9 +328,15 @@ class SolvedApiClient {
   Future<List<ArenaContest>> arenaContests() async {
     final arenaRequest = Uri.https(_baseUrl, '/api/v3/arena/contests');
 
-    final arenaResponse = await _httpClient.get(arenaRequest);
+    http.Response arenaResponse;
 
-    if (arenaResponse.statusCode != 200) {
+    try {
+      arenaResponse = await _httpClient.get(arenaRequest);
+    } on ClientException {
+      final bypassRequest = Uri.https(_bypassUrl, '/solved/arena/contests');
+
+      arenaResponse = await _httpClient.get(bypassRequest);
+    } catch (e) {
       throw ArenaRequestFailed();
     }
 
@@ -254,9 +354,15 @@ class SolvedApiClient {
   Future<SiteStats> siteStats() async {
     final siteRequest = Uri.https(_baseUrl, '/api/v3/site/stats');
 
-    final siteResponse = await _httpClient.get(siteRequest);
+    http.Response siteResponse;
 
-    if (siteResponse.statusCode != 200) {
+    try {
+      siteResponse = await _httpClient.get(siteRequest);
+    } on ClientException {
+      final bypassRequest = Uri.https(_bypassUrl, '/solved/site/stats');
+
+      siteResponse = await _httpClient.get(bypassRequest);
+    } catch (e) {
       throw SiteRequestFailed();
     }
 
