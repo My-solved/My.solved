@@ -18,33 +18,11 @@ void main() {
     });
 
     group('getContests', () {
-      test('calls officialContestList and otherContestList', () async {
+      test('gets contests', () async {
         try {
           await contestRepository.getContests();
         } catch (_) {}
-        verify(() {
-          bojApiClient.otherContestList();
-          bojApiClient.officialContestList();
-        }).called(1);
-      });
-
-      test('returns correct contests on success', () async {
-        final otherContests = (
-          [MockContest()],
-          [MockContest()],
-        );
-        when(() => bojApiClient.otherContestList())
-            .thenAnswer((_) async => otherContests);
-
-        final officialContests = [MockContest()];
-        when(() => bojApiClient.officialContestList())
-            .thenAnswer((_) async => officialContests);
-
-        expect(await contestRepository.getContests(), {
-          ContestType.ended: officialContests,
-          ContestType.upcoming: otherContests.$1,
-          ContestType.ongoing: otherContests.$2,
-        });
+        verify(() => bojApiClient.contests()).called(1);
       });
     });
   });
