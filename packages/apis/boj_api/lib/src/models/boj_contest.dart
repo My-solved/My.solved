@@ -20,7 +20,7 @@ class Contest {
         venue: json['venue'],
         name: json['name'],
         url: json['url'],
-        startTime: DateTime.parse(json['startDate']),
-        endTime: DateTime.parse(json['endDate']));
+        startTime: DateTime.parse(json['startTime']),
+        endTime: DateTime.parse(json['endTime']));
   }
 }
