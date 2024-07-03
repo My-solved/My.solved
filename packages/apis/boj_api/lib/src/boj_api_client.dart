@@ -25,15 +25,15 @@ class BojApiClient {
     }
 
     final contestJson = jsonDecode(contestResponse.body);
-    final ongoingList = contestJson['ongoingContests']
+    final ongoingList = contestJson['ongoing']
         .map((contest) => Contest.fromJson(contest))
         .toList()
         .cast<Contest>();
-    final upcomingList = contestJson['upcomingContests']
+    final upcomingList = contestJson['upcoming']
         .map((contest) => Contest.fromJson(contest))
         .toList()
         .cast<Contest>();
-    final endedList = contestJson['endedContests']
+    final endedList = contestJson['ended']
         .map((contest) => Contest.fromJson(contest))
         .toList()
         .cast<Contest>();
@@ -44,7 +44,6 @@ class BojApiClient {
       ContestType.ended: endedList
     };
 
-    print(contests);
     return contests;
   }
 }
