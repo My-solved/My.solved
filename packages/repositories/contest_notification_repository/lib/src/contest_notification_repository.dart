@@ -11,7 +11,6 @@ class ContestNotificationRepository {
 
   Future<void> setTestNotification() async {
     tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-    print(now);
     tz.TZDateTime target = tz.TZDateTime(
       tz.local,
       now.year,
@@ -20,7 +19,6 @@ class ContestNotificationRepository {
       now.hour,
       now.minute + 1,
     );
-    print(target);
 
     await _notificationApiClient.setInstanceNotification(
       id: 404,
