@@ -31,6 +31,7 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
     on<ContestSegmentedControlPressed>(_onSegmentedControlPressed);
     on<ContestNotificationButtonPressed>(_onNotificationPressed);
     on<ContestFilterTogglePressed>(_onFilterPressed);
+    on<ContentPushTestButtonPressed>(_onTestPressed);
   }
 
   final ContestNotificationRepository _contestNotificationRepository;
@@ -125,5 +126,12 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
     final current = filters[event.venue] ?? true;
     current ? filters[event.venue] = false : filters[event.venue] = true;
     emit(state.copyWith(status: ContestStatus.success, filters: filters));
+  }
+
+  Future<void> _onTestPressed(
+    ContentPushTestButtonPressed event,
+    Emitter<ContestState> emit,
+  ) async {
+    await _contestNotificationRepository.setTestNotification();
   }
 }

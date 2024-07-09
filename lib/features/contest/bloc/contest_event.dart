@@ -22,3 +22,5 @@ class ContestFilterTogglePressed extends ContestEvent {
 
   ContestFilterTogglePressed({required this.venue});
 }
+
+class ContentPushTestButtonPressed extends ContestEvent {}

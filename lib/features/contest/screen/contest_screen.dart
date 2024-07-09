@@ -46,6 +46,12 @@ class ContestScreen extends StatelessWidget {
               },
               icon: Icon(Icons.filter_list),
             ),
+            IconButton(
+              onPressed: () => context
+                  .read<ContestBloc>()
+                  .add(ContentPushTestButtonPressed()),
+              icon: Icon(Icons.question_mark),
+            ),
           ],
           leadingWidth: 320,
         ),
