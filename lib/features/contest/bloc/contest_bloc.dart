@@ -70,15 +70,14 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
     Emitter<ContestState> emit,
   ) async {
     emit(state.copyWith(status: ContestStatus.loading));
-    final contest = state.upcomingContests[event.index];
+
+    final contest = state.filteredUpcomingContests[event.index];
     List<bool> isOnNotifications = state.isOnNotificationUpcomingContests;
     final isOn = await _sharedPreferencesRepository.getIsOnContestNotification(
-        title: contest.name);
+      title: contest.name,
+    );
     final minute =
         await _sharedPreferencesRepository.getContestNotificationMinute();
-
-    print(contest);
-    print(event.index);
 
     if (isOn) {
       await _contestNotificationRepository.cancelContestNotification(

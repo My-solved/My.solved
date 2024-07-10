@@ -5,30 +5,6 @@ class NotificationApiClient {
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
   FlutterLocalNotificationsPlugin();
 
-  Future<void> showNotification({
-    required int id,
-    required String title,
-    required String content,
-  }) async {
-    await _flutterLocalNotificationsPlugin.cancel(id);
-    NotificationDetails details = const NotificationDetails(
-      android: AndroidNotificationDetails(
-        'my_solved.notification_channel',
-        'my_solved',
-        importance: Importance.max,
-        priority: Priority.max,
-        showWhen: false,
-      ),
-      iOS: DarwinNotificationDetails(
-        presentAlert: true,
-        presentBadge: true,
-        presentSound: true,
-      ),
-    );
-
-    await _flutterLocalNotificationsPlugin.show(id, title, content, details);
-  }
-
   Future<void> setScheduledNotification({
     required int id,
     required int hour,
