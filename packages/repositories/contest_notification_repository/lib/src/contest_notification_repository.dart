@@ -33,16 +33,18 @@ class ContestNotificationRepository {
     required DateTime startTime,
     required int beforeMinute,
   }) async {
+    tz.TZDateTime target = tz.TZDateTime(
+      tz.local,
+      startTime.year,
+      startTime.month,
+      startTime.day,
+      startTime.hour,
+      startTime.minute - beforeMinute,
+    );
+
     await _notificationApiClient.setInstanceNotification(
       id: title.hashCode,
-      dateTime: tz.TZDateTime(
-        tz.local,
-        startTime.year,
-        startTime.month,
-        startTime.day,
-        startTime.hour,
-        startTime.minute - beforeMinute,
-      ),
+      dateTime: target,
       title: "$beforeMinute분 뒤 대회 시작!",
       content: title,
     );
