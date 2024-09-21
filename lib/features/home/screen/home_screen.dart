@@ -7,6 +7,7 @@ import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
 import 'package:my_solved/features/home/bloc/home_bloc.dart';
 import 'package:solved_api/solved_api.dart' as solved_api;
+import 'package:url_launcher/url_launcher_string.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key, required this.scaffoldKey});
@@ -269,12 +270,24 @@ class _HomeViewState extends State<HomeView> {
       child: Wrap(
         children: List.generate(
           organizations.length,
-          (index) => Text(
-            index != organizations.length - 1
-                ? "${organizations[index].name}, "
-                : organizations[index].name,
-            style: MySolvedTextStyle.body2.copyWith(
-              color: MySolvedColor.secondaryFont,
+          (index) => TextButton(
+            onPressed: () async {
+              String urlString =
+                  "https://solved.ac/ranking/o/${organizations[index].organizationId}";
+              launchUrlString(urlString);
+            },
+            style: TextButton.styleFrom(
+              minimumSize: Size.zero,
+              padding: EdgeInsets.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(
+              index != organizations.length - 1
+                  ? "${organizations[index].name}, "
+                  : organizations[index].name,
+              style: MySolvedTextStyle.body2.copyWith(
+                color: MySolvedColor.secondaryFont,
+              ),
             ),
           ),
         ),
