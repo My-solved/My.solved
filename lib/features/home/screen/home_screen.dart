@@ -368,15 +368,27 @@ class _HomeViewState extends State<HomeView> {
       child: Row(
         children: [
           if (badge != null)
-            ExtendedImage.network(
+            IconButton(
+              onPressed: () async {
+                String urlString = "https://solved.ac/badges/${badge.badgeId}";
+                launchUrlString(urlString);
+              },
+              icon: ExtendedImage.network(
+                width: 40,
+                height: 40,
+                badge.badgeImageUrl,
+              ),
+            ),
+          IconButton(
+            onPressed: () async {
+              String urlString = "https://solved.ac/class?class=$classText";
+              launchUrlString(urlString);
+            },
+            icon: SvgPicture.asset(
               width: 40,
               height: 40,
-              badge.badgeImageUrl,
+              "assets/images/classes/c$classText.svg",
             ),
-          SvgPicture.asset(
-            width: 40,
-            height: 40,
-            "assets/images/classes/c$classText.svg",
           ),
         ],
       ),
