@@ -134,9 +134,8 @@ jobs:
           git init
           git config --global user.name "w8385"
           git config --global user.email "w8385@naver.com"
-          git config --global init.defaultBranch main
           git remote add origin git@github.com:My-solved/My-solved.github.io.git
+          git push --set-upstream origin main
           git add .
           git commit -m "pages update"
-          git push --set-upstream origin main
           git push
