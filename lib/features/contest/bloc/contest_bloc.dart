@@ -119,7 +119,9 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
   void _onFilterPressed(
     ContestFilterTogglePressed event,
     Emitter<ContestState> emit,
-  ) {
+  ) async {
+    emit(state.copyWith(status: ContestStatus.loading));
+
     var filters = state.filters;
     final current = filters[event.venue] ?? true;
     current ? filters[event.venue] = false : filters[event.venue] = true;
