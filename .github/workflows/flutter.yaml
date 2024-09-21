@@ -85,7 +85,23 @@ jobs:
           flutter pub get
           flutter analyze
 
-      - name: Deploy to github.io 🚀
+  build:
+    name: Build Flutter 🛠️
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Java ☕
+        uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: ${{ env.JAVA_VERSION }}
+      - name: Setup Flutter 🐦
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Build Web 🌐
         run: |
           flutter pub get
           flutter build web --release --web-renderer html
@@ -93,6 +109,7 @@ jobs:
           git init
           git config --global user.name "w8385"
           git config --global user.email "w8385@naver.com"
+          git remote add origin git@github.com:My-solved/My-solved.github.io.git
           git add .
           git commit -m "pages update"
           git push
