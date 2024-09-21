@@ -10,7 +10,7 @@ on:
 
 env:
   JAVA_VERSION: "21.x"
-  FLUTTER_VERSION: "3.24.3"
+  FLUTTER_VERSION: "3.19.3"
 
 jobs:
   analyze:
