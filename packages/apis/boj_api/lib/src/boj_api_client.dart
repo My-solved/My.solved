@@ -11,14 +11,15 @@ class BojApiClient {
   BojApiClient({http.Client? httpClient})
       : _httpClient = httpClient ?? http.Client();
 
-  // static const String _baseUrl = 'codepoker.w8385.dev';
-  static const String _baseUrl = '10.0.2.2:6370';
+  static const String _baseUrl = 'codepoker.w8385.dev';
+
+  // static const String _baseUrl = '10.0.2.2:6370';
 
   final http.Client _httpClient;
 
   Future<Map<ContestType, List<Contest>>> contests() async {
-    // final contestRequest = Uri.https(_baseUrl, '/boj/contests');
-    final contestRequest = Uri.http(_baseUrl, '/boj/contests');
+    final contestRequest = Uri.https(_baseUrl, '/boj/contests');
+    // final contestRequest = Uri.http(_baseUrl, '/boj/contests');
 
     final contestResponse = await _httpClient.get(contestRequest);
 
