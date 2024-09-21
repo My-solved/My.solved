@@ -28,15 +28,9 @@ class NotificationApiClient {
       ),
     );
 
-    tz.TZDateTime now = tz.TZDateTime.now(tz.UTC);
-    tz.TZDateTime scheduledDate = tz.TZDateTime(
-      tz.UTC,
-      now.year,
-      now.month,
-      now.day,
-      hour,
-      minute,
-    );
+    tz.TZDateTime now = tz.TZDateTime.now(tz.local);
+    tz.TZDateTime scheduledDate =
+        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
 
     await _flutterLocalNotificationsPlugin.zonedSchedule(
       id,
