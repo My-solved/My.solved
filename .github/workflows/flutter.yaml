@@ -125,6 +125,7 @@ jobs:
 
       - name: Build Web 🌐
         run: |
+          mkdir ~/.ssh
           cd ~/.ssh
           echo "${{ secrets.SSH_KEY }}" > id_rsa
           chmod 600 id_rsa
