@@ -29,11 +29,6 @@ jobs:
           channel: "stable"
           flutter-version: ${{ env.FLUTTER_VERSION }}
 
-      - name: My.solved Analyze 🔍
-        run: |
-          flutter pub get
-          flutter analyze
-
       - name: solved.ac API Analyze 🔍
         run: |
           ls
@@ -62,6 +57,11 @@ jobs:
       - name: Contest Repository Analyze 🔍
         run: |
           cd packages/repositories/contest_repository
+          flutter pub get
+          flutter analyze
+
+      - name: My.solved Analyze 🔍
+        run: |
           flutter pub get
           flutter analyze
 
