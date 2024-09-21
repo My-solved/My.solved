@@ -88,6 +88,7 @@ jobs:
   build:
     name: Build Flutter 🛠️
     runs-on: ubuntu-latest
+    needs: [ analyze ]
     steps:
       - uses: actions/checkout@v4
       - name: Setup Java ☕
@@ -109,7 +110,8 @@ jobs:
           git init
           git config --global user.name "w8385"
           git config --global user.email "w8385@naver.com"
+          git config --global init.defaultBranch main
           git remote add origin git@github.com:My-solved/My-solved.github.io.git
           git add .
           git commit -m "pages update"
-          git push
+          git push --set-upstream origin master
