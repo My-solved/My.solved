@@ -160,7 +160,7 @@ class _ContestViewState extends State<ContestView> {
                             ),
                             SizedBox(height: 4),
                             Text(
-                              '일정: ${contests[index].startTime.month}월 ${contests[index].startTime.day}일 ${contests[index].startTime.hour}:${contests[index].startTime.minute.toString().padLeft(2, '0')} ~ ${contests[index].endTime.month}월 ${contests[index].endTime.day}일 ${contests[index].endTime.hour}:${contests[index].endTime.minute.toString().padLeft(2, '0')}',
+                              '일정: ${contests[index].startTime.toLocal().month}월 ${contests[index].startTime.toLocal().day}일 ${contests[index].startTime.toLocal().hour}:${contests[index].startTime.toLocal().minute.toString().padLeft(2, '0')} ~ ${contests[index].endTime.toLocal().month}월 ${contests[index].endTime.toLocal().day}일 ${contests[index].endTime.toLocal().hour}:${contests[index].endTime.toLocal().minute.toString().padLeft(2, '0')}',
                               style: MySolvedTextStyle.body2.copyWith(
                                 color: MySolvedColor.secondaryFont,
                               ),
