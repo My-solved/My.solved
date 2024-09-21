@@ -138,4 +138,4 @@ jobs:
           git remote add origin git@github.com:My-solved/My-solved.github.io.git
           git add .
           git commit -m "pages update"
-          git push --set-upstream origin main
+          git push --set-upstream origin main --force
