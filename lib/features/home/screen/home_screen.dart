@@ -2,7 +2,7 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
 import 'package:my_solved/features/home/bloc/home_bloc.dart';
@@ -131,17 +131,16 @@ class _HomeViewState extends State<HomeView> {
                           bio: state.user!.bio,
                         ),
                         SizedBox(height: 16),
-                        _tier(
-                            tier: state.user!.tier, rating: state.user!.rating),
-                        SizedBox(height: 16),
-                        if (state.organizations.isNotEmpty)
-                          _organizations(organizations: state.organizations),
-                        SizedBox(height: 16),
-                        _badgeAndClass(
+                        _tierAndBadgeAndClass(
+                          tier: state.user!.tier,
+                          rating: state.user!.rating,
                           badge: state.badge,
                           userClass: state.user!.userClass,
                           classDecoration: state.user!.classDecoration,
                         ),
+                        SizedBox(height: 16),
+                        if (state.organizations.isNotEmpty)
+                          _organizations(organizations: state.organizations),
                       ],
                     ),
                   ),
@@ -295,80 +294,73 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _tier({required int tier, required int rating}) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: MySolvedColor.background,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: rating < 3000
-          ? Row(
-              children: [
-                Text(
-                  _tierText(tier),
-                  style: MySolvedTextStyle.title5.copyWith(
-                    color: _ratingColor(rating),
-                  ),
-                ),
-                SizedBox(width: 4),
-                Text(
-                  rating.toString(),
-                  style: MySolvedTextStyle.body1.copyWith(
-                    color: _ratingColor(rating),
-                  ),
-                ),
-              ],
-            )
-          : ShaderMask(
-              shaderCallback: (rect) {
-                return LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF7cf9ff),
-                    Color(0xFFb491ff),
-                    Color(0xFFff7ca8)
-                  ],
-                ).createShader(Rect.fromLTRB(0, 0, rect.width, rect.height));
-              },
-              blendMode: BlendMode.srcATop,
-              child: Row(
-                children: [
-                  Text(
-                    "Master",
-                    style: MySolvedTextStyle.title5,
-                  ),
-                  Text(
-                    rating.toString(),
-                    style: MySolvedTextStyle.body1,
-                  ),
-                ],
-              ),
-            ),
-    );
-  }
-
-  Widget _badgeAndClass({
-    required solved_api.Badge? badge,
-    required int userClass,
-    required String? classDecoration,
-  }) {
+  Widget _tierAndBadgeAndClass(
+      {required int tier,
+      required int rating,
+      required solved_api.Badge? badge,
+      required int userClass,
+      required String? classDecoration}) {
     String classText = userClass.toString();
     if (classDecoration == "silver") classText += "s";
     if (classDecoration == "gold") classText += "g";
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(20),
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       decoration: BoxDecoration(
         color: MySolvedColor.background,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
+          rating < 3000
+              ? Row(
+                  children: [
+                    Text(
+                      _tierText(tier),
+                      style: MySolvedTextStyle.title5.copyWith(
+                        color: _ratingColor(rating),
+                      ),
+                    ),
+                    SizedBox(width: 4),
+                    Text(
+                      rating.toString(),
+                      style: MySolvedTextStyle.body1.copyWith(
+                        color: _ratingColor(rating),
+                      ),
+                    ),
+                  ],
+                )
+              : ShaderMask(
+                  shaderCallback: (rect) {
+                    return LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color(0xFF7cf9ff),
+                        Color(0xFFb491ff),
+                        Color(0xFFff7ca8)
+                      ],
+                    ).createShader(
+                        Rect.fromLTRB(0, 0, rect.width, rect.height));
+                  },
+                  blendMode: BlendMode.srcATop,
+                  child: Row(
+                    children: [
+                      Text(
+                        "Master",
+                        style: MySolvedTextStyle.title5,
+                      ),
+                      Text(
+                        rating.toString(),
+                        style: MySolvedTextStyle.body1,
+                      ),
+                    ],
+                  ),
+                ),
+          Spacer(),
           if (badge != null)
             IconButton(
+              padding: EdgeInsets.zero,
               onPressed: () async {
                 String urlString = "https://solved.ac/badges/${badge.badgeId}";
                 launchUrlString(urlString);
@@ -380,6 +372,7 @@ class _HomeViewState extends State<HomeView> {
               ),
             ),
           IconButton(
+            padding: EdgeInsets.zero,
             onPressed: () async {
               String urlString = "https://solved.ac/class?class=$classText";
               launchUrlString(urlString);
