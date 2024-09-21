@@ -3,7 +3,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 class NotificationApiClient {
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
-  FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
 
   Future<void> setScheduledNotification({
     required int id,
@@ -28,8 +28,15 @@ class NotificationApiClient {
       ),
     );
 
-    tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-    tz.TZDateTime scheduledDate = tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute,);
+    tz.TZDateTime now = tz.TZDateTime.now(tz.UTC);
+    tz.TZDateTime scheduledDate = tz.TZDateTime(
+      tz.UTC,
+      now.year,
+      now.month,
+      now.day,
+      hour,
+      minute,
+    );
 
     await _flutterLocalNotificationsPlugin.zonedSchedule(
       id,
@@ -67,7 +74,7 @@ class NotificationApiClient {
     );
 
     tz.TZDateTime tzDateTime = tz.TZDateTime(
-      tz.local,
+      tz.UTC,
       dateTime.year,
       dateTime.month,
       dateTime.day,
@@ -81,7 +88,8 @@ class NotificationApiClient {
       content,
       tzDateTime,
       details,
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.dateAndTime,
       androidAllowWhileIdle: true,
     );

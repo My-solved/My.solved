@@ -15,14 +15,13 @@ class ContestNotificationRepository {
     required int beforeMinute,
   }) async {
     tz.TZDateTime target = tz.TZDateTime(
-        tz.local,
-        startTime.year,
-        startTime.month,
-        startTime.day,
-        startTime.hour,
-        startTime.minute - beforeMinute,
-        startTime.second,
-        tz.local.currentTimeZone.offset);
+      tz.UTC,
+      startTime.year,
+      startTime.month,
+      startTime.day,
+      startTime.hour,
+      startTime.minute - beforeMinute,
+    );
 
     await _notificationApiClient.setInstanceNotification(
       id: target.hashCode ^ title.hashCode,
