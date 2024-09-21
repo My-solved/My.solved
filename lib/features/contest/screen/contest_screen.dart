@@ -1,4 +1,5 @@
 import 'package:boj_api/boj_api.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_solved/components/atoms/button/button.dart';
@@ -169,23 +170,71 @@ class _ContestViewState extends State<ContestView> {
                               Column(
                                 children: [
                                   SizedBox(height: 8),
-                                  MySolvedFitButton(
-                                    onPressed: () => context
-                                        .read<ContestBloc>()
-                                        .add(ContestNotificationButtonPressed(
-                                          index: index,
-                                        )),
-                                    buttonStyle:
-                                        state.isOnNotificationUpcomingContests[
-                                                index]
-                                            ? MySolvedButtonStyle.secondary
-                                            : MySolvedButtonStyle.primary,
-                                    text:
-                                        state.isOnNotificationUpcomingContests[
-                                                index]
-                                            ? "알림 취소하기"
-                                            : "알림 설정하기",
-                                  ),
+                                  Row(
+                                    children: [
+                                      MySolvedFitButton(
+                                        onPressed: () => context
+                                            .read<ContestBloc>()
+                                            .add(
+                                                ContestNotificationButtonPressed(
+                                              index: index,
+                                            )),
+                                        buttonStyle:
+                                            state.isOnNotificationUpcomingContests[
+                                                    index]
+                                                ? MySolvedButtonStyle.secondary
+                                                : MySolvedButtonStyle.primary,
+                                        text:
+                                            state.isOnNotificationUpcomingContests[
+                                                    index]
+                                                ? "알림 취소하기"
+                                                : "알림 설정하기",
+                                      ),
+                                      Spacer(),
+                                      if (contests[index].badge != null)
+                                        ElevatedButton(
+                                          onPressed: () {},
+                                          style: ElevatedButton.styleFrom(
+                                            elevation: 0,
+                                            minimumSize: Size.zero,
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: 8, horizontal: 12),
+                                            foregroundColor: Color(0xFFfab005),
+                                          ),
+                                          child: Tooltip(
+                                            triggerMode: TooltipTriggerMode.tap,
+                                            message: contests[index].badge,
+                                            child: Text(
+                                              '🏅',
+                                              style: MySolvedTextStyle.caption1,
+                                            ),
+                                          ),
+                                        ),
+                                      if (contests[index].background != null)
+                                        ElevatedButton(
+                                          onPressed: () {},
+                                          style: ElevatedButton.styleFrom(
+                                            elevation: 0,
+                                            minimumSize: Size.zero,
+                                            padding: EdgeInsets.symmetric(
+                                                vertical: 8, horizontal: 12),
+                                            foregroundColor: Color(0xFFb197fc),
+                                          ),
+                                          child: Tooltip(
+                                            triggerMode: TooltipTriggerMode.tap,
+                                            message: contests[index].background,
+                                            child: Text(
+                                              '🖼️',
+                                              style: MySolvedTextStyle.caption1,
+                                            ),
+                                          ),
+                                        ),
+                                      ExtendedImage.asset(
+                                        "assets/images/venues/${contests[index].venue?.toLowerCase() ?? "etc"}.png",
+                                        width: 30,
+                                      ),
+                                    ],
+                                  )
                                 ],
                               ),
                           ],

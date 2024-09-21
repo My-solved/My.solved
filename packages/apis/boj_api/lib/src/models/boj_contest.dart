@@ -6,13 +6,17 @@ class Contest {
   final String? url;
   final DateTime startTime;
   final DateTime endTime;
+  final String? badge;
+  final String? background;
 
   const Contest({
-    required this.venue,
+    this.venue,
     required this.name,
-    required this.url,
+    this.url,
     required this.startTime,
     required this.endTime,
+    this.badge,
+    this.background,
   });
 
   factory Contest.fromJson(Map<String, dynamic> json) {
@@ -21,6 +25,8 @@ class Contest {
         name: json['name'],
         url: json['url'],
         startTime: DateTime.parse(json['startTime']),
-        endTime: DateTime.parse(json['endTime']));
+        endTime: DateTime.parse(json['endTime']),
+        badge: json['badge'],
+        background: json['background']);
   }
 }
