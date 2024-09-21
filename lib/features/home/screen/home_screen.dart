@@ -79,16 +79,30 @@ class _HomeViewState extends State<HomeView> {
               title: "문제 해결",
               value: state.user!.solvedCount.toString(),
               unit: "개",
+              onPressed: () async {
+                String urlString =
+                    "https://solved.ac/profile/${state.handle}/solved";
+                launchUrlString(urlString);
+              },
             ),
             GridItem(
               title: "문제 기여",
               value: state.user!.voteCount.toString(),
               unit: "개",
+              onPressed: () async {
+                String urlString =
+                    "https://solved.ac/profile/${state.handle}/votes";
+                launchUrlString(urlString);
+              },
             ),
             GridItem(
               title: "라이벌",
               value: state.user!.reverseRivalCount.toString(),
               unit: "명",
+              onPressed: () async {
+                String urlString = "https://solved.ac/ranking/reverse_rival";
+                launchUrlString(urlString);
+              },
             ),
             GridItem(
               title: "스트릭(최대)",
@@ -389,64 +403,70 @@ class _HomeViewState extends State<HomeView> {
   }
 
   Widget _gridItem({required GridItem item}) {
-    return Container(
-      padding: EdgeInsets.only(top: 20, left: 16, right: 16, bottom: 20),
-      decoration: BoxDecoration(
-        color: item.backgroundColor,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            item.title,
-            style: MySolvedTextStyle.body2.copyWith(
-              color: item.foregroundColor,
-            ),
+    return OutlinedButton(
+        style: OutlinedButton.styleFrom(
+          backgroundColor: item.backgroundColor,
+          padding: EdgeInsets.only(top: 20, left: 16, right: 16, bottom: 20),
+          side: BorderSide(
+            color: MySolvedColor.background,
+            width: 0,
           ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              if (item.isPrefixUnit)
-                Column(
-                  children: [
-                    Text(
-                      item.unit,
-                      style: MySolvedTextStyle.body1.copyWith(
-                        color: item.foregroundColor,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                  ],
-                ),
-              if (item.isPrefixUnit) SizedBox(width: 2),
-              Text(
-                item.value,
-                style: MySolvedTextStyle.title1.copyWith(
-                  fontSize: 24,
-                  color: item.foregroundColor,
-                ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        onPressed: item.onPressed,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              item.title,
+              style: MySolvedTextStyle.body2.copyWith(
+                color: item.foregroundColor,
               ),
-              if (!item.isPrefixUnit) SizedBox(width: 2),
-              if (!item.isPrefixUnit)
-                Column(
-                  children: [
-                    Text(
-                      item.unit,
-                      style: MySolvedTextStyle.body1.copyWith(
-                        color: item.foregroundColor,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (item.isPrefixUnit)
+                  Column(
+                    children: [
+                      Text(
+                        item.unit,
+                        style: MySolvedTextStyle.body1.copyWith(
+                          color: item.foregroundColor,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 4),
-                  ],
+                      SizedBox(height: 4),
+                    ],
+                  ),
+                if (item.isPrefixUnit) SizedBox(width: 2),
+                Text(
+                  item.value,
+                  style: MySolvedTextStyle.title1.copyWith(
+                    fontSize: 24,
+                    color: item.foregroundColor,
+                  ),
                 ),
-            ],
-          ),
-        ],
-      ),
-    );
+                if (!item.isPrefixUnit) SizedBox(width: 2),
+                if (!item.isPrefixUnit)
+                  Column(
+                    children: [
+                      Text(
+                        item.unit,
+                        style: MySolvedTextStyle.body1.copyWith(
+                          color: item.foregroundColor,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                    ],
+                  ),
+              ],
+            ),
+          ],
+        ));
   }
 
   Color _ratingColor(int rating) {
@@ -552,6 +572,7 @@ class GridItem {
   bool isPrefixUnit;
   Color foregroundColor;
   Color backgroundColor;
+  VoidCallback? onPressed;
 
   GridItem({
     required this.title,
@@ -560,5 +581,6 @@ class GridItem {
     this.isPrefixUnit = false,
     this.foregroundColor = MySolvedColor.font,
     this.backgroundColor = MySolvedColor.background,
+    this.onPressed,
   });
 }
