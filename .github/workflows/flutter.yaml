@@ -88,7 +88,7 @@ jobs:
       - name: Deploy to github.io 🚀
         run: |
           flutter pub get
-          flutter build web
+          flutter build web --release --web-renderer html
           cd build/web
           git init
           git config --global user.name "w8385"
