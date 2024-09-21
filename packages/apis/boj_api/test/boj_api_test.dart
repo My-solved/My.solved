@@ -22,5 +22,23 @@ void main() {
       httpClient = MockHttpClient();
       apiClient = BojApiClient(httpClient: httpClient);
     });
+
+    group('contests', () {
+      test('returns contests', () async {
+        final response = MockResponse();
+        when(() => response.statusCode).thenReturn(200);
+        when(() => response.body)
+            .thenReturn('{"ongoing":[],"upcoming":[],"ended":[]}');
+        when(() => httpClient.get(any())).thenAnswer((_) async => response);
+
+        final contests = await apiClient.contests();
+
+        expect(contests, {
+          ContestType.ongoing: [],
+          ContestType.upcoming: [],
+          ContestType.ended: [],
+        });
+      });
+    });
   });
 }
