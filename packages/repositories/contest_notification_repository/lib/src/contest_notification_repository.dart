@@ -9,25 +9,6 @@ class ContestNotificationRepository {
 
   final NotificationApiClient _notificationApiClient;
 
-  Future<void> setTestNotification() async {
-    tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-    tz.TZDateTime target = tz.TZDateTime(
-      tz.local,
-      now.year,
-      now.month,
-      now.day,
-      now.hour,
-      now.minute + 1,
-    );
-
-    await _notificationApiClient.setInstanceNotification(
-      id: 404,
-      dateTime: target,
-      title: "대회 테스트",
-      content: "특정 날짜 푸시 알림 테스트",
-    );
-  }
-
   Future<void> setContestNotification({
     required String title,
     required DateTime startTime,
