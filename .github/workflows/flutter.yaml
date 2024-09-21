@@ -126,10 +126,8 @@ jobs:
       - name: Build Web 🌐
         run: |
           mkdir ~/.ssh
-          cd ~/.ssh
-          echo "${{ secrets.SSH_KEY }}" > id_rsa
-          chmod 600 id_rsa
-          cd -
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
           flutter pub get
           flutter build web --release --web-renderer html
           cd build/web
