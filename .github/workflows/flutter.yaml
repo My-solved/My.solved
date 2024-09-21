@@ -29,38 +29,38 @@ jobs:
           channel: "stable"
           flutter-version: ${{ env.FLUTTER_VERSION }}
 
-      - name: solved.ac API Analyze 🔍
+      - name: Analyze solved.ac API  🔍
         run: |
           ls
           cd packages/apis/solved_api
           flutter pub get
           flutter analyze
 
-      - name: BOJ API Analyze 🔍
+      - name: Analyze BOJ API  🔍
         run: |
           cd packages/apis/boj_api
           flutter pub get
           flutter analyze
 
-      - name: User Repository Analyze 🔍
+      - name: Analyze User Repository  🔍
         run: |
           cd packages/repositories/user_repository
           flutter pub get
           flutter analyze
 
-      - name: Search Repository Analyze 🔍
+      - name: Analyze Search Repository  🔍
         run: |
           cd packages/repositories/search_repository
           flutter pub get
           flutter analyze
 
-      - name: Contest Repository Analyze 🔍
+      - name: Analyze Contest Repository  🔍
         run: |
           cd packages/repositories/contest_repository
           flutter pub get
           flutter analyze
 
-      - name: My.solved Analyze 🔍
+      - name: Analyze My.solved  🔍
         run: |
           flutter pub get
           flutter analyze
@@ -81,27 +81,27 @@ jobs:
           channel: "stable"
           flutter-version: ${{ env.FLUTTER_VERSION }}
 
-      - name: solved.ac API Test 🛰️
+      - name: Test solved.ac API  🛰️
         run: |
           cd packages/apis/solved_api
           flutter test
 
-      - name: BOJ API Test 🛰️
+      - name: Test BOJ API  🛰️
         run: |
           cd packages/apis/boj_api
           flutter test
 
-      - name: User Repository Test 🛰️
+      - name: Test User Repository  🛰️
         run: |
           cd packages/repositories/user_repository
           flutter test
 
-      - name: Search Repository Test 🛰️
+      - name: Test Search Repository  🛰️
         run: |
           cd packages/repositories/search_repository
           flutter test
 
-      - name: Contest Repository Test 🛰️
+      - name: Test Contest Repository  🛰️
         run: |
           cd packages/repositories/contest_repository
           flutter test
@@ -138,4 +138,4 @@ jobs:
           git remote add origin git@github.com:My-solved/My-solved.github.io.git
           git add .
           git commit -m "pages update"
-          git push --set-upstream origin master
+          git push --set-upstream origin main
