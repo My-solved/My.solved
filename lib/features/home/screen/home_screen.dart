@@ -79,7 +79,7 @@ class _HomeViewState extends State<HomeView> {
               title: "문제 해결",
               value: state.user!.solvedCount.toString(),
               unit: "개",
-              onPressed: () async {
+              onLongPress: () async {
                 String urlString =
                     "https://solved.ac/profile/${state.handle}/solved";
                 launchUrlString(urlString);
@@ -89,7 +89,7 @@ class _HomeViewState extends State<HomeView> {
               title: "문제 기여",
               value: state.user!.voteCount.toString(),
               unit: "개",
-              onPressed: () async {
+              onLongPress: () async {
                 String urlString =
                     "https://solved.ac/profile/${state.handle}/votes";
                 launchUrlString(urlString);
@@ -99,7 +99,7 @@ class _HomeViewState extends State<HomeView> {
               title: "라이벌",
               value: state.user!.reverseRivalCount.toString(),
               unit: "명",
-              onPressed: () async {
+              onLongPress: () async {
                 String urlString = "https://solved.ac/ranking/reverse_rival";
                 launchUrlString(urlString);
               },
@@ -416,6 +416,7 @@ class _HomeViewState extends State<HomeView> {
           ),
         ),
         onPressed: item.onPressed,
+        onLongPress: item.onLongPress,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -573,6 +574,7 @@ class GridItem {
   Color foregroundColor;
   Color backgroundColor;
   VoidCallback? onPressed;
+  VoidCallback? onLongPress;
 
   GridItem({
     required this.title,
@@ -582,5 +584,6 @@ class GridItem {
     this.foregroundColor = MySolvedColor.font,
     this.backgroundColor = MySolvedColor.background,
     this.onPressed,
+    this.onLongPress,
   });
 }
