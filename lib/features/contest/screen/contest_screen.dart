@@ -219,6 +219,7 @@ class _ContestViewState extends State<ContestView> {
                                   ),
                                 ExtendedImage.asset(
                                   "assets/images/venues/${contests[index].venue?.toLowerCase() ?? "etc"}.png",
+                                  height: 30,
                                   width: 30,
                                 ),
                               ],
