@@ -223,7 +223,12 @@ class _ContestViewState extends State<ContestView> {
                                   width: 30,
                                 ),
                               ],
-                            )
+                            ),
+                            if (state.currentIndex == 0) SizedBox(height: 8),
+                            if (state.currentIndex == 0)
+                              ProgressIndicator(
+                                  contests[index].startTime.toLocal(),
+                                  contests[index].endTime.toLocal()),
                           ],
                         ),
                       ),
@@ -254,5 +259,52 @@ class _ContestViewState extends State<ContestView> {
       default:
         return state.filteredEndedContests;
     }
+  }
+}
+
+class ProgressIndicator extends StatefulWidget {
+  final DateTime startTime;
+  final DateTime endTime;
+
+  const ProgressIndicator(this.startTime, this.endTime, {super.key});
+
+  @override
+  State<ProgressIndicator> createState() => _ProgressIndicatorState();
+}
+
+class _ProgressIndicatorState extends State<ProgressIndicator>
+    with TickerProviderStateMixin {
+  late AnimationController controller;
+
+  DateTime get startTime => widget.startTime;
+
+  DateTime get endTime => widget.endTime;
+
+  @override
+  void initState() {
+    controller = AnimationController(
+        vsync: this,
+        duration: endTime.difference(startTime),
+        value: DateTime.now().difference(startTime).inSeconds /
+            endTime.difference(startTime).inSeconds)
+      ..addListener(() {
+        setState(() {});
+      });
+    controller.forward();
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LinearProgressIndicator(
+      value: controller.value,
+      valueColor: AlwaysStoppedAnimation(MySolvedColor.main),
+    );
   }
 }
