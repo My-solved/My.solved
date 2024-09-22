@@ -124,14 +124,12 @@ class _ContestViewState extends State<ContestView> {
                   (index) => Column(
                     children: [
                       ElevatedButton(
-                        onPressed: state.currentIndex == 2
-                            ? null
-                            : () async {
-                                final urlString = contests[index].url;
-                                if (urlString != null) {
-                                  launchUrlString(urlString);
-                                }
-                              },
+                        onPressed: () async {
+                          final urlString = contests[index].url;
+                          if (urlString != null) {
+                            launchUrlString(urlString);
+                          }
+                        },
                         style: ElevatedButton.styleFrom(
                           minimumSize: Size.fromHeight(128),
                           padding: EdgeInsets.all(16),
@@ -152,91 +150,79 @@ class _ContestViewState extends State<ContestView> {
                                 color: MySolvedColor.font,
                               ),
                             ),
-                            SizedBox(height: 16),
-                            Text(
-                              "주최: ${contests[index].venue ?? ""}",
-                              style: MySolvedTextStyle.body2.copyWith(
-                                color: MySolvedColor.secondaryFont,
-                              ),
-                            ),
-                            SizedBox(height: 4),
+                            SizedBox(height: 8),
                             Text(
                               '일정: ${contests[index].startTime.toLocal().month}월 ${contests[index].startTime.toLocal().day}일 ${contests[index].startTime.toLocal().hour}:${contests[index].startTime.toLocal().minute.toString().padLeft(2, '0')} ~ ${contests[index].endTime.toLocal().month}월 ${contests[index].endTime.toLocal().day}일 ${contests[index].endTime.toLocal().hour}:${contests[index].endTime.toLocal().minute.toString().padLeft(2, '0')}',
                               style: MySolvedTextStyle.body2.copyWith(
                                 color: MySolvedColor.secondaryFont,
                               ),
                             ),
-                            if (state.currentIndex == 1)
-                              Column(
-                                children: [
-                                  SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      MySolvedFitButton(
-                                        onPressed: () => context
-                                            .read<ContestBloc>()
-                                            .add(
-                                                ContestNotificationButtonPressed(
-                                              index: index,
-                                            )),
-                                        buttonStyle:
-                                            state.isOnNotificationUpcomingContests[
-                                                    index]
-                                                ? MySolvedButtonStyle.secondary
-                                                : MySolvedButtonStyle.primary,
-                                        text:
-                                            state.isOnNotificationUpcomingContests[
-                                                    index]
-                                                ? "알림 취소하기"
-                                                : "알림 설정하기",
+                            SizedBox(height: 8),
+                            Row(
+                              children: [
+                                if (state.currentIndex == 1)
+                                  MySolvedFitButton(
+                                    onPressed: () => context
+                                        .read<ContestBloc>()
+                                        .add(ContestNotificationButtonPressed(
+                                          index: index,
+                                        )),
+                                    buttonStyle:
+                                        state.isOnNotificationUpcomingContests[
+                                                index]
+                                            ? MySolvedButtonStyle.secondary
+                                            : MySolvedButtonStyle.primary,
+                                    text:
+                                        state.isOnNotificationUpcomingContests[
+                                                index]
+                                            ? "알림 취소하기"
+                                            : "알림 설정하기",
+                                  ),
+                                Spacer(),
+                                if (contests[index].badge != null)
+                                  ElevatedButton(
+                                    onPressed: () {},
+                                    style: ElevatedButton.styleFrom(
+                                      elevation: 0,
+                                      minimumSize: Size.zero,
+                                      padding: EdgeInsets.symmetric(
+                                          vertical: 8, horizontal: 12),
+                                      foregroundColor: Color(0xFFfab005),
+                                    ),
+                                    child: Tooltip(
+                                      triggerMode: TooltipTriggerMode.tap,
+                                      message: contests[index].badge,
+                                      child: Text(
+                                        '🏅',
+                                        style: MySolvedTextStyle.caption1,
                                       ),
-                                      Spacer(),
-                                      if (contests[index].badge != null)
-                                        ElevatedButton(
-                                          onPressed: () {},
-                                          style: ElevatedButton.styleFrom(
-                                            elevation: 0,
-                                            minimumSize: Size.zero,
-                                            padding: EdgeInsets.symmetric(
-                                                vertical: 8, horizontal: 12),
-                                            foregroundColor: Color(0xFFfab005),
-                                          ),
-                                          child: Tooltip(
-                                            triggerMode: TooltipTriggerMode.tap,
-                                            message: contests[index].badge,
-                                            child: Text(
-                                              '🏅',
-                                              style: MySolvedTextStyle.caption1,
-                                            ),
-                                          ),
-                                        ),
-                                      if (contests[index].background != null)
-                                        ElevatedButton(
-                                          onPressed: () {},
-                                          style: ElevatedButton.styleFrom(
-                                            elevation: 0,
-                                            minimumSize: Size.zero,
-                                            padding: EdgeInsets.symmetric(
-                                                vertical: 8, horizontal: 12),
-                                            foregroundColor: Color(0xFFb197fc),
-                                          ),
-                                          child: Tooltip(
-                                            triggerMode: TooltipTriggerMode.tap,
-                                            message: contests[index].background,
-                                            child: Text(
-                                              '🖼️',
-                                              style: MySolvedTextStyle.caption1,
-                                            ),
-                                          ),
-                                        ),
-                                      ExtendedImage.asset(
-                                        "assets/images/venues/${contests[index].venue?.toLowerCase() ?? "etc"}.png",
-                                        width: 30,
+                                    ),
+                                  ),
+                                if (contests[index].background != null)
+                                  ElevatedButton(
+                                    onPressed: () {},
+                                    style: ElevatedButton.styleFrom(
+                                      elevation: 0,
+                                      minimumSize: Size.zero,
+                                      padding: EdgeInsets.symmetric(
+                                          vertical: 8, horizontal: 12),
+                                      foregroundColor: Color(0xFFb197fc),
+                                    ),
+                                    child: Tooltip(
+                                      triggerMode: TooltipTriggerMode.tap,
+                                      message: contests[index].background,
+                                      child: Text(
+                                        '🖼️',
+                                        style: MySolvedTextStyle.caption1,
                                       ),
-                                    ],
-                                  )
-                                ],
-                              ),
+                                    ),
+                                  ),
+                                ExtendedImage.asset(
+                                  "assets/images/venues/${contests[index].venue?.toLowerCase() ?? "etc"}.png",
+                                  width: 30,
+                                ),
+                              ],
+                            )
                           ],
                         ),
                       ),
