@@ -36,18 +36,28 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
   ) async {
     final isOnStreakNotification =
         await _sharedPreferencesRepository.getIsOnStreakNotification();
-    final streakNotificationHour =
-        await _sharedPreferencesRepository.getStreakNotificationHour();
-    final streakNotificationMinute =
-        await _sharedPreferencesRepository.getStreakNotificationMinute();
+
     final now = TimeOfDay.now();
+    var streakNotificationHour =
+        await _sharedPreferencesRepository.getStreakNotificationHour();
+    if (streakNotificationHour == null) {
+      await _sharedPreferencesRepository.setStreakNotificationHour(
+          hour: now.hour);
+      streakNotificationHour = now.hour;
+    }
+    var streakNotificationMinute =
+        await _sharedPreferencesRepository.getStreakNotificationMinute();
+    if (streakNotificationMinute == null) {
+      await _sharedPreferencesRepository.setStreakNotificationMinute(
+          minute: now.minute);
+      streakNotificationMinute = now.minute;
+    }
+
     final contestNotificationMinute =
         await _sharedPreferencesRepository.getContestNotificationMinute();
-    final streakNotificationTime =
-        (streakNotificationHour != null) && (streakNotificationMinute != null)
-            ? TimeOfDay(
-                hour: streakNotificationHour, minute: streakNotificationMinute)
-            : now;
+
+    final streakNotificationTime = TimeOfDay(
+        hour: streakNotificationHour, minute: streakNotificationMinute);
 
     emit(state.copyWith(
       isOnStreakNotification: isOnStreakNotification,
