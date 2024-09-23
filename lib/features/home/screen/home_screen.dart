@@ -105,23 +105,25 @@ class _HomeViewState extends State<HomeView> {
               },
             ),
             GridItem(
-              title: "스트릭(최대)",
-              value: state.user!.maxStreak.toString(),
-              unit: "일",
-              foregroundColor: MySolvedColor.background,
-              backgroundColor: MySolvedColor.main,
-            ),
+                title: "스트릭(최대)",
+                value: state.user!.maxStreak.toString(),
+                unit: "일",
+                foregroundColor: MySolvedColor.background,
+                backgroundColor: MySolvedColor.main,
+                onPressed: () {}),
             GridItem(
               title: "레이팅",
               value: state.user!.rank.toString(),
               unit: "#",
               isPrefixUnit: true,
               backgroundColor: MySolvedColor.disabledButtonBackground,
+              onPressed: () {},
             ),
             GridItem(
               title: "뱃지",
               value: state.badges.length.toString(),
               unit: "개",
+              onPressed: () {},
             ),
           ];
           return CustomScrollView(
