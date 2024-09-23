@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences_repository/shared_preferences_repository.dart';
 import 'package:streak_notification_repository/streak_notification_repository.dart';
 
@@ -22,7 +23,8 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     on<SettingIsOnIllustBackgroundChanged>(_onIsOnIllustBackgroundChanged);
     on<SettingStreakNotificationTimeChanged>(_onChangeStreakTime);
     on<SettingStreakNotificationSwitchChanged>(_onChangeIsOnStreakNotification);
-    on<SettingContestNotificationMinuteChanged>(_onChangeContestNotificationMinute);
+    on<SettingContestNotificationMinuteChanged>(
+        _onChangeContestNotificationMinute);
   }
 
   final SharedPreferencesRepository _sharedPreferencesRepository;
@@ -85,14 +87,23 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     Emitter<SettingState> emit,
   ) async {
     if (event.isOn) {
-      await _streakNotificationRepository.setStreakNotification(
-        hour: state.streakNotificationTime.hour,
-        minute: state.streakNotificationTime.minute,
-      );
-      await _sharedPreferencesRepository.setIsOnStreakNotification(
-        isOn: event.isOn,
-      );
-      emit(state.copyWith(isOnStreakNotification: event.isOn));
+      var status = await Permission.notification.status;
+      if (status.isGranted) {
+        await _streakNotificationRepository.setStreakNotification(
+          hour: state.streakNotificationTime.hour,
+          minute: state.streakNotificationTime.minute,
+        );
+        await _sharedPreferencesRepository.setIsOnStreakNotification(
+          isOn: event.isOn,
+        );
+        emit(state.copyWith(isOnStreakNotification: event.isOn));
+      } else if (status.isDenied) {
+        status = await Permission.notification.request();
+        emit(state.copyWith(isOnStreakNotification: status.isGranted));
+      } else if (status.isPermanentlyDenied) {
+        await openAppSettings();
+        emit(state.copyWith(isOnStreakNotification: status.isGranted));
+      }
     } else {
       _streakNotificationRepository.cancelStreakNotification();
       await _sharedPreferencesRepository.setIsOnStreakNotification(
