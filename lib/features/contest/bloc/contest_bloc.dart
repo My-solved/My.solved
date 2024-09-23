@@ -5,6 +5,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:my_solved/features/contest_filter/bloc/contest_filter_bloc.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences_repository/shared_preferences_repository.dart';
 
 part 'contest_event.dart';
@@ -68,6 +69,17 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
     ContestNotificationButtonPressed event,
     Emitter<ContestState> emit,
   ) async {
+    var status = await Permission.notification.status;
+    if (status.isDenied) {
+      status = await Permission.notification.request();
+    } else if (status.isPermanentlyDenied) {
+      await openAppSettings();
+      status = await Permission.notification.status;
+    }
+    if (!status.isGranted) {
+      return;
+    }
+
     emit(state.copyWith(status: ContestStatus.loading));
 
     final contest = state.filteredUpcomingContests[event.index];

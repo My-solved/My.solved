@@ -86,24 +86,27 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     SettingStreakNotificationSwitchChanged event,
     Emitter<SettingState> emit,
   ) async {
+    var status = await Permission.notification.status;
+    if (status.isDenied) {
+      status = await Permission.notification.request();
+      emit(state.copyWith(isOnStreakNotification: status.isGranted));
+    } else if (status.isPermanentlyDenied) {
+      await openAppSettings();
+      emit(state.copyWith(isOnStreakNotification: status.isGranted));
+    }
+    if (!status.isGranted) {
+      return;
+    }
+
     if (event.isOn) {
-      var status = await Permission.notification.status;
-      if (status.isGranted) {
-        await _streakNotificationRepository.setStreakNotification(
-          hour: state.streakNotificationTime.hour,
-          minute: state.streakNotificationTime.minute,
-        );
-        await _sharedPreferencesRepository.setIsOnStreakNotification(
-          isOn: event.isOn,
-        );
-        emit(state.copyWith(isOnStreakNotification: event.isOn));
-      } else if (status.isDenied) {
-        status = await Permission.notification.request();
-        emit(state.copyWith(isOnStreakNotification: status.isGranted));
-      } else if (status.isPermanentlyDenied) {
-        await openAppSettings();
-        emit(state.copyWith(isOnStreakNotification: status.isGranted));
-      }
+      await _streakNotificationRepository.setStreakNotification(
+        hour: state.streakNotificationTime.hour,
+        minute: state.streakNotificationTime.minute,
+      );
+      await _sharedPreferencesRepository.setIsOnStreakNotification(
+        isOn: event.isOn,
+      );
+      emit(state.copyWith(isOnStreakNotification: event.isOn));
     } else {
       _streakNotificationRepository.cancelStreakNotification();
       await _sharedPreferencesRepository.setIsOnStreakNotification(
