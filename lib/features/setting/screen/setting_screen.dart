@@ -61,6 +61,8 @@ class _SettingViewState extends State<SettingView> {
       body: BlocBuilder<SettingBloc, SettingState>(
         bloc: BlocProvider.of<SettingBloc>(context),
         builder: (context, state) {
+          print("SettingBloc: ${state.toString()}");
+
           return Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -138,15 +140,9 @@ class _SettingViewState extends State<SettingView> {
                     TextButton(
                       onPressed: state.isOnStreakNotification
                           ? () async {
-                              final TimeOfDay? timeOfDay = await showTimePicker(
-                                context: context,
-                                initialTime: state.streakNotificationTime,
-                              );
-                              if (timeOfDay != null) {
-                                context.read<SettingBloc>().add(
-                                    SettingStreakNotificationTimeChanged(
-                                        timeOfDay: timeOfDay));
-                              }
+                              await showTimePicker(
+                                  context: context,
+                                  initialTime: state.streakNotificationTime);
                             }
                           : null,
                       style: TextButton.styleFrom(
