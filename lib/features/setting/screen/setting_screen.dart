@@ -61,8 +61,6 @@ class _SettingViewState extends State<SettingView> {
       body: BlocBuilder<SettingBloc, SettingState>(
         bloc: BlocProvider.of<SettingBloc>(context),
         builder: (context, state) {
-          print("SettingBloc: ${state.toString()}");
-
           return Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
