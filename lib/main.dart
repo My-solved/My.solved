@@ -26,9 +26,9 @@ Future<void> _initLocalNotification() async {
       const AndroidInitializationSettings("mipmap/ic_launcher");
   DarwinInitializationSettings iosInitializationSettings =
       const DarwinInitializationSettings(
-    requestAlertPermission: true,
-    requestBadgePermission: true,
-    requestSoundPermission: true,
+    requestAlertPermission: false,
+    requestBadgePermission: false,
+    requestSoundPermission: false,
   );
   InitializationSettings initializationSettings = InitializationSettings(
       android: androidInitializationSettings, iOS: iosInitializationSettings);
