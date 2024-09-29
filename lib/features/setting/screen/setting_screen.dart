@@ -136,13 +136,17 @@ class _SettingViewState extends State<SettingView> {
                   children: [
                     Text("스트릭 알림 시간", style: MySolvedTextStyle.body2),
                     TextButton(
-                      onPressed: state.isOnStreakNotification
-                          ? () async {
-                              await showTimePicker(
-                                  context: context,
-                                  initialTime: state.streakNotificationTime);
-                            }
-                          : null,
+                      onPressed: () async {
+                        final TimeOfDay? timeOfDay = await showTimePicker(
+                          context: context,
+                          initialTime: state.streakNotificationTime,
+                        );
+                        if (timeOfDay != null) {
+                          context.read<SettingBloc>().add(
+                              SettingStreakNotificationTimeChanged(
+                                  timeOfDay: timeOfDay));
+                        }
+                      },
                       style: TextButton.styleFrom(
                         padding: EdgeInsets.symmetric(
                           horizontal: 12,
