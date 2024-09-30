@@ -15,6 +15,8 @@ class MockStreak extends Mock implements solved_api.Streak {}
 
 class MockProblem extends Mock implements solved_api.Problem {}
 
+class MockProblemStats extends Mock implements solved_api.ProblemStat {}
+
 class MockTagRating extends Mock implements solved_api.TagRating {}
 
 class MockBackground extends Mock implements solved_api.Background {}
@@ -90,7 +92,7 @@ void main() {
 
     group('getStreak', () {
       const handle = 'w8385';
-      const topic = 'default';
+      const topic = 'today-solved';
 
       test('calls userGrass with correct handle and topic', () async {
         try {
@@ -105,6 +107,25 @@ void main() {
             .thenAnswer((_) async => streak);
 
         expect(await userRepository.getStreak(handle, topic), streak);
+      });
+    });
+
+    group('getProblemStats', () {
+      const handle = 'w8385';
+
+      test('calls userProblemStats with correct handle', () async {
+        try {
+          await userRepository.getProblemStats(handle);
+        } catch (_) {}
+        verify(() => solvedApiClient.userProblemStats(handle)).called(1);
+      });
+
+      test('returns correct problemStats on success', () async {
+        final problemStats = [MockProblemStats()];
+        when(() => solvedApiClient.userProblemStats(handle))
+            .thenAnswer((_) async => problemStats);
+
+        expect(await userRepository.getProblemStats(handle), problemStats);
       });
     });
 
