@@ -163,11 +163,16 @@ class _HomeViewState extends State<HomeView> {
               },
               foregroundColor: MySolvedColor.background,
               backgroundColor: MySolvedColor.main,
-              widget: SvgPicture.asset(
-                  width: 60,
-                  height: 60,
-                  "assets/images/icons/streak.svg",
-                  color: solvedToday ? Colors.green : MySolvedColor.main),
+              widget: Align(
+                alignment: Alignment.bottomLeft,
+                child: SvgPicture.asset(
+                    width: 40,
+                    "assets/images/icons/streak.svg",
+                    color:
+                        solvedToday ? Color(0xFF75D48A) : MySolvedColor.main),
+              ),
+              icon: Icon(Icons.check_circle_outline,
+                  color: Colors.white, size: 20),
             ),
             GridItem(
               title: "클래스",
@@ -203,11 +208,6 @@ class _HomeViewState extends State<HomeView> {
               onPressed: () {},
               title: "태그 분포",
               widget: _tagChart(tags: tags, rating: state.user!.rating),
-            ),
-            GridItem(
-              onPressed: () {},
-              title: "난이도 분포",
-              widget: _pieChart(stats: stats),
             ),
           ];
           return CustomScrollView(
@@ -259,7 +259,6 @@ class _HomeViewState extends State<HomeView> {
                       QuiltedGridTile(2, 2),
                       QuiltedGridTile(3, 3),
                       QuiltedGridTile(3, 3),
-                      QuiltedGridTile(6, 6),
                     ],
                   ),
                 ),
@@ -486,6 +485,7 @@ class GridItem {
   VoidCallback? onPressed;
   String? backgroundImageUrl;
   Widget? widget;
+  Widget? icon;
 
   GridItem({
     required this.title,
@@ -497,6 +497,7 @@ class GridItem {
     this.onPressed,
     this.backgroundImageUrl,
     this.widget,
+    this.icon,
   });
 }
 
@@ -563,12 +564,15 @@ Widget _gridItem({required GridItem item}) {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              item.title,
-              style: MySolvedTextStyle.body1.copyWith(
-                color: item.foregroundColor,
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Text(
+                item.title,
+                style: MySolvedTextStyle.body1.copyWith(
+                  color: item.foregroundColor,
+                ),
               ),
-            ),
+              if (item.icon != null) item.icon!,
+            ]),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               crossAxisAlignment: CrossAxisAlignment.end,
