@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences_repository/shared_preferences_repository.dart';
 import 'package:streak_notification_repository/streak_notification_repository.dart';
 
@@ -22,7 +23,8 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     on<SettingIsOnIllustBackgroundChanged>(_onIsOnIllustBackgroundChanged);
     on<SettingStreakNotificationTimeChanged>(_onChangeStreakTime);
     on<SettingStreakNotificationSwitchChanged>(_onChangeIsOnStreakNotification);
-    on<SettingContestNotificationMinuteChanged>(_onChangeContestNotificationMinute);
+    on<SettingContestNotificationMinuteChanged>(
+        _onChangeContestNotificationMinute);
   }
 
   final SharedPreferencesRepository _sharedPreferencesRepository;
@@ -34,18 +36,28 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
   ) async {
     final isOnStreakNotification =
         await _sharedPreferencesRepository.getIsOnStreakNotification();
-    final streakNotificationHour =
-        await _sharedPreferencesRepository.getStreakNotificationHour();
-    final streakNotificationMinute =
-        await _sharedPreferencesRepository.getStreakNotificationMinute();
+
     final now = TimeOfDay.now();
+    var streakNotificationHour =
+        await _sharedPreferencesRepository.getStreakNotificationHour();
+    if (streakNotificationHour == null) {
+      await _sharedPreferencesRepository.setStreakNotificationHour(
+          hour: now.hour);
+      streakNotificationHour = now.hour;
+    }
+    var streakNotificationMinute =
+        await _sharedPreferencesRepository.getStreakNotificationMinute();
+    if (streakNotificationMinute == null) {
+      await _sharedPreferencesRepository.setStreakNotificationMinute(
+          minute: now.minute);
+      streakNotificationMinute = now.minute;
+    }
+
     final contestNotificationMinute =
         await _sharedPreferencesRepository.getContestNotificationMinute();
-    final streakNotificationTime =
-        (streakNotificationHour != null) && (streakNotificationMinute != null)
-            ? TimeOfDay(
-                hour: streakNotificationHour, minute: streakNotificationMinute)
-            : now;
+
+    final streakNotificationTime = TimeOfDay(
+        hour: streakNotificationHour, minute: streakNotificationMinute);
 
     emit(state.copyWith(
       isOnStreakNotification: isOnStreakNotification,
@@ -84,6 +96,18 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     SettingStreakNotificationSwitchChanged event,
     Emitter<SettingState> emit,
   ) async {
+    var status = await Permission.notification.status;
+    if (status.isDenied) {
+      status = await Permission.notification.request();
+      emit(state.copyWith(isOnStreakNotification: status.isGranted));
+    } else if (status.isPermanentlyDenied) {
+      await openAppSettings();
+      emit(state.copyWith(isOnStreakNotification: status.isGranted));
+    }
+    if (!status.isGranted) {
+      return;
+    }
+
     if (event.isOn) {
       await _streakNotificationRepository.setStreakNotification(
         hour: state.streakNotificationTime.hour,
