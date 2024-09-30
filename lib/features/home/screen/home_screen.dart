@@ -1,13 +1,18 @@
+import 'dart:math';
+
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_radar_chart/flutter_radar_chart.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
 import 'package:my_solved/features/home/bloc/home_bloc.dart';
+import 'package:pie_chart/pie_chart.dart';
 import 'package:solved_api/solved_api.dart' as solved_api;
+import 'package:solved_api/solved_api.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -132,6 +137,8 @@ class _HomeViewState extends State<HomeView> {
           ];
 
           final solvedToday = state.solvedToday ?? false;
+          final tags = state.tagRatings ?? [];
+          final stats = state.problemStats ?? [];
           final gridItem = [
             GridItem(
               title: "레이팅",
@@ -190,13 +197,19 @@ class _HomeViewState extends State<HomeView> {
             GridItem(
               onPressed: () {},
               title: "난이도 분포",
+              widget: _pieChart(stats: stats),
             ),
             GridItem(
               onPressed: () {},
               title: "태그 분포",
+              widget: _tagChart(tags: tags, rating: state.user!.rating),
+            ),
+            GridItem(
+              onPressed: () {},
+              title: "난이도 분포",
+              widget: _pieChart(stats: stats),
             ),
           ];
-
           return CustomScrollView(
             physics: BouncingScrollPhysics(),
             slivers: [
@@ -246,6 +259,7 @@ class _HomeViewState extends State<HomeView> {
                       QuiltedGridTile(2, 2),
                       QuiltedGridTile(3, 3),
                       QuiltedGridTile(3, 3),
+                      QuiltedGridTile(6, 6),
                     ],
                   ),
                 ),
@@ -333,6 +347,71 @@ class _HomeViewState extends State<HomeView> {
                   ),
         ],
       ),
+    );
+  }
+
+  Widget _pieChart({required List<ProblemStat> stats}) {
+    Map<String, double> dataMap = {};
+    for (var stat in stats) {
+      dataMap[stat.level.toString()] = stat.solved.toDouble();
+    }
+
+    stats.fold(0, (sum, stat) => sum + stat.solved);
+    List<Color> colorList = [];
+    for (var i = 0; i <= 30; i++) {
+      colorList.add(MySolvedColor.tier[i]!);
+    }
+
+    return Padding(
+        padding: EdgeInsets.all(24),
+        child: PieChart(
+          dataMap: dataMap,
+          animationDuration: Duration(milliseconds: 800),
+          chartLegendSpacing: 32,
+          colorList: colorList,
+          initialAngleInDegree: 270,
+          chartType: ChartType.ring,
+          ringStrokeWidth: 40,
+          legendOptions: LegendOptions(
+            showLegendsInRow: false,
+            showLegends: false,
+          ),
+          chartValuesOptions: ChartValuesOptions(
+            showChartValueBackground: true,
+            showChartValues: false,
+            showChartValuesInPercentage: false,
+            showChartValuesOutside: false,
+          ),
+        ));
+  }
+
+  Widget _tagChart({required List<TagRating> tags, required int rating}) {
+    tags.sort((a, b) => b.rating.compareTo(a.rating));
+
+    List<int> ticks = [];
+    List<String> features = [];
+    List<List<num>> data = [[]];
+
+    int? length = min(8, tags.length);
+    int maxTick = 0;
+    for (var i = 0; i < length; i++) {
+      // features.add(tags[i].tag.key);
+      features.add("");
+      data[0].add(tags[i].rating);
+      maxTick = max(maxTick, data[0][i].toInt());
+    }
+    maxTick = (maxTick + 500) ~/ 500 * 500;
+    while (maxTick > 0) {
+      ticks.add(maxTick);
+      maxTick -= 500;
+    }
+
+    return RadarChart(
+      ticks: ticks.reversed.toList(),
+      features: features,
+      data: data,
+      outlineColor: Color(0xff8a8f95),
+      graphColors: [_ratingColor(rating)],
     );
   }
 

@@ -22,6 +22,8 @@ class HomeState extends Equatable {
   final Badge? badge;
   final List<Badge> badges;
   final bool? solvedToday;
+  final List<TagRating>? tagRatings;
+  final List<ProblemStat>? problemStats;
 
   const HomeState({
     this.status = HomeStatus.initial,
@@ -33,6 +35,8 @@ class HomeState extends Equatable {
     this.badge,
     required this.badges,
     this.solvedToday,
+    this.tagRatings,
+    this.problemStats,
   });
 
   HomeState copyWith({
@@ -45,6 +49,8 @@ class HomeState extends Equatable {
     Badge? badge,
     List<Badge>? badges,
     bool? solvedToday,
+    List<TagRating>? tagRatings,
+    List<ProblemStat>? problemStats,
   }) {
     return HomeState(
       status: status ?? this.status,
@@ -56,6 +62,8 @@ class HomeState extends Equatable {
       badge: badge ?? this.badge,
       badges: badges ?? this.badges,
       solvedToday: solvedToday ?? this.solvedToday,
+      tagRatings: tagRatings ?? this.tagRatings,
+      problemStats: problemStats ?? this.problemStats,
     );
   }
 
@@ -70,5 +78,7 @@ class HomeState extends Equatable {
         badge,
         badges,
         solvedToday,
+        tagRatings,
+        problemStats,
       ];
 }

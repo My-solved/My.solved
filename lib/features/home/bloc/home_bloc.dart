@@ -58,6 +58,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           today.month == streak.grass.last.month &&
           today.day == streak.grass.last.day;
 
+      final tagRatings = await _userRepository.getTagRatings(_handle);
+      final problemStats = await _userRepository.getProblemStats(_handle);
+
       emit(state.copyWith(
         isOnIllustBackground: isOnIllustBackground,
         status: HomeStatus.success,
@@ -67,6 +70,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         badge: badge,
         badges: badges,
         solvedToday: solvedToday,
+        tagRatings: tagRatings,
+        problemStats: problemStats,
       ));
     } catch (e) {
       emit(state.copyWith(status: HomeStatus.failure));

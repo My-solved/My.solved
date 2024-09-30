@@ -1,11 +1,11 @@
-class ProblemStats {
+class ProblemStat {
   final int level;
   final int total;
   final int solved;
   final int partial;
   final int tried;
 
-  ProblemStats({
+  ProblemStat({
     required this.level,
     required this.total,
     required this.solved,
@@ -13,8 +13,8 @@ class ProblemStats {
     required this.tried,
   });
 
-  factory ProblemStats.fromJson(Map<String, dynamic> json) {
-    return ProblemStats(
+  factory ProblemStat.fromJson(Map<String, dynamic> json) {
+    return ProblemStat(
       level: json['level'],
       total: json['total'],
       solved: json['solved'],
