@@ -170,8 +170,9 @@ class _HomeViewState extends State<HomeView> {
                   child: SvgPicture.asset(
                       width: 40,
                       "assets/images/icons/streak.svg",
-                      color:
-                          solvedToday ? Color(0xFF75D48A) : MySolvedColor.main),
+                      colorFilter: ColorFilter.mode(
+                          solvedToday ? Color(0xFF75D48A) : MySolvedColor.main,
+                          BlendMode.srcIn)),
                 ),
                 icon: solvedToday
                     ? Icon(Icons.check_circle_outline,
