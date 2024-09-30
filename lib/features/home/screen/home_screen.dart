@@ -131,6 +131,7 @@ class _HomeViewState extends State<HomeView> {
             ],
           ];
 
+          final solvedToday = state.solvedToday ?? false;
           final gridItem = [
             GridItem(
               title: "레이팅",
@@ -145,22 +146,27 @@ class _HomeViewState extends State<HomeView> {
               unit: "일",
               onPressed: () async {
                 Fluttertoast.showToast(
-                    msg: "This is Center Short Toast",
+                    msg: solvedToday ? "오늘은 이미 문제를 풀었어요" : "오늘은 아직 문제를 풀지 않았어요",
                     toastLength: Toast.LENGTH_SHORT,
                     gravity: ToastGravity.CENTER,
                     timeInSecForIosWeb: 1,
-                    backgroundColor: MySolvedColor.main,
+                    backgroundColor: MySolvedColor.main.withOpacity(0.8),
                     textColor: Colors.white,
                     fontSize: 16.0);
               },
               foregroundColor: MySolvedColor.background,
               backgroundColor: MySolvedColor.main,
+              widget: SvgPicture.asset(
+                  width: 60,
+                  height: 60,
+                  "assets/images/icons/streak.svg",
+                  color: solvedToday ? Colors.green : MySolvedColor.main),
             ),
             GridItem(
               title: "클래스",
               onPressed: () {},
               foregroundColor: MySolvedColor.background,
-              backgroundColor: MySolvedColor.main,
+              backgroundColor: _classColor(state.user!.userClass),
               widget: SvgPicture.asset(
                 width: 60,
                 height: 60,
@@ -168,8 +174,8 @@ class _HomeViewState extends State<HomeView> {
               ),
             ),
             GridItem(
-              onPressed: () {},
               title: "뱃지",
+              onPressed: () {},
               widget: ExtendedImage.network(
                 state.badge!.badgeImageUrl,
                 width: 60,
@@ -190,6 +196,7 @@ class _HomeViewState extends State<HomeView> {
               title: "태그 분포",
             ),
           ];
+
           return CustomScrollView(
             physics: BouncingScrollPhysics(),
             slivers: [
@@ -208,60 +215,7 @@ class _HomeViewState extends State<HomeView> {
                           height: 8,
                           color: Colors.grey,
                         ),
-                        SizedBox(
-                          height: 70,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              for (int i = 1; i < 2 * slideItem.length; i++)
-                                i.isOdd
-                                    ? Expanded(
-                                        child: OutlinedButton(
-                                            onPressed: () {
-                                              launchUrlString(
-                                                  slideItem[(i / 2).floor()]
-                                                      [2]);
-                                            },
-                                            style: OutlinedButton.styleFrom(
-                                              padding: EdgeInsets.zero,
-                                              side: BorderSide(
-                                                color: Colors.transparent,
-                                                width: 0,
-                                              ),
-                                              shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.zero),
-                                            ),
-                                            child: Container(
-                                              width: 100,
-                                              clipBehavior: Clip.none,
-                                              child: Column(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                    slideItem[(i / 2).floor()]
-                                                        [0],
-                                                    style:
-                                                        MySolvedTextStyle.body2,
-                                                  ),
-                                                  Text(
-                                                    slideItem[(i / 2).floor()]
-                                                        [1],
-                                                    style: MySolvedTextStyle
-                                                        .title1,
-                                                  ),
-                                                ],
-                                              ),
-                                            )))
-                                    : VerticalDivider(
-                                        color: Colors.grey,
-                                        indent: 20,
-                                        endIndent: 20,
-                                      ),
-                            ],
-                          ),
-                        ),
+                        _solvedVotesRivals(slideItem: slideItem),
                         Divider(
                           height: 8,
                           color: Colors.grey,
@@ -319,180 +273,127 @@ class _HomeViewState extends State<HomeView> {
     final url = isShowIllustBackground && illustBackgroundImageUrl != null
         ? illustBackgroundImageUrl
         : backgroundImageUrl;
-    return Container(
-      width: double.infinity,
-      clipBehavior: Clip.hardEdge,
-      decoration: BoxDecoration(
-        color: MySolvedColor.background,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: ExtendedImage.network(url),
+    return IconButton(
+      onPressed: () {},
+      padding: EdgeInsets.zero,
+      icon: Container(
+          width: double.infinity,
+          clipBehavior: Clip.hardEdge,
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: ExtendedImage.network(url)),
     );
   }
 
-  Widget _gridItem({required GridItem item}) {
-    return OutlinedButton(
-        style: OutlinedButton.styleFrom(
-          backgroundColor: item.backgroundColor,
-          padding: EdgeInsets.only(top: 20, left: 16, right: 16, bottom: 20),
-          side: BorderSide(
-            color: MySolvedColor.background,
-            width: 0,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-        ),
-        onPressed: item.onPressed,
-        onLongPress: item.onLongPress,
-        child: Stack(clipBehavior: Clip.none, children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                item.title,
-                style: MySolvedTextStyle.body1.copyWith(
-                  color: item.foregroundColor,
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  if (item.isPrefixUnit)
-                    Column(
-                      children: [
-                        Text(
-                          item.unit,
-                          style: MySolvedTextStyle.body1.copyWith(
-                            color: item.foregroundColor,
+  Widget _solvedVotesRivals({required List<List<String>> slideItem}) {
+    return SizedBox(
+      height: 70,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          for (int i = 1; i < 2 * slideItem.length; i++)
+            i.isOdd
+                ? Expanded(
+                    child: OutlinedButton(
+                        onPressed: () {
+                          launchUrlString(slideItem[(i / 2).floor()][2]);
+                        },
+                        style: OutlinedButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          side: BorderSide(
+                            color: Colors.transparent,
+                            width: 0,
                           ),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.zero),
                         ),
-                        SizedBox(height: 4),
-                      ],
-                    ),
-                  if (item.isPrefixUnit) SizedBox(width: 2),
-                  Text(
-                    item.value,
-                    style: MySolvedTextStyle.title1.copyWith(
-                      fontSize: 24,
-                      color: item.foregroundColor,
-                    ),
+                        child: Container(
+                          width: 100,
+                          clipBehavior: Clip.none,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                slideItem[(i / 2).floor()][0],
+                                style: MySolvedTextStyle.body2,
+                              ),
+                              Text(
+                                slideItem[(i / 2).floor()][1],
+                                style: MySolvedTextStyle.title1,
+                              ),
+                            ],
+                          ),
+                        )))
+                : VerticalDivider(
+                    color: Colors.grey,
+                    indent: 20,
+                    endIndent: 20,
                   ),
-                  if (!item.isPrefixUnit) SizedBox(width: 2),
-                  if (!item.isPrefixUnit)
-                    Column(
-                      children: [
-                        Text(
-                          item.unit,
-                          style: MySolvedTextStyle.body1.copyWith(
-                            color: item.foregroundColor,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                      ],
-                    ),
-                ],
-              ),
-            ],
-          ),
-        ]));
+        ],
+      ),
+    );
   }
 
   Color _ratingColor(int rating) {
-    if (rating < 30) {
-      return Color(0xFF2D2D2D);
-    } else if (rating < 200) {
-      // bronze
-      return Color(0xffad5600);
-    } else if (rating < 800) {
-      // silver
-      return Color(0xFF425E79);
-    } else if (rating < 1600) {
-      // gold
-      return Color(0xffec9a00);
-    } else if (rating < 2200) {
-      // platinum
-      return Color(0xff00c78b);
-    } else if (rating < 2700) {
-      // diamond
-      return Color(0xff00b4fc);
-    } else if (rating < 3000) {
-      // ruby
-      return Color(0xffff0062);
-    } else {
-      // master
-      return Color(0xffb300e0);
-    }
+    if (rating < 30) return Color(0xFF2D2D2D);
+    if (rating < 200) return Color(0xffad5600);
+    if (rating < 800) return Color(0xFF425E79);
+    if (rating < 1600) return Color(0xffec9a00);
+    if (rating < 2200) return Color(0xff00c78b);
+    if (rating < 2700) return Color(0xff00b4fc);
+    if (rating < 3000) return Color(0xffff0062);
+    return Color(0xffb300e0);
+  }
+
+  Color _classColor(int userClass) {
+    if (userClass == 1) return Color.fromARGB(255, 36, 156, 229);
+    if (userClass == 2) return Color.fromARGB(255, 32, 197, 233);
+    if (userClass == 3) return Color.fromARGB(255, 27, 223, 139);
+    if (userClass == 4) return Color.fromARGB(255, 43, 213, 33);
+    if (userClass == 5) return Color.fromARGB(255, 176, 219, 21);
+    if (userClass == 6) return Color.fromARGB(255, 235, 202, 15);
+    if (userClass == 7) return Color.fromARGB(255, 243, 180, 18);
+    if (userClass == 8) return Color.fromARGB(255, 255, 125, 0);
+    if (userClass == 9) return Color.fromARGB(255, 243, 27, 116);
+    if (userClass == 10) return Color.fromARGB(255, 167, 32, 232);
+    return Color.fromARGB(255, 79, 82, 87);
   }
 
   String _tierText(int tier) {
-    if (tier == 1) {
-      return 'Bronze V';
-    } else if (tier == 2) {
-      return 'Bronze IV';
-    } else if (tier == 3) {
-      return 'Bronze III';
-    } else if (tier == 4) {
-      return 'Bronze II';
-    } else if (tier == 5) {
-      return 'Bronze I';
-    } else if (tier == 6) {
-      return 'Silver V';
-    } else if (tier == 7) {
-      return 'Silver IV';
-    } else if (tier == 8) {
-      return 'Silver III';
-    } else if (tier == 9) {
-      return 'Silver II';
-    } else if (tier == 10) {
-      return 'Silver I';
-    } else if (tier == 11) {
-      return 'Gold V';
-    } else if (tier == 12) {
-      return 'Gold IV';
-    } else if (tier == 13) {
-      return 'Gold III';
-    } else if (tier == 14) {
-      return 'Gold II';
-    } else if (tier == 15) {
-      return 'Gold I';
-    } else if (tier == 16) {
-      return 'Platinum V';
-    } else if (tier == 17) {
-      return 'Platinum IV';
-    } else if (tier == 18) {
-      return 'Platinum III';
-    } else if (tier == 19) {
-      return 'Platinum II';
-    } else if (tier == 20) {
-      return 'Platinum I';
-    } else if (tier == 21) {
-      return 'Diamond V';
-    } else if (tier == 22) {
-      return 'Diamond IV';
-    } else if (tier == 23) {
-      return 'Diamond III';
-    } else if (tier == 24) {
-      return 'Diamond II';
-    } else if (tier == 25) {
-      return 'Diamond I';
-    } else if (tier == 26) {
-      return 'Ruby V';
-    } else if (tier == 27) {
-      return 'Ruby IV';
-    } else if (tier == 28) {
-      return 'Ruby III';
-    } else if (tier == 29) {
-      return 'Ruby II';
-    } else if (tier == 30) {
-      return 'Ruby I';
-    } else if (tier == 31) {
-      return 'Master';
-    } else {
-      return 'Unrated';
-    }
+    if (tier == 1) return 'Bronze V';
+    if (tier == 2) return 'Bronze IV';
+    if (tier == 3) return 'Bronze III';
+    if (tier == 4) return 'Bronze II';
+    if (tier == 5) return 'Bronze I';
+    if (tier == 6) return 'Silver V';
+    if (tier == 7) return 'Silver IV';
+    if (tier == 8) return 'Silver III';
+    if (tier == 9) return 'Silver II';
+    if (tier == 10) return 'Silver I';
+    if (tier == 11) return 'Gold V';
+    if (tier == 12) return 'Gold IV';
+    if (tier == 13) return 'Gold III';
+    if (tier == 14) return 'Gold II';
+    if (tier == 15) return 'Gold I';
+    if (tier == 16) return 'Platinum V';
+    if (tier == 17) return 'Platinum IV';
+    if (tier == 18) return 'Platinum III';
+    if (tier == 19) return 'Platinum II';
+    if (tier == 20) return 'Platinum I';
+    if (tier == 21) return 'Diamond V';
+    if (tier == 22) return 'Diamond IV';
+    if (tier == 23) return 'Diamond III';
+    if (tier == 24) return 'Diamond II';
+    if (tier == 25) return 'Diamond I';
+    if (tier == 26) return 'Ruby V';
+    if (tier == 27) return 'Ruby IV';
+    if (tier == 28) return 'Ruby III';
+    if (tier == 29) return 'Ruby II';
+    if (tier == 30) return 'Ruby I';
+    if (tier == 31) return 'Master';
+    return 'Unrated';
   }
 }
 
@@ -504,7 +405,6 @@ class GridItem {
   Color foregroundColor;
   Color backgroundColor;
   VoidCallback? onPressed;
-  VoidCallback? onLongPress;
   String? backgroundImageUrl;
   Widget? widget;
 
@@ -516,8 +416,120 @@ class GridItem {
     this.foregroundColor = MySolvedColor.font,
     this.backgroundColor = MySolvedColor.background,
     this.onPressed,
-    this.onLongPress,
     this.backgroundImageUrl,
     this.widget,
   });
+}
+
+Widget _gridItem({required GridItem item}) {
+  if (item.backgroundImageUrl != null) {
+    return IconButton(
+        onPressed: item.onPressed,
+        padding: EdgeInsets.zero,
+        style: OutlinedButton.styleFrom(
+          backgroundColor: Colors.grey,
+          side: BorderSide(
+            color: MySolvedColor.background,
+            width: 0,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        icon: Stack(clipBehavior: Clip.none, children: [
+          Container(
+              height: double.infinity,
+              clipBehavior: Clip.hardEdge,
+              decoration: BoxDecoration(
+                color: Colors.transparent,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: ExtendedImage.network(
+                item.backgroundImageUrl!,
+                fit: BoxFit.fitHeight,
+                opacity: AlwaysStoppedAnimation(0.6),
+              )),
+          Positioned(
+            top: 20,
+            left: 16,
+            child: Text(
+              item.title,
+              style:
+                  MySolvedTextStyle.body1.copyWith(color: item.backgroundColor),
+            ),
+          ),
+        ]));
+  }
+  return OutlinedButton(
+      style: OutlinedButton.styleFrom(
+        backgroundColor: item.backgroundColor,
+        padding: EdgeInsets.only(top: 20, left: 16, right: 16, bottom: 20),
+        side: BorderSide(
+          color: MySolvedColor.background,
+          width: 0,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+      ),
+      onPressed: item.onPressed,
+      child: Stack(clipBehavior: Clip.none, children: [
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: item.widget ?? Container(),
+          ),
+        ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              item.title,
+              style: MySolvedTextStyle.body1.copyWith(
+                color: item.foregroundColor,
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (item.isPrefixUnit)
+                  Column(
+                    children: [
+                      Text(
+                        item.unit,
+                        style: MySolvedTextStyle.body1.copyWith(
+                          color: item.foregroundColor,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                    ],
+                  ),
+                if (item.isPrefixUnit) SizedBox(width: 2),
+                Text(
+                  item.value,
+                  style: MySolvedTextStyle.title1.copyWith(
+                    fontSize: 24,
+                    color: item.foregroundColor,
+                  ),
+                ),
+                if (!item.isPrefixUnit) SizedBox(width: 2),
+                if (!item.isPrefixUnit)
+                  Column(
+                    children: [
+                      Text(
+                        item.unit,
+                        style: MySolvedTextStyle.body1.copyWith(
+                          color: item.foregroundColor,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                    ],
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ]));
 }
