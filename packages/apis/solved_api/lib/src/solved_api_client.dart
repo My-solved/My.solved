@@ -145,7 +145,7 @@ class SolvedApiClient {
         .toList();
   }
 
-  Future<List<ProblemStats>> userProblemStats(String handle) async {
+  Future<List<ProblemStat>> userProblemStats(String handle) async {
     final userRequest =
         Uri.https(_baseUrl, '/api/v3/user/problem_stats', {'handle': handle});
 
@@ -164,8 +164,8 @@ class SolvedApiClient {
 
     final userJson = jsonDecode(userResponse.body);
 
-    return List<ProblemStats>.from(
-        userJson.map((problemStats) => ProblemStats.fromJson(problemStats)));
+    return List<ProblemStat>.from(
+        userJson.map((problemStats) => ProblemStat.fromJson(problemStats)));
   }
 
   Future<List<TagRating>> userTagRatings(String handle) async {

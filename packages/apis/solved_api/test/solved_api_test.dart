@@ -12264,9 +12264,9 @@ void main() {
 
         final actual = await apiClient.userProblemStats(handle);
         print(actual);
-        expect(actual, isA<List<ProblemStats>>());
+        expect(actual, isA<List<ProblemStat>>());
         for (final stat in actual) {
-          expect(stat, isA<ProblemStats>());
+          expect(stat, isA<ProblemStat>());
         }
       });
     });

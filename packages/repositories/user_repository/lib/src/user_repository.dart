@@ -38,6 +38,10 @@ class UserRepository {
     return await _solvedApiClient.userTop100(handle);
   }
 
+  Future<List<ProblemStat>> getProblemStats(String handle) async {
+    return await _solvedApiClient.userProblemStats(handle);
+  }
+
   Future<List<TagRating>> getTagRatings(String handle) async {
     return await _solvedApiClient.userTagRatings(handle);
   }
