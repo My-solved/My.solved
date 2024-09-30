@@ -21,7 +21,17 @@ class UserRepository {
   }
 
   Future<Streak> getStreak(String handle, String? topic) async {
-    return await _solvedApiClient.userGrass(handle, topic);
+    var streak = await _solvedApiClient.userGrass(handle, topic);
+    streak.grass.sort((a, b) {
+      if (a.year != b.year) {
+        return a.year.compareTo(b.year);
+      } else if (a.month != b.month) {
+        return a.month.compareTo(b.month);
+      } else {
+        return a.day.compareTo(b.day);
+      }
+    });
+    return streak;
   }
 
   Future<List<Problem>> getTopProblems(String handle) async {

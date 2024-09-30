@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:shared_preferences_repository/shared_preferences_repository.dart';
 import 'package:solved_api/solved_api.dart';
+import 'package:timezone/timezone.dart' as tz;
 import 'package:user_repository/user_repository.dart';
 
 part "home_event.dart";
@@ -40,13 +41,22 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       final user = await _userRepository.getUser(_handle);
       final background = await _userRepository.getBackground(user.backgroundId);
       final organizations = await _userRepository.getOrganizations(_handle);
-      final isOnIllustBackground = await _sharedPreferencesRepository.getIsOnIllustBackground();
+      final isOnIllustBackground =
+          await _sharedPreferencesRepository.getIsOnIllustBackground();
       Badge? badge;
 
       if (user.badgeId != null) {
         badge = await _userRepository.getBadge(user.badgeId!);
       }
       final badges = await _userRepository.getBadges(_handle);
+      final streak = await _userRepository.getStreak(_handle, "default");
+
+      tz.TZDateTime? today =
+          tz.TZDateTime.now(tz.UTC).add(const Duration(hours: 3));
+
+      late bool solvedToday = today.year == streak.grass.last.year &&
+          today.month == streak.grass.last.month &&
+          today.day == streak.grass.last.day;
 
       emit(state.copyWith(
         isOnIllustBackground: isOnIllustBackground,
@@ -56,6 +66,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         organizations: organizations,
         badge: badge,
         badges: badges,
+        solvedToday: solvedToday,
       ));
     } catch (e) {
       emit(state.copyWith(status: HomeStatus.failure));

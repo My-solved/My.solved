@@ -4,8 +4,11 @@ enum HomeStatus { initial, loading, success, failure }
 
 extension HomeStatusX on HomeStatus {
   bool get isInitial => this == HomeStatus.initial;
+
   bool get isLoading => this == HomeStatus.loading;
+
   bool get isSuccess => this == HomeStatus.success;
+
   bool get isFailure => this == HomeStatus.failure;
 }
 
@@ -18,6 +21,7 @@ class HomeState extends Equatable {
   final List<Organization> organizations;
   final Badge? badge;
   final List<Badge> badges;
+  final bool? solvedToday;
 
   const HomeState({
     this.status = HomeStatus.initial,
@@ -28,6 +32,7 @@ class HomeState extends Equatable {
     required this.organizations,
     this.badge,
     required this.badges,
+    this.solvedToday,
   });
 
   HomeState copyWith({
@@ -39,17 +44,18 @@ class HomeState extends Equatable {
     List<Organization>? organizations,
     Badge? badge,
     List<Badge>? badges,
+    bool? solvedToday,
   }) {
     return HomeState(
       status: status ?? this.status,
       handle: handle ?? this.handle,
-      isOnIllustBackground:
-      isOnIllustBackground ?? this.isOnIllustBackground,
+      isOnIllustBackground: isOnIllustBackground ?? this.isOnIllustBackground,
       user: user ?? this.user,
       background: background ?? this.background,
       organizations: organizations ?? this.organizations,
       badge: badge ?? this.badge,
       badges: badges ?? this.badges,
+      solvedToday: solvedToday ?? this.solvedToday,
     );
   }
 
@@ -57,10 +63,12 @@ class HomeState extends Equatable {
   List<Object?> get props => [
         status,
         handle,
-    isOnIllustBackground,
+        isOnIllustBackground,
         user,
         background,
         organizations,
         badge,
+        badges,
+        solvedToday,
       ];
 }
