@@ -12263,7 +12263,6 @@ void main() {
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
 
         final actual = await apiClient.userProblemStats(handle);
-        print(actual);
         expect(actual, isA<List<ProblemStat>>());
         for (final stat in actual) {
           expect(stat, isA<ProblemStat>());
