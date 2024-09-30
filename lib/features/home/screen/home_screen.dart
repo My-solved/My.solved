@@ -148,32 +148,35 @@ class _HomeViewState extends State<HomeView> {
               foregroundColor: MySolvedColor.background,
             ),
             GridItem(
-              title: "스트릭",
-              value: state.user!.maxStreak.toString(),
-              unit: "일",
-              onPressed: () async {
-                Fluttertoast.showToast(
-                    msg: solvedToday ? "오늘은 이미 문제를 풀었어요" : "오늘은 아직 문제를 풀지 않았어요",
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.CENTER,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: MySolvedColor.main.withOpacity(0.8),
-                    textColor: Colors.white,
-                    fontSize: 16.0);
-              },
-              foregroundColor: MySolvedColor.background,
-              backgroundColor: MySolvedColor.main,
-              widget: Align(
-                alignment: Alignment.bottomLeft,
-                child: SvgPicture.asset(
-                    width: 40,
-                    "assets/images/icons/streak.svg",
-                    color:
-                        solvedToday ? Color(0xFF75D48A) : MySolvedColor.main),
-              ),
-              icon: Icon(Icons.check_circle_outline,
-                  color: Colors.white, size: 20),
-            ),
+                title: "스트릭",
+                value: state.user!.maxStreak.toString(),
+                unit: "일",
+                onPressed: () async {
+                  Fluttertoast.showToast(
+                      msg: solvedToday
+                          ? "오늘은 이미 문제를 풀었어요"
+                          : "오늘은 아직 문제를 풀지 않았어요",
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.CENTER,
+                      timeInSecForIosWeb: 1,
+                      backgroundColor: MySolvedColor.main.withOpacity(0.8),
+                      textColor: Colors.white,
+                      fontSize: 16.0);
+                },
+                foregroundColor: MySolvedColor.background,
+                backgroundColor: MySolvedColor.main,
+                widget: Align(
+                  alignment: Alignment.bottomLeft,
+                  child: SvgPicture.asset(
+                      width: 40,
+                      "assets/images/icons/streak.svg",
+                      color:
+                          solvedToday ? Color(0xFF75D48A) : MySolvedColor.main),
+                ),
+                icon: solvedToday
+                    ? Icon(Icons.check_circle_outline,
+                        color: Colors.white, size: 20)
+                    : null),
             GridItem(
               title: "클래스",
               onPressed: () {},
