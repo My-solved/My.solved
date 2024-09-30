@@ -92,7 +92,7 @@ void main() {
 
     group('getStreak', () {
       const handle = 'w8385';
-      const topic = 'default';
+      const topic = 'today-solved';
 
       test('calls userGrass with correct handle and topic', () async {
         try {

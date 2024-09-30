@@ -50,6 +50,15 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       }
       final badges = await _userRepository.getBadges(_handle);
       final streak = await _userRepository.getStreak(_handle, "default");
+      streak.grass.sort((a, b) {
+        if (a.year != b.year) {
+          return a.year.compareTo(b.year);
+        } else if (a.month != b.month) {
+          return a.month.compareTo(b.month);
+        } else {
+          return a.day.compareTo(b.day);
+        }
+      });
 
       tz.TZDateTime? today =
           tz.TZDateTime.now(tz.UTC).add(const Duration(hours: 3));
