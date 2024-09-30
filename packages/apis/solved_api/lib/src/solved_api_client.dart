@@ -145,6 +145,29 @@ class SolvedApiClient {
         .toList();
   }
 
+  Future<List<ProblemStats>> userProblemStats(String handle) async {
+    final userRequest =
+        Uri.https(_baseUrl, '/api/v3/user/problem_stats', {'handle': handle});
+
+    http.Response userResponse;
+
+    try {
+      userResponse = await _httpClient.get(userRequest);
+    } on ClientException {
+      final bypassRequest = Uri.https(
+          _bypassUrl, '/solved/user/problem_stats', {'handle': handle});
+
+      userResponse = await _httpClient.get(bypassRequest);
+    } catch (e) {
+      throw UserRequestFailed();
+    }
+
+    final userJson = jsonDecode(userResponse.body);
+
+    return List<ProblemStats>.from(
+        userJson.map((problemStats) => ProblemStats.fromJson(problemStats)));
+  }
+
   Future<List<TagRating>> userTagRatings(String handle) async {
     final userRequest =
         Uri.https(_baseUrl, '/api/v3/user/tag_ratings', {'handle': handle});

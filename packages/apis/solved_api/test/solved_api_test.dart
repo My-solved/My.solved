@@ -12015,6 +12015,262 @@ void main() {
       });
     });
 
+    group('userProblemStats', () {
+      const handle = 'w8385';
+      test('makes correct http request', () async {
+        final response = MockResponse();
+        when(() => response.statusCode).thenReturn(200);
+        when(() => response.body).thenReturn('{}');
+        when(() => httpClient.get(any())).thenAnswer((_) async => response);
+        try {
+          await apiClient.userProblemStats(handle);
+        } catch (_) {}
+        verify(
+          () => httpClient.get(
+            Uri.https(
+              'solved.ac',
+              '/api/v3/user/problem_stats',
+              {'handle': handle},
+            ),
+          ),
+        ).called(1);
+      });
+
+      test('returns List<ProblemStat> on valid response', () async {
+        final response = MockResponse();
+        when(() => response.statusCode).thenReturn(200);
+        when(() => response.body).thenReturn('''
+[
+  {
+    "level": 0,
+    "solved": 15,
+    "tried": 2,
+    "partial": 0,
+    "total": 6277
+  },
+  {
+    "level": 1,
+    "solved": 152,
+    "tried": 0,
+    "partial": 0,
+    "total": 154
+  },
+  {
+    "level": 2,
+    "solved": 300,
+    "tried": 0,
+    "partial": 0,
+    "total": 307
+  },
+  {
+    "level": 3,
+    "solved": 670,
+    "tried": 2,
+    "partial": 0,
+    "total": 721
+  },
+  {
+    "level": 4,
+    "solved": 506,
+    "tried": 4,
+    "partial": 0,
+    "total": 945
+  },
+  {
+    "level": 5,
+    "solved": 227,
+    "tried": 7,
+    "partial": 0,
+    "total": 799
+  },
+  {
+    "level": 6,
+    "solved": 214,
+    "tried": 4,
+    "partial": 0,
+    "total": 828
+  },
+  {
+    "level": 7,
+    "solved": 162,
+    "tried": 6,
+    "partial": 0,
+    "total": 891
+  },
+  {
+    "level": 8,
+    "solved": 127,
+    "tried": 4,
+    "partial": 0,
+    "total": 955
+  },
+  {
+    "level": 9,
+    "solved": 122,
+    "tried": 5,
+    "partial": 0,
+    "total": 942
+  },
+  {
+    "level": 10,
+    "solved": 109,
+    "tried": 4,
+    "partial": 0,
+    "total": 1055
+  },
+  {
+    "level": 11,
+    "solved": 109,
+    "tried": 10,
+    "partial": 0,
+    "total": 1126
+  },
+  {
+    "level": 12,
+    "solved": 96,
+    "tried": 12,
+    "partial": 1,
+    "total": 1523
+  },
+  {
+    "level": 13,
+    "solved": 64,
+    "tried": 16,
+    "partial": 1,
+    "total": 1428
+  },
+  {
+    "level": 14,
+    "solved": 47,
+    "tried": 6,
+    "partial": 1,
+    "total": 1235
+  },
+  {
+    "level": 15,
+    "solved": 63,
+    "tried": 10,
+    "partial": 0,
+    "total": 1093
+  },
+  {
+    "level": 16,
+    "solved": 152,
+    "tried": 13,
+    "partial": 1,
+    "total": 1269
+  },
+  {
+    "level": 17,
+    "solved": 107,
+    "tried": 10,
+    "partial": 0,
+    "total": 1217
+  },
+  {
+    "level": 18,
+    "solved": 80,
+    "tried": 11,
+    "partial": 1,
+    "total": 1296
+  },
+  {
+    "level": 19,
+    "solved": 29,
+    "tried": 2,
+    "partial": 0,
+    "total": 1210
+  },
+  {
+    "level": 20,
+    "solved": 14,
+    "tried": 4,
+    "partial": 0,
+    "total": 960
+  },
+  {
+    "level": 21,
+    "solved": 15,
+    "tried": 3,
+    "partial": 0,
+    "total": 1010
+  },
+  {
+    "level": 22,
+    "solved": 5,
+    "tried": 3,
+    "partial": 0,
+    "total": 942
+  },
+  {
+    "level": 23,
+    "solved": 1,
+    "tried": 0,
+    "partial": 0,
+    "total": 642
+  },
+  {
+    "level": 24,
+    "solved": 2,
+    "tried": 1,
+    "partial": 0,
+    "total": 487
+  },
+  {
+    "level": 25,
+    "solved": 1,
+    "tried": 0,
+    "partial": 0,
+    "total": 376
+  },
+  {
+    "level": 26,
+    "solved": 1,
+    "tried": 0,
+    "partial": 0,
+    "total": 301
+  },
+  {
+    "level": 27,
+    "solved": 0,
+    "tried": 1,
+    "partial": 0,
+    "total": 156
+  },
+  {
+    "level": 28,
+    "solved": 0,
+    "tried": 0,
+    "partial": 0,
+    "total": 100
+  },
+  {
+    "level": 29,
+    "solved": 0,
+    "tried": 0,
+    "partial": 0,
+    "total": 37
+  },
+  {
+    "level": 30,
+    "solved": 0,
+    "tried": 0,
+    "partial": 0,
+    "total": 28
+  }
+]
+''');
+        when(() => httpClient.get(any())).thenAnswer((_) async => response);
+
+        final actual = await apiClient.userProblemStats(handle);
+        print(actual);
+        expect(actual, isA<List<ProblemStats>>());
+        for (final stat in actual) {
+          expect(stat, isA<ProblemStats>());
+        }
+      });
+    });
+
     group('userTagRatings', () {
       const handle = 'w8385';
       test('makes correct http request', () async {
@@ -12065,7 +12321,7 @@ void main() {
         }
       ],
       "aliases": [
-        
+
       ]
     },
     "solvedCount": 70,
@@ -12615,7 +12871,7 @@ void main() {
         }
       ],
       "aliases": [
-        
+
       ]
     },
     "solvedCount": 118,
@@ -12820,7 +13076,7 @@ void main() {
         }
       ],
       "aliases": [
-        
+
       ]
     },
     "solvedCount": 1373,
@@ -12854,7 +13110,7 @@ void main() {
         }
       ],
       "aliases": [
-        
+
       ]
     },
     "solvedCount": 1335,
@@ -12888,7 +13144,7 @@ void main() {
         }
       ],
       "aliases": [
-        
+
       ]
     },
     "solvedCount": 263,
@@ -13009,7 +13265,7 @@ void main() {
         }
       ],
       "aliases": [
-        
+
       ]
     },
     "solvedCount": 14,
@@ -13043,7 +13299,7 @@ void main() {
         }
       ],
       "aliases": [
-        
+
       ]
     },
     "solvedCount": 120,
@@ -13077,7 +13333,7 @@ void main() {
         }
       ],
       "aliases": [
-        
+
       ]
     },
     "solvedCount": 161,
@@ -13501,7 +13757,7 @@ void main() {
             }
           ],
           "aliases": [
-            
+
           ]
         },
         {
@@ -13607,7 +13863,7 @@ void main() {
             }
           ],
           "aliases": [
-            
+
           ]
         },
         {
@@ -13633,12 +13889,12 @@ void main() {
             }
           ],
           "aliases": [
-            
+
           ]
         }
       ],
       "metadata": {
-        
+
       }
     }
   ]
@@ -13812,7 +14068,7 @@ void main() {
         }
       ],
       "aliases": [
-        
+
       ]
     }
   ]
@@ -13880,7 +14136,7 @@ void main() {
       "needsAclToRegister": false,
       "cancellationDisabled": false,
       "languages": [
-        
+
       ],
       "isRegistered": false
     }
