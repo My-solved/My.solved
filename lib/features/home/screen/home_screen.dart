@@ -372,11 +372,10 @@ class _HomeViewState extends State<HomeView> {
         child: PieChart(
           dataMap: dataMap,
           animationDuration: Duration(milliseconds: 800),
-          chartLegendSpacing: 32,
           colorList: colorList,
           initialAngleInDegree: 270,
           chartType: ChartType.ring,
-          ringStrokeWidth: 40,
+          ringStrokeWidth: MediaQuery.of(context).size.width / 10,
           legendOptions: LegendOptions(
             showLegendsInRow: false,
             showLegends: false,
