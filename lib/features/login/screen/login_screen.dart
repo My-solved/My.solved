@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:my_solved/components/atoms/button/button.dart';
 import 'package:my_solved/components/atoms/text_field/text_field.dart';
 import 'package:my_solved/components/styles/color.dart';
@@ -57,17 +58,28 @@ class _LoginViewState extends State<LoginView> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         MySolvedTextField(
-                          hintText: "아이디를 입력해주세요",
-                          onChange: (text) => context
-                              .read<LoginBloc>()
-                              .add(HandleTextFieldOnChanged(handle: text)),
-                          onSubmitted: (text) => context
-                              .read<LoginBloc>()
-                              .add(HandleTextFieldOnSummited(handle: text)),
-                        ),
+                            hintText: "아이디를 입력해주세요",
+                            onChange: (text) => context
+                                .read<LoginBloc>()
+                                .add(HandleTextFieldOnChanged(handle: text)),
+                            onSubmitted: (text) {
+                              context
+                                  .read<LoginBloc>()
+                                  .add(HandleTextFieldOnSummited(handle: text));
+                            }),
                         MySolvedFillButton(
                           onPressed: state.handle.isEmpty
-                              ? null
+                              ? () {
+                                  Fluttertoast.showToast(
+                                      msg: "존재하지 않는 아이디입니다.",
+                                      toastLength: Toast.LENGTH_SHORT,
+                                      gravity: ToastGravity.CENTER,
+                                      timeInSecForIosWeb: 1,
+                                      backgroundColor:
+                                          MySolvedColor.main.withOpacity(0.8),
+                                      textColor: Colors.white,
+                                      fontSize: 16.0);
+                                }
                               : () => context
                                   .read<LoginBloc>()
                                   .add(LoginButtonTapped(
