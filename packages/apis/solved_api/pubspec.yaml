@@ -8,6 +8,7 @@ environment:
 dependencies:
   http: ^1.1.0
   html: ^0.15.2
+  get: ^4.6.6
 
 dev_dependencies:
   flutter_lints: ^3.0.1
