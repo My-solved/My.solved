@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:http/http.dart';
 import 'package:solved_api/solved_api.dart';
 
 class UserRequestFailed implements Exception {}
@@ -33,12 +33,14 @@ class SolvedApiClient {
     http.Response userResponse;
 
     try {
-      userResponse = await _httpClient.get(userRequest);
-    } on ClientException {
-      final bypassRequest =
-          Uri.https(_bypassUrl, '/solved/user/show', {'handle': handle});
+      if (GetPlatform.isWeb) {
+        final bypassRequest =
+            Uri.https(_bypassUrl, '/solved/user/show', {'handle': handle});
 
-      userResponse = await _httpClient.get(bypassRequest);
+        userResponse = await _httpClient.get(bypassRequest);
+      } else {
+        userResponse = await _httpClient.get(userRequest);
+      }
     } catch (e) {
       throw UserRequestFailed();
     }
@@ -55,12 +57,14 @@ class SolvedApiClient {
     http.Response userResponse;
 
     try {
-      userResponse = await _httpClient.get(userRequest);
-    } on ClientException {
-      final bypassRequest = Uri.https(
-          _bypassUrl, '/solved/user/organizations', {'handle': handle});
+      if (GetPlatform.isWeb) {
+        final bypassRequest = Uri.https(
+            _bypassUrl, '/solved/user/organizations', {'handle': handle});
 
-      userResponse = await _httpClient.get(bypassRequest);
+        userResponse = await _httpClient.get(bypassRequest);
+      } else {
+        userResponse = await _httpClient.get(userRequest);
+      }
     } catch (e) {
       throw UserRequestFailed();
     }
@@ -80,12 +84,14 @@ class SolvedApiClient {
     http.Response userResponse;
 
     try {
-      userResponse = await _httpClient.get(userRequest);
-    } on ClientException {
-      final bypassRequest = Uri.https(
-          _bypassUrl, '/solved/user/available_badges', {'handle': handle});
+      if (GetPlatform.isWeb) {
+        final bypassRequest = Uri.https(
+            _bypassUrl, '/solved/user/available_badges', {'handle': handle});
 
-      userResponse = await _httpClient.get(bypassRequest);
+        userResponse = await _httpClient.get(bypassRequest);
+      } else {
+        userResponse = await _httpClient.get(userRequest);
+      }
     } catch (e) {
       throw UserRequestFailed();
     }
@@ -105,12 +111,14 @@ class SolvedApiClient {
     http.Response userResponse;
 
     try {
-      userResponse = await _httpClient.get(userRequest);
-    } on ClientException {
-      final bypassRequest = Uri.https(_bypassUrl, '/solved/user/grass',
-          {'handle': handle, 'topic': topic ?? 'default'});
+      if (GetPlatform.isWeb) {
+        final bypassRequest = Uri.https(_bypassUrl, '/solved/user/grass',
+            {'handle': handle, 'topic': topic ?? 'default'});
 
-      userResponse = await _httpClient.get(bypassRequest);
+        userResponse = await _httpClient.get(bypassRequest);
+      } else {
+        userResponse = await _httpClient.get(userRequest);
+      }
     } catch (e) {
       throw UserRequestFailed();
     }
@@ -127,12 +135,14 @@ class SolvedApiClient {
     http.Response userResponse;
 
     try {
-      userResponse = await _httpClient.get(userRequest);
-    } on ClientException {
-      final bypassRequest =
-          Uri.https(_bypassUrl, '/solved/user/top_100', {'handle': handle});
+      if (GetPlatform.isWeb) {
+        final bypassRequest =
+            Uri.https(_bypassUrl, '/solved/user/top_100', {'handle': handle});
 
-      userResponse = await _httpClient.get(bypassRequest);
+        userResponse = await _httpClient.get(bypassRequest);
+      } else {
+        userResponse = await _httpClient.get(userRequest);
+      }
     } catch (e) {
       throw UserRequestFailed();
     }
@@ -152,12 +162,14 @@ class SolvedApiClient {
     http.Response userResponse;
 
     try {
-      userResponse = await _httpClient.get(userRequest);
-    } on ClientException {
-      final bypassRequest = Uri.https(
-          _bypassUrl, '/solved/user/problem_stats', {'handle': handle});
+      if (GetPlatform.isWeb) {
+        final bypassRequest = Uri.https(
+            _bypassUrl, '/solved/user/problem_stats', {'handle': handle});
 
-      userResponse = await _httpClient.get(bypassRequest);
+        userResponse = await _httpClient.get(bypassRequest);
+      } else {
+        userResponse = await _httpClient.get(userRequest);
+      }
     } catch (e) {
       throw UserRequestFailed();
     }
@@ -175,12 +187,14 @@ class SolvedApiClient {
     http.Response userResponse;
 
     try {
-      userResponse = await _httpClient.get(userRequest);
-    } on ClientException {
-      final bypassRequest =
-          Uri.https(_bypassUrl, '/solved/user/tag_ratings', {'handle': handle});
+      if (GetPlatform.isWeb) {
+        final bypassRequest = Uri.https(
+            _bypassUrl, '/solved/user/tag_ratings', {'handle': handle});
 
-      userResponse = await _httpClient.get(bypassRequest);
+        userResponse = await _httpClient.get(bypassRequest);
+      } else {
+        userResponse = await _httpClient.get(userRequest);
+      }
     } catch (e) {
       throw UserRequestFailed();
     }
@@ -198,12 +212,14 @@ class SolvedApiClient {
     http.Response backgroundResponse;
 
     try {
-      backgroundResponse = await _httpClient.get(backgroundRequest);
-    } on ClientException {
-      final bypassRequest = Uri.https(_bypassUrl, '/solved/background/show',
-          {'backgroundId': backgroundId});
+      if (GetPlatform.isWeb) {
+        final bypassRequest = Uri.https(_bypassUrl, '/solved/background/show',
+            {'backgroundId': backgroundId});
 
-      backgroundResponse = await _httpClient.get(bypassRequest);
+        backgroundResponse = await _httpClient.get(bypassRequest);
+      } else {
+        backgroundResponse = await _httpClient.get(backgroundRequest);
+      }
     } catch (e) {
       throw BackgroundRequestFailed();
     }
@@ -220,12 +236,14 @@ class SolvedApiClient {
     http.Response badgeResponse;
 
     try {
-      badgeResponse = await _httpClient.get(badgeRequest);
-    } on ClientException {
-      final bypassRequest =
-          Uri.https(_bypassUrl, '/solved/badge/show', {'badgeId': badgeId});
+      if (GetPlatform.isWeb) {
+        final bypassRequest =
+            Uri.https(_bypassUrl, '/solved/badge/show', {'badgeId': badgeId});
 
-      badgeResponse = await _httpClient.get(bypassRequest);
+        badgeResponse = await _httpClient.get(bypassRequest);
+      } else {
+        badgeResponse = await _httpClient.get(badgeRequest);
+      }
     } catch (e) {
       throw BadgeRequestFailed();
     }
@@ -242,12 +260,14 @@ class SolvedApiClient {
     http.Response searchResponse;
 
     try {
-      searchResponse = await _httpClient.get(searchRequest);
-    } on ClientException {
-      final bypassRequest =
-          Uri.https(_bypassUrl, '/solved/search/suggestion', {'query': query});
+      if (GetPlatform.isWeb) {
+        final bypassRequest = Uri.https(
+            _bypassUrl, '/solved/search/suggestion', {'query': query});
 
-      searchResponse = await _httpClient.get(bypassRequest);
+        searchResponse = await _httpClient.get(bypassRequest);
+      } else {
+        searchResponse = await _httpClient.get(searchRequest);
+      }
     } catch (e) {
       throw SearchRequestFailed();
     }
@@ -269,16 +289,18 @@ class SolvedApiClient {
     http.Response searchResponse;
 
     try {
-      searchResponse = await _httpClient.get(searchRequest);
-    } on ClientException {
-      final bypassRequest = Uri.https(_bypassUrl, '/solved/search/problem', {
-        'query': query,
-        'page': page?.toString() ?? '1',
-        'sort': sort ?? 'solved',
-        'direction': direction ?? 'descending',
-      });
+      if (GetPlatform.isWeb) {
+        final bypassRequest = Uri.https(_bypassUrl, '/solved/search/problem', {
+          'query': query,
+          'page': page?.toString() ?? '1',
+          'sort': sort ?? 'solved',
+          'direction': direction ?? 'descending',
+        });
 
-      searchResponse = await _httpClient.get(bypassRequest);
+        searchResponse = await _httpClient.get(bypassRequest);
+      } else {
+        searchResponse = await _httpClient.get(searchRequest);
+      }
     } catch (e) {
       throw SearchRequestFailed();
     }
@@ -299,14 +321,16 @@ class SolvedApiClient {
     http.Response searchResponse;
 
     try {
-      searchResponse = await _httpClient.get(searchRequest);
-    } on ClientException {
-      final bypassRequest = Uri.https(_bypassUrl, '/solved/search/user', {
-        'query': query,
-        'page': page?.toString() ?? '1',
-      });
+      if (GetPlatform.isWeb) {
+        final bypassRequest = Uri.https(_bypassUrl, '/solved/search/user', {
+          'query': query,
+          'page': page?.toString() ?? '1',
+        });
 
-      searchResponse = await _httpClient.get(bypassRequest);
+        searchResponse = await _httpClient.get(bypassRequest);
+      } else {
+        searchResponse = await _httpClient.get(searchRequest);
+      }
     } catch (e) {
       throw SearchRequestFailed();
     }
@@ -327,14 +351,16 @@ class SolvedApiClient {
     http.Response searchResponse;
 
     try {
-      searchResponse = await _httpClient.get(searchRequest);
-    } on ClientException {
-      final bypassRequest = Uri.https(_bypassUrl, '/solved/search/tag', {
-        'query': query,
-        'page': page?.toString() ?? '1',
-      });
+      if (GetPlatform.isWeb) {
+        final bypassRequest = Uri.https(_bypassUrl, '/solved/search/tag', {
+          'query': query,
+          'page': page?.toString() ?? '1',
+        });
 
-      searchResponse = await _httpClient.get(bypassRequest);
+        searchResponse = await _httpClient.get(bypassRequest);
+      } else {
+        searchResponse = await _httpClient.get(searchRequest);
+      }
     } catch (e) {
       throw SearchRequestFailed();
     }
@@ -354,11 +380,13 @@ class SolvedApiClient {
     http.Response arenaResponse;
 
     try {
-      arenaResponse = await _httpClient.get(arenaRequest);
-    } on ClientException {
-      final bypassRequest = Uri.https(_bypassUrl, '/solved/arena/contests');
+      if (GetPlatform.isWeb) {
+        final bypassRequest = Uri.https(_bypassUrl, '/solved/arena/contests');
 
-      arenaResponse = await _httpClient.get(bypassRequest);
+        arenaResponse = await _httpClient.get(bypassRequest);
+      } else {
+        arenaResponse = await _httpClient.get(arenaRequest);
+      }
     } catch (e) {
       throw ArenaRequestFailed();
     }
@@ -380,11 +408,13 @@ class SolvedApiClient {
     http.Response siteResponse;
 
     try {
-      siteResponse = await _httpClient.get(siteRequest);
-    } on ClientException {
-      final bypassRequest = Uri.https(_bypassUrl, '/solved/site/stats');
+      if (GetPlatform.isWeb) {
+        final bypassRequest = Uri.https(_bypassUrl, '/solved/site/stats');
 
-      siteResponse = await _httpClient.get(bypassRequest);
+        siteResponse = await _httpClient.get(bypassRequest);
+      } else {
+        siteResponse = await _httpClient.get(siteRequest);
+      }
     } catch (e) {
       throw SiteRequestFailed();
     }
