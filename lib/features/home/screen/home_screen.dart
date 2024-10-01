@@ -192,11 +192,13 @@ class _HomeViewState extends State<HomeView> {
             GridItem(
               title: "뱃지",
               onPressed: () {},
-              widget: ExtendedImage.network(
-                state.badge!.badgeImageUrl,
-                width: 60,
-                height: 60,
-              ),
+              widget: state.badge != null
+                  ? ExtendedImage.network(
+                      state.badge!.badgeImageUrl,
+                      width: 60,
+                      height: 60,
+                    )
+                  : null,
             ),
             GridItem(
               onPressed: () {},
