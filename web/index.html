@@ -1,46 +1,62 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
+    <!--
+      If you are serving your web app in a path other than the root, change the
+      href value below to reflect the base path you are serving from.
 
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
+      The path provided below has to start and end with a slash "/" in order for
+      it to work correctly.
 
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+      For more details:
+      * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
 
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="$FLUTTER_BASE_HREF">
+      This is a placeholder for base href that will be replaced by the value of
+      the `--base-href` argument provided to `flutter build`.
+    -->
+    <base href="$FLUTTER_BASE_HREF">
 
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+    <meta charset="UTF-8">
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+    <meta content="My.solved" property="og:title"/>
+    <meta content="보다 편한 PS/CP를 위한 애플리케이션" name="description">
+    <meta content="보다 편한 PS/CP를 위한 애플리케이션" property="og:description"/>
+    <meta content="icons/Icon-512.png" property="og:image"/>
 
-  <!-- iOS meta tags & icons -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="my_solved">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+    <!-- iOS meta tags & icons -->
+    <meta content="yes" name="apple-mobile-web-app-capable">
+    <meta content="black" name="apple-mobile-web-app-status-bar-style">
+    <meta content="my_solved" name="apple-mobile-web-app-title">
+    <link href="icons/Icon-192.png" rel="apple-touch-icon">
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+    <!--iOS-->
+    <meta content="https://apps.apple.com/kr/app/my-solved/id6444540009" property="al:ios:url">
+    <meta content="id6444540009" property="al:ios:app_store_id">
+    <meta content="MY.SOLVED" property="al:ios:app_name">
 
-  <title>my_solved</title>
-  <link rel="manifest" href="manifest.json">
+    <!--Android-->
+    <meta content="https://play.google.com/store/apps/details?id=com.w8385.my_solved"
+          property="al:android:url">
+    <meta content="My.solved" property="al:android:app_name">
+    <meta content="com.w8385.my_solved" property="al:android:package">
+    <meta content="https://play.google.com/store/apps/details?id=com.w8385.my_solved"
+          property="al:web:url">
 
-  <script>
-    // The value below is injected by flutter build, do not touch.
-    var serviceWorkerVersion = null;
-  </script>
-  <!-- This script adds the flutter initialization JS code -->
-  <script src="flutter.js" defer></script>
+    <!-- Favicon -->
+    <link href="favicon.png" rel="icon" type="image/png"/>
+
+    <title>my_solved</title>
+    <link href="manifest.json" rel="manifest">
+
+    <script>
+        // The value below is injected by flutter build, do not touch.
+        var serviceWorkerVersion = null;
+    </script>
+    <!-- This script adds the flutter initialization JS code -->
+    <script defer src="flutter.js"></script>
 </head>
 <body>
-  <script>
+<script>
     window.addEventListener('load', function(ev) {
       // Download main.dart.js
       _flutter.loader.loadEntrypoint({
@@ -53,6 +69,6 @@
         return appRunner.runApp();
       });
     });
-  </script>
+</script>
 </body>
 </html>
