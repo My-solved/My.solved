@@ -22,6 +22,11 @@ Future<void> main() async {
 Future<void> _initLocalNotification() async {
   FlutterLocalNotificationsPlugin localNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
+  localNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.requestNotificationsPermission();
+
   AndroidInitializationSettings androidInitializationSettings =
       const AndroidInitializationSettings("mipmap/ic_launcher");
   DarwinInitializationSettings iosInitializationSettings =
@@ -30,6 +35,7 @@ Future<void> _initLocalNotification() async {
     requestBadgePermission: false,
     requestSoundPermission: false,
   );
+
   InitializationSettings initializationSettings = InitializationSettings(
       android: androidInitializationSettings, iOS: iosInitializationSettings);
   await localNotificationsPlugin.initialize(initializationSettings);
