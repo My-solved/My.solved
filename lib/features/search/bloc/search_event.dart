@@ -46,3 +46,7 @@ class SearchFilterShowProblemTagChanged extends SearchEvent {
 
   SearchFilterShowProblemTagChanged({required this.isOn});
 }
+
+class SearchFilterRandomRerolled extends SearchEvent {
+  SearchFilterRandomRerolled();
+}

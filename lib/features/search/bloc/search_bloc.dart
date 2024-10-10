@@ -32,6 +32,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     on<SearchFilterShowSolvedProblemChanged>(
         _searchFilterShowSolvedProblemChanged);
     on<SearchFilterShowProblemTagChanged>(_searchFilterShowProblemTagChanged);
+    on<SearchFilterRandomRerolled>(_searchFilterRandomRerolled);
   }
 
   Future<void> _onInit(SearchInit event, Emitter<SearchState> emit) async {
@@ -42,11 +43,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       final query =
           '${state.text} ${state.showSolvedProblem ? '-s@$handle' : ''}';
       final problems = await searchRepository.getProblems(
-        query,
-        null,
-        state.sort.value,
-        state.direction.value,
-      );
+          query, null, state.sort.value, state.direction.value);
       final users = await searchRepository.getUsers(state.text, null);
       final tags = await searchRepository.getTags(state.text, null);
 
@@ -85,11 +82,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       final query =
           '${state.text} ${state.showSolvedProblem ? '-s@$handle' : ''}';
       final problems = await searchRepository.getProblems(
-        query,
-        null,
-        state.sort.value,
-        state.direction.value,
-      );
+          query, null, state.sort.value, state.direction.value);
       final users = await searchRepository.getUsers(event.text, null);
       final tags = await searchRepository.getTags(event.text, null);
 
@@ -119,11 +112,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     final query =
         '${state.text} ${state.showSolvedProblem ? '-s@$handle' : ''}';
     final problems = await searchRepository.getProblems(
-      query,
-      null,
-      event.sort.value,
-      state.direction.value,
-    );
+        query, null, event.sort.value, state.direction.value);
 
     emit(state.copyWith(
         problems: problems, sort: event.sort, status: SearchStatus.success));
@@ -137,11 +126,7 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     final query =
         '${state.text} ${state.showSolvedProblem ? '-s@$handle' : ''}';
     final problems = await searchRepository.getProblems(
-      query,
-      null,
-      state.sort.value,
-      event.direction.value,
-    );
+        query, null, state.sort.value, event.direction.value);
 
     emit(state.copyWith(
         problems: problems,
@@ -170,5 +155,24 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
   ) async {
     emit(state.copyWith(
         showProblemTag: event.isOn, status: SearchStatus.success));
+  }
+
+  Future<void> _searchFilterRandomRerolled(
+    SearchFilterRandomRerolled event,
+    Emitter<SearchState> emit,
+  ) async {
+    final handle = await sharedPreferencesRepository.requestHandle();
+    final query =
+        '${state.text} ${state.showSolvedProblem ? '-s@$handle' : ''}';
+    final problems = await searchRepository.getProblems(
+      query,
+      null,
+      'random',
+      state.direction.value,
+    );
+    emit(state.copyWith(
+        sort: SearchSortMethod.random,
+        problems: problems,
+        status: SearchStatus.success));
   }
 }

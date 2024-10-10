@@ -187,6 +187,21 @@ class _SearchFilterViewState extends State<SearchFilterView> {
                   ),
                 ],
               ),
+              SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("랜덤", style: MySolvedTextStyle.body2),
+                  IconButton(
+                      onPressed: () {
+                        widget.searchBLoc.add(SearchFilterRandomRerolled());
+                      },
+                      icon: Icon(
+                        Icons.casino,
+                        color: MySolvedColor.disabledButtonForeground,
+                      ))
+                ],
+              ),
               SizedBox(height: 16),
             ],
           ),
