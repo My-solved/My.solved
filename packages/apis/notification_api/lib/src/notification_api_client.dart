@@ -40,7 +40,6 @@ class NotificationApiClient {
       details,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
-      androidAllowWhileIdle: true,
       matchDateTimeComponents: DateTimeComponents.time,
     );
   }
@@ -85,7 +84,6 @@ class NotificationApiClient {
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.dateAndTime,
-      androidAllowWhileIdle: true,
     );
   }
 
