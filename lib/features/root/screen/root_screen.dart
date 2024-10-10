@@ -42,6 +42,7 @@ class RootScreen extends StatelessWidget {
         BlocProvider(
           create: (context) => SearchBloc(
             searchRepository: SearchRepository(),
+            sharedPreferencesRepository: SharedPreferencesRepository(),
           ),
         ),
         BlocProvider(

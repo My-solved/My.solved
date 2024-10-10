@@ -15,17 +15,14 @@ class SharedPreferencesRepository {
   final String _isOnIllustBackgroundKey = "is_on_illust_background";
 
   Future<String?> requestHandle() async {
-    await Future.delayed(const Duration(seconds: 1));
     return await _sharedPreferencesApiClient.getString(key: _handleKey);
   }
 
   Future<void> login({required String handle}) async {
-    await Future.delayed(const Duration(seconds: 1));
     await _sharedPreferencesApiClient.setString(key: _handleKey, value: handle);
   }
 
   Future<void> logout() async {
-    await Future.delayed(const Duration(seconds: 1));
     await _sharedPreferencesApiClient.removeByKey(key: _handleKey);
   }
 

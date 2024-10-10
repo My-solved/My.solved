@@ -5,7 +5,8 @@ enum SearchSortMethod {
   level("level", "레벨"),
   title("title", "제목"),
   solved("solved", "푼 사람 수"),
-  averageTry("average_try", "평균 시도");
+  averageTry("average_try", "평균 시도"),
+  random("random", "랜덤");
 
   const SearchSortMethod(this.value, this.displayName);
 
@@ -23,7 +24,7 @@ enum SearchSortMethod {
 
 enum SearchDirection {
   asc("asc", "오름차순"),
-  desc("decs", "내림차순");
+  desc("desc", "내림차순");
 
   const SearchDirection(this.value, this.displayName);
 

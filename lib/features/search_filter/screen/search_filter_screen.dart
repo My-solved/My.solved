@@ -127,7 +127,7 @@ class _SearchFilterViewState extends State<SearchFilterView> {
                   ),
                 ],
               ),
-              SizedBox(height: 16),
+              SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -136,10 +136,9 @@ class _SearchFilterViewState extends State<SearchFilterView> {
                     bloc: widget.searchBLoc,
                     builder: (context, state) {
                       return Switch(
-                        value: state.isNotShowSolvedProblem,
+                        value: state.showSolvedProblem,
                         onChanged: (isOn) => widget.searchBLoc.add(
-                            SearchFilterIsNotShowSolvedProblemChanged(
-                                isOn: isOn)),
+                            SearchFilterShowSolvedProblemChanged(isOn: isOn)),
                         activeColor: MySolvedColor.background,
                         activeTrackColor: MySolvedColor.main,
                         inactiveThumbColor: MySolvedColor.background,
@@ -158,7 +157,52 @@ class _SearchFilterViewState extends State<SearchFilterView> {
                   ),
                 ],
               ),
-              SizedBox(height: 24),
+              SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("문제 태그 보지 않기", style: MySolvedTextStyle.body2),
+                  BlocBuilder<SearchBloc, SearchState>(
+                    bloc: widget.searchBLoc,
+                    builder: (context, state) {
+                      return Switch(
+                        value: !state.showProblemTag,
+                        onChanged: (isOn) => widget.searchBLoc.add(
+                            SearchFilterShowProblemTagChanged(isOn: !isOn)),
+                        activeColor: MySolvedColor.background,
+                        activeTrackColor: MySolvedColor.main,
+                        inactiveThumbColor: MySolvedColor.background,
+                        inactiveTrackColor:
+                            MySolvedColor.disabledButtonBackground,
+                        trackOutlineColor: MaterialStateProperty.resolveWith(
+                          (states) {
+                            if (states.contains(MaterialState.selected)) {
+                              return null;
+                            }
+                            return MySolvedColor.disabledButtonBackground;
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("랜덤", style: MySolvedTextStyle.body2),
+                  IconButton(
+                      onPressed: () {
+                        widget.searchBLoc.add(SearchFilterRandomRerolled());
+                      },
+                      icon: Icon(
+                        Icons.casino,
+                        color: MySolvedColor.disabledButtonForeground,
+                      ))
+                ],
+              ),
+              SizedBox(height: 16),
             ],
           ),
         ),
