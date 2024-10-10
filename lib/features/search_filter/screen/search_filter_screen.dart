@@ -136,10 +136,9 @@ class _SearchFilterViewState extends State<SearchFilterView> {
                     bloc: widget.searchBLoc,
                     builder: (context, state) {
                       return Switch(
-                        value: state.isNotShowSolvedProblem,
+                        value: state.showSolvedProblem,
                         onChanged: (isOn) => widget.searchBLoc.add(
-                            SearchFilterIsNotShowSolvedProblemChanged(
-                                isOn: isOn)),
+                            SearchFilterShowSolvedProblemChanged(isOn: isOn)),
                         activeColor: MySolvedColor.background,
                         activeTrackColor: MySolvedColor.main,
                         inactiveThumbColor: MySolvedColor.background,
