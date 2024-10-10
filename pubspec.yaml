@@ -34,6 +34,7 @@ dependencies:
   timezone: ^0.9.1
   url_launcher: ^6.1.10
   permission_handler: ^11.3.1
+  add_2_calendar: ^3.0.1
 
   boj_api:
     path: packages/apis/boj_api

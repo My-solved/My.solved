@@ -4,8 +4,11 @@ enum ContestStatus { initial, loading, success, failure }
 
 extension ContestStatusX on ContestStatus {
   bool get isInitial => this == ContestStatus.initial;
+
   bool get isLoading => this == ContestStatus.loading;
+
   bool get isSuccess => this == ContestStatus.success;
+
   bool get isFailure => this == ContestStatus.failure;
 }
 
@@ -16,18 +19,22 @@ class ContestState extends Equatable {
   final List<Contest> ongoingContests;
   final List<Contest> upcomingContests;
   final List<bool> isOnNotificationUpcomingContests;
+  final List<bool> isOnCalendarUpcomingContests;
   final Map<ContestVenue, bool> filters;
 
   List<String> get selectedVenues => ContestVenue.allCases
       .where((venue) => filters[venue] ?? false)
       .map((venue) => venue.value)
       .toList();
+
   List<Contest> get filteredEndedContests => endedContests
       .where((contest) => selectedVenues.contains(contest.venue))
       .toList();
+
   List<Contest> get filteredOngoingContests => ongoingContests
       .where((contest) => selectedVenues.contains(contest.venue))
       .toList();
+
   List<Contest> get filteredUpcomingContests => upcomingContests
       .where((contest) => selectedVenues.contains(contest.venue))
       .toList();
@@ -39,6 +46,7 @@ class ContestState extends Equatable {
     this.ongoingContests = const [],
     this.upcomingContests = const [],
     this.isOnNotificationUpcomingContests = const [],
+    this.isOnCalendarUpcomingContests = const [],
     required this.filters,
   });
 
@@ -49,6 +57,7 @@ class ContestState extends Equatable {
     List<Contest>? ongoingContests,
     List<Contest>? upcomingContests,
     List<bool>? isOnNotificationUpcomingContests,
+    List<bool>? isOnCalendarUpcomingContests,
     Map<ContestVenue, bool>? filters,
   }) {
     return ContestState(
@@ -59,6 +68,8 @@ class ContestState extends Equatable {
       upcomingContests: upcomingContests ?? this.upcomingContests,
       isOnNotificationUpcomingContests: isOnNotificationUpcomingContests ??
           this.isOnNotificationUpcomingContests,
+      isOnCalendarUpcomingContests:
+          isOnCalendarUpcomingContests ?? this.isOnCalendarUpcomingContests,
       filters: filters ?? this.filters,
     );
   }
@@ -71,6 +82,7 @@ class ContestState extends Equatable {
         ongoingContests,
         upcomingContests,
         isOnNotificationUpcomingContests,
+        isOnCalendarUpcomingContests,
         filters,
         selectedVenues,
         filteredEndedContests,

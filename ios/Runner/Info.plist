@@ -110,5 +110,8 @@
     <true/>
     <key>UIApplicationSupportsIndirectInputEvents</key>
     <true/>
+
+    <key>NSCalendarsUsageDescription</key>
+    <string>adds contest to calendar</string>
 </dict>
 </plist>
