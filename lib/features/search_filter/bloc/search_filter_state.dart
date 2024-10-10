@@ -23,7 +23,7 @@ enum SearchSortMethod {
 
 enum SearchDirection {
   asc("asc", "오름차순"),
-  desc("decs", "내림차순");
+  desc("desc", "내림차순");
 
   const SearchDirection(this.value, this.displayName);
 
