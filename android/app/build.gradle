@@ -52,8 +52,8 @@ android {
 
     defaultConfig {
         applicationId "com.w8385.my_solved"
-        minSdkVersion 34
-        targetSdkVersion 34
+        minSdkVersion flutter.minSdkVersion
+        targetSdkVersion flutter.targetSdkVersion
         multiDexEnabled true
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
