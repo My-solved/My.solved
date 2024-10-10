@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:my_solved/features/search_filter/bloc/search_filter_bloc.dart';
 import 'package:search_repository/search_repository.dart';
+import 'package:shared_preferences_repository/shared_preferences_repository.dart';
 import 'package:solved_api/solved_api.dart';
 
 part 'search_event.dart';
@@ -10,8 +11,11 @@ part 'search_state.dart';
 
 class SearchBloc extends Bloc<SearchEvent, SearchState> {
   final SearchRepository searchRepository;
+  final SharedPreferencesRepository sharedPreferencesRepository;
 
-  SearchBloc({required this.searchRepository})
+  SearchBloc(
+      {required this.searchRepository,
+      required this.sharedPreferencesRepository})
       : super(
           SearchState(
             sort: SearchSortMethod.id,
@@ -34,8 +38,11 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     emit(state.copyWith(status: SearchStatus.loading));
 
     try {
+      final handle = await sharedPreferencesRepository.requestHandle();
+      final query =
+          '${state.text} ${state.showSolvedProblem ? '-s@$handle' : ''}';
       final problems = await searchRepository.getProblems(
-        state.text,
+        query,
         null,
         state.sort.value,
         state.direction.value,
@@ -74,8 +81,11 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     emit(state.copyWith(status: SearchStatus.loading));
 
     try {
+      final handle = await sharedPreferencesRepository.requestHandle();
+      final query =
+          '${state.text} ${state.showSolvedProblem ? '-s@$handle' : ''}';
       final problems = await searchRepository.getProblems(
-        event.text,
+        query,
         null,
         state.sort.value,
         state.direction.value,
@@ -105,8 +115,11 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     SearchFilterSortMethodSelected event,
     Emitter<SearchState> emit,
   ) async {
+    final handle = await sharedPreferencesRepository.requestHandle();
+    final query =
+        '${state.text} ${state.showSolvedProblem ? '-s@$handle' : ''}';
     final problems = await searchRepository.getProblems(
-      state.text,
+      query,
       null,
       event.sort.value,
       state.direction.value,
@@ -120,8 +133,11 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     SearchFilterDirectionSelected event,
     Emitter<SearchState> emit,
   ) async {
+    final handle = await sharedPreferencesRepository.requestHandle();
+    final query =
+        '${state.text} ${state.showSolvedProblem ? '-s@$handle' : ''}';
     final problems = await searchRepository.getProblems(
-      state.text,
+      query,
       null,
       state.sort.value,
       event.direction.value,
@@ -137,13 +153,22 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
     SearchFilterShowSolvedProblemChanged event,
     Emitter<SearchState> emit,
   ) async {
-    emit(state.copyWith(showSolvedProblem: event.isOn));
+    final handle = await sharedPreferencesRepository.requestHandle();
+    final query = '${state.text} ${event.isOn ? '-s@$handle' : ''}';
+    final problems = await searchRepository.getProblems(
+        query, null, state.sort.value, state.direction.value);
+
+    emit(state.copyWith(
+        problems: problems,
+        showSolvedProblem: event.isOn,
+        status: SearchStatus.success));
   }
 
   Future<void> _searchFilterShowProblemTagChanged(
     SearchFilterShowProblemTagChanged event,
     Emitter<SearchState> emit,
   ) async {
-    emit(state.copyWith(showProblemTag: event.isOn));
+    emit(state.copyWith(
+        showProblemTag: event.isOn, status: SearchStatus.success));
   }
 }
