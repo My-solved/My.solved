@@ -360,20 +360,21 @@ class _SearchViewState extends State<SearchView> {
                                               style: MySolvedTextStyle.body1,
                                             ),
                                       SizedBox(height: 8),
-                                      Wrap(
-                                        children: List.generate(
-                                          state.problems!.items[index].tags
-                                              .length,
-                                          (subIndex) => Text(
-                                            "#${state.problems!.items[index].tags[subIndex].displayNames[0]["name"]} ",
-                                            style: MySolvedTextStyle.caption1
-                                                .copyWith(
-                                              color:
-                                                  MySolvedColor.secondaryFont,
+                                      if (state.showProblemTag)
+                                        Wrap(
+                                          children: List.generate(
+                                            state.problems!.items[index].tags
+                                                .length,
+                                            (subIndex) => Text(
+                                              "#${state.problems!.items[index].tags[subIndex].displayNames[0]["name"]} ",
+                                              style: MySolvedTextStyle.caption1
+                                                  .copyWith(
+                                                color:
+                                                    MySolvedColor.secondaryFont,
+                                              ),
                                             ),
                                           ),
                                         ),
-                                      ),
                                     ],
                                   ),
                                 ),

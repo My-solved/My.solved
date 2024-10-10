@@ -19,48 +19,131 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
             showSolvedProblem: true,
           ),
         ) {
-    on<SearchTextFieldOnChanged>(
-      (event, emit) => emit(state.copyWith(
-        status: SearchStatus.initial,
-        text: event.text,
-      )),
-    );
-    on<SearchTextFieldOnSummited>((event, emit) async {
-      if (event.text.isNotEmpty) {
-        emit(state.copyWith(status: SearchStatus.loading));
-
-        try {
-          final problems = await searchRepository.getProblems(
-            event.text,
-            null,
-            state.sort.value,
-            state.direction.value,
-          );
-          final users = await searchRepository.getUsers(event.text, null);
-          final tags = await searchRepository.getTags(event.text, null);
-
-          emit(state.copyWith(
-            status: SearchStatus.success,
-            problems: problems,
-            users: users,
-            tags: tags,
-          ));
-        } catch (e) {
-          emit(state.copyWith(status: SearchStatus.failure));
-        }
-      }
-    });
-    on<SearchSegmentedControlTapped>(
-      (event, emit) => emit(state.copyWith(currentIndex: event.index)),
-    );
-    on<SearchFilterSortMethodSelected>((event, emit) {
-      emit(state.copyWith(sort: event.sort, status: SearchStatus.success));
-    });
-    on<SearchFilterDirectionSelected>(
-      (event, emit) => emit(state.copyWith(direction: event.direction)),
-    );
+    on<SearchInit>(_onInit);
+    on<SearchTextFieldOnChanged>(_searchTextFieldOnChanged);
+    on<SearchTextFieldOnSummited>(_searchTextFieldOnSummited);
+    on<SearchSegmentedControlTapped>(_searchSegmentedControlTapped);
+    on<SearchFilterSortMethodSelected>(_searchFilterSortMethodSelected);
+    on<SearchFilterDirectionSelected>(_searchFilterDirectionSelected);
     on<SearchFilterShowSolvedProblemChanged>(
-      (event, emit) => emit(state.copyWith(showSolvedProblem: event.isOn)),
+        _searchFilterShowSolvedProblemChanged);
+    on<SearchFilterShowProblemTagChanged>(_searchFilterShowProblemTagChanged);
+  }
+
+  Future<void> _onInit(SearchInit event, Emitter<SearchState> emit) async {
+    emit(state.copyWith(status: SearchStatus.loading));
+
+    try {
+      final problems = await searchRepository.getProblems(
+        state.text,
+        null,
+        state.sort.value,
+        state.direction.value,
+      );
+      final users = await searchRepository.getUsers(state.text, null);
+      final tags = await searchRepository.getTags(state.text, null);
+
+      emit(state.copyWith(
+        status: SearchStatus.success,
+        problems: problems,
+        users: users,
+        tags: tags,
+      ));
+    } catch (e) {
+      emit(state.copyWith(status: SearchStatus.failure));
+    }
+  }
+
+  Future<void> _searchTextFieldOnChanged(
+    SearchTextFieldOnChanged event,
+    Emitter<SearchState> emit,
+  ) async {
+    emit(state.copyWith(
+      status: SearchStatus.initial,
+      text: event.text,
+    ));
+  }
+
+  Future<void> _searchTextFieldOnSummited(
+      SearchTextFieldOnSummited event, Emitter<SearchState> emit) async {
+    if (event.text.isEmpty) {
+      emit(state.copyWith(status: SearchStatus.initial));
+      return;
+    }
+
+    emit(state.copyWith(status: SearchStatus.loading));
+
+    try {
+      final problems = await searchRepository.getProblems(
+        event.text,
+        null,
+        state.sort.value,
+        state.direction.value,
+      );
+      final users = await searchRepository.getUsers(event.text, null);
+      final tags = await searchRepository.getTags(event.text, null);
+
+      emit(state.copyWith(
+        status: SearchStatus.success,
+        problems: problems,
+        users: users,
+        tags: tags,
+      ));
+    } catch (e) {
+      emit(state.copyWith(status: SearchStatus.failure));
+    }
+  }
+
+  Future<void> _searchSegmentedControlTapped(
+    SearchSegmentedControlTapped event,
+    Emitter<SearchState> emit,
+  ) async {
+    emit(state.copyWith(currentIndex: event.index));
+  }
+
+  Future<void> _searchFilterSortMethodSelected(
+    SearchFilterSortMethodSelected event,
+    Emitter<SearchState> emit,
+  ) async {
+    final problems = await searchRepository.getProblems(
+      state.text,
+      null,
+      event.sort.value,
+      state.direction.value,
     );
+
+    emit(state.copyWith(
+        problems: problems, sort: event.sort, status: SearchStatus.success));
+  }
+
+  Future<void> _searchFilterDirectionSelected(
+    SearchFilterDirectionSelected event,
+    Emitter<SearchState> emit,
+  ) async {
+    final problems = await searchRepository.getProblems(
+      state.text,
+      null,
+      state.sort.value,
+      event.direction.value,
+    );
+
+    emit(state.copyWith(
+        problems: problems,
+        direction: event.direction,
+        status: SearchStatus.success));
+  }
+
+  Future<void> _searchFilterShowSolvedProblemChanged(
+    SearchFilterShowSolvedProblemChanged event,
+    Emitter<SearchState> emit,
+  ) async {
+    emit(state.copyWith(showSolvedProblem: event.isOn));
+  }
+
+  Future<void> _searchFilterShowProblemTagChanged(
+    SearchFilterShowProblemTagChanged event,
+    Emitter<SearchState> emit,
+  ) async {
+    emit(state.copyWith(showProblemTag: event.isOn));
   }
 }
