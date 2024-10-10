@@ -130,7 +130,176 @@ class _SearchViewState extends State<SearchView> {
               }
             },
             builder: (context, state) {
-              if (state.status.isLoading) {
+              if (state.status.isInitial) {
+                return Column(
+                  children: [
+                    SizedBox(height: 16),
+                    Text('문제 고급 검색', style: MySolvedTextStyle.title5),
+                    Text('이 기능은 문제 검색에만 적용됩니다.',
+                        style: MySolvedTextStyle.caption1),
+                    SizedBox(height: 16),
+                    DataTable(
+                        horizontalMargin: 16,
+                        columnSpacing: 16,
+                        headingTextStyle: TextStyle(
+                          color: MySolvedColor.font,
+                          fontFamily: MySolvedFont.pretendard,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                        dataTextStyle: TextStyle(
+                          color: MySolvedColor.font,
+                          fontFamily: MySolvedFont.pretendard,
+                          fontWeight: FontWeight.w400,
+                          fontSize: 10,
+                        ),
+                        headingRowHeight: 32,
+                        columns: [
+                          DataColumn(label: Text("연산자")),
+                          DataColumn(label: Text("예시")),
+                        ],
+                        rows: [
+                          _dataRow(
+                            operator: '""',
+                            function: "정확히 일치",
+                            example: '"A+B - 2"',
+                            description: '문제 이름에 "A+B - 2"가 포함되는 문제들',
+                          ),
+                          _dataRow(
+                            operator: '()',
+                            function: "우선순위 지정자",
+                            example: 'A+B (2 | 3)',
+                            description:
+                                '문제 이름에 "A+B"가 포함되고 "2" 또는 "3"이 포함되는 문제들',
+                          ),
+                          _dataRow(
+                            operator: '-, !, ~',
+                            function: "포함하지 않음\n('not' 연산)",
+                            example: '*s..g -@\$me',
+                            description:
+                                'Silver 이상 Gold 이하인 문제들 중 내가 풀지 않은 문제들',
+                          ),
+                          _dataRow(
+                            operator: "&",
+                            function: "모두 포함\n('and' 연산)",
+                            example: '#dp #math',
+                            description: "다이나믹 프로그래밍과 수학 두 태그 모두를 갖는 문제들",
+                          ),
+                          _dataRow(
+                            operator: "|",
+                            function: "하나 이상 포함\n('or' 연산)",
+                            example: '#greedy | #ad_hoc',
+                            description: "그리디 알고리즘 또는 애드 혹 태그를 갖는 문제들",
+                          ),
+                          _dataRow(
+                            operator: "*, tier:",
+                            function: "난이도",
+                            example: '*g4..g1',
+                            description: "난이도가 Gold IV 이상 Gold I 이하인 문제들",
+                          ),
+                          _dataRow(
+                            operator: "id:",
+                            function: "문제 번호",
+                            example: '*id:1000..2000',
+                            description: "문제 번호가 1000 이상 2000 이하인 문제들",
+                          ),
+                          _dataRow(
+                              operator: "s#, solved:",
+                              function: "푼 사람 수",
+                              example: 's#1000..',
+                              description: "1,000명 이상이 푼 문제들"),
+                          _dataRow(
+                            operator: "#, tag:",
+                            function: "태그",
+                            example: '#dp',
+                            description: "다이나믹 프로그래밍 태그를 갖는 문제들",
+                          ),
+                          _dataRow(
+                            operator: "/, from:",
+                            function: "문제 출처",
+                            example: '/ucpc2022',
+                            description: "UCPC 2022 본선 문제들",
+                          ),
+                          _dataRow(
+                            operator: "t#, average_try:, µ#",
+                            function: "평균 시도 횟수",
+                            example: 't#1..2',
+                            description: "평균 시도 횟수가 1회 이상 2회 이하인 문제들",
+                          ),
+                          _dataRow(
+                            operator: "%, lang:",
+                            function: "언어",
+                            example: '%ko',
+                            description: "한국어로 작성된 문제들",
+                          ),
+                          _dataRow(
+                            operator: "@, solved_by:, s@",
+                            function: "유저가 푼 문제",
+                            example: '@shiftpsh',
+                            description: "shiftpsh가 푼 문제들",
+                          ),
+                          _dataRow(
+                            operator: "t@, tried_by:",
+                            function: "유저가 시도한 문제",
+                            example: 't@shiftpsh',
+                            description: "shiftpsh가 시도한 문제들",
+                          ),
+                          _dataRow(
+                            operator: "v@, voted_by:, c@, contributed_by:",
+                            function: "유저가 기여한 문제",
+                            example: 'v@shiftpsh',
+                            description: "shiftpsh가 기여한 문제들",
+                          ),
+                          _dataRow(
+                            operator: "c/, in_class:",
+                            function: "CLASS 단계 안의 문제",
+                            example: 'c/1',
+                            description: "CLASS 1 단계의 문제들",
+                          ),
+                          _dataRow(
+                            operator: "e/, in_class_essentials:",
+                            function: "CLASS 단계 안의 에센셜 문제",
+                            example: 'e/1',
+                            description: "CLASS 1 에센셜 문제들",
+                          ),
+                          _dataRow(
+                            operator: "s?, standard:",
+                            function: "난이도 표준 문제",
+                            example: 's?true',
+                            description: "난이도 표준 문제들",
+                          ),
+                          _dataRow(
+                            operator: "p?, sprout: sp?",
+                            function: "새싹 난이도 문제",
+                            example: 'p?true',
+                            description: "새싹 난이도 문제들",
+                          ),
+                          _dataRow(
+                              operator: "o?, solvable",
+                              function: "풀 수 있는 문제",
+                              example: "o?true",
+                              description: "풀 수 있는 문제들"),
+                          _dataRow(
+                              operator: "v?, votable:, c?, contributable:",
+                              function: "기여할 수 있는 문제",
+                              example: "v?true",
+                              description: "기여할 수 있는 문제들"),
+                          _dataRow(
+                            operator: "w?, warning:",
+                            function: "문제해결 경고",
+                            example: "w?true",
+                            description: "문제해결 경고가 있는 문제들",
+                          ),
+                          _dataRow(
+                            operator: "v#, voted:, c#, contributed:",
+                            function: "기여한 사람 수",
+                            example: "v#100..",
+                            description: "100명 이상이 기여한 문제들",
+                          ),
+                        ]),
+                  ],
+                );
+              } else if (state.status.isLoading) {
                 return Center(
                   child: CircularProgressIndicator(color: MySolvedColor.main),
                 );
@@ -340,4 +509,32 @@ class SearchHeaderDelegate extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
     return false;
   }
+}
+
+DataRow _dataRow({
+  required String operator,
+  required String function,
+  required String example,
+  required String description,
+}) {
+  return DataRow(
+    cells: [
+      DataCell(Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(operator),
+          Text(function, style: MySolvedTextStyle.caption2),
+        ],
+      )),
+      DataCell(Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(example),
+          Text(description, style: MySolvedTextStyle.caption2),
+        ],
+      )),
+    ],
+  );
 }
