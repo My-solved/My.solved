@@ -82,14 +82,8 @@ class _SearchViewState extends State<SearchView> {
                             onPressed: () {
                               showModalBottomSheet(
                                 context: context,
-                                isDismissible: true,
-                                isScrollControlled: true,
-                                builder: (contest) => SizedBox(
-                                  height:
-                                      MediaQuery.of(context).size.height * 0.9,
-                                  child: SearchFilterScreen(
-                                    searchBLoc: context.read<SearchBloc>(),
-                                  ),
+                                builder: (contest) => SearchFilterScreen(
+                                  searchBLoc: context.read<SearchBloc>(),
                                 ),
                               );
                             },
