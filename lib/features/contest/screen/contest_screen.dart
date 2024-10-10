@@ -2,7 +2,7 @@ import 'package:boj_api/boj_api.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:my_solved/components/atoms/button/button.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:my_solved/components/molecules/segmented_control/segmented_control.dart';
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
@@ -124,12 +124,7 @@ class _ContestViewState extends State<ContestView> {
                   (index) => Column(
                     children: [
                       ElevatedButton(
-                        onPressed: () async {
-                          final urlString = contests[index].url;
-                          if (urlString != null) {
-                            launchUrlString(urlString);
-                          }
-                        },
+                        onPressed: () {},
                         style: ElevatedButton.styleFrom(
                           minimumSize: Size.fromHeight(128),
                           padding: EdgeInsets.all(16),
@@ -157,78 +152,129 @@ class _ContestViewState extends State<ContestView> {
                                 color: MySolvedColor.secondaryFont,
                               ),
                             ),
-                            SizedBox(height: 8),
-                            Row(
-                              children: [
-                                if (state.currentIndex == 1)
-                                  MySolvedFitButton(
-                                    onPressed: () => context
-                                        .read<ContestBloc>()
-                                        .add(ContestNotificationButtonPressed(
-                                          index: index,
+                            Container(
+                              margin: EdgeInsets.only(top: 8),
+                              height: 50,
+                              child: Row(
+                                children: [
+                                  if (state.currentIndex == 1)
+                                    IconButton(
+                                        onPressed: () => context
+                                            .read<ContestBloc>()
+                                            .add(
+                                                ContestNotificationButtonPressed(
+                                              index: index,
+                                            )),
+                                        style: ButtonStyle(
+                                          backgroundColor: state
+                                                      .isOnNotificationUpcomingContests[
+                                                  index]
+                                              ? MaterialStateProperty.all(
+                                                  MySolvedColor
+                                                      .secondaryButtonBackground)
+                                              : MaterialStateProperty.all(
+                                                  MySolvedColor.main),
+                                        ),
+                                        icon: Icon(
+                                          state.isOnNotificationUpcomingContests[
+                                                  index]
+                                              ? Icons.alarm_off
+                                              : Icons.alarm,
+                                          color:
+                                              state.isOnNotificationUpcomingContests[
+                                                      index]
+                                                  ? MySolvedColor.secondaryFont
+                                                  : MySolvedColor.background,
                                         )),
-                                    buttonStyle:
-                                        state.isOnNotificationUpcomingContests[
-                                                index]
-                                            ? MySolvedButtonStyle.secondary
-                                            : MySolvedButtonStyle.primary,
-                                    text:
-                                        state.isOnNotificationUpcomingContests[
-                                                index]
-                                            ? "알림 취소하기"
-                                            : "알림 설정하기",
-                                  ),
-                                Spacer(),
-                                if (contests[index].badge != null)
-                                  ElevatedButton(
-                                    onPressed: () {},
-                                    style: ElevatedButton.styleFrom(
-                                      elevation: 0,
-                                      minimumSize: Size.zero,
-                                      padding: EdgeInsets.symmetric(
-                                          vertical: 8, horizontal: 12),
-                                      foregroundColor: Color(0xFFfab005),
+                                  if (state.currentIndex == 1)
+                                    IconButton(
+                                        onPressed: () {
+                                          context.read<ContestBloc>().add(
+                                              ContestCalendarButtonPressed(
+                                                  index: index));
+                                        },
+                                        style: ButtonStyle(
+                                          backgroundColor: state
+                                                      .isOnCalendarUpcomingContests[
+                                                  index]
+                                              ? MaterialStateProperty.all(
+                                                  MySolvedColor
+                                                      .secondaryButtonBackground)
+                                              : MaterialStateProperty.all(
+                                                  MySolvedColor.main),
+                                        ),
+                                        icon: Icon(
+                                          Icons.calendar_month,
+                                          color:
+                                              state.isOnCalendarUpcomingContests[
+                                                      index]
+                                                  ? MySolvedColor.secondaryFont
+                                                  : MySolvedColor.background,
+                                          size: 20,
+                                        )),
+                                  Spacer(),
+                                  if (contests[index].badge != null)
+                                    IconButton(
+                                      onPressed: () => Fluttertoast.showToast(
+                                          msg:
+                                              "${contests[index].badge!}시 뱃지 획득",
+                                          toastLength: Toast.LENGTH_SHORT,
+                                          gravity: ToastGravity.CENTER,
+                                          timeInSecForIosWeb: 1,
+                                          backgroundColor: MySolvedColor.main
+                                              .withOpacity(0.8),
+                                          textColor: Colors.white,
+                                          fontSize: 16.0),
+                                      style: IconButton.styleFrom(
+                                          foregroundColor: Color(0xFFfab005),
+                                          backgroundColor: MySolvedColor
+                                              .secondaryBackground),
+                                      icon: Icon(Icons.badge),
                                     ),
-                                    child: Tooltip(
-                                      triggerMode: TooltipTriggerMode.tap,
-                                      message: contests[index].badge,
-                                      child: Text(
-                                        '🏅',
-                                        style: MySolvedTextStyle.caption1,
+                                  if (contests[index].background != null)
+                                    IconButton(
+                                      onPressed: () => Fluttertoast.showToast(
+                                          msg:
+                                              "${contests[index].background!}시 배경 획득",
+                                          toastLength: Toast.LENGTH_SHORT,
+                                          gravity: ToastGravity.CENTER,
+                                          timeInSecForIosWeb: 1,
+                                          backgroundColor: MySolvedColor.main
+                                              .withOpacity(0.8),
+                                          textColor: Colors.white,
+                                          fontSize: 16.0),
+                                      style: IconButton.styleFrom(
+                                        foregroundColor: Color(0xFFb197fc),
+                                        backgroundColor:
+                                            MySolvedColor.secondaryBackground,
                                       ),
+                                      icon: Icon(Icons.image),
                                     ),
-                                  ),
-                                if (contests[index].background != null)
-                                  ElevatedButton(
-                                    onPressed: () {},
-                                    style: ElevatedButton.styleFrom(
-                                      elevation: 0,
-                                      minimumSize: Size.zero,
-                                      padding: EdgeInsets.symmetric(
-                                          vertical: 8, horizontal: 12),
-                                      foregroundColor: Color(0xFFb197fc),
+                                  IconButton(
+                                    onPressed: () async {
+                                      final urlString = contests[index].url;
+                                      if (urlString != null) {
+                                        launchUrlString(urlString);
+                                      }
+                                    },
+                                    style: IconButton.styleFrom(
+                                      backgroundColor:
+                                          MySolvedColor.secondaryBackground,
                                     ),
-                                    child: Tooltip(
-                                      triggerMode: TooltipTriggerMode.tap,
-                                      message: contests[index].background,
-                                      child: Text(
-                                        '🖼️',
-                                        style: MySolvedTextStyle.caption1,
-                                      ),
+                                    icon: ExtendedImage.asset(
+                                      "assets/images/venues/${contests[index].venue?.toLowerCase() ?? "etc"}.png",
+                                      width: 24,
                                     ),
-                                  ),
-                                ExtendedImage.asset(
-                                  "assets/images/venues/${contests[index].venue?.toLowerCase() ?? "etc"}.png",
-                                  height: 30,
-                                  width: 30,
-                                ),
-                              ],
+                                  )
+                                ],
+                              ),
                             ),
-                            if (state.currentIndex == 0) SizedBox(height: 8),
                             if (state.currentIndex == 0)
-                              ProgressIndicator(
-                                  contests[index].startTime.toLocal(),
-                                  contests[index].endTime.toLocal()),
+                              Container(
+                                  margin: EdgeInsets.only(top: 8),
+                                  child: ProgressIndicator(
+                                      contests[index].startTime.toLocal(),
+                                      contests[index].endTime.toLocal())),
                           ],
                         ),
                       ),

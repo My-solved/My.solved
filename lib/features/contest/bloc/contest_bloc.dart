@@ -1,12 +1,16 @@
+import 'package:add_2_calendar/add_2_calendar.dart';
 import 'package:boj_api/boj_api.dart';
 import 'package:contest_notification_repository/contest_notification_repository.dart';
 import 'package:contest_repository/contest_repository.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:meta/meta.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:my_solved/features/contest_filter/bloc/contest_filter_bloc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences_repository/shared_preferences_repository.dart';
+
+import '../../../components/styles/color.dart';
 
 part 'contest_event.dart';
 part 'contest_state.dart';
@@ -31,6 +35,7 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
     on<ContestInit>(_onInit);
     on<ContestSegmentedControlPressed>(_onSegmentedControlPressed);
     on<ContestNotificationButtonPressed>(_onNotificationPressed);
+    on<ContestCalendarButtonPressed>(_onCalendarPressed);
     on<ContestFilterTogglePressed>(_onFilterPressed);
   }
 
@@ -48,9 +53,12 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
       final upcomingContests = result[ContestType.upcoming];
 
       List<bool> isOnContestNotifications = [];
+      List<bool> isOnContestCalendars = [];
       for (Contest contest in upcomingContests ?? []) {
         isOnContestNotifications.add(await _sharedPreferencesRepository
             .getIsOnContestNotification(title: contest.name));
+        isOnContestCalendars.add(await _sharedPreferencesRepository
+            .getIsOnContestCalendar(title: contest.name));
       }
 
       emit(state.copyWith(
@@ -59,6 +67,7 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
         ongoingContests: ongoingContests,
         upcomingContests: upcomingContests,
         isOnNotificationUpcomingContests: isOnContestNotifications,
+        isOnCalendarUpcomingContests: isOnContestCalendars,
       ));
     } catch (e) {
       emit(state.copyWith(status: ContestStatus.failure));
@@ -90,6 +99,15 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
     final minute =
         await _sharedPreferencesRepository.getContestNotificationMinute();
 
+    Fluttertoast.showToast(
+        msg: isOn ? "알람이 취소되었습니다." : "알람이 설정되었습니다.",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: MySolvedColor.main.withOpacity(0.8),
+        textColor: Colors.white,
+        fontSize: 16.0);
+
     if (isOn) {
       await _contestNotificationRepository.cancelContestNotification(
         title: contest.name,
@@ -119,6 +137,63 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
         isOnNotificationUpcomingContests: isOnNotifications,
       ));
     }
+  }
+
+  void _onCalendarPressed(
+    ContestCalendarButtonPressed event,
+    Emitter<ContestState> emit,
+  ) async {
+    emit(state.copyWith(status: ContestStatus.loading));
+
+    final contest = state.filteredUpcomingContests[event.index];
+    List<bool> isOnCalendar = state.isOnCalendarUpcomingContests;
+    final isOn = await _sharedPreferencesRepository.getIsOnContestCalendar(
+      title: contest.name,
+    );
+
+    if (isOn) {
+      await _sharedPreferencesRepository.setIsOnContestCalendar(
+        title: contest.name,
+        isOn: false,
+      );
+      isOnCalendar[event.index] = false;
+      emit(state.copyWith(
+        status: ContestStatus.success,
+        isOnCalendarUpcomingContests: isOnCalendar,
+      ));
+    } else {
+      Fluttertoast.showToast(
+          msg: "일정을 등록합니다.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: MySolvedColor.main.withOpacity(0.8),
+          textColor: Colors.white,
+          fontSize: 16.0);
+
+      final Event calendarEvent = Event(
+        title: contest.name,
+        description: contest.url,
+        startDate: contest.startTime,
+        endDate: contest.endTime,
+        iosParams: IOSParams(
+          url: contest.url,
+        ),
+      );
+      Add2Calendar.addEvent2Cal(calendarEvent);
+
+      await _sharedPreferencesRepository.setIsOnContestCalendar(
+        title: contest.name,
+        isOn: true,
+      );
+      isOnCalendar[event.index] = true;
+      emit(state.copyWith(
+        status: ContestStatus.success,
+        isOnCalendarUpcomingContests: isOnCalendar,
+      ));
+    }
+
+    emit(state.copyWith(status: ContestStatus.success));
   }
 
   void _onSegmentedControlPressed(

@@ -17,6 +17,12 @@ class ContestNotificationButtonPressed extends ContestEvent {
   ContestNotificationButtonPressed({required this.index});
 }
 
+class ContestCalendarButtonPressed extends ContestEvent {
+  final int index;
+
+  ContestCalendarButtonPressed({required this.index});
+}
+
 class ContestFilterTogglePressed extends ContestEvent {
   final ContestVenue venue;
 
