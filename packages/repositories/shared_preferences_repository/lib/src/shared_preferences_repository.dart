@@ -94,25 +94,48 @@ class SharedPreferencesRepository {
     );
   }
 
-  Future<bool> getIsOnContestNotification({required String title}) async {
-    return await _sharedPreferencesApiClient.getBool(key: title) ?? false;
+  Future<bool> getIsOnContestNotification(
+      {required String title, required int startTime}) async {
+    return await _sharedPreferencesApiClient.getBool(
+            key: "$title$startTime notification") ??
+        false;
   }
 
   Future<void> setIsOnContestNotification({
     required String title,
+    required int startTime,
     required bool isOn,
   }) async {
-    await _sharedPreferencesApiClient.setBool(key: title, value: isOn);
+    await _sharedPreferencesApiClient.setBool(
+        key: "$title$startTime notification", value: isOn);
   }
 
-  Future<bool> getIsOnContestCalendar({required String title}) async {
-    return await _sharedPreferencesApiClient.getBool(key: title) ?? false;
+  Future<bool> getIsOnContestCalendar(
+      {required String title, required int startTime}) async {
+    return await _sharedPreferencesApiClient.getBool(
+            key: "$title$startTime calendar") ??
+        false;
   }
 
   Future<void> setIsOnContestCalendar({
     required String title,
+    required int startTime,
     required bool isOn,
   }) async {
-    await _sharedPreferencesApiClient.setBool(key: title, value: isOn);
+    await _sharedPreferencesApiClient.setBool(
+        key: "$title$startTime calendar", value: isOn);
+  }
+
+  Future<bool> getIsOnContestFilter({
+    required String venue,
+  }) async {
+    return await _sharedPreferencesApiClient.getBool(key: venue) ?? false;
+  }
+
+  Future<void> setIsOnContestFilter({
+    required String venue,
+    required bool isOn,
+  }) async {
+    await _sharedPreferencesApiClient.setBool(key: venue, value: isOn);
   }
 }
