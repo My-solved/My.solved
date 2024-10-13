@@ -1,11 +1,17 @@
 part of 'contest_filter_bloc.dart';
 
 enum ContestVenue {
-  atCoder("AtCoder", "AtCoder"),
   bojOpen("BOJ Open", "BOJ Open"),
+  atCoder("AtCoder", "AtCoder"),
   codeForces("Codeforces", "Codeforces"),
-  programmers("Programmers", "Programmers"),
-  others("Others", "Others");
+  olympiad("Olympiad", "Olympiad"),
+  google("Google", "Google"),
+  facebook("Facebook", "Facebook"),
+  icpc("ICPC", "ICPC"),
+  scpc("SCPC", "SCPC"),
+  codeChef("CodeChef", "CodeChef"),
+  topCoder("TopCoder", "TopCoder"),
+  programmers("Programmers", "Programmers");
 
   const ContestVenue(this.value, this.displayName);
 
@@ -13,11 +19,17 @@ enum ContestVenue {
   final String displayName;
 
   static List<ContestVenue> get allCases => [
-        ContestVenue.atCoder,
         ContestVenue.bojOpen,
+        ContestVenue.atCoder,
         ContestVenue.codeForces,
+        ContestVenue.olympiad,
+        ContestVenue.google,
+        ContestVenue.facebook,
+        ContestVenue.icpc,
+        ContestVenue.scpc,
+        ContestVenue.codeChef,
+        ContestVenue.topCoder,
         ContestVenue.programmers,
-        ContestVenue.others,
       ];
 }
 

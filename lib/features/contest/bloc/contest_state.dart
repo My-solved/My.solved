@@ -21,22 +21,13 @@ class ContestState extends Equatable {
   final List<bool> isOnNotificationUpcomingContests;
   final List<bool> isOnCalendarUpcomingContests;
   final Map<ContestVenue, bool> filters;
+  final List<Contest> filteredEndedContests;
+  final List<Contest> filteredOngoingContests;
+  final List<Contest> filteredUpcomingContests;
 
   List<String> get selectedVenues => ContestVenue.allCases
       .where((venue) => filters[venue] ?? false)
       .map((venue) => venue.value)
-      .toList();
-
-  List<Contest> get filteredEndedContests => endedContests
-      .where((contest) => selectedVenues.contains(contest.venue))
-      .toList();
-
-  List<Contest> get filteredOngoingContests => ongoingContests
-      .where((contest) => selectedVenues.contains(contest.venue))
-      .toList();
-
-  List<Contest> get filteredUpcomingContests => upcomingContests
-      .where((contest) => selectedVenues.contains(contest.venue))
       .toList();
 
   const ContestState({
@@ -47,6 +38,9 @@ class ContestState extends Equatable {
     this.upcomingContests = const [],
     this.isOnNotificationUpcomingContests = const [],
     this.isOnCalendarUpcomingContests = const [],
+    this.filteredUpcomingContests = const [],
+    this.filteredOngoingContests = const [],
+    this.filteredEndedContests = const [],
     required this.filters,
   });
 
@@ -58,6 +52,9 @@ class ContestState extends Equatable {
     List<Contest>? upcomingContests,
     List<bool>? isOnNotificationUpcomingContests,
     List<bool>? isOnCalendarUpcomingContests,
+    List<Contest>? filteredEndedContests,
+    List<Contest>? filteredOngoingContests,
+    List<Contest>? filteredUpcomingContests,
     Map<ContestVenue, bool>? filters,
   }) {
     return ContestState(
@@ -70,6 +67,12 @@ class ContestState extends Equatable {
           this.isOnNotificationUpcomingContests,
       isOnCalendarUpcomingContests:
           isOnCalendarUpcomingContests ?? this.isOnCalendarUpcomingContests,
+      filteredEndedContests:
+          filteredEndedContests ?? this.filteredEndedContests,
+      filteredOngoingContests:
+          filteredOngoingContests ?? this.filteredOngoingContests,
+      filteredUpcomingContests:
+          filteredUpcomingContests ?? this.filteredUpcomingContests,
       filters: filters ?? this.filters,
     );
   }
