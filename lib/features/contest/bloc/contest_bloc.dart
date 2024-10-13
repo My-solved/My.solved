@@ -78,14 +78,18 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
     ContestNotificationButtonPressed event,
     Emitter<ContestState> emit,
   ) async {
-    var status = await Permission.notification.status;
-    if (status.isDenied) {
-      status = await Permission.notification.request();
-    } else if (status.isPermanentlyDenied) {
-      await openAppSettings();
-      status = await Permission.notification.status;
-    }
+    var status = await Permission.notification.request();
     if (!status.isGranted) {
+      Fluttertoast.showToast(
+          msg: "알림 권한을 허용해주세요.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: MySolvedColor.main.withOpacity(0.8),
+          textColor: Colors.white,
+          fontSize: 16.0);
+      await Future.delayed(const Duration(seconds: 1));
+      await openAppSettings();
       return;
     }
 
@@ -144,7 +148,6 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
     Emitter<ContestState> emit,
   ) async {
     emit(state.copyWith(status: ContestStatus.loading));
-
     final contest = state.filteredUpcomingContests[event.index];
     List<bool> isOnCalendar = state.isOnCalendarUpcomingContests;
     final isOn = await _sharedPreferencesRepository.getIsOnContestCalendar(
