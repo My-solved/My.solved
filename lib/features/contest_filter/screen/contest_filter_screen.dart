@@ -65,15 +65,15 @@ class _ContestFilterViewState extends State<ContestFilterView> {
                             context.read<ContestFilterBloc>().state.venues;
                         final filter =
                             widget.contestBloc.state.filters[venues[index]] ??
-                                false;
+                                true;
                         return ElevatedButton(
                           onPressed: () => widget.contestBloc.add(
                               ContestFilterTogglePressed(venue: venues[index])),
                           style: ElevatedButton.styleFrom(
                             elevation: 0,
                             backgroundColor: filter
-                                ? MySolvedColor.main
-                                : MySolvedColor.disabledButtonBackground,
+                                ? MySolvedColor.disabledButtonBackground
+                                : MySolvedColor.main,
                             padding: EdgeInsets.symmetric(
                                 vertical: 8, horizontal: 12),
                             shape: RoundedRectangleBorder(
@@ -84,8 +84,8 @@ class _ContestFilterViewState extends State<ContestFilterView> {
                             venues[index].displayName,
                             style: MySolvedTextStyle.body1.copyWith(
                               color: filter
-                                  ? MySolvedColor.background
-                                  : MySolvedColor.disabledButtonForeground,
+                                  ? MySolvedColor.disabledButtonForeground
+                                  : MySolvedColor.background,
                             ),
                           ),
                         );

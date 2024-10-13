@@ -25,11 +25,17 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
         _sharedPreferencesRepository = sharedPreferencesRepository,
         super(ContestState(
           filters: {
-            ContestVenue.atCoder: true,
-            ContestVenue.bojOpen: true,
-            ContestVenue.codeForces: true,
-            ContestVenue.programmers: true,
-            ContestVenue.others: true,
+            ContestVenue.bojOpen: false,
+            ContestVenue.atCoder: false,
+            ContestVenue.codeForces: false,
+            ContestVenue.olympiad: false,
+            ContestVenue.google: false,
+            ContestVenue.facebook: false,
+            ContestVenue.icpc: false,
+            ContestVenue.scpc: false,
+            ContestVenue.codeChef: false,
+            ContestVenue.topCoder: false,
+            ContestVenue.programmers: false,
           },
         )) {
     on<ContestInit>(_onInit);
@@ -47,27 +53,66 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
     emit(state.copyWith(status: ContestStatus.loading));
 
     try {
+      final filters = state.filters;
+      for (ContestVenue venue in ContestVenue.allCases) {
+        filters[venue] =
+            await _sharedPreferencesRepository.getIsOnContestFilter(
+          venue: venue.value,
+        );
+      }
+
       final result = await _contestRepository.getContests();
       final endedContests = result[ContestType.ended];
       final ongoingContests = result[ContestType.ongoing];
       final upcomingContests = result[ContestType.upcoming];
 
+      List<Contest> filteredEndedContests = [];
+      List<Contest> filteredOngoingContests = [];
+      List<Contest> filteredUpcomingContests = [];
       List<bool> isOnContestNotifications = [];
       List<bool> isOnContestCalendars = [];
+      for (Contest contest in endedContests ?? []) {
+        if (await _sharedPreferencesRepository.getIsOnContestFilter(
+          venue: contest.venue,
+        )) {
+          continue;
+        }
+        filteredEndedContests.add(contest);
+      }
+      for (Contest contest in ongoingContests ?? []) {
+        if (await _sharedPreferencesRepository.getIsOnContestFilter(
+          venue: contest.venue,
+        )) {
+          continue;
+        }
+        filteredOngoingContests.add(contest);
+      }
       for (Contest contest in upcomingContests ?? []) {
-        isOnContestNotifications.add(await _sharedPreferencesRepository
-            .getIsOnContestNotification(title: contest.name));
-        isOnContestCalendars.add(await _sharedPreferencesRepository
-            .getIsOnContestCalendar(title: contest.name));
+        if (await _sharedPreferencesRepository.getIsOnContestFilter(
+          venue: contest.venue,
+        )) {
+          continue;
+        }
+        filteredUpcomingContests.add(contest);
+        isOnContestNotifications.add(
+            await _sharedPreferencesRepository.getIsOnContestNotification(
+                title: contest.name, startTime: contest.startTime.hashCode));
+        isOnContestCalendars.add(
+            await _sharedPreferencesRepository.getIsOnContestCalendar(
+                title: contest.name, startTime: contest.startTime.hashCode));
       }
 
       emit(state.copyWith(
         status: ContestStatus.success,
+        filters: filters,
         endedContests: endedContests,
         ongoingContests: ongoingContests,
         upcomingContests: upcomingContests,
         isOnNotificationUpcomingContests: isOnContestNotifications,
         isOnCalendarUpcomingContests: isOnContestCalendars,
+        filteredEndedContests: filteredEndedContests,
+        filteredOngoingContests: filteredOngoingContests,
+        filteredUpcomingContests: filteredUpcomingContests,
       ));
     } catch (e) {
       emit(state.copyWith(status: ContestStatus.failure));
@@ -99,6 +144,7 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
     List<bool> isOnNotifications = state.isOnNotificationUpcomingContests;
     final isOn = await _sharedPreferencesRepository.getIsOnContestNotification(
       title: contest.name,
+      startTime: contest.startTime.hashCode,
     );
     final minute =
         await _sharedPreferencesRepository.getContestNotificationMinute();
@@ -118,6 +164,7 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
       );
       await _sharedPreferencesRepository.setIsOnContestNotification(
         title: contest.name,
+        startTime: contest.startTime.hashCode,
         isOn: false,
       );
       isOnNotifications[event.index] = false;
@@ -133,6 +180,7 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
       );
       await _sharedPreferencesRepository.setIsOnContestNotification(
         title: contest.name,
+        startTime: contest.startTime.hashCode,
         isOn: true,
       );
       isOnNotifications[event.index] = true;
@@ -152,11 +200,13 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
     List<bool> isOnCalendar = state.isOnCalendarUpcomingContests;
     final isOn = await _sharedPreferencesRepository.getIsOnContestCalendar(
       title: contest.name,
+      startTime: contest.startTime.hashCode,
     );
 
     if (isOn) {
       await _sharedPreferencesRepository.setIsOnContestCalendar(
         title: contest.name,
+        startTime: contest.startTime.hashCode,
         isOn: false,
       );
       isOnCalendar[event.index] = false;
@@ -187,6 +237,7 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
 
       await _sharedPreferencesRepository.setIsOnContestCalendar(
         title: contest.name,
+        startTime: contest.startTime.hashCode,
         isOn: true,
       );
       isOnCalendar[event.index] = true;
@@ -214,7 +265,56 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
 
     var filters = state.filters;
     final current = filters[event.venue] ?? true;
-    current ? filters[event.venue] = false : filters[event.venue] = true;
-    emit(state.copyWith(status: ContestStatus.success, filters: filters));
+    filters[event.venue] = !current;
+
+    await _sharedPreferencesRepository.setIsOnContestFilter(
+      venue: event.venue.value,
+      isOn: !current,
+    );
+
+    List<Contest> filteredEndedContests = [];
+    List<Contest> filteredOngoingContests = [];
+    List<Contest> filteredUpcomingContests = [];
+    List<bool> isOnContestNotifications = [];
+    List<bool> isOnContestCalendars = [];
+    for (Contest contest in state.endedContests) {
+      if (await _sharedPreferencesRepository.getIsOnContestFilter(
+        venue: contest.venue,
+      )) {
+        continue;
+      }
+      filteredEndedContests.add(contest);
+    }
+    for (Contest contest in state.ongoingContests) {
+      if (await _sharedPreferencesRepository.getIsOnContestFilter(
+        venue: contest.venue,
+      )) {
+        continue;
+      }
+      filteredOngoingContests.add(contest);
+    }
+    for (Contest contest in state.upcomingContests) {
+      if (await _sharedPreferencesRepository.getIsOnContestFilter(
+        venue: contest.venue,
+      )) {
+        continue;
+      }
+      filteredUpcomingContests.add(contest);
+      isOnContestNotifications.add(
+          await _sharedPreferencesRepository.getIsOnContestNotification(
+              title: contest.name, startTime: contest.startTime.hashCode));
+      isOnContestCalendars.add(
+          await _sharedPreferencesRepository.getIsOnContestCalendar(
+              title: contest.name, startTime: contest.startTime.hashCode));
+    }
+
+    emit(state.copyWith(
+        status: ContestStatus.success,
+        filters: filters,
+        isOnNotificationUpcomingContests: isOnContestNotifications,
+        isOnCalendarUpcomingContests: isOnContestCalendars,
+        filteredEndedContests: filteredEndedContests,
+        filteredOngoingContests: filteredOngoingContests,
+        filteredUpcomingContests: filteredUpcomingContests));
   }
 }
