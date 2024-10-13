@@ -1,9 +1,12 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences_repository/shared_preferences_repository.dart';
 import 'package:streak_notification_repository/streak_notification_repository.dart';
+
+import '../../../components/styles/color.dart';
 
 part 'setting_event.dart';
 part 'setting_state.dart';
@@ -96,15 +99,18 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
     SettingStreakNotificationSwitchChanged event,
     Emitter<SettingState> emit,
   ) async {
-    var status = await Permission.notification.status;
-    if (status.isDenied) {
-      status = await Permission.notification.request();
-      emit(state.copyWith(isOnStreakNotification: status.isGranted));
-    } else if (status.isPermanentlyDenied) {
-      await openAppSettings();
-      emit(state.copyWith(isOnStreakNotification: status.isGranted));
-    }
+    var status = await Permission.notification.request();
     if (!status.isGranted) {
+      Fluttertoast.showToast(
+          msg: "알림 권한을 허용해주세요.",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.CENTER,
+          timeInSecForIosWeb: 1,
+          backgroundColor: MySolvedColor.main.withOpacity(0.8),
+          textColor: Colors.white,
+          fontSize: 16.0);
+      await Future.delayed(const Duration(seconds: 1));
+      await openAppSettings();
       return;
     }
 
