@@ -3,7 +3,7 @@ description: For solving problems in the world of programming; base on solved.ac
 
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 2.2.1+85
+version: 2.2.2+87
 
 environment:
   sdk: ">=2.18.2 <3.0.0"
