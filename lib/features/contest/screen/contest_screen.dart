@@ -262,7 +262,7 @@ class _ContestViewState extends State<ContestView> {
                                           MySolvedColor.secondaryBackground,
                                     ),
                                     icon: ExtendedImage.asset(
-                                      "assets/images/venues/${contests[index].venue?.toLowerCase() ?? "etc"}.png",
+                                      "assets/images/venues/${contests[index].venue.toLowerCase()}.png",
                                       width: 24,
                                     ),
                                   )
