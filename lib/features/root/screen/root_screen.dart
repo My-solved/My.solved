@@ -21,17 +21,15 @@ import 'package:user_repository/user_repository.dart';
 class RootScreen extends StatelessWidget {
   final String handle;
 
-  const RootScreen({required this.handle, super.key});
+  const RootScreen({super.key, required this.handle});
 
   @override
   Widget build(BuildContext context) {
+    final rootBloc = RootBloc();
+    rootBloc.add(VersionInfoInit());
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-          create: (context) => RootBloc(
-            handle: handle,
-          ),
-        ),
+        BlocProvider.value(value: rootBloc),
         BlocProvider(
           create: (context) => HomeBloc(
             userRepository: UserRepository(),
@@ -53,13 +51,15 @@ class RootScreen extends StatelessWidget {
           ),
         ),
       ],
-      child: RootView(),
+      child: RootView(handle: handle),
     );
   }
 }
 
 class RootView extends StatefulWidget {
-  const RootView({super.key});
+  const RootView({super.key, required this.handle});
+
+  final String handle;
 
   @override
   State<RootView> createState() => _RootViewState();
@@ -97,7 +97,10 @@ class _RootViewState extends State<RootView> {
         return Scaffold(
           key: _scaffoldKey,
           backgroundColor: MySolvedColor.background,
-          endDrawer: HomeDrawer(homeBloc: context.read<HomeBloc>()),
+          endDrawer: HomeDrawer(
+            handle: widget.handle,
+            homeBloc: context.read<HomeBloc>(),
+          ),
           body: bottomNaviScreen.elementAt(state.tabIndex),
           bottomNavigationBar: BottomNavigationBar(
             items: bottomNavItems,
@@ -120,9 +123,14 @@ class _RootViewState extends State<RootView> {
 }
 
 class HomeDrawer extends StatelessWidget {
+  final String handle;
   final HomeBloc homeBloc;
 
-  const HomeDrawer({super.key, required this.homeBloc});
+  const HomeDrawer({
+    super.key,
+    required this.handle,
+    required this.homeBloc,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +154,7 @@ class HomeDrawer extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                 child: Text(
-                  context.read<RootBloc>().handle,
+                  handle,
                   style: MySolvedTextStyle.title3,
                 ),
               ),
@@ -181,11 +189,15 @@ class HomeDrawer extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text("버전 정보", style: MySolvedTextStyle.body2),
-                    Text(
-                      "1.0.0",
-                      style: MySolvedTextStyle.body2.copyWith(
-                        color: MySolvedColor.secondaryFont,
-                      ),
+                    BlocBuilder<RootBloc, RootState>(
+                      builder: (context, state) {
+                        return Text(
+                          (state is RootSuccess) ? state.version : "",
+                          style: MySolvedTextStyle.body2.copyWith(
+                            color: MySolvedColor.secondaryFont,
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

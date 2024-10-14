@@ -7,17 +7,23 @@ part 'root_event.dart';
 part 'root_state.dart';
 
 class RootBloc extends Bloc<RootEvent, RootState> {
-  final String handle;
+  RootBloc() : super(RootInitial()) {
+    on<VersionInfoInit>(_onInitVersion);
+    on<NavigationBarItemTapped>(_onItemTapped);
+  }
 
-  RootBloc({required this.handle}) : super(RootState(handle: handle)) {
-    on<VersionInfoInit>(
-      (event, emit) async {
-        final packageInfo = await PackageInfo.fromPlatform();
-        emit(state.copyWith(version: packageInfo.version));
-      },
-    );
-    on<NavigationBarItemTapped>(
-      (event, emit) => emit(state.copyWith(tabIndex: event.tabIndex)),
-    );
+  Future<void> _onInitVersion(
+    VersionInfoInit event,
+    Emitter<RootState> emit,
+  ) async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    emit(RootSuccess(tabIndex: state.tabIndex, version: packageInfo.version));
+  }
+
+  void _onItemTapped(
+    NavigationBarItemTapped event,
+    Emitter<RootState> emit,
+  ) {
+    emit(state.copyWith(tabIndex: event.tabIndex));
   }
 }
