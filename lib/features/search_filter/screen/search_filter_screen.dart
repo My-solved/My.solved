@@ -144,9 +144,9 @@ class _SearchFilterViewState extends State<SearchFilterView> {
                         inactiveThumbColor: MySolvedColor.background,
                         inactiveTrackColor:
                             MySolvedColor.disabledButtonBackground,
-                        trackOutlineColor: MaterialStateProperty.resolveWith(
+                        trackOutlineColor: WidgetStateProperty.resolveWith(
                           (states) {
-                            if (states.contains(MaterialState.selected)) {
+                            if (states.contains(WidgetState.selected)) {
                               return null;
                             }
                             return MySolvedColor.disabledButtonBackground;
@@ -174,9 +174,9 @@ class _SearchFilterViewState extends State<SearchFilterView> {
                         inactiveThumbColor: MySolvedColor.background,
                         inactiveTrackColor:
                             MySolvedColor.disabledButtonBackground,
-                        trackOutlineColor: MaterialStateProperty.resolveWith(
+                        trackOutlineColor: WidgetStateProperty.resolveWith(
                           (states) {
-                            if (states.contains(MaterialState.selected)) {
+                            if (states.contains(WidgetState.selected)) {
                               return null;
                             }
                             return MySolvedColor.disabledButtonBackground;

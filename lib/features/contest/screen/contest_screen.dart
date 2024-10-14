@@ -169,10 +169,10 @@ class _ContestViewState extends State<ContestView> {
                                           backgroundColor: state
                                                       .isOnNotificationUpcomingContests[
                                                   index]
-                                              ? MaterialStateProperty.all(
+                                              ? WidgetStateProperty.all(
                                                   MySolvedColor
                                                       .secondaryButtonBackground)
-                                              : MaterialStateProperty.all(
+                                              : WidgetStateProperty.all(
                                                   MySolvedColor.main),
                                         ),
                                         icon: Icon(
@@ -197,10 +197,10 @@ class _ContestViewState extends State<ContestView> {
                                           backgroundColor: state
                                                       .isOnCalendarUpcomingContests[
                                                   index]
-                                              ? MaterialStateProperty.all(
+                                              ? WidgetStateProperty.all(
                                                   MySolvedColor
                                                       .secondaryButtonBackground)
-                                              : MaterialStateProperty.all(
+                                              : WidgetStateProperty.all(
                                                   MySolvedColor.main),
                                         ),
                                         icon: Icon(
