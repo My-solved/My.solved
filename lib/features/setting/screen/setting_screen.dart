@@ -95,9 +95,9 @@ class _SettingViewState extends State<SettingView> {
                           inactiveThumbColor: MySolvedColor.background,
                           inactiveTrackColor:
                               MySolvedColor.disabledButtonBackground,
-                          trackOutlineColor: MaterialStateProperty.resolveWith(
+                          trackOutlineColor: WidgetStateProperty.resolveWith(
                             (states) {
-                              if (states.contains(MaterialState.selected)) {
+                              if (states.contains(WidgetState.selected)) {
                                 return null;
                               }
                               return MySolvedColor.disabledButtonBackground;
