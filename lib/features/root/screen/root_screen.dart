@@ -164,7 +164,7 @@ class HomeDrawer extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    MySolvedTextButton(
+                    TextButton(
                       onPressed: () => Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -172,12 +172,48 @@ class HomeDrawer extends StatelessWidget {
                               SettingScreen(homeBloc: homeBloc),
                         ),
                       ),
-                      text: "설정",
+                      style: ButtonStyle(
+                        elevation: WidgetStateProperty.all(0),
+                        overlayColor: WidgetStateProperty.all(Colors.transparent),
+                        minimumSize: WidgetStateProperty.all(Size.zero),
+                        padding: WidgetStateProperty.all(EdgeInsets.zero),
+                        splashFactory: NoSplash.splashFactory,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "설정",
+                            style: MySolvedTextStyle.body2.copyWith(
+                              color: MySolvedColor.font,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     SizedBox(height: 16),
-                    MySolvedTextButton(
+                    TextButton(
                       onPressed: () => context.read<AppBloc>().add(Logout()),
-                      text: "로그아웃",
+                      style: ButtonStyle(
+                        elevation: WidgetStateProperty.all(0),
+                        overlayColor: WidgetStateProperty.all(Colors.transparent),
+                        minimumSize: WidgetStateProperty.all(Size.zero),
+                        padding: WidgetStateProperty.all(EdgeInsets.zero),
+                        splashFactory: NoSplash.splashFactory,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "로그아웃",
+                            style: MySolvedTextStyle.body2.copyWith(
+                              color: MySolvedColor.font,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
