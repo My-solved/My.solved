@@ -3,7 +3,6 @@ import 'package:contest_repository/contest_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_solved/app/bloc/app_bloc.dart';
-import 'package:my_solved/components/atoms/button/my_solved_text_button.dart';
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
 import 'package:my_solved/features/contest/bloc/contest_bloc.dart';
