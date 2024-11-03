@@ -5,7 +5,8 @@
 
 - AOS: https://play.google.com/store/apps/details?id=com.w8385.my_solved   
 - iOS: https://apps.apple.com/kr/app/my-solved/id6444540009
-- Web: ﻿https://my-solved.github.io/﻿   
+- Web: ﻿https://my-solved.github.io/
+     
 
 ## 기능
 - 나의 solved.ac 프로필을 확인할 수 있습니다.
