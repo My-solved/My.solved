@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_native_timezone/flutter_native_timezone.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:my_solved/app/screen/app_screen.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -10,7 +10,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   tz.initializeTimeZones();
-  final String localName = await FlutterNativeTimezone.getLocalTimezone();
+  final String localName = await FlutterTimezone.getLocalTimezone();
   tz.setLocalLocation(tz.getLocation(localName));
 
   await _initLocalNotification();
