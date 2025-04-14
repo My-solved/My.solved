@@ -28,14 +28,9 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
             ContestVenue.bojOpen: false,
             ContestVenue.atCoder: false,
             ContestVenue.codeForces: false,
-            ContestVenue.olympiad: false,
-            ContestVenue.google: false,
-            ContestVenue.facebook: false,
             ContestVenue.icpc: false,
-            ContestVenue.scpc: false,
-            ContestVenue.codeChef: false,
-            ContestVenue.topCoder: false,
-            ContestVenue.programmers: false,
+            ContestVenue.leetCode: false,
+            ContestVenue.usaco: false,
           },
         )) {
     on<ContestInit>(_onInit);
