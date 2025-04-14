@@ -4,14 +4,9 @@ enum ContestVenue {
   bojOpen("BOJ Open", "BOJ Open"),
   atCoder("AtCoder", "AtCoder"),
   codeForces("Codeforces", "Codeforces"),
-  olympiad("Olympiad", "Olympiad"),
-  google("Google", "Google"),
-  facebook("Facebook", "Facebook"),
   icpc("ICPC", "ICPC"),
-  scpc("SCPC", "SCPC"),
-  codeChef("CodeChef", "CodeChef"),
-  topCoder("TopCoder", "TopCoder"),
-  programmers("Programmers", "Programmers");
+  leetCode("LeetCode", "LeetCode"),
+  usaco("USACO", "USACO");
 
   const ContestVenue(this.value, this.displayName);
 
@@ -22,14 +17,9 @@ enum ContestVenue {
         ContestVenue.bojOpen,
         ContestVenue.atCoder,
         ContestVenue.codeForces,
-        ContestVenue.olympiad,
-        ContestVenue.google,
-        ContestVenue.facebook,
         ContestVenue.icpc,
-        ContestVenue.scpc,
-        ContestVenue.codeChef,
-        ContestVenue.topCoder,
-        ContestVenue.programmers,
+        ContestVenue.leetCode,
+        ContestVenue.usaco,
       ];
 }
 
