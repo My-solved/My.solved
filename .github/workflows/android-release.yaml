@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 env:
   JAVA_VERSION: "21.x"
   FLUTTER_VERSION: "3.29.x"
