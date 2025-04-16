@@ -112,6 +112,8 @@ jobs:
     needs: [ test ]
     name: Deploy Web 🌐
     runs-on: ubuntu-latest
+    env:
+      FLUTTER_WEB_RENDERER: html
     steps:
       - uses: actions/checkout@v4
       - name: Setup Java ☕
@@ -131,8 +133,7 @@ jobs:
           mkdir ~/.ssh
           echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          mkdir build
-          mkdir build/web
+          mkdir -p build/web
           cd build/web
           git init
           git config --global user.name "w8385"
@@ -142,10 +143,8 @@ jobs:
           git checkout main
           cd ../../
           flutter pub get
-          flutter build web --release -d chrome
+          flutter build web --release
           cd build/web
           git add .
           git commit -m "Update web"
           git push
-          
-
