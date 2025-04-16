@@ -5,6 +5,7 @@ import 'package:my_solved/features/login/screen/login_screen.dart';
 import 'package:my_solved/features/root/screen/root_screen.dart';
 import 'package:my_solved/features/splash/screen/splash_screen.dart';
 import 'package:shared_preferences_repository/shared_preferences_repository.dart';
+import 'package:upgrader/upgrader.dart';
 
 class AppScreen extends StatelessWidget {
   const AppScreen({super.key});
@@ -30,7 +31,8 @@ class _AppViewState extends State<AppView> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: BlocBuilder<AppBloc, AppState>(
+        home: UpgradeAlert(
+      child: BlocBuilder<AppBloc, AppState>(
         bloc: BlocProvider.of<AppBloc>(context),
         builder: (context, state) {
           if (state is AppInitial) {
@@ -42,6 +44,6 @@ class _AppViewState extends State<AppView> {
           }
         },
       ),
-    );
+    ));
   }
 }
