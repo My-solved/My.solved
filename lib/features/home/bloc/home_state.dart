@@ -17,10 +17,12 @@ class HomeState extends Equatable {
   final String handle;
   final bool isOnIllustBackground;
   final User? user;
+  final String? profileImageUrl;
   final Background? background;
-  final List<Organization> organizations;
   final Badge? badge;
   final List<Badge> badges;
+  final List<Organization> organizations;
+  final Streak? streak;
   final bool? solvedToday;
   final List<TagRating>? tagRatings;
   final List<ProblemStat>? problemStats;
@@ -30,10 +32,12 @@ class HomeState extends Equatable {
     required this.handle,
     required this.isOnIllustBackground,
     this.user,
+    this.profileImageUrl,
     this.background,
-    required this.organizations,
     this.badge,
     required this.badges,
+    required this.organizations,
+    this.streak,
     this.solvedToday,
     this.tagRatings,
     this.problemStats,
@@ -44,10 +48,12 @@ class HomeState extends Equatable {
     String? handle,
     bool? isOnIllustBackground,
     User? user,
+    String? profileImageUrl,
     Background? background,
-    List<Organization>? organizations,
     Badge? badge,
     List<Badge>? badges,
+    List<Organization>? organizations,
+    Streak? streak,
     bool? solvedToday,
     List<TagRating>? tagRatings,
     List<ProblemStat>? problemStats,
@@ -57,10 +63,12 @@ class HomeState extends Equatable {
       handle: handle ?? this.handle,
       isOnIllustBackground: isOnIllustBackground ?? this.isOnIllustBackground,
       user: user ?? this.user,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       background: background ?? this.background,
-      organizations: organizations ?? this.organizations,
       badge: badge ?? this.badge,
       badges: badges ?? this.badges,
+      organizations: organizations ?? this.organizations,
+      streak: streak ?? this.streak,
       solvedToday: solvedToday ?? this.solvedToday,
       tagRatings: tagRatings ?? this.tagRatings,
       problemStats: problemStats ?? this.problemStats,
@@ -73,10 +81,12 @@ class HomeState extends Equatable {
         handle,
         isOnIllustBackground,
         user,
+        profileImageUrl,
         background,
-        organizations,
         badge,
         badges,
+        organizations,
+        streak,
         solvedToday,
         tagRatings,
         problemStats,

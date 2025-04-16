@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:meta/meta.dart';
 import 'package:shared_preferences_repository/shared_preferences_repository.dart';
 import 'package:solved_api/solved_api.dart';
-import 'package:timezone/timezone.dart' as tz;
 import 'package:user_repository/user_repository.dart';
 
 part "home_event.dart";
@@ -39,6 +38,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
     try {
       final user = await _userRepository.getUser(_handle);
+      final profileImageUrl = user.profileImageUrl;
       final background = await _userRepository.getBackground(user.backgroundId);
       final organizations = await _userRepository.getOrganizations(_handle);
       final isOnIllustBackground =
@@ -50,22 +50,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       }
       final badges = await _userRepository.getBadges(_handle);
       final streak = await _userRepository.getStreak(_handle, "default");
-      streak.grass.sort((a, b) {
-        if (a.year != b.year) {
-          return a.year.compareTo(b.year);
-        } else if (a.month != b.month) {
-          return a.month.compareTo(b.month);
-        } else {
-          return a.day.compareTo(b.day);
-        }
-      });
 
-      tz.TZDateTime? today =
-          tz.TZDateTime.now(tz.UTC).add(const Duration(hours: 3));
-
-      late bool solvedToday = today.year == streak.grass.last.year &&
-          today.month == streak.grass.last.month &&
-          today.day == streak.grass.last.day;
+      late bool solvedToday = streak.currentStreak > 0;
 
       final tagRatings = await _userRepository.getTagRatings(_handle);
       final problemStats = await _userRepository.getProblemStats(_handle);
@@ -74,10 +60,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         isOnIllustBackground: isOnIllustBackground,
         status: HomeStatus.success,
         user: user,
+        profileImageUrl: profileImageUrl,
         background: background,
-        organizations: organizations,
         badge: badge,
         badges: badges,
+        organizations: organizations,
+        streak: streak,
         solvedToday: solvedToday,
         tagRatings: tagRatings,
         problemStats: problemStats,
