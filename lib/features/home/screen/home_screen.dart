@@ -44,7 +44,7 @@ class HomeScreen extends StatelessWidget {
                 children: [
                   ClipOval(
                     child: ExtendedImage.network(
-                      context.read<HomeBloc>().state.user?.profileImageUrl ??
+                      context.read<HomeBloc>().state.profileImageUrl ??
                           "https://static.solved.ac/misc/360x360/default_profile.png",
                       height: 24,
                     ),
@@ -149,7 +149,7 @@ class _HomeViewState extends State<HomeView> {
             ),
             GridItem(
                 title: "스트릭",
-                value: state.user!.maxStreak.toString(),
+                value: state.streak!.currentStreak.toString(),
                 unit: "일",
                 onPressed: () async {
                   Fluttertoast.showToast(
