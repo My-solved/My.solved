@@ -106,7 +106,7 @@ class SettingBloc extends Bloc<SettingEvent, SettingState> {
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.CENTER,
           timeInSecForIosWeb: 1,
-          backgroundColor: MySolvedColor.main.withOpacity(0.8),
+          backgroundColor: MySolvedColor.main..withAlpha(200),
           textColor: Colors.white,
           fontSize: 16.0);
       await Future.delayed(const Duration(seconds: 1));
