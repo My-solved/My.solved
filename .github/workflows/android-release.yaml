@@ -73,7 +73,7 @@ jobs:
         with:
           serviceAccountJson: play-upload-key.json
           packageName: com.w8385.my_solved
-          releaseFile: ./build/app-release.aab
+          releaseFiles: ./build/app-release.aab
           track: production
           status: completed
 
