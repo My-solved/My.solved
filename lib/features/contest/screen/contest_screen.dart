@@ -2,7 +2,6 @@ import 'package:boj_api/boj_api.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:my_solved/components/molecules/segmented_control/segmented_control.dart';
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
@@ -214,41 +213,31 @@ class _ContestViewState extends State<ContestView> {
                                         )),
                                   Spacer(),
                                   if (contests[index].badge != null)
-                                    IconButton(
-                                      onPressed: () => Fluttertoast.showToast(
-                                          msg:
-                                              "${contests[index].badge!}시 뱃지 획득",
-                                          toastLength: Toast.LENGTH_SHORT,
-                                          gravity: ToastGravity.CENTER,
-                                          timeInSecForIosWeb: 1,
-                                          backgroundColor: MySolvedColor.main
-                                              .withOpacity(0.8),
-                                          textColor: Colors.white,
-                                          fontSize: 16.0),
-                                      style: IconButton.styleFrom(
-                                          foregroundColor: Color(0xFFfab005),
-                                          backgroundColor: MySolvedColor
-                                              .secondaryBackground),
-                                      icon: Icon(Icons.badge),
+                                    Tooltip(
+                                      triggerMode: TooltipTriggerMode.tap,
+                                      message:
+                                          "${contests[index].badge}시 배지 획득",
+                                      child: IconButton(
+                                        style: IconButton.styleFrom(
+                                            foregroundColor: Color(0xFFfab005),
+                                            backgroundColor: MySolvedColor
+                                                .secondaryBackground),
+                                        icon: Icon(Icons.badge),
+                                        onPressed: () {},
+                                      ),
                                     ),
                                   if (contests[index].background != null)
                                     IconButton(
-                                      onPressed: () => Fluttertoast.showToast(
-                                          msg:
-                                              "${contests[index].background!}시 배경 획득",
-                                          toastLength: Toast.LENGTH_SHORT,
-                                          gravity: ToastGravity.CENTER,
-                                          timeInSecForIosWeb: 1,
-                                          backgroundColor: MySolvedColor.main
-                                              .withOpacity(0.8),
-                                          textColor: Colors.white,
-                                          fontSize: 16.0),
                                       style: IconButton.styleFrom(
-                                        foregroundColor: Color(0xFFb197fc),
-                                        backgroundColor:
-                                            MySolvedColor.secondaryBackground,
-                                      ),
-                                      icon: Icon(Icons.image),
+                                          foregroundColor: Color(0xFFb197fc),
+                                          backgroundColor: MySolvedColor
+                                              .secondaryBackground),
+                                      icon: Tooltip(
+                                          triggerMode: TooltipTriggerMode.tap,
+                                          message:
+                                              "${contests[index].background}시 배경 획득",
+                                          child: Icon(Icons.image)),
+                                      onPressed: () {},
                                     ),
                                   IconButton(
                                     onPressed: () async {
