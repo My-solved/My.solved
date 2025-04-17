@@ -3,8 +3,10 @@ default_platform(:ios)
 platform :ios do
   desc "Deploy to App Store directly 🚀"
   lane :release do
-    build_app(
-      export_method: "app-store"
+    app_store_connect_api_key(
+      key_id:       ENV["APP_STORE_CONNECT_KEY_ID"],
+      issuer_id:    ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_filepath: "./fastlane/AppStoreConnectAPIKey.p8",
     )
 
     upload_to_app_store(
@@ -12,6 +14,13 @@ platform :ios do
       skip_metadata: true,
       submit_for_review: true,
       automatic_release: true,
+    )
+
+    discord(
+      webhook_url: "https://discord.com/api/webhooks/1362457088433066316/3xKTs3n6_DP0p1BCwFu_xjPiecBrKq0mg8f_gaU9uRSLRJCwjfueTVKQkhMI1zXzSW3p",
+      username: "Fastlane",
+      message: "✅ App Store 배포 완료! 🎉",
+      success: true
     )
   end
 end

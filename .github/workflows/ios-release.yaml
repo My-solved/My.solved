@@ -41,13 +41,20 @@ jobs:
           ruby-version: 3.2
 
       - name: Install Fastlane
-        run: cd ios && bundle install
+        run: |
+          cd ios
+          bundle install
+          bundle exec fastlane add_plugin discord
+
+      - name: Decode App Store Connect API Key
+        env:
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        run: |
+          echo "${{ secrets.APP_STORE_CONNECT_API_KEY }}" | base64 --decode > ./ios/fastlane/AppStoreConnectAPIKey.p8
 
       - name: Release to App Store
         env:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
-        run: |
-          cd ios
-          bundle exec fastlane release
+        run: bundle exec fastlane release
+        working-directory: ios
