@@ -13,6 +13,7 @@ class UserProfile {
     required this.badgeId,
     required this.backgroundId,
     required this.profileImageUrl,
+    this.bio,
     required this.solvedCount,
     required this.legacyContributionCount,
     required this.userClass,
@@ -33,6 +34,10 @@ class UserProfile {
   final String? badgeId;
   final String? backgroundId;
   final String? profileImageUrl;
+
+  /// Public profile biography from the active contract, including explicit
+  /// empty or whitespace-only values. `null` means absent or explicitly null.
+  final String? bio;
   final int solvedCount;
 
   /// The legacy contribution count populated from the v3 `voteCount` field.
