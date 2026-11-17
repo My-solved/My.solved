@@ -780,8 +780,23 @@ void main() {
           sort,
           direction,
         );
-        expect(actual, isA<SearchObject>());
+        expect(actual, isA<SearchObject<Problem>>());
         expect(actual.items, isA<List<Problem>>());
+      });
+
+      test('decodes items without mutating the response JSON', () {
+        final json =
+            jsonDecode(fixture('v3/search_problem.json'))
+                as Map<String, dynamic>;
+        final rawItems = json['items'] as List<dynamic>;
+        final rawFirstItem = rawItems.first;
+
+        final actual = SearchObject<Problem>.fromJson(json, Problem.fromJson);
+
+        expect(actual.items.single, isA<Problem>());
+        expect(json['items'], same(rawItems));
+        expect(rawItems.first, same(rawFirstItem));
+        expect(rawFirstItem, isA<Map<String, dynamic>>());
       });
     });
 
@@ -814,8 +829,12 @@ void main() {
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
 
         final actual = await apiClient.searchUser(query, page);
-        expect(actual, isA<SearchObject>());
-        expect(actual.items, isA<List<User>>());
+        expect(actual, isA<SearchObject<UserSearchItem>>());
+        expect(actual.items, isA<List<UserSearchItem>>());
+        expect(actual.items, hasLength(2));
+        expect(actual.items.first.handle, 'fdsajklt2');
+        expect(actual.items.first.tier, 16);
+        expect(actual.items.first.profileImageUrl, isNull);
       });
     });
 
@@ -848,7 +867,7 @@ void main() {
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
 
         final actual = await apiClient.searchTag(query, page);
-        expect(actual, isA<SearchObject>());
+        expect(actual, isA<SearchObject<Tag>>());
         expect(actual.items, isA<List<Tag>>());
       });
     });

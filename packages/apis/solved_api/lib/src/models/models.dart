@@ -10,3 +10,4 @@ export 'site_stats.dart';
 export 'streak.dart';
 export 'tag.dart';
 export 'user.dart';
+export 'user_search_item.dart';

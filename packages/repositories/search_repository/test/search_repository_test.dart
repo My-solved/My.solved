@@ -8,8 +8,6 @@ class MockSolvedApiClient extends Mock implements solved_api.SolvedApiClient {}
 class MockSearchSuggestion extends Mock
     implements solved_api.SearchSuggestion {}
 
-class MockSearchObject extends Mock implements solved_api.SearchObject {}
-
 void main() {
   group('SearchRepository', () {
     late solved_api.SolvedApiClient solvedApiClient;
@@ -56,12 +54,18 @@ void main() {
       });
 
       test('returns correct searchObject on success', () async {
-        final searchObject = MockSearchObject();
-        when(() => solvedApiClient.searchProblem(query, page, sort, direction))
-            .thenAnswer((_) async => searchObject);
+        const searchObject = solved_api.SearchObject<solved_api.Problem>(
+          count: 0,
+          items: [],
+        );
+        when(
+          () => solvedApiClient.searchProblem(query, page, sort, direction),
+        ).thenAnswer((_) async => searchObject);
 
-        expect(await searchRepository.getProblems(query, page, sort, direction),
-            searchObject);
+        expect(
+          await searchRepository.getProblems(query, page, sort, direction),
+          searchObject,
+        );
       });
     });
 
@@ -77,9 +81,13 @@ void main() {
       });
 
       test('returns correct searchObject on success', () async {
-        final searchObject = MockSearchObject();
-        when(() => solvedApiClient.searchUser(query, page))
-            .thenAnswer((_) async => searchObject);
+        const searchObject = solved_api.SearchObject<solved_api.UserSearchItem>(
+          count: 0,
+          items: [],
+        );
+        when(
+          () => solvedApiClient.searchUser(query, page),
+        ).thenAnswer((_) async => searchObject);
 
         expect(await searchRepository.getUsers(query, page), searchObject);
       });
@@ -97,9 +105,13 @@ void main() {
       });
 
       test('returns correct searchObject on success', () async {
-        final searchObject = MockSearchObject();
-        when(() => solvedApiClient.searchTag(query, page))
-            .thenAnswer((_) async => searchObject);
+        const searchObject = solved_api.SearchObject<solved_api.Tag>(
+          count: 0,
+          items: [],
+        );
+        when(
+          () => solvedApiClient.searchTag(query, page),
+        ).thenAnswer((_) async => searchObject);
 
         expect(await searchRepository.getTags(query, page), searchObject);
       });

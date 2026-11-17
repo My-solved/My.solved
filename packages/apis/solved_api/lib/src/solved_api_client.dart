@@ -185,7 +185,7 @@ class SolvedApiClient {
   Future<SearchSuggestion> searchSuggestion(String query) =>
       _get(_contract.searchSuggestion(query), requestType: _RequestType.search);
 
-  Future<SearchObject> searchProblem(
+  Future<SearchObject<Problem>> searchProblem(
     String query,
     int? page,
     String? sort,
@@ -196,10 +196,10 @@ class SolvedApiClient {
         requestType: _RequestType.search,
       );
 
-  Future<SearchObject> searchUser(String query, int? page) =>
+  Future<SearchObject<UserSearchItem>> searchUser(String query, int? page) =>
       _get(_contract.searchUser(query, page), requestType: _RequestType.search);
 
-  Future<SearchObject> searchTag(String query, int? page) =>
+  Future<SearchObject<Tag>> searchTag(String query, int? page) =>
       _get(_contract.searchTag(query, page), requestType: _RequestType.search);
 
   Future<List<ArenaContest>> arenaContests() =>

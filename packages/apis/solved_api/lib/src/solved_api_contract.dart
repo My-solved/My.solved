@@ -66,16 +66,19 @@ abstract interface class SolvedApiContract {
 
   SolvedApiEndpoint<SearchSuggestion> searchSuggestion(String query);
 
-  SolvedApiEndpoint<SearchObject> searchProblem(
+  SolvedApiEndpoint<SearchObject<Problem>> searchProblem(
     String query,
     int? page,
     String? sort,
     String? direction,
   );
 
-  SolvedApiEndpoint<SearchObject> searchUser(String query, int? page);
+  SolvedApiEndpoint<SearchObject<UserSearchItem>> searchUser(
+    String query,
+    int? page,
+  );
 
-  SolvedApiEndpoint<SearchObject> searchTag(String query, int? page);
+  SolvedApiEndpoint<SearchObject<Tag>> searchTag(String query, int? page);
 
   SolvedApiEndpoint<List<ArenaContest>> arenaContests();
 
@@ -178,7 +181,7 @@ class SolvedApiV3Contract implements SolvedApiContract {
       );
 
   @override
-  SolvedApiEndpoint<SearchObject> searchProblem(
+  SolvedApiEndpoint<SearchObject<Problem>> searchProblem(
     String query,
     int? page,
     String? sort,
@@ -192,41 +195,33 @@ class SolvedApiV3Contract implements SolvedApiContract {
           'sort': sort ?? 'solved',
           'direction': direction ?? 'descending',
         },
-        decode: (json) {
-          json['items'] = json['items']
-              .map((problem) => Problem.fromJson(problem))
-              .toList()
-              .cast<Problem>();
-          return SearchObject.fromJson(json);
-        },
+        decode: (json) => SearchObject<Problem>.fromJson(
+          json,
+          (item) => Problem.fromJson(item),
+        ),
       );
 
   @override
-  SolvedApiEndpoint<SearchObject> searchUser(String query, int? page) =>
+  SolvedApiEndpoint<SearchObject<UserSearchItem>> searchUser(
+    String query,
+    int? page,
+  ) =>
       _endpoint(
         path: 'search/user',
         queryParameters: {'query': query, 'page': page?.toString() ?? '1'},
-        decode: (json) {
-          json['items'] = json['items']
-              .map((user) => User.fromJson(user))
-              .toList()
-              .cast<User>();
-          return SearchObject.fromJson(json);
-        },
+        decode: (json) => SearchObject<UserSearchItem>.fromJson(
+          json,
+          (item) => UserSearchItem.fromJson(item),
+        ),
       );
 
   @override
-  SolvedApiEndpoint<SearchObject> searchTag(String query, int? page) =>
+  SolvedApiEndpoint<SearchObject<Tag>> searchTag(String query, int? page) =>
       _endpoint(
         path: 'search/tag',
         queryParameters: {'query': query, 'page': page?.toString() ?? '1'},
-        decode: (json) {
-          json['items'] = json['items']
-              .map((tag) => Tag.fromJson(tag))
-              .toList()
-              .cast<Tag>();
-          return SearchObject.fromJson(json);
-        },
+        decode: (json) =>
+            SearchObject<Tag>.fromJson(json, (item) => Tag.fromJson(item)),
       );
 
   @override
