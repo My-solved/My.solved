@@ -118,22 +118,24 @@ class _HomeViewState extends State<HomeView> {
       },
       builder: (context, state) {
         if (state.status.isSuccess && state.user != null) {
-          final slideItem = [
+          final slideItem = <List<String>>[
             [
               "문제 해결",
               state.user!.solvedCount.toString(),
               "https://solved.ac/profile/${state.handle}/solved"
             ],
-            [
-              "기여",
-              state.user!.voteCount.toString(),
-              "https://solved.ac/profile/${state.handle}/votes"
-            ],
-            [
-              "라이벌",
-              state.user!.reverseRivalCount.toString(),
-              "https://solved.ac/ranking/reverse_rival"
-            ],
+            if (state.user!.legacyContributionCount != null)
+              [
+                "기여",
+                state.user!.legacyContributionCount.toString(),
+                "https://solved.ac/profile/${state.handle}/votes"
+              ],
+            if (state.user!.reverseRivalCount != null)
+              [
+                "라이벌",
+                state.user!.reverseRivalCount.toString(),
+                "https://solved.ac/ranking/reverse_rival"
+              ],
           ];
 
           final solvedToday = state.solvedToday ?? false;

@@ -5,7 +5,7 @@ import 'package:user_repository/user_repository.dart';
 
 class MockSolvedApiClient extends Mock implements solved_api.SolvedApiClient {}
 
-class MockUser extends Mock implements solved_api.User {}
+class MockUserProfile extends Mock implements solved_api.UserProfile {}
 
 class MockOrganization extends Mock implements solved_api.Organization {}
 
@@ -44,7 +44,7 @@ void main() {
       });
 
       test('returns correct user on success', () async {
-        final user = MockUser();
+        final user = MockUserProfile();
         when(() => solvedApiClient.userShow(handle))
             .thenAnswer((_) async => user);
 

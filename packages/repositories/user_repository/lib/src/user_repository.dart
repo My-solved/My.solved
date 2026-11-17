@@ -8,7 +8,7 @@ class UserRepository {
 
   final SolvedApiClient _solvedApiClient;
 
-  Future<User> getUser(String handle) async {
+  Future<UserProfile> getUser(String handle) async {
     return await _solvedApiClient.userShow(handle);
   }
 

@@ -22,7 +22,7 @@ class AlternateUserContract extends SolvedApiV3Contract {
   const AlternateUserContract();
 
   @override
-  SolvedApiEndpoint<User> userShow(String handle) => SolvedApiEndpoint(
+  SolvedApiEndpoint<UserProfile> userShow(String handle) => SolvedApiEndpoint(
         direct: SolvedApiTarget(
           baseUri: Uri.https('contract.example.com', '/direct/'),
           path: 'profile/show',
@@ -33,11 +33,18 @@ class AlternateUserContract extends SolvedApiV3Contract {
           path: 'profile/lookup',
           queryParameters: {'proxyUser': handle},
         ),
-        decode: (json) {
-          final decoded = Map<String, dynamic>.from(json);
-          decoded['handle'] = 'contract-decoded';
-          return User.fromJson(decoded);
-        },
+        decode: (json) => UserProfile(
+          handle: Map<String, dynamic>.from(json)['opaque'],
+          badgeId: null,
+          backgroundId: null,
+          profileImageUrl: null,
+          solvedCount: 0,
+          legacyContributionCount: null,
+          userClass: 0,
+          reverseRivalCount: null,
+          tier: 0,
+          rating: 0,
+        ),
       );
 }
 
@@ -96,7 +103,7 @@ void main() {
 
       test('uses contract-specific direct and proxy targets', () async {
         when(() => httpClient.get(any())).thenAnswer(
-          (_) async => http.Response(fixture('v3/user_show.json'), 200),
+          (_) async => http.Response('{"opaque":"contract-decoded"}', 200),
         );
 
         final directClient = SolvedApiClient(
@@ -135,7 +142,7 @@ void main() {
       test('custom base overrides only the selected contract target base',
           () async {
         when(() => httpClient.get(any())).thenAnswer(
-          (_) async => http.Response(fixture('v3/user_show.json'), 200),
+          (_) async => http.Response('{"opaque":"contract-decoded"}', 200),
         );
         apiClient = SolvedApiClient(
           httpClient: httpClient,
@@ -418,14 +425,48 @@ void main() {
         ).called(1);
       });
 
-      test('returns User on valid response', () async {
+      test('returns a normalized UserProfile on valid v3 response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(() => response.body).thenReturn(fixture('v3/user_show.json'));
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
 
         final actual = await apiClient.userShow(handle);
-        expect(actual, isA<User>().having((l) => l.handle, 'handle', 'w8385'));
+        expect(
+          actual,
+          isA<UserProfile>()
+              .having((profile) => profile.handle, 'handle', 'w8385')
+              .having((profile) => profile.badgeId, 'badgeId', 'boardgame')
+              .having(
+                (profile) => profile.backgroundId,
+                'backgroundId',
+                'boardgame_5',
+              )
+              .having(
+                (profile) => profile.profileImageUrl,
+                'profileImageUrl',
+                'https://static.solved.ac/uploads/profile/'
+                    'w8385-picture-1661145114047.png',
+              )
+              .having(
+                (profile) => profile.solvedCount,
+                'solvedCount',
+                2766,
+              )
+              .having(
+                (profile) => profile.legacyContributionCount,
+                'legacyContributionCount',
+                1442,
+              )
+              .having((profile) => profile.userClass, 'userClass', 6)
+              .having(
+                (profile) => profile.reverseRivalCount,
+                'reverseRivalCount',
+                44,
+              )
+              .having((profile) => profile.tier, 'tier', 20)
+              .having((profile) => profile.rating, 'rating', 2126),
+        );
       });
     });
 

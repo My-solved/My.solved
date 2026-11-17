@@ -55,7 +55,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   Future<void> _loadHome(Emitter<HomeState> emit) async {
     emit(state.copyWith(status: HomeStatus.loading));
 
-    late User user;
+    late UserProfile user;
     try {
       user = await _userRepository.getUser(_handle);
     } catch (_) {
@@ -67,11 +67,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       isOnIllustBackground: state.isOnIllustBackground,
     );
     final requests = <Future<void> Function()>[
-      () async {
-        auxiliary.background = await _optional(
-          () => _userRepository.getBackground(user.backgroundId),
-        );
-      },
+      if (user.backgroundId != null)
+        () async {
+          auxiliary.background = await _optional(
+            () => _userRepository.getBackground(user.backgroundId!),
+          );
+        },
       () async {
         auxiliary.organizations =
             await _optional(() => _userRepository.getOrganizations(_handle)) ??

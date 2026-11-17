@@ -151,7 +151,7 @@ class SolvedApiClient {
     if (_ownsHttpClient) _httpClient.close();
   }
 
-  Future<User> userShow(String handle) =>
+  Future<UserProfile> userShow(String handle) =>
       _get(_contract.userShow(handle), requestType: _RequestType.user);
 
   Future<List<Organization>> userOrganizations(String handle) =>

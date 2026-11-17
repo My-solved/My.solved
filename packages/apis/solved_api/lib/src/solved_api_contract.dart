@@ -46,7 +46,7 @@ final class SolvedApiEndpoint<T> {
 
 /// The complete wire contract consumed by [SolvedApiClient].
 abstract interface class SolvedApiContract {
-  SolvedApiEndpoint<User> userShow(String handle);
+  SolvedApiEndpoint<UserProfile> userShow(String handle);
 
   SolvedApiEndpoint<List<Organization>> userOrganizations(String handle);
 
@@ -90,10 +90,10 @@ class SolvedApiV3Contract implements SolvedApiContract {
   static final Uri _proxyBaseUri = Uri.https('codepoker.w8385.dev', '/solved/');
 
   @override
-  SolvedApiEndpoint<User> userShow(String handle) => _endpoint(
+  SolvedApiEndpoint<UserProfile> userShow(String handle) => _endpoint(
         path: 'user/show',
         queryParameters: {'handle': handle},
-        decode: (json) => User.fromJson(json),
+        decode: _decodeV3UserProfile,
       );
 
   @override
@@ -265,6 +265,22 @@ class SolvedApiV3Contract implements SolvedApiContract {
         ),
         decode: decode,
       );
+}
+
+UserProfile _decodeV3UserProfile(dynamic json) {
+  final body = Map<String, dynamic>.from(json as Map);
+  return UserProfile(
+    handle: body['handle'],
+    badgeId: body['badgeId'],
+    backgroundId: body['backgroundId'],
+    profileImageUrl: body['profileImageUrl'],
+    solvedCount: body['solvedCount'],
+    legacyContributionCount: body['voteCount'],
+    userClass: body['class'],
+    reverseRivalCount: body['reverseRivalCount'],
+    tier: body['tier'],
+    rating: body['rating'],
+  );
 }
 
 Uri _normalizeBaseUri(Uri uri) {

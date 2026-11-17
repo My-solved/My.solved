@@ -16,7 +16,7 @@ class HomeState extends Equatable {
   final HomeStatus status;
   final String handle;
   final bool isOnIllustBackground;
-  final User? user;
+  final UserProfile? user;
   final String? profileImageUrl;
   final Background? background;
   final Badge? badge;
@@ -47,7 +47,7 @@ class HomeState extends Equatable {
     HomeStatus? status,
     String? handle,
     bool? isOnIllustBackground,
-    User? user,
+    UserProfile? user,
     String? profileImageUrl,
     Background? background,
     Badge? badge,

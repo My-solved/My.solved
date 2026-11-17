@@ -86,6 +86,22 @@ void main() {
     expect(state.solvedToday, isFalse);
   });
 
+  test('skips the background request when the profile has no background ID',
+      () async {
+    final repository = _FakeUserRepository(
+      user: _profile(backgroundId: null),
+    );
+    final bloc = _createBloc(repository, today);
+    addTearDown(bloc.close);
+
+    final success = bloc.stream.firstWhere((state) => state.status.isSuccess);
+    bloc.add(HomeInit());
+
+    final state = await success;
+    expect(state.background, isNull);
+    expect(repository.requestedAuxiliaryNames, isNot(contains('background')));
+  });
+
   test('keeps cached streak and solvedToday consistent after refresh failure',
       () async {
     final failures = <String>{};
@@ -194,22 +210,27 @@ class _FakeUserRepository implements UserRepository {
     this.failingAuxiliaryRequests = const {},
     this.userDelay = Duration.zero,
     this.auxiliaryDelay = Duration.zero,
+    UserProfile? user,
     Streak? streak,
-  }) : streak = streak ?? _streak(currentStreak: 0, grass: const []);
+  })  : user = user ?? _user,
+        streak = streak ?? _streak(currentStreak: 0, grass: const []);
 
   final bool failUser;
   final Set<String> failingAuxiliaryRequests;
   final Duration userDelay;
   final Duration auxiliaryDelay;
+  final UserProfile user;
   final Streak streak;
 
   int _activeAuxiliaryRequests = 0;
   int maxActiveAuxiliaryRequests = 0;
   int auxiliaryRequestCount = 0;
   int userRequestCount = 0;
+  final List<String> requestedAuxiliaryNames = [];
 
   Future<T> _auxiliary<T>(String name, T value) async {
     auxiliaryRequestCount++;
+    requestedAuxiliaryNames.add(name);
     _activeAuxiliaryRequests++;
     if (_activeAuxiliaryRequests > maxActiveAuxiliaryRequests) {
       maxActiveAuxiliaryRequests = _activeAuxiliaryRequests;
@@ -228,13 +249,13 @@ class _FakeUserRepository implements UserRepository {
   }
 
   @override
-  Future<User> getUser(String handle) async {
+  Future<UserProfile> getUser(String handle) async {
     userRequestCount++;
     if (userDelay > Duration.zero) {
       await Future<void>.delayed(userDelay);
     }
     if (failUser) throw Exception('user failed');
-    return _user;
+    return user;
   }
 
   @override
@@ -287,32 +308,20 @@ Streak _streak({required int currentStreak, required List<Grass> grass}) {
   );
 }
 
-final _user = User(
-  handle: 'w8385',
-  bio: null,
-  badgeId: null,
-  backgroundId: 'default',
-  profileImageUrl: null,
-  solvedCount: 1,
-  voteCount: 0,
-  userClass: 1,
-  classDecoration: 'none',
-  rivalCount: 0,
-  reverseRivalCount: 0,
-  tier: 1,
-  rating: 1,
-  ratingByProblemsSum: 1,
-  ratingByClass: 0,
-  ratingBySolvedCount: 0,
-  ratingByVoteCount: 0,
-  maxStreak: 1,
-  coins: 0,
-  stardusts: 0,
-  joinedAt: DateTime.utc(2020),
-  bannedUntil: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
-  proUntil: DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
-  rank: 1,
-);
+UserProfile _profile({String? backgroundId = 'default'}) => UserProfile(
+      handle: 'w8385',
+      badgeId: null,
+      backgroundId: backgroundId,
+      profileImageUrl: null,
+      solvedCount: 1,
+      legacyContributionCount: 0,
+      userClass: 1,
+      reverseRivalCount: 0,
+      tier: 1,
+      rating: 1,
+    );
+
+final _user = _profile();
 
 final _background = Background(
   backgroundId: 'default',
