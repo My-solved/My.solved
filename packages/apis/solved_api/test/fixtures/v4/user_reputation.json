@@ -1,0 +1,22 @@
+{
+  "reputation": 314,
+  "scoringCount": 37,
+  "helpfulCount": 19,
+  "vouchedCount": 11,
+  "history": [
+    {
+      "day": "2026-11-17",
+      "value": 314
+    }
+  ],
+  "today": {
+    "contributions": {
+      "count": 2,
+      "max": 10
+    },
+    "helpful": {
+      "earned": 1,
+      "cap": 5
+    }
+  }
+}

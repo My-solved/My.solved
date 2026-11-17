@@ -1,0 +1,72 @@
+{
+  "upcoming": [
+    {
+      "arenaId": 20,
+      "arenaDisplayId": 17,
+      "divisionDisplayName": null,
+      "divisionShortDisplayName": null,
+      "arenaIdFixed": true,
+      "arenaBojContestId": null,
+      "title": "2023 shake! (2023 경인지역 6개 대학 연합 프로그래밍 경시대회) Open Contest",
+      "isGrandArena": false,
+      "grandArenaId": 0,
+      "startTime": "2024-01-13T05:00:00.000Z",
+      "endTime": "2024-01-13T08:00:00.000Z",
+      "registerEndTime": "2024-01-13T04:55:00.000Z",
+      "ratedRangeStart": 0,
+      "ratedRangeEnd": 0,
+      "isRated": true,
+      "ratedContestants": 0,
+      "totalContestants": 0,
+      "isScoreBased": false,
+      "isLevelSorted": false,
+      "givesLanguageBonus": true,
+      "penaltyMinutes": 20,
+      "bojNoticeLink": null,
+      "registrationOpen": false,
+      "needsApproval": false,
+      "needsAclToRegister": false,
+      "cancellationDisabled": false,
+      "languages": [
+
+      ],
+      "isRegistered": false
+    }
+  ],
+  "ongoing": [
+  ],
+  "ended": [
+    {
+      "arenaId": 1,
+      "arenaDisplayId": 1,
+      "divisionDisplayName": null,
+      "divisionShortDisplayName": null,
+      "arenaIdFixed": true,
+      "arenaBojContestId": 1065,
+      "title": "solved.ac Grand Arena #1",
+      "isGrandArena": true,
+      "grandArenaId": 1,
+      "startTime": "2023-08-06T05:00:00.000Z",
+      "endTime": "2023-08-06T08:00:00.000Z",
+      "registerEndTime": "2023-08-06T04:55:00.000Z",
+      "ratedRangeStart": 0,
+      "ratedRangeEnd": 10,
+      "isRated": true,
+      "ratedContestants": 1363,
+      "totalContestants": 1363,
+      "isScoreBased": false,
+      "isLevelSorted": false,
+      "givesLanguageBonus": true,
+      "penaltyMinutes": 20,
+      "bojNoticeLink": "https://www.acmicpc.net/board/view/121450",
+      "registrationOpen": true,
+      "needsApproval": false,
+      "needsAclToRegister": false,
+      "cancellationDisabled": false,
+      "languages": [
+        "ko",
+        "en"
+      ]
+    }
+  ]
+}
