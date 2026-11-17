@@ -250,6 +250,8 @@ ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
   }
   return ProblemSearchItem(
     problemId: _wholeNumber(body['problemId'], 'problems[].problemId'),
+    id: _number(body['id'], 'problems[].id'),
+    subId: _string(body['subId'], 'problems[].subId'),
     title: _decodeV4ProblemTitle(body['titles']),
     level: _wholeNumber(body['level'], 'problems[].level'),
     levelAverage: _number(body['levelAverage'], 'problems[].levelAverage'),

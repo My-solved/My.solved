@@ -65,6 +65,8 @@ void main() {
       expect(problems, isA<SearchObject<ProblemSearchItem>>());
       expect(problems.count, 1);
       expect(problems.items.single.problemId, 3734);
+      expect(problems.items.single.id, isNull);
+      expect(problems.items.single.subId, isNull);
       expect(problems.items.single.title, 'RSA 인수 분해');
       expect(problems.items.single.level, 16);
       expect(problems.items.single.levelAverage, isNull);
@@ -134,6 +136,8 @@ void main() {
           };
 
       expect(item.givesNoRating, isNull);
+      expect(item.id, isNull);
+      expect(item.subId, isNull);
       expect(item.levelAverage, isNull);
       expect(item.levelStdev, isNull);
       expect(item.isStandard, isNull);
@@ -168,6 +172,30 @@ void main() {
           reason: 'givesNoRating = $invalid',
         );
       }
+    });
+
+    test('does not infer v4 wire identifiers from the legacy problem id', () {
+      final endpoint = const SolvedApiV3Contract().searchProblem(
+        'rsa',
+        1,
+        'id',
+        'asc',
+      );
+      Map<String, dynamic> source() =>
+          jsonDecode(fixture('v3/search_problem.json')) as Map<String, dynamic>;
+      Map<String, dynamic> firstProblem(Map<String, dynamic> body) =>
+          (body['items'] as List).first as Map<String, dynamic>;
+
+      final captured = endpoint.decode(source()).items.single;
+      expect(captured.id, isNull);
+      expect(captured.subId, isNull);
+
+      final changed = source();
+      firstProblem(changed)['problemId'] = -1;
+      final decoded = endpoint.decode(changed).items.single;
+      expect(decoded.problemId, -1);
+      expect(decoded.id, isNull);
+      expect(decoded.subId, isNull);
     });
 
     test('does not infer v4 user status from legacy flags', () {

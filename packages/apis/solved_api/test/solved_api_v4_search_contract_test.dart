@@ -109,6 +109,8 @@ void main() {
       expect(actual.count, 4);
       expect(actual.items, hasLength(4));
       expect(actual.items[0].problemId, 1001);
+      expect(actual.items[0].id, 1001);
+      expect(actual.items[0].subId, '');
       expect(actual.items[0].title, '한국어 제목');
       expect(actual.items[0].level, 10);
       expect(actual.items[0].levelAverage, 10.25);
@@ -127,6 +129,8 @@ void main() {
       expect(actual.items[2].title, 'First fallback');
       expect(actual.items[2].userStatus, ProblemUserStatus.tried);
       expect(actual.items[3].title, isNull);
+      expect(actual.items[3].id, 1004);
+      expect(actual.items[3].subId, '');
       expect(actual.items[3].levelAverage, 0);
       expect(actual.items[3].levelStdev, 0);
       expect(actual.items[3].isStandard, isFalse);
@@ -139,6 +143,69 @@ void main() {
         ProblemNoRatingReason.unofficial,
       ]);
       expect(actual.items[3].noRatingWarnings, isEmpty);
+    });
+
+    test('requires and preserves independent wire identifiers', () {
+      final endpoint = contract.searchProblems('sample');
+      Map<String, dynamic> source() =>
+          jsonDecode(fixture('v4/search_problems.json'))
+              as Map<String, dynamic>;
+      Map<String, dynamic> firstProblem(Map<String, dynamic> body) =>
+          (body['problems'] as List).first as Map<String, dynamic>;
+
+      for (final field in ['id', 'subId']) {
+        final missing = source();
+        firstProblem(missing).remove(field);
+        expect(
+          () => endpoint.decode(missing),
+          throwsFormatException,
+          reason: '$field missing',
+        );
+      }
+
+      for (final invalid in <Object?>[
+        null,
+        '1',
+        true,
+        const <String, Object?>{},
+        const <Object>[],
+        double.nan,
+        double.infinity,
+        double.negativeInfinity,
+      ]) {
+        final malformed = source();
+        firstProblem(malformed)['id'] = invalid;
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'id = $invalid',
+        );
+      }
+
+      for (final invalid in <Object?>[
+        null,
+        0,
+        true,
+        const <String, Object?>{},
+        const <Object>[],
+      ]) {
+        final malformed = source();
+        firstProblem(malformed)['subId'] = invalid;
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'subId = $invalid',
+        );
+      }
+
+      final independent = source();
+      firstProblem(independent)
+        ..['id'] = -1.5
+        ..['subId'] = ' 부분 식별자 ';
+      final actual = endpoint.decode(independent).items.first;
+      expect(actual.problemId, 1001);
+      expect(actual.id, -1.5);
+      expect(actual.subId, ' 부분 식별자 ');
     });
 
     test('requires the documented nullable user status in every problem', () {
@@ -828,7 +895,9 @@ void main() {
         final actual = endpoint.decode({
           'problems': [
             {
+              'id': 1001,
               'problemId': 1001.0,
+              'subId': '',
               'level': 12.0,
               'levelAverage': 12,
               'levelStdev': 0,
@@ -854,7 +923,9 @@ void main() {
           () => endpoint.decode({
             'problems': [
               {
+                'id': 1001,
                 'problemId': 1001.5,
+                'subId': '',
                 'level': 12,
                 'levelAverage': 12,
                 'levelStdev': 0,
