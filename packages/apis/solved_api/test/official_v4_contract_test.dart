@@ -183,6 +183,7 @@ void main() {
       _required(problemItem),
       containsAll([
         'givesNoRating',
+        'id',
         'isStandard',
         'effectiveVoteCount',
         'levelAverage',
@@ -192,9 +193,12 @@ void main() {
         'userStatus',
         'votedUserCount',
         'solvedUserCount',
+        'subId',
       ]),
     );
     final problemProperties = _properties(problemItem);
+    expect(_map(problemProperties['id']), {'type': 'number'});
+    expect(_map(problemProperties['subId']), {'type': 'string'});
     expect(_map(problemProperties['isStandard']), {'type': 'boolean'});
     final userStatus = _map(problemProperties['userStatus']);
     expect(userStatus['type'], ['string', 'null']);

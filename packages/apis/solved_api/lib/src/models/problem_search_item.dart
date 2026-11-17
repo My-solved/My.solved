@@ -18,6 +18,8 @@ class ProblemSearchItem {
     required this.title,
     required this.level,
     required this.tagNames,
+    this.id,
+    this.subId,
     this.levelAverage,
     this.levelStdev,
     this.isStandard,
@@ -31,6 +33,15 @@ class ProblemSearchItem {
   });
 
   final int problemId;
+
+  /// The raw v4 problem identifier reported by the active contract.
+  /// `null` means the contract did not provide it.
+  final num? id;
+
+  /// The raw v4 sub-identifier reported by the active contract.
+  /// `null` means the contract did not provide it.
+  final String? subId;
+
   final String? title;
   final int level;
 
