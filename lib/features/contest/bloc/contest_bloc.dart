@@ -156,6 +156,7 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
     if (isOn) {
       await _contestNotificationRepository.cancelContestNotification(
         title: contest.name,
+        startTime: contest.startTime,
       );
       await _sharedPreferencesRepository.setIsOnContestNotification(
         title: contest.name,
