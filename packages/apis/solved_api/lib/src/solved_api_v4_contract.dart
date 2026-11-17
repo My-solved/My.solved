@@ -123,7 +123,7 @@ final class SolvedApiV4Contract {
         decode: _decodeV4BadgeAsset,
       );
 
-  SolvedApiEndpoint<SearchObject<ProblemSearchItem>> searchProblems(
+  SolvedApiEndpoint<ProblemSearchResult> searchProblems(
     String query, {
     int page = 1,
     SolvedApiV4ProblemSort sort = SolvedApiV4ProblemSort.id,
@@ -204,15 +204,98 @@ SolvedUserIdentity _decodeV4UserIdentity(dynamic json) {
   );
 }
 
-SearchObject<ProblemSearchItem> _decodeV4ProblemSearch(dynamic json) {
+ProblemSearchResult _decodeV4ProblemSearch(dynamic json) {
   final body = _object(json, 'problem search');
   final problems = _list(body['problems'], 'problems')
       .map((item) => _decodeV4ProblemSearchItem(_object(item, 'problems[]')))
       .toList(growable: false);
-  return SearchObject(
+  List<ProblemSearchDiagnostic>? diagnostics;
+  if (body.containsKey('diagnostics')) {
+    diagnostics = List<ProblemSearchDiagnostic>.unmodifiable(
+      _list(body['diagnostics'], 'diagnostics').map(
+        (value) =>
+            _decodeV4ProblemSearchDiagnostic(_object(value, 'diagnostics[]')),
+      ),
+    );
+  }
+  return ProblemSearchResult(
     count: _wholeNumber(body['total'], 'total'),
     items: problems,
+    page: _number(body['page'], 'page'),
+    pageSize: _number(body['pageSize'], 'pageSize'),
+    diagnostics: diagnostics,
+    seed: body.containsKey('seed') ? _string(body['seed'], 'seed') : null,
   );
+}
+
+ProblemSearchDiagnostic _decodeV4ProblemSearchDiagnostic(
+  Map<String, dynamic> body,
+) {
+  Map<String, String>? data;
+  if (body.containsKey('data')) {
+    final decodedData = <String, String>{};
+    for (final entry in _object(body['data'], 'diagnostics[].data').entries) {
+      decodedData[entry.key] = _string(entry.value, 'diagnostics[].data[]');
+    }
+    data = Map<String, String>.unmodifiable(decodedData);
+  }
+  return ProblemSearchDiagnostic(
+    start: _number(body['start'], 'diagnostics[].start'),
+    end: _number(body['end'], 'diagnostics[].end'),
+    severity: _decodeV4ProblemSearchDiagnosticSeverity(body['severity']),
+    code: _decodeV4ProblemSearchDiagnosticCode(body['code']),
+    messageKey: _string(body['messageKey'], 'diagnostics[].messageKey'),
+    message: _string(body['message'], 'diagnostics[].message'),
+    data: data,
+  );
+}
+
+ProblemSearchDiagnosticSeverity _decodeV4ProblemSearchDiagnosticSeverity(
+  Object? value,
+) {
+  switch (_string(value, 'diagnostics[].severity')) {
+    case 'error':
+      return ProblemSearchDiagnosticSeverity.error;
+    case 'warning':
+      return ProblemSearchDiagnosticSeverity.warning;
+    default:
+      throw const FormatException('Unsupported diagnostics[].severity');
+  }
+}
+
+ProblemSearchDiagnosticCode _decodeV4ProblemSearchDiagnosticCode(
+  Object? value,
+) {
+  switch (_string(value, 'diagnostics[].code')) {
+    case 'unknown-filter':
+      return ProblemSearchDiagnosticCode.unknownFilter;
+    case 'unimplemented-filter':
+      return ProblemSearchDiagnosticCode.unimplementedFilter;
+    case 'empty-value':
+      return ProblemSearchDiagnosticCode.emptyValue;
+    case 'invalid-value':
+      return ProblemSearchDiagnosticCode.invalidValue;
+    case 'unknown-lang':
+      return ProblemSearchDiagnosticCode.unknownLang;
+    case 'invalid-boolean':
+      return ProblemSearchDiagnosticCode.invalidBoolean;
+    case 'unclosed-quote':
+      return ProblemSearchDiagnosticCode.unclosedQuote;
+    case 'unmatched-paren':
+      return ProblemSearchDiagnosticCode.unmatchedParen;
+    case 'dangling-operator':
+      return ProblemSearchDiagnosticCode.danglingOperator;
+    case 'ignored-input':
+      return ProblemSearchDiagnosticCode.ignoredInput;
+    case 'unknown-handle':
+      return ProblemSearchDiagnosticCode.unknownHandle;
+    case 'unknown-tag':
+      return ProblemSearchDiagnosticCode.unknownTag;
+    case 'me-without-viewer':
+      return ProblemSearchDiagnosticCode.meWithoutViewer;
+    default:
+      throw const FormatException('Unsupported diagnostics[].code');
+  }
 }
 
 ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {

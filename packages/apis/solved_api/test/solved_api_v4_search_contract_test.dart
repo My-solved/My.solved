@@ -15,6 +15,28 @@ void main() {
   });
 
   group('problem search', () {
+    test('exposes the official diagnostic severities and codes', () {
+      expect(
+        ProblemSearchDiagnosticSeverity.values.map((value) => value.value),
+        ['error', 'warning'],
+      );
+      expect(ProblemSearchDiagnosticCode.values.map((value) => value.value), [
+        'unknown-filter',
+        'unimplemented-filter',
+        'empty-value',
+        'invalid-value',
+        'unknown-lang',
+        'invalid-boolean',
+        'unclosed-quote',
+        'unmatched-paren',
+        'dangling-operator',
+        'ignored-input',
+        'unknown-handle',
+        'unknown-tag',
+        'me-without-viewer',
+      ]);
+    });
+
     test('exposes the official no-rating reason codes', () {
       expect(ProblemNoRatingReason.values.map((reason) => reason.value), [
         'unofficial',
@@ -113,7 +135,12 @@ void main() {
           .searchProblems('sample')
           .decode(jsonDecode(fixture('v4/search_problems.json')));
 
+      expect(actual, isA<ProblemSearchResult>());
       expect(actual.count, 4);
+      expect(actual.page, 1);
+      expect(actual.pageSize, 50);
+      expect(actual.diagnostics, isNull);
+      expect(actual.seed, isNull);
       expect(actual.items, hasLength(4));
       expect(actual.items[0].problemId, 1001);
       expect(actual.items[0].id, 1001);
@@ -174,6 +201,270 @@ void main() {
         ProblemNoRatingReason.unofficial,
       ]);
       expect(actual.items[3].noRatingWarnings, isEmpty);
+    });
+
+    test('requires finite pagination metadata without inventing bounds', () {
+      final endpoint = contract.searchProblems('sample');
+
+      for (final field in ['page', 'pageSize']) {
+        final missing = _problemSearchSource()..remove(field);
+        expect(
+          () => endpoint.decode(missing),
+          throwsFormatException,
+          reason: 'missing $field',
+        );
+        for (final invalid in <Object?>[
+          null,
+          '1',
+          true,
+          const <Object>[],
+          const <String, Object?>{},
+          double.nan,
+          double.infinity,
+          double.negativeInfinity,
+        ]) {
+          final malformed = _problemSearchSource()..[field] = invalid;
+          expect(
+            () => endpoint.decode(malformed),
+            throwsFormatException,
+            reason: '$field = $invalid',
+          );
+        }
+      }
+
+      final unusual =
+          _problemSearchSource()
+            ..['page'] = -1.5
+            ..['pageSize'] = 0;
+      final actual = endpoint.decode(unusual);
+
+      expect(actual.page, -1.5);
+      expect(actual.pageSize, 0);
+    });
+
+    test('distinguishes absent diagnostics and seed from empty values', () {
+      final endpoint = contract.searchProblems('sample', seed: 'request-seed');
+      final empty =
+          _problemSearchSource()
+            ..['diagnostics'] = <Object>[]
+            ..['seed'] = '';
+      final emptyResult = endpoint.decode(empty);
+
+      expect(emptyResult.diagnostics, isNotNull);
+      expect(emptyResult.diagnostics, isEmpty);
+      expect(emptyResult.seed, '');
+
+      final longSeed = List.filled(65, 's').join();
+      final different = _problemSearchSource()..['seed'] = longSeed;
+      expect(endpoint.decode(different).seed, longSeed);
+
+      for (final invalid in <Object?>[
+        null,
+        0,
+        false,
+        'diagnostic',
+        const <String, Object?>{},
+      ]) {
+        final malformed = _problemSearchSource()..['diagnostics'] = invalid;
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'diagnostics = $invalid',
+        );
+      }
+      for (final invalid in <Object?>[
+        null,
+        0,
+        false,
+        const <Object>[],
+        const <String, Object?>{},
+      ]) {
+        final malformed = _problemSearchSource()..['seed'] = invalid;
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'seed = $invalid',
+        );
+      }
+    });
+
+    test('requires every diagnostic field and exact nested value shape', () {
+      final endpoint = contract.searchProblems('sample');
+      Map<String, dynamic> valid() => _problemSearchDiagnostic();
+
+      for (final field in [
+        'start',
+        'end',
+        'severity',
+        'code',
+        'messageKey',
+        'message',
+      ]) {
+        final diagnostic = valid()..remove(field);
+        final malformed =
+            _problemSearchSource()..['diagnostics'] = [diagnostic];
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'missing $field',
+        );
+      }
+
+      final invalidValues = <String, Object?>{
+        'start': '0',
+        'end': null,
+        'severity': 0,
+        'code': <Object>[],
+        'messageKey': false,
+        'message': 1,
+      };
+      for (final entry in invalidValues.entries) {
+        final diagnostic = valid()..[entry.key] = entry.value;
+        final malformed =
+            _problemSearchSource()..['diagnostics'] = [diagnostic];
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: '${entry.key} = ${entry.value}',
+        );
+      }
+
+      for (final field in ['start', 'end']) {
+        for (final invalid in [
+          double.nan,
+          double.infinity,
+          double.negativeInfinity,
+        ]) {
+          final diagnostic = valid()..[field] = invalid;
+          final malformed =
+              _problemSearchSource()..['diagnostics'] = [diagnostic];
+          expect(
+            () => endpoint.decode(malformed),
+            throwsFormatException,
+            reason: '$field = $invalid',
+          );
+        }
+      }
+
+      for (final invalid in ['ERROR', ' warning', 'warning ', '', 'fatal']) {
+        final diagnostic = valid()..['severity'] = invalid;
+        final malformed =
+            _problemSearchSource()..['diagnostics'] = [diagnostic];
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'severity = $invalid',
+        );
+      }
+      for (final invalid in [
+        'UNKNOWN-FILTER',
+        ' unknown-filter',
+        'unknown-filter ',
+        '',
+        'future-code',
+      ]) {
+        final diagnostic = valid()..['code'] = invalid;
+        final malformed =
+            _problemSearchSource()..['diagnostics'] = [diagnostic];
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'code = $invalid',
+        );
+      }
+
+      for (final invalid in <Object?>[
+        null,
+        0,
+        const <Object>[],
+        {'key': 1},
+      ]) {
+        final diagnostic = valid()..['data'] = invalid;
+        final malformed =
+            _problemSearchSource()..['diagnostics'] = [diagnostic];
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'data = $invalid',
+        );
+      }
+
+      final invalidItem = _problemSearchSource()..['diagnostics'] = [0];
+      expect(() => endpoint.decode(invalidItem), throwsFormatException);
+      final malformedAfterValid =
+          _problemSearchSource()
+            ..['diagnostics'] = [valid(), valid()..remove('message')];
+      expect(() => endpoint.decode(malformedAfterValid), throwsFormatException);
+    });
+
+    test('preserves all diagnostic codes, raw values, and immutable data', () {
+      final codes = [
+        'unknown-filter',
+        'unimplemented-filter',
+        'empty-value',
+        'invalid-value',
+        'unknown-lang',
+        'invalid-boolean',
+        'unclosed-quote',
+        'unmatched-paren',
+        'dangling-operator',
+        'ignored-input',
+        'unknown-handle',
+        'unknown-tag',
+        'me-without-viewer',
+      ];
+      final data = <String, String>{' key ': ' 값 ', 'empty': ''};
+      final sourceDiagnostics = <Object>[
+        for (var index = 0; index < codes.length; index++)
+          _problemSearchDiagnostic(
+              start: index - 0.5,
+              end: -index - 1.25,
+              severity: index.isEven ? 'error' : 'warning',
+              code: codes[index],
+              messageKey: index == 0 ? ' key ' : '키.$index',
+              message: index == 0 ? '' : ' 메시지 $index ',
+            )
+            ..['future'] = index
+            ..addAll(
+              index == 0
+                  ? {'data': data}
+                  : index == 1
+                  ? {'data': <String, String>{}}
+                  : const {},
+            ),
+      ];
+      sourceDiagnostics.add(
+        Map<String, dynamic>.from(sourceDiagnostics.first as Map),
+      );
+      final source =
+          _problemSearchSource()..['diagnostics'] = sourceDiagnostics;
+      final actual = contract.searchProblems('sample').decode(source);
+      final diagnostics = actual.diagnostics!;
+
+      sourceDiagnostics.clear();
+      data[' key '] = 'changed';
+      source['diagnostics'] = <Object>[];
+
+      expect(diagnostics.map((value) => value.code), [
+        ...ProblemSearchDiagnosticCode.values,
+        ProblemSearchDiagnosticCode.unknownFilter,
+      ]);
+      expect(diagnostics.first.severity, ProblemSearchDiagnosticSeverity.error);
+      expect(diagnostics[1].severity, ProblemSearchDiagnosticSeverity.warning);
+      expect(diagnostics.first.start, -0.5);
+      expect(diagnostics.first.end, -1.25);
+      expect(diagnostics.first.messageKey, ' key ');
+      expect(diagnostics.first.message, '');
+      expect(diagnostics.first.data, {' key ': ' 값 ', 'empty': ''});
+      expect(diagnostics[1].data, isEmpty);
+      expect(diagnostics[2].data, isNull);
+      expect(diagnostics.last.code, diagnostics.first.code);
+      expect(() => diagnostics.add(diagnostics.first), throwsUnsupportedError);
+      expect(() => diagnostics[0] = diagnostics[1], throwsUnsupportedError);
+      expect(
+        () => diagnostics.first.data![' key '] = 'blocked',
+        throwsUnsupportedError,
+      );
     });
 
     test('requires the documented full title array and fields', () {
@@ -1558,6 +1849,8 @@ void main() {
             },
           ],
           'total': 1.0,
+          'page': 1,
+          'pageSize': 50,
         });
 
         expect(actual.count, 1);
@@ -1588,6 +1881,8 @@ void main() {
               },
             ],
             'total': 1,
+            'page': 1,
+            'pageSize': 50,
           }),
           throwsFormatException,
         );
@@ -2048,6 +2343,25 @@ void main() {
     });
   });
 }
+
+Map<String, dynamic> _problemSearchSource() =>
+    jsonDecode(fixture('v4/search_problems.json')) as Map<String, dynamic>;
+
+Map<String, dynamic> _problemSearchDiagnostic({
+  num start = 0,
+  num end = 1,
+  String severity = 'warning',
+  String code = 'unknown-filter',
+  String messageKey = 'problem-search.diagnostic',
+  String message = 'Diagnostic message',
+}) => {
+  'start': start,
+  'end': end,
+  'severity': severity,
+  'code': code,
+  'messageKey': messageKey,
+  'message': message,
+};
 
 Map<String, dynamic> _v4CatalogTag({
   required num id,
