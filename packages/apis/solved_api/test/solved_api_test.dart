@@ -532,6 +532,23 @@ void main() {
       });
     });
 
+    group('v4 capability', () {
+      test('is disabled without an explicit v4 contract', () {
+        expect(apiClient.supportsV4, isFalse);
+      });
+
+      test('is enabled when an explicit v4 contract is configured', () {
+        apiClient = SolvedApiClient(
+          httpClient: httpClient,
+          v4Contract: SolvedApiV4Contract(
+            proxyBaseUri: Uri.parse('https://gateway.example/solved/v4/'),
+          ),
+        );
+
+        expect(apiClient.supportsV4, isTrue);
+      });
+    });
+
     group('v4 profile transport', () {
       test('requires an explicit v4 contract', () {
         expect(

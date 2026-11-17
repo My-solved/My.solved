@@ -123,6 +123,9 @@ class SolvedApiClient {
 
   bool _isClosed = false;
 
+  /// Whether this instance has the credential-safe contract needed for v4 calls.
+  bool get supportsV4 => _v4Contract != null;
+
   /// Releases the internally-created HTTP client.
   ///
   /// A client supplied through the constructor remains owned by the caller and
