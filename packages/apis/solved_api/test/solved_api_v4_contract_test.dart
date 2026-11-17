@@ -29,6 +29,47 @@ void main() {
     expect(endpoint.proxy.queryParameters, {'lang': 'ko'});
   });
 
+  test('pins the authenticated identity endpoint and number-shaped ID', () {
+    final endpoint = contract.currentUser();
+    final identity = endpoint.decode(jsonDecode(fixture('v4/me.json')));
+
+    expect(endpoint.direct.baseUri, Uri.parse('https://solved.ac/api/v4/'));
+    expect(endpoint.direct.path, 'me');
+    expect(endpoint.direct.queryParameters, isEmpty);
+    expect(
+      endpoint.proxy.baseUri,
+      Uri.parse('https://proxy.example.com/api/v4/'),
+    );
+    expect(endpoint.proxy.path, 'me');
+    expect(endpoint.proxy.queryParameters, isEmpty);
+    expect(identity.id, 123456789);
+    expect(identity.handle, 'index');
+    expect(
+      endpoint.decode({'id': 42.5, 'handle': 'renamed'}).id,
+      42.5,
+    );
+  });
+
+  test('rejects malformed authenticated identity responses', () {
+    final decode = contract.currentUser().decode;
+    for (final body in <Object?>[
+      null,
+      <String, Object?>{},
+      <String, Object?>{'id': 1},
+      <String, Object?>{'handle': 'index'},
+      <String, Object?>{'id': '1', 'handle': 'index'},
+      <String, Object?>{'id': double.nan, 'handle': 'index'},
+      <String, Object?>{'id': double.infinity, 'handle': 'index'},
+      <String, Object?>{'id': 1, 'handle': 1},
+    ]) {
+      expect(
+        () => decode(body),
+        throwsFormatException,
+        reason: body.toString(),
+      );
+    }
+  });
+
   test('encodes untrusted path values and rejects ambiguous segments', () {
     expect(
       contract.userProfile('한 글').direct.path,
