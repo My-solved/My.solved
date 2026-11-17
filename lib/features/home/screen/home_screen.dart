@@ -140,7 +140,6 @@ class _HomeViewState extends State<HomeView> {
 
           final solvedToday = state.solvedToday ?? false;
           final tags = state.tagRatings ?? [];
-          final stats = state.problemStats ?? [];
           final gridItem = [
             GridItem(
               title: "레이팅",
@@ -207,11 +206,18 @@ class _HomeViewState extends State<HomeView> {
               title: "배경",
               backgroundImageUrl: state.background?.imageUrl,
             ),
-            GridItem(
-              onPressed: () {},
-              title: "난이도 분포",
-              widget: _pieChart(stats: stats),
-            ),
+            if (state.user!.reputation != null)
+              GridItem(
+                onPressed: () {},
+                title: "평판",
+                value: state.user!.reputation.toString(),
+              )
+            else if (state.problemStats != null)
+              GridItem(
+                onPressed: () {},
+                title: "난이도 분포",
+                widget: _pieChart(stats: state.problemStats!),
+              ),
             GridItem(
               onPressed: () {},
               title: "태그 분포",

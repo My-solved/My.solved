@@ -1,5 +1,8 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:my_solved/features/home/bloc/home_bloc.dart';
+import 'package:my_solved/features/home/screen/home_screen.dart';
 import 'package:shared_preferences_repository/shared_preferences_repository.dart';
 import 'package:solved_api/solved_api.dart';
 import 'package:user_repository/user_repository.dart';
@@ -59,6 +62,10 @@ void main() {
 
     final state = await success;
     expect(state.badge, same(_badge));
+    expect(state.problemStats, isNotNull);
+    expect(state.user?.reputation, isNull);
+    expect(repository.requestedStreakFrom, today);
+    expect(repository.requestedStreakTo, today);
     expect(
       repository.requestedAuxiliaryNames,
       unorderedEquals([
@@ -69,6 +76,84 @@ void main() {
         'problemStats',
       ]),
     );
+  });
+
+  test(
+    'uses embedded v4 profile data and requests only the solved day',
+    () async {
+      const tagRatings = [ProfileTagRating(key: 'dp', rating: 1700)];
+      final repository = _FakeUserRepository(
+        supportsV4: true,
+        user: _profile(
+          backgroundId: 'must-not-be-requested',
+          badgeId: 'must-not-be-requested',
+          reputation: 42,
+          background: _background,
+          badge: _badge,
+          tagRatings: tagRatings,
+        ),
+      );
+      var nowCalls = 0;
+      final bloc = HomeBloc(
+        userRepository: repository,
+        sharedPreferencesRepository: _FakeSharedPreferencesRepository(),
+        handle: _user.handle,
+        now: () {
+          nowCalls++;
+          return today;
+        },
+      );
+      addTearDown(bloc.close);
+
+      final success = bloc.stream.firstWhere((state) => state.status.isSuccess);
+      bloc.add(HomeInit());
+
+      final state = await success;
+      expect(state.background, same(_background));
+      expect(state.badge, same(_badge));
+      expect(state.tagRatings, same(tagRatings));
+      expect(state.problemStats, isNull);
+      expect(state.user?.reputation, 42);
+      expect(repository.requestedAuxiliaryNames, ['streak']);
+      expect(repository.requestedStreakFrom, today);
+      expect(repository.requestedStreakTo, today);
+      expect(nowCalls, 1);
+    },
+  );
+
+  testWidgets('shows v4 reputation instead of unavailable difficulty stats', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repository = _FakeUserRepository(
+      supportsV4: true,
+      user: _profile(
+        backgroundId: null,
+        reputation: 42,
+        tagRatings: const [ProfileTagRating(key: 'dp', rating: 1700)],
+      ),
+    );
+    final bloc = _createBloc(repository, today);
+    addTearDown(bloc.close);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BlocProvider<HomeBloc>.value(
+          value: bloc,
+          child: const HomeView(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.text('평판'), findsOneWidget);
+    expect(find.text('42'), findsOneWidget);
+    expect(find.text('난이도 분포'), findsNothing);
   });
 
   test('emits failure when the core user request fails', () async {
@@ -228,6 +313,7 @@ HomeBloc _createBloc(_FakeUserRepository repository, DateTime now) {
 
 class _FakeUserRepository implements UserRepository {
   _FakeUserRepository({
+    this.supportsV4 = false,
     this.failUser = false,
     this.failingAuxiliaryRequests = const {},
     this.userDelay = Duration.zero,
@@ -238,6 +324,8 @@ class _FakeUserRepository implements UserRepository {
         streak = streak ?? _streak(currentStreak: 0, days: const []);
 
   final bool failUser;
+  @override
+  final bool supportsV4;
   final Set<String> failingAuxiliaryRequests;
   final Duration userDelay;
   final Duration auxiliaryDelay;
@@ -248,6 +336,8 @@ class _FakeUserRepository implements UserRepository {
   int maxActiveAuxiliaryRequests = 0;
   int auxiliaryRequestCount = 0;
   int userRequestCount = 0;
+  DateTime? requestedStreakFrom;
+  DateTime? requestedStreakTo;
   final List<String> requestedAuxiliaryNames = [];
 
   Future<T> _auxiliary<T>(String name, T value) async {
@@ -289,8 +379,15 @@ class _FakeUserRepository implements UserRepository {
       _auxiliary('badge', _badge);
 
   @override
-  Future<ProfileStreak> getStreak(String handle, String? topic) =>
-      _auxiliary('streak', streak);
+  Future<ProfileStreak> getStreak(
+    String handle, {
+    required DateTime from,
+    required DateTime to,
+  }) {
+    requestedStreakFrom = from;
+    requestedStreakTo = to;
+    return _auxiliary('streak', streak);
+  }
 
   @override
   Future<List<ProfileTagRating>> getTagRatings(String handle) =>
@@ -319,6 +416,10 @@ ProfileStreak _streak({
 UserProfile _profile({
   String? backgroundId = 'default',
   String? badgeId,
+  int? reputation,
+  ProfileBackgroundAsset? background,
+  ProfileBadgeAsset? badge,
+  List<ProfileTagRating> tagRatings = const [],
 }) =>
     UserProfile(
       handle: 'w8385',
@@ -331,6 +432,10 @@ UserProfile _profile({
       reverseRivalCount: 0,
       tier: 1,
       rating: 1,
+      reputation: reputation,
+      background: background,
+      badge: badge,
+      tagRatings: tagRatings,
     );
 
 final _user = _profile();
