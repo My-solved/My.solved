@@ -3,6 +3,7 @@ class UserSearchItem {
     required this.handle,
     required this.profileImageUrl,
     required this.tier,
+    this.rank,
     this.rating,
     this.solvedCount,
     this.reputation,
@@ -11,6 +12,10 @@ class UserSearchItem {
   final String handle;
   final String? profileImageUrl;
   final int? tier;
+
+  /// Rank returned by the active search contract. This must not be replaced
+  /// with a separate global-rank or page field.
+  final int? rank;
 
   /// Public rating, or `null` when the active contract did not expose it.
   final int? rating;

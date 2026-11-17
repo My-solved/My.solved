@@ -256,6 +256,9 @@ String? _decodeV4ProblemTitle(Object? value) {
 
 UserSearchResult _decodeV4UserSearch(dynamic json) {
   final body = _object(json, 'user search');
+  if (!body.containsKey('exact')) {
+    throw const FormatException('Missing required field exact');
+  }
   final exactValue = body['exact'];
   return UserSearchResult(
     exact: exactValue == null
@@ -273,6 +276,7 @@ UserSearchItem _decodeV4UserSearchItem(Map<String, dynamic> body) =>
       profileImageUrl:
           _nullableString(body['profileImageUrl'], 'user.profileImageUrl'),
       tier: _nullableInteger(body['tier'], 'user.tier'),
+      rank: _integer(body['rank'], 'user.rank'),
       rating: _integer(body['rating'], 'user.rating'),
       solvedCount: _integer(body['solvedCount'], 'user.solvedCount'),
       reputation: _integer(body['reputation'], 'user.reputation'),

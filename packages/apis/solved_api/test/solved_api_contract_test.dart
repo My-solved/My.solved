@@ -79,6 +79,8 @@ void main() {
       expect(users.items.first.handle, 'fdsajklt2');
       expect(users.items.first.profileImageUrl, isNull);
       expect(users.items.first.tier, 16);
+      expect(users.items.first.rank, 5169);
+      expect(users.items.last.rank, 17200);
       expect(users.items.first.rating, 1675);
       expect(users.items.first.solvedCount, 489);
       expect(tags, isA<SearchObject<TagSearchItem>>());
@@ -109,11 +111,29 @@ void main() {
       });
 
       expect(item.rating, isNull);
+      expect(item.rank, isNull);
       expect(item.solvedCount, isNull);
       expect(item.reputation, isNull);
       expect(decoded.items.single.rating, isNull);
+      expect(decoded.items.single.rank, isNull);
       expect(decoded.items.single.solvedCount, isNull);
       expect(decoded.items.single.reputation, isNull);
+    });
+
+    test('rejects a non-integer legacy user rank', () {
+      final source = Map<String, dynamic>.from(
+        jsonDecode(fixture('v3/search_user.json')) as Map,
+      );
+      final items = List<dynamic>.from(source['items'] as List);
+      items[0] = Map<String, dynamic>.from(items.first as Map)
+        ..['rank'] = '5169';
+      source['items'] = items;
+
+      expect(
+        () =>
+            const SolvedApiV3Contract().searchUser('legacy', 1).decode(source),
+        throwsA(isA<TypeError>()),
+      );
     });
 
     test('keeps the legacy public tag-item constructor source-compatible', () {

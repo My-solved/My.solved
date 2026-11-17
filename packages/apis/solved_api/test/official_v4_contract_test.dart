@@ -188,8 +188,19 @@ void main() {
       _map(userSearchProperties['items'])['items'],
     );
     for (final userSchema in [exactUser, listedUser]) {
-      expect(_required(userSchema), contains('reputation'));
-      final reputation = _map(_properties(userSchema)['reputation']);
+      expect(
+        _required(userSchema),
+        containsAll(['rank', 'globalRank', 'reputation']),
+      );
+      final properties = _properties(userSchema);
+      final rank = _map(properties['rank']);
+      expect(rank['type'], 'integer');
+      for (final constraint in ['minimum', 'maximum', 'description']) {
+        expect(rank.containsKey(constraint), isFalse);
+      }
+      final globalRank = _map(properties['globalRank']);
+      expect(globalRank['type'], ['integer', 'null']);
+      final reputation = _map(properties['reputation']);
       expect(reputation['type'], 'integer');
       expect(reputation.containsKey('minimum'), isFalse);
     }
