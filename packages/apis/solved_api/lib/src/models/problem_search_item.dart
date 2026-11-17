@@ -21,6 +21,7 @@ class ProblemSearchItem {
     this.levelAverage,
     this.levelStdev,
     this.isStandard,
+    this.userStatus,
     this.votedUserCount,
     this.effectiveVoteCount,
     this.solvedUserCount,
@@ -44,6 +45,10 @@ class ProblemSearchItem {
   /// The raw standard-problem marker reported by the active contract.
   /// `null` means the contract did not provide it.
   final bool? isStandard;
+
+  /// The user-specific problem status reported by the active contract.
+  /// `null` means no status was reported or the contract did not provide it.
+  final ProblemUserStatus? userStatus;
 
   /// The raw voted-user count reported by the active contract.
   /// `null` means the contract did not provide it.
