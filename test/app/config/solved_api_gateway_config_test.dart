@@ -44,6 +44,23 @@ void main() {
       expect(requestedUri, Uri.parse('https://gateway.example/solved/v4/tags'));
     });
 
+    test('closes legacy transport when a v4 gateway is configured', () {
+      var requestCount = 0;
+      final config = SolvedApiGatewayConfig.parse(
+        'https://gateway.example/solved/v4/',
+        allowInsecureLoopback: false,
+      );
+      final client = config.createClient(
+        httpClient: MockClient((_) async {
+          requestCount += 1;
+          return http.Response('{}', 200);
+        }),
+      );
+
+      expect(() => client.userShow('index'), throwsStateError);
+      expect(requestCount, 0);
+    });
+
     test('allows loopback HTTP only when explicitly enabled', () {
       for (final host in ['localhost', '127.0.0.1', '[::1]']) {
         final value = 'http://$host:3000/solved/v4/';
