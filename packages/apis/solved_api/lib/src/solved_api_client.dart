@@ -2,12 +2,21 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart' show parseHttpDate;
+import 'package:http_parser/http_parser.dart' show MediaType, parseHttpDate;
 
 import 'models/models.dart';
 import 'platform/is_web.dart' as platform;
 import 'solved_api_contract.dart';
 import 'solved_api_v4_contract.dart';
+import 'solved_proxy_transport.dart';
+
+/// Sanitized marker for an official v4 response that exceeded its byte cap.
+final class SolvedApiResponseTooLarge implements Exception {
+  const SolvedApiResponseTooLarge();
+
+  @override
+  String toString() => 'SolvedApiResponseTooLarge()';
+}
 
 class SolvedApiException implements Exception {
   const SolvedApiException({
@@ -27,9 +36,10 @@ class SolvedApiException implements Exception {
   final Duration? retryAfter;
 
   bool get isRetryable {
+    if (cause is SolvedApiResponseTooLarge) return false;
     final status = statusCode;
     if (status != null) {
-      return status == 408 || status == 429 || status >= 500;
+      return status == 408 || status == 429 || (status >= 500 && status <= 599);
     }
     return cause is TimeoutException || cause is http.ClientException;
   }
@@ -95,13 +105,16 @@ class SearchRequestFailed extends SolvedApiException {
 enum _RequestType { user, background, badge, search }
 
 class SolvedApiClient {
+  /// Creates a legacy v3 client.
+  ///
+  /// Official v4 callers must use [SolvedApiClient.officialV4] so the endpoint
+  /// contract and bounded transport cannot disagree about their gateway.
   SolvedApiClient({
     http.Client? httpClient,
     bool? useProxy,
     Uri? apiBaseUri,
     Uri? proxyBaseUri,
     SolvedApiContract contract = const SolvedApiV3Contract(),
-    SolvedApiV4Contract? v4Contract,
     this.requestTimeout = const Duration(seconds: 10),
   })  : _httpClient = httpClient ?? http.Client(),
         _ownsHttpClient = httpClient == null,
@@ -110,7 +123,47 @@ class SolvedApiClient {
         _proxyBaseUri =
             proxyBaseUri == null ? null : _normalizeBaseUri(proxyBaseUri),
         _contract = contract,
-        _v4Contract = v4Contract;
+        _v4Contract = null,
+        _v4PublicTransport = null;
+
+  /// Creates one credential-safe official v4 client over `solved-proxy`.
+  ///
+  /// The injected HTTP client remains caller-owned and must not add retries or
+  /// credentials. Every public v4 request is sent exactly once through the
+  /// same validated gateway with a bounded response.
+  factory SolvedApiClient.officialV4({
+    required Uri proxyBaseUri,
+    required http.Client httpClient,
+    Duration requestTimeout = const Duration(seconds: 10),
+    bool allowInsecureLoopback = false,
+  }) {
+    final transport = SolvedProxyTransport(
+      proxyBaseUri: proxyBaseUri,
+      httpClient: httpClient,
+      requestTimeout: requestTimeout,
+      allowInsecureLoopback: allowInsecureLoopback,
+    );
+    return SolvedApiClient._officialV4(
+      httpClient: httpClient,
+      contract: SolvedApiV4Contract(proxyBaseUri: transport.proxyBaseUri),
+      transport: transport,
+      requestTimeout: requestTimeout,
+    );
+  }
+
+  SolvedApiClient._officialV4({
+    required http.Client httpClient,
+    required SolvedApiV4Contract contract,
+    required SolvedProxyTransport transport,
+    required this.requestTimeout,
+  })  : _httpClient = httpClient,
+        _ownsHttpClient = false,
+        _useProxy = false,
+        _apiBaseUri = null,
+        _proxyBaseUri = null,
+        _contract = const SolvedApiV3Contract(),
+        _v4Contract = contract,
+        _v4PublicTransport = transport;
 
   final http.Client _httpClient;
   final bool _ownsHttpClient;
@@ -119,6 +172,7 @@ class SolvedApiClient {
   final Uri? _proxyBaseUri;
   final SolvedApiContract _contract;
   final SolvedApiV4Contract? _v4Contract;
+  final SolvedProxyTransport? _v4PublicTransport;
   final Duration requestTimeout;
 
   bool _isClosed = false;
@@ -135,6 +189,7 @@ class SolvedApiClient {
   void close() {
     if (_isClosed) return;
     _isClosed = true;
+    _v4PublicTransport?.close();
     if (_ownsHttpClient) _httpClient.close();
   }
 
@@ -171,10 +226,9 @@ class SolvedApiClient {
   /// Requests the official v4 profile through its credential-holding proxy.
   Future<UserProfile> v4UserProfile(String handle) {
     final contract = _requireV4Contract();
-    return _get(
+    return _getV4(
       contract.userProfile(handle),
       requestType: _RequestType.user,
-      forceProxy: contract.requiresProxy,
     );
   }
 
@@ -184,10 +238,9 @@ class SolvedApiClient {
     required DateTime to,
   }) {
     final contract = _requireV4Contract();
-    return _get(
+    return _getV4(
       contract.userActivity(handle, from: from, to: to),
       requestType: _RequestType.user,
-      forceProxy: contract.requiresProxy,
     );
   }
 
@@ -196,28 +249,25 @@ class SolvedApiClient {
     SolvedApiV4ReputationRange? range,
   }) {
     final contract = _requireV4Contract();
-    return _get(
+    return _getV4(
       contract.userReputation(handle, range: range),
       requestType: _RequestType.user,
-      forceProxy: contract.requiresProxy,
     );
   }
 
   Future<ProfileBackgroundAsset?> v4BackgroundShow(String key) {
     final contract = _requireV4Contract();
-    return _get(
+    return _getV4(
       contract.backgroundShow(key),
       requestType: _RequestType.background,
-      forceProxy: contract.requiresProxy,
     );
   }
 
   Future<ProfileBadgeAsset> v4BadgeShow(String key) {
     final contract = _requireV4Contract();
-    return _get(
+    return _getV4(
       contract.badgeShow(key),
       requestType: _RequestType.badge,
-      forceProxy: contract.requiresProxy,
     );
   }
 
@@ -229,7 +279,7 @@ class SolvedApiClient {
     String? seed,
   }) {
     final contract = _requireV4Contract();
-    return _get(
+    return _getV4(
       contract.searchProblems(
         query,
         page: page,
@@ -238,7 +288,6 @@ class SolvedApiClient {
         seed: seed,
       ),
       requestType: _RequestType.search,
-      forceProxy: contract.requiresProxy,
     );
   }
 
@@ -247,10 +296,9 @@ class SolvedApiClient {
     SolvedApiV4UserSort sort = SolvedApiV4UserSort.rating,
   }) {
     final contract = _requireV4Contract();
-    return _get(
+    return _getV4(
       contract.searchUsers(query, sort: sort),
       requestType: _RequestType.search,
-      forceProxy: contract.requiresProxy,
     );
   }
 
@@ -259,10 +307,9 @@ class SolvedApiClient {
     int page = 1,
   }) {
     final contract = _requireV4Contract();
-    return _get(
+    return _getV4(
       contract.searchTags(query, page: page),
       requestType: _RequestType.search,
-      forceProxy: contract.requiresProxy,
     );
   }
 
@@ -289,12 +336,94 @@ class SolvedApiClient {
         requestType: _RequestType.search,
       );
 
+  Future<T> _getV4<T>(
+    SolvedApiEndpoint<T> endpoint, {
+    required _RequestType requestType,
+  }) async {
+    if (_isClosed) {
+      throw StateError('SolvedApiClient is closed');
+    }
+    final transport = _requireV4Transport();
+    final target = endpoint.proxy;
+    final uri = transport.proxyBaseUri.resolve(target.path).replace(
+          queryParameters:
+              target.queryParameters.isEmpty ? null : target.queryParameters,
+        );
+
+    late SolvedProxyResponse response;
+    try {
+      response = await transport.getPublic(
+        relativePath: target.path,
+        queryParameters: target.queryParameters,
+        maximumResponseBytes: SolvedProxyTransport.maximumPublicResponseBytes,
+      );
+    } on SolvedProxyDeadlineExceeded catch (_, stackTrace) {
+      throw _failure(
+        requestType,
+        uri: uri,
+        cause: TimeoutException(
+          'Official solved.ac v4 request timed out',
+          requestTimeout,
+        ),
+        stackTrace: stackTrace,
+      );
+    } on TimeoutException catch (error, stackTrace) {
+      throw _failure(
+        requestType,
+        uri: uri,
+        cause: error,
+        stackTrace: stackTrace,
+      );
+    } on SolvedProxyResponseTooLarge catch (error, stackTrace) {
+      throw _failure(
+        requestType,
+        uri: uri,
+        statusCode: error.statusCode,
+        cause: const SolvedApiResponseTooLarge(),
+        stackTrace: stackTrace,
+      );
+    } on Object catch (error, stackTrace) {
+      throw _failure(
+        requestType,
+        uri: uri,
+        cause: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    if (response.statusCode != 200) {
+      throw _failure(
+        requestType,
+        uri: uri,
+        statusCode: response.statusCode,
+        retryAfter: response.statusCode == 429
+            ? _parseRetryAfter(response.headers)
+            : null,
+      );
+    }
+
+    try {
+      _requireJsonContentType(response.headers);
+      final json = jsonDecode(utf8.decode(response.bodyBytes));
+      return endpoint.decode(json);
+    } on Object catch (_, stackTrace) {
+      throw _failure(
+        requestType,
+        uri: uri,
+        statusCode: response.statusCode,
+        cause: const FormatException(
+          'Official solved.ac v4 response metadata or body is invalid',
+        ),
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
   Future<T> _get<T>(
     SolvedApiEndpoint<T> endpoint, {
     required _RequestType requestType,
-    bool forceProxy = false,
   }) async {
-    final uri = _buildUri(endpoint, forceProxy: forceProxy);
+    final uri = _buildUri(endpoint);
     late http.Response response;
 
     try {
@@ -345,13 +474,9 @@ class SolvedApiClient {
     }
   }
 
-  Uri _buildUri<T>(
-    SolvedApiEndpoint<T> endpoint, {
-    bool forceProxy = false,
-  }) {
-    final useProxy = forceProxy || _useProxy;
-    final target = useProxy ? endpoint.proxy : endpoint.direct;
-    final overrideBaseUri = useProxy ? _proxyBaseUri : _apiBaseUri;
+  Uri _buildUri<T>(SolvedApiEndpoint<T> endpoint) {
+    final target = _useProxy ? endpoint.proxy : endpoint.direct;
+    final overrideBaseUri = _useProxy ? _proxyBaseUri : _apiBaseUri;
     final baseUri = overrideBaseUri ?? target.baseUri;
     return baseUri.resolve(target.path).replace(
           queryParameters:
@@ -365,6 +490,16 @@ class SolvedApiClient {
       throw StateError('A SolvedApiV4Contract is required for v4 requests');
     }
     return contract;
+  }
+
+  SolvedProxyTransport _requireV4Transport() {
+    final transport = _v4PublicTransport;
+    if (transport == null) {
+      throw StateError(
+        'SolvedApiClient.officialV4 is required for v4 requests',
+      );
+    }
+    return transport;
   }
 
   SolvedApiContract _requireLegacyContract() {
@@ -390,9 +525,12 @@ class SolvedApiClient {
     }
     if (value == null || value.isEmpty) return null;
 
-    final seconds = int.tryParse(value);
-    if (seconds != null) {
-      return seconds < 0 ? null : Duration(seconds: seconds);
+    final isAsciiDigits = value.codeUnits.every(
+      (codeUnit) => codeUnit >= 0x30 && codeUnit <= 0x39,
+    );
+    if (isAsciiDigits) {
+      final seconds = int.tryParse(value);
+      if (seconds != null) return Duration(seconds: seconds);
     }
 
     try {
@@ -451,5 +589,27 @@ class SolvedApiClient {
   static Uri _normalizeBaseUri(Uri uri) {
     if (uri.path.endsWith('/')) return uri;
     return uri.replace(path: '${uri.path}/');
+  }
+}
+
+void _requireJsonContentType(Map<String, String> headers) {
+  String? value;
+  for (final header in headers.entries) {
+    if (header.key.toLowerCase() == 'content-type') {
+      value = header.value;
+      break;
+    }
+  }
+  if (value == null) {
+    throw const FormatException(
+      'Official solved.ac v4 response Content-Type is missing',
+    );
+  }
+
+  final mediaType = MediaType.parse(value);
+  if (mediaType.mimeType.toLowerCase() != 'application/json') {
+    throw const FormatException(
+      'Official solved.ac v4 response must be application/json',
+    );
   }
 }

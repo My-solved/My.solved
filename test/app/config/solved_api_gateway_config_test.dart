@@ -46,6 +46,9 @@ void main() {
           return http.Response(
             jsonEncode(<String, Object>{'tags': <Object>[]}),
             200,
+            headers: const <String, String>{
+              'content-type': 'application/json; charset=utf-8',
+            },
           );
         }),
       );
@@ -127,6 +130,11 @@ void main() {
         );
         expect(config.v4ProxyBaseUri, Uri.parse(value));
         expect(config.usesInsecureV4Loopback, isTrue);
+        final client = config.createClient(
+          httpClient: MockClient((_) async => http.Response('{}', 200)),
+        );
+        expect(client.supportsV4, isTrue);
+        client.close();
         expect(
           () => SolvedApiGatewayConfig.parse(
             mode: solvedApiOfficialV4Mode,
