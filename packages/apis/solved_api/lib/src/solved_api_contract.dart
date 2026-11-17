@@ -60,8 +60,6 @@ abstract interface class SolvedApiContract {
 
   SolvedApiEndpoint<ProfileBadgeAsset> badgeShow(String badgeId);
 
-  SolvedApiEndpoint<SearchSuggestion> searchSuggestion(String query);
-
   SolvedApiEndpoint<SearchObject<ProblemSearchItem>> searchProblem(
     String query,
     int? page,
@@ -133,14 +131,6 @@ class SolvedApiV3Contract implements SolvedApiContract {
         path: 'badge/show',
         queryParameters: {'badgeId': badgeId},
         decode: _decodeV3ProfileBadgeAsset,
-      );
-
-  @override
-  SolvedApiEndpoint<SearchSuggestion> searchSuggestion(String query) =>
-      _endpoint(
-        path: 'search/suggestion',
-        queryParameters: {'query': query},
-        decode: (json) => SearchSuggestion.fromJson(json),
       );
 
   @override
@@ -223,6 +213,7 @@ UserProfile _decodeV3UserProfile(dynamic json) {
 ProfileBackgroundAsset _decodeV3ProfileBackgroundAsset(dynamic json) {
   final body = Map<String, dynamic>.from(json as Map);
   return ProfileBackgroundAsset(
+    key: body['backgroundId'],
     imageUrl: body['backgroundImageUrl'],
     fallbackImageUrl: body['fallbackBackgroundImageUrl'],
   );
@@ -230,7 +221,11 @@ ProfileBackgroundAsset _decodeV3ProfileBackgroundAsset(dynamic json) {
 
 ProfileBadgeAsset _decodeV3ProfileBadgeAsset(dynamic json) {
   final body = Map<String, dynamic>.from(json as Map);
-  return ProfileBadgeAsset(imageUrl: body['badgeImageUrl']);
+  return ProfileBadgeAsset(
+    key: body['badgeId'],
+    name: body['displayName'],
+    imageUrl: body['badgeImageUrl'],
+  );
 }
 
 ProfileStreak _decodeV3ProfileStreak(dynamic json) {
@@ -270,7 +265,16 @@ List<ProfileTierStat> _decodeV3ProfileTierStats(dynamic json) =>
 List<ProfileTagRating> _decodeV3ProfileTagRatings(dynamic json) =>
     List<dynamic>.from(json as List).map((item) {
       final body = Map<String, dynamic>.from(item as Map);
-      return ProfileTagRating(rating: body['rating']);
+      final tag = Map<String, dynamic>.from(body['tag'] as Map);
+      return ProfileTagRating(
+        key: tag['key'],
+        rating: body['rating'],
+        solvedCount: body['solvedCount'],
+        ratingByProblemsSum: body['ratingByProblemsSum'],
+        ratingByClass: body['ratingByClass'],
+        ratingBySolvedCount: body['ratingBySolvedCount'],
+        ratingProblemsCutoff: body['ratingProblemsCutoff'],
+      );
     }).toList(growable: false);
 
 SearchObject<T> _decodeV3SearchObject<T>(

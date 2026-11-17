@@ -9,6 +9,7 @@ import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
 import 'package:my_solved/features/search/bloc/search_bloc.dart';
 import 'package:my_solved/features/search_filter/screen/search_filter_screen.dart';
+import 'package:solved_api/solved_api.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class SearchScreen extends StatelessWidget {
@@ -346,17 +347,20 @@ class _SearchViewState extends State<SearchView> {
                                       ),
                                       SizedBox(height: 4),
                                       // 문제 제목에 HTML 태그가 포함되어 있을 경우
-                                      state.problems!.items[index].title
-                                              .contains("</")
+                                      _problemTitle(
+                                        state.problems!.items[index],
+                                      ).contains("</")
                                           ? HtmlWidget(
-                                              state.problems!.items[index]
-                                                  .title,
+                                              _problemTitle(
+                                                state.problems!.items[index],
+                                              ),
                                               textStyle:
                                                   MySolvedTextStyle.body1,
                                             )
                                           : Text(
-                                              state.problems!.items[index]
-                                                  .title,
+                                              _problemTitle(
+                                                state.problems!.items[index],
+                                              ),
                                               style: MySolvedTextStyle.body1,
                                             ),
                                       SizedBox(height: 8),
@@ -405,7 +409,7 @@ class _SearchViewState extends State<SearchView> {
                                   child: Row(
                                     children: [
                                       SvgPicture.asset(
-                                        "assets/images/tiers/${state.users!.items[index].tier}.svg",
+                                        "assets/images/tiers/${state.users!.items[index].tier ?? 0}.svg",
                                         width: 24,
                                         height: 24,
                                       ),
@@ -458,7 +462,7 @@ class _SearchViewState extends State<SearchView> {
                                     minimumSize: Size.fromHeight(52),
                                   ),
                                   child: Text(
-                                    "${state.tags!.items[index].key}:${state.tags!.items[index].problemCount}",
+                                    _tagLabel(state.tags!.items[index]),
                                     style: MySolvedTextStyle.body1,
                                   ),
                                 ),
@@ -479,6 +483,12 @@ class _SearchViewState extends State<SearchView> {
     // return
   }
 }
+
+String _problemTitle(ProblemSearchItem item) => item.title ?? '제목 없음';
+
+String _tagLabel(TagSearchItem item) => item.problemCount == null
+    ? item.key
+    : '${item.key}:${item.problemCount}';
 
 class SearchHeaderDelegate extends SliverPersistentHeaderDelegate {
   Widget body;

@@ -448,7 +448,7 @@ class _HomeViewState extends State<HomeView> {
     return Color.fromARGB(255, 79, 82, 87);
   }
 
-  String _tierText(int tier) {
+  String _tierText(int? tier) {
     if (tier == 1) return 'Bronze V';
     if (tier == 2) return 'Bronze IV';
     if (tier == 3) return 'Bronze III';

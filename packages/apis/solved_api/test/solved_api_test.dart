@@ -532,6 +532,101 @@ void main() {
       });
     });
 
+    group('v4 profile transport', () {
+      test('requires an explicit v4 contract', () {
+        expect(
+          () => apiClient.v4UserProfile('index'),
+          throwsStateError,
+        );
+      });
+
+      test('forces the credential-holding proxy on native clients', () async {
+        apiClient = SolvedApiClient(
+          httpClient: httpClient,
+          useProxy: false,
+          apiBaseUri: Uri.parse('https://direct-override.example/api/v4/'),
+          v4Contract: SolvedApiV4Contract(
+            proxyBaseUri: Uri.parse(
+              'https://gateway.example/solved/v4/',
+            ),
+          ),
+        );
+        when(() => httpClient.get(any())).thenAnswer(
+          (_) async => http.Response(fixture('v4/user_profile.json'), 200),
+        );
+
+        final actual = await apiClient.v4UserProfile('index');
+
+        expect(actual.handle, 'index');
+        verify(
+          () => httpClient.get(
+            Uri.https('gateway.example', '/solved/v4/users/index', {
+              'lang': 'ko',
+            }),
+          ),
+        ).called(1);
+        verifyNever(
+          () => httpClient.get(
+            Uri.https('direct-override.example', '/api/v4/users/index', {
+              'lang': 'ko',
+            }),
+          ),
+        );
+      });
+    });
+
+    group('v4 search transport', () {
+      test('forces every search request through the credential proxy', () async {
+        apiClient = SolvedApiClient(
+          httpClient: httpClient,
+          useProxy: false,
+          apiBaseUri: Uri.parse('https://direct-override.example/api/v4/'),
+          v4Contract: SolvedApiV4Contract(
+            proxyBaseUri: Uri.parse('https://gateway.example/solved/v4/'),
+          ),
+        );
+        when(() => httpClient.get(any())).thenAnswer((invocation) async {
+          final uri = invocation.positionalArguments.single as Uri;
+          final body = switch (uri.path) {
+            '/solved/v4/problems' => fixture('v4/search_problems.json'),
+            '/solved/v4/rankings/users/search' =>
+              fixture('v4/search_users.json'),
+            '/solved/v4/tags' => fixture('v4/tags.json'),
+            _ => throw StateError('Unexpected v4 search URI: $uri'),
+          };
+          return http.Response.bytes(utf8.encode(body), 200);
+        });
+
+        final problems = await apiClient.v4SearchProblems('number');
+        final users = await apiClient.v4SearchUsers('index');
+        final tags = await apiClient.v4SearchTags('NUMBER');
+
+        expect(problems.count, 4);
+        expect(users.exact?.handle, 'index');
+        expect(tags.items.single.key, 'number_theory');
+        final requestedUris = verify(
+          () => httpClient.get(captureAny()),
+        ).captured.cast<Uri>().toList(growable: false);
+        expect(requestedUris, [
+          Uri.https('gateway.example', '/solved/v4/problems', {
+            'q': 'number',
+            'page': '1',
+            'sort': 'id',
+            'direction': 'asc',
+          }),
+          Uri.https('gateway.example', '/solved/v4/rankings/users/search', {
+            'q': 'index',
+            'sort': 'rating',
+          }),
+          Uri.https('gateway.example', '/solved/v4/tags'),
+        ]);
+        expect(
+          requestedUris.every((uri) => uri.host == 'gateway.example'),
+          isTrue,
+        );
+      });
+    });
+
     group('userShow', () {
       const handle = 'w8385';
       test('makes correct http request', () async {
@@ -667,11 +762,13 @@ void main() {
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
 
         final actual = await apiClient.userProblemStats(handle);
-        expect(actual, isA<List<ProfileTierStat>>().having(
-          (stats) => stats.length,
-          'length',
-          31,
-        ));
+        expect(
+            actual,
+            isA<List<ProfileTierStat>>().having(
+              (stats) => stats.length,
+              'length',
+              31,
+            ));
         expect(actual.first.tier, 0);
         expect(actual.first.solvedCount, 15);
       });
@@ -788,41 +885,6 @@ void main() {
             'https://static.solved.ac/profile_badge/boardgame.png',
           ),
         );
-      });
-    });
-
-    group('searchSuggestions', () {
-      const query = 'rsa';
-      test('makes correct http request', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn('{}');
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-        try {
-          await apiClient.searchSuggestion(query);
-        } catch (_) {}
-        verify(
-          () => httpClient.get(
-            Uri.https('solved.ac', '/api/v3/search/suggestion', {
-              'query': query,
-            }),
-          ),
-        ).called(1);
-      });
-
-      test('returns SearchSuggestion on valid response', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(
-          () => response.body,
-        ).thenReturn(fixture('v3/search_suggestion.json'));
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-
-        final actual = await apiClient.searchSuggestion(query);
-        expect(actual, isA<SearchSuggestion>());
-        expect(actual.problems, isA<List<ProblemSuggestion>>());
-        expect(actual.tags, isA<List<TagSuggestion>>());
-        expect(actual.users, isA<List<UserSuggestion>>());
       });
     });
 
