@@ -9,9 +9,22 @@ import 'package:shared_preferences_repository/shared_preferences_repository.dart
 import 'package:solved_api/solved_api.dart';
 
 void main() {
+  test('search filter exposes only official v4 problem sorts', () {
+    expect(
+      SearchSortMethod.allCases.map((sort) => sort.apiValue),
+      [
+        SolvedApiV4ProblemSort.id,
+        SolvedApiV4ProblemSort.level,
+        SolvedApiV4ProblemSort.solved,
+        SolvedApiV4ProblemSort.averageTry,
+      ],
+    );
+    expect(SearchSortMethod.allCases, isNot(contains(SearchSortMethod.random)));
+  });
+
   test('loads problem, user, and tag results concurrently', () async {
     final problemsCompleter = Completer<SearchObject<ProblemSearchItem>>();
-    final usersCompleter = Completer<SearchObject<UserSearchItem>>();
+    final usersCompleter = Completer<UserSearchResult>();
     final tagsCompleter = Completer<SearchObject<TagSearchItem>>();
     final allRequestsStarted = Completer<void>();
     var startedRequestCount = 0;
@@ -24,8 +37,9 @@ void main() {
     final repository = _TestSearchRepository(
       onProblems: (query, page, sort, direction) {
         expect(query, 'alpha -s@w8385');
-        expect(sort, 'id');
-        expect(direction, 'asc');
+        expect(page, 1);
+        expect(sort, SolvedApiV4ProblemSort.id);
+        expect(direction, SolvedApiV4SearchDirection.asc);
         markRequestStarted();
         return problemsCompleter.future;
       },
@@ -49,7 +63,15 @@ void main() {
     expect(bloc.state.status, SearchStatus.loading);
 
     const problems = SearchObject<ProblemSearchItem>(count: 1, items: []);
-    const users = SearchObject<UserSearchItem>(count: 1, items: []);
+    const duplicateUser = UserSearchItem(
+      handle: 'alpha',
+      profileImageUrl: null,
+      tier: null,
+    );
+    const users = UserSearchResult(
+      exact: duplicateUser,
+      items: [duplicateUser],
+    );
     const tags = SearchObject<TagSearchItem>(count: 1, items: []);
     problemsCompleter.complete(problems);
     usersCompleter.complete(users);
@@ -58,6 +80,8 @@ void main() {
     await _waitForState(bloc, (state) => state.status.isSuccess);
     expect(bloc.state.problems, same(problems));
     expect(bloc.state.users, same(users));
+    expect(bloc.state.users!.exact, same(duplicateUser));
+    expect(bloc.state.users!.items, const [duplicateUser]);
     expect(bloc.state.tags, same(tags));
   });
 
@@ -66,7 +90,7 @@ void main() {
     final repository = _TestSearchRepository(
       onProblems: (_, __, ___, ____) async => throw StateError('offline'),
       onUsers: (_, __) async =>
-          const SearchObject<UserSearchItem>(count: 0, items: []),
+          const UserSearchResult(exact: null, items: []),
       onTags: (_, __) => pendingTags.future,
     );
     final bloc = _createBloc(repository);
@@ -103,7 +127,7 @@ void main() {
 
   test('ignores a stale response from an older search', () async {
     final oldProblems = Completer<SearchObject<ProblemSearchItem>>();
-    final oldUsers = Completer<SearchObject<UserSearchItem>>();
+    final oldUsers = Completer<UserSearchResult>();
     final oldTags = Completer<SearchObject<TagSearchItem>>();
     final oldRequestsStarted = Completer<void>();
     var oldStartedCount = 0;
@@ -117,7 +141,7 @@ void main() {
       count: 101,
       items: [],
     );
-    const latestUsers = SearchObject<UserSearchItem>(count: 102, items: []);
+    const latestUsers = UserSearchResult(exact: null, items: []);
     const latestTags = SearchObject<TagSearchItem>(count: 103, items: []);
     final repository = _TestSearchRepository(
       onProblems: (query, page, sort, direction) {
@@ -161,7 +185,7 @@ void main() {
       const SearchObject<ProblemSearchItem>(count: 201, items: []),
     );
     oldUsers.complete(
-      const SearchObject<UserSearchItem>(count: 202, items: []),
+      const UserSearchResult(exact: null, items: []),
     );
     oldTags.complete(const SearchObject<TagSearchItem>(count: 203, items: []));
     await bloc.close();
@@ -187,8 +211,8 @@ void main() {
         }
         if (failRequests) return Future.error(StateError('offline'));
         expect(query, 'beta -s@w8385');
-        expect(sort, SearchSortMethod.level.value);
-        expect(direction, SearchDirection.asc.value);
+        expect(sort, SolvedApiV4ProblemSort.level);
+        expect(direction, SolvedApiV4SearchDirection.asc);
         return Future.value(fullSearchProblems);
       },
     );
@@ -225,7 +249,7 @@ void main() {
     );
     final repository = _TestSearchRepository(
       onProblems: (_, __, sort, ___) async {
-        if (sort == SearchSortMethod.level.value) {
+        if (sort == SolvedApiV4ProblemSort.level) {
           throw StateError('offline');
         }
         return committedProblems;
@@ -273,8 +297,8 @@ void main() {
       final repository = _TestSearchRepository(
         onProblems: (query, page, sort, direction) async {
           expect(query, 'alpha -s@w8385');
-          expect(sort, SearchSortMethod.id.value);
-          expect(direction, SearchDirection.desc.value);
+          expect(sort, SolvedApiV4ProblemSort.id);
+          expect(direction, SolvedApiV4SearchDirection.desc);
           return filteredProblems;
         },
       );
@@ -316,14 +340,16 @@ Future<void> _waitForState(
 
 typedef _ProblemsHandler = Future<SearchObject<ProblemSearchItem>> Function(
   String query,
-  int? page,
-  String? sort,
-  String? direction,
+  int page,
+  SolvedApiV4ProblemSort sort,
+  SolvedApiV4SearchDirection direction,
 );
-typedef _UsersHandler = Future<SearchObject<UserSearchItem>> Function(
-    String query, int? page);
+typedef _UsersHandler =
+    Future<UserSearchResult> Function(String query, int page);
 typedef _TagsHandler = Future<SearchObject<TagSearchItem>> Function(
-    String query, int? page);
+  String query,
+  int page,
+);
 
 class _TestSearchRepository extends SearchRepository {
   _TestSearchRepository({
@@ -346,44 +372,44 @@ class _TestSearchRepository extends SearchRepository {
 
   static Future<SearchObject<ProblemSearchItem>> _emptyProblems(
     String query,
-    int? page,
-    String? sort,
-    String? direction,
+    int page,
+    SolvedApiV4ProblemSort sort,
+    SolvedApiV4SearchDirection direction,
   ) async {
     return const SearchObject<ProblemSearchItem>(count: 0, items: []);
   }
 
-  static Future<SearchObject<UserSearchItem>> _emptyUsers(
+  static Future<UserSearchResult> _emptyUsers(
     String query,
-    int? page,
+    int page,
   ) async {
-    return const SearchObject<UserSearchItem>(count: 0, items: []);
+    return const UserSearchResult(exact: null, items: []);
   }
 
   static Future<SearchObject<TagSearchItem>> _emptyTags(
     String query,
-    int? page,
+    int page,
   ) async {
     return const SearchObject<TagSearchItem>(count: 0, items: []);
   }
 
   @override
   Future<SearchObject<ProblemSearchItem>> getProblems(
-    String query,
-    int? page,
-    String? sort,
-    String? direction,
-  ) {
+    String query, {
+    int page = 1,
+    required SolvedApiV4ProblemSort sort,
+    required SolvedApiV4SearchDirection direction,
+  }) {
     return _onProblems(query, page, sort, direction);
   }
 
   @override
-  Future<SearchObject<UserSearchItem>> getUsers(String query, int? page) {
+  Future<UserSearchResult> getUsers(String query, {int page = 1}) {
     return _onUsers(query, page);
   }
 
   @override
-  Future<SearchObject<TagSearchItem>> getTags(String query, int? page) {
+  Future<SearchObject<TagSearchItem>> getTags(String query, {int page = 1}) {
     return _onTags(query, page);
   }
 }

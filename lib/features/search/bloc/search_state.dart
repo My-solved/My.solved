@@ -21,7 +21,7 @@ class SearchState extends Equatable {
   final String text;
   final int currentIndex;
   final SearchObject<ProblemSearchItem>? problems;
-  final SearchObject<UserSearchItem>? users;
+  final UserSearchResult? users;
   final SearchObject<TagSearchItem>? tags;
 
   const SearchState({
@@ -46,7 +46,7 @@ class SearchState extends Equatable {
     String? text,
     int? currentIndex,
     SearchObject<ProblemSearchItem>? problems,
-    SearchObject<UserSearchItem>? users,
+    UserSearchResult? users,
     SearchObject<TagSearchItem>? tags,
   }) {
     return SearchState(
