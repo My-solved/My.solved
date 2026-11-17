@@ -192,7 +192,7 @@ class _HomeViewState extends State<HomeView> {
                         color: Colors.white, size: 20)
                     : null),
             GridItem(
-              title: "클래스",
+              title: state.user!.classPlus == true ? "클래스+" : "클래스",
               onPressed: () {},
               foregroundColor: MySolvedColor.background,
               backgroundColor: _classColor(state.user!.userClass),

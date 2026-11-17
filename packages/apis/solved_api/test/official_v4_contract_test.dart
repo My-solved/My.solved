@@ -79,6 +79,7 @@ void main() {
         'tier',
         'rating',
         'solvedCount',
+        'classPlus',
         'currentStreak',
         'maxStreak',
         'voteCount',
@@ -95,6 +96,7 @@ void main() {
     );
     final profileProperties = _properties(profileSchema);
     expect(_map(profileProperties['tier'])['type'], ['integer', 'null']);
+    expect(_map(profileProperties['classPlus'])['type'], 'boolean');
     for (final field in [
       'currentStreak',
       'maxStreak',

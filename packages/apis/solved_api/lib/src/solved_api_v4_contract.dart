@@ -372,6 +372,7 @@ UserProfile _decodeV4UserProfile(dynamic json) {
     solvedCount: _integer(body['solvedCount'], 'solvedCount'),
     legacyContributionCount: null,
     userClass: _integer(body['class'], 'class'),
+    classPlus: _boolean(body['classPlus'], 'classPlus'),
     reverseRivalCount: null,
     tier: _nullableInteger(body['tier'], 'tier'),
     rating: rating,

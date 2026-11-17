@@ -100,6 +100,7 @@ void main() {
     expect(actual.tier, isNull);
     expect(actual.rating, 2417);
     expect(actual.solvedCount, 2048);
+    expect(actual.classPlus, isTrue);
     expect(actual.currentStreak, 12);
     expect(actual.maxStreak, 365);
     expect(actual.legacyContributionCount, isNull);
@@ -157,6 +158,27 @@ void main() {
     final actual = endpoint.decode(unbounded);
     expect(actual.currentStreak, -1);
     expect(actual.maxStreak, -2);
+  });
+
+  test('requires the public CLASS+ marker as a boolean', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_profile.json')) as Map,
+        );
+
+    expect(
+      () => endpoint.decode(source()..remove('classPlus')),
+      throwsFormatException,
+    );
+    for (final invalid in <Object?>[null, 0, 'true']) {
+      expect(
+        () => endpoint.decode(source()..['classPlus'] = invalid),
+        throwsFormatException,
+        reason: 'classPlus = $invalid',
+      );
+    }
+
+    expect(endpoint.decode(source()..['classPlus'] = false).classPlus, isFalse);
   });
 
   test('requires the no-rating solved count without inventing bounds', () {
