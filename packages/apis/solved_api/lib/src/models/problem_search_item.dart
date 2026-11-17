@@ -18,6 +18,7 @@ class ProblemSearchItem {
     required this.title,
     required this.level,
     required this.tagNames,
+    this.isStandard,
     this.votedUserCount,
     this.solvedUserCount,
     this.givesNoRating,
@@ -28,6 +29,10 @@ class ProblemSearchItem {
   final int problemId;
   final String? title;
   final int level;
+
+  /// The raw standard-problem marker reported by the active contract.
+  /// `null` means the contract did not provide it.
+  final bool? isStandard;
 
   /// The raw voted-user count reported by the active contract.
   /// `null` means the contract did not provide it.

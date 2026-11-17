@@ -67,6 +67,7 @@ void main() {
       expect(problems.items.single.problemId, 3734);
       expect(problems.items.single.title, 'RSA 인수 분해');
       expect(problems.items.single.level, 16);
+      expect(problems.items.single.isStandard, isNull);
       expect(problems.items.single.votedUserCount, 10);
       expect(problems.items.single.solvedUserCount, isNull);
       expect(problems.items.single.givesNoRating, isFalse);
@@ -129,6 +130,7 @@ void main() {
           };
 
       expect(item.givesNoRating, isNull);
+      expect(item.isStandard, isNull);
       expect(item.votedUserCount, isNull);
       expect(item.solvedUserCount, isNull);
       expect(item.noRatingReasons, isNull);
@@ -158,6 +160,27 @@ void main() {
           reason: 'givesNoRating = $invalid',
         );
       }
+    });
+
+    test('does not infer v4 standard status from legacy flags', () {
+      final endpoint = const SolvedApiV3Contract().searchProblem(
+        'rsa',
+        1,
+        'id',
+        'asc',
+      );
+      Map<String, dynamic> source() =>
+          jsonDecode(fixture('v3/search_problem.json')) as Map<String, dynamic>;
+      Map<String, dynamic> firstProblem(Map<String, dynamic> body) =>
+          (body['items'] as List).first as Map<String, dynamic>;
+
+      expect(endpoint.decode(source()).items.single.isStandard, isNull);
+
+      final inverted = source();
+      firstProblem(inverted)
+        ..['official'] = false
+        ..['isSolvable'] = false;
+      expect(endpoint.decode(inverted).items.single.isStandard, isNull);
     });
 
     test('preserves an optional legacy voted-user count as a number', () {

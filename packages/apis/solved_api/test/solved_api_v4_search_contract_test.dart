@@ -111,6 +111,7 @@ void main() {
       expect(actual.items[0].problemId, 1001);
       expect(actual.items[0].title, '한국어 제목');
       expect(actual.items[0].level, 10);
+      expect(actual.items[0].isStandard, isTrue);
       expect(actual.items[0].votedUserCount, 42);
       expect(actual.items[0].solvedUserCount, 1234);
       expect(actual.items[0].givesNoRating, isFalse);
@@ -120,6 +121,7 @@ void main() {
       expect(actual.items[1].title, 'Original title');
       expect(actual.items[2].title, 'First fallback');
       expect(actual.items[3].title, isNull);
+      expect(actual.items[3].isStandard, isFalse);
       expect(actual.items[3].votedUserCount, 0);
       expect(actual.items[3].solvedUserCount, 0);
       expect(actual.items[3].givesNoRating, isTrue);
@@ -127,6 +129,35 @@ void main() {
         ProblemNoRatingReason.unofficial,
       ]);
       expect(actual.items[3].noRatingWarnings, isEmpty);
+    });
+
+    test('requires a boolean standard marker in every v4 problem', () {
+      final endpoint = contract.searchProblems('sample');
+      Map<String, dynamic> source() =>
+          jsonDecode(fixture('v4/search_problems.json'))
+              as Map<String, dynamic>;
+      Map<String, dynamic> firstProblem(Map<String, dynamic> body) =>
+          (body['problems'] as List).first as Map<String, dynamic>;
+
+      final missing = source();
+      firstProblem(missing).remove('isStandard');
+      expect(() => endpoint.decode(missing), throwsFormatException);
+
+      for (final invalid in <Object?>[
+        null,
+        'true',
+        1,
+        const <String, Object?>{},
+        const <Object>[],
+      ]) {
+        final malformed = source();
+        firstProblem(malformed)['isStandard'] = invalid;
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'isStandard = $invalid',
+        );
+      }
     });
 
     test('requires a finite voted-user count without inventing bounds', () {
@@ -652,6 +683,7 @@ void main() {
             {
               'problemId': 1001.0,
               'level': 12.0,
+              'isStandard': true,
               'votedUserCount': 0,
               'solvedUserCount': 0,
               'givesNoRating': false,
@@ -673,6 +705,7 @@ void main() {
               {
                 'problemId': 1001.5,
                 'level': 12,
+                'isStandard': true,
                 'votedUserCount': 0,
                 'solvedUserCount': 0,
                 'givesNoRating': false,

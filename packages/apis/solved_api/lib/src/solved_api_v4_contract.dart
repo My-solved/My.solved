@@ -241,6 +241,7 @@ ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
     problemId: _wholeNumber(body['problemId'], 'problems[].problemId'),
     title: _decodeV4ProblemTitle(body['titles']),
     level: _wholeNumber(body['level'], 'problems[].level'),
+    isStandard: _boolean(body['isStandard'], 'problems[].isStandard'),
     votedUserCount: _number(
       body['votedUserCount'],
       'problems[].votedUserCount',

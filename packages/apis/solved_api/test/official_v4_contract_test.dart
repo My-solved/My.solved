@@ -183,6 +183,7 @@ void main() {
       _required(problemItem),
       containsAll([
         'givesNoRating',
+        'isStandard',
         'noRatingReasons',
         'noRatingWarnings',
         'votedUserCount',
@@ -190,6 +191,7 @@ void main() {
       ]),
     );
     final problemProperties = _properties(problemItem);
+    expect(_map(problemProperties['isStandard']), {'type': 'boolean'});
     final votedUserCount = _map(problemProperties['votedUserCount']);
     expect(votedUserCount['type'], 'number');
     for (final constraint in [
