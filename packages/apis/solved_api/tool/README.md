@@ -59,6 +59,28 @@ Current UI/domain evidence and wire evidence must stay separate:
   Inventory metadata helps locate that evidence but is not itself a response
   fixture or a schema guarantee.
 
+### Current public UI evidence (2026-11-17)
+
+Recent signed-out public profile pages, including
+[`index`](https://solved.ac/en/u/index),
+[`init`](https://solved.ac/en/u/init), and
+[`snrnsidy`](https://solved.ac/en/u/snrnsidy), establish the following display
+vocabulary:
+
+- the profile summary shows **Rating**, **Solved**, **Reputation**, and
+  **Max streak**;
+- the rating breakdown shows **Top 100 problems**, **Class bonus**, and
+  **Problems solved bonus**;
+- the contribution summary names **Reputation**, **Scoring contributions**,
+  **“Helpful” received**, and **Problems vouched for**.
+
+The current rating card does not show the former contribution-rating bonus.
+This is UI evidence only: it does not prove that any label maps one-to-one to a
+JSON field, that a value is returned by the profile request, that signed-out
+traffic can read contribution details, or that a missing value means zero.
+Capture each visible section separately and preserve unavailable versus numeric
+zero when the observed response contract is eventually modeled.
+
 Create a plan without guessing endpoint names. Use only paths, query values,
 and statuses observed in the public browser traffic:
 
