@@ -69,6 +69,7 @@ void main() {
       expect(problems.items.single.level, 16);
       expect(problems.items.single.isStandard, isNull);
       expect(problems.items.single.votedUserCount, 10);
+      expect(problems.items.single.effectiveVoteCount, isNull);
       expect(problems.items.single.solvedUserCount, isNull);
       expect(problems.items.single.givesNoRating, isFalse);
       expect(problems.items.single.noRatingReasons, isNull);
@@ -132,6 +133,7 @@ void main() {
       expect(item.givesNoRating, isNull);
       expect(item.isStandard, isNull);
       expect(item.votedUserCount, isNull);
+      expect(item.effectiveVoteCount, isNull);
       expect(item.solvedUserCount, isNull);
       expect(item.noRatingReasons, isNull);
       expect(item.noRatingWarnings, isNull);
@@ -195,7 +197,9 @@ void main() {
       Map<String, dynamic> firstProblem(Map<String, dynamic> body) =>
           (body['items'] as List).first as Map<String, dynamic>;
 
-      expect(endpoint.decode(source()).items.single.votedUserCount, 10);
+      final captured = endpoint.decode(source()).items.single;
+      expect(captured.votedUserCount, 10);
+      expect(captured.effectiveVoteCount, isNull);
 
       final missing = source();
       firstProblem(missing).remove('votedUserCount');

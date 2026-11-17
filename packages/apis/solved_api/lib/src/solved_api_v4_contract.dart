@@ -246,6 +246,10 @@ ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
       body['votedUserCount'],
       'problems[].votedUserCount',
     ),
+    effectiveVoteCount: _number(
+      body['effectiveVoteCount'],
+      'problems[].effectiveVoteCount',
+    ),
     solvedUserCount: _number(
       body['solvedUserCount'],
       'problems[].solvedUserCount',
