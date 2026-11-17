@@ -97,6 +97,7 @@ void main() {
       expect(users.items.first.handle, 'fdsajklt2');
       expect(users.items.first.profileImageUrl, isNull);
       expect(users.items.first.tier, 16);
+      expect(users.items.first.id, isNull);
       expect(users.items.first.rank, 5169);
       expect(users.items.last.rank, 17200);
       expect(users.items.first.userClass, 4);
@@ -104,6 +105,12 @@ void main() {
       expect(users.items.first.classPlus, isNull);
       expect(users.items.first.rating, 1675);
       expect(users.items.first.solvedCount, 489);
+      expect(users.items.first.voteCount, 0);
+      expect(users.items.last.voteCount, 0);
+      expect(users.items.first.reputation, isNull);
+      expect(users.items.first.tagRating, isNull);
+      expect(users.items.first.globalRank, isNull);
+      expect(users.items.first.page, isNull);
       expect(tags, isA<SearchObject<TagSearchItem>>());
       expect(tags.count, 1);
       expect(tags.count, isA<int>());
@@ -340,6 +347,42 @@ void main() {
       }
     });
 
+    test('preserves an optional legacy user vote count as an integer', () {
+      final endpoint = const SolvedApiV3Contract().searchUser('legacy', 1);
+      Map<String, dynamic> source() =>
+          jsonDecode(fixture('v3/search_user.json')) as Map<String, dynamic>;
+      Map<String, dynamic> firstUser(Map<String, dynamic> body) =>
+          (body['items'] as List).first as Map<String, dynamic>;
+
+      final captured = endpoint.decode(source()).items.first;
+      expect(captured.voteCount, 0);
+      expect(captured.reputation, isNull);
+
+      final missing = source();
+      firstUser(missing).remove('voteCount');
+      expect(endpoint.decode(missing).items.first.voteCount, isNull);
+
+      final explicitNull = source();
+      firstUser(explicitNull)['voteCount'] = null;
+      expect(endpoint.decode(explicitNull).items.first.voteCount, isNull);
+
+      for (final invalid in <Object>[
+        '0',
+        0.0,
+        true,
+        const <String, Object?>{},
+        const <Object>[],
+      ]) {
+        final malformed = source();
+        firstUser(malformed)['voteCount'] = invalid;
+        expect(
+          () => endpoint.decode(malformed),
+          throwsA(isA<TypeError>()),
+          reason: 'voteCount = $invalid',
+        );
+      }
+    });
+
     test('keeps legacy and public user-search shapes compatible', () {
       const item = UserSearchItem(
         handle: 'legacy',
@@ -360,18 +403,28 @@ void main() {
         ],
       });
 
+      expect(item.id, isNull);
       expect(item.rating, isNull);
       expect(item.rank, isNull);
       expect(item.userClass, isNull);
       expect(item.classPlus, isNull);
       expect(item.solvedCount, isNull);
+      expect(item.voteCount, isNull);
       expect(item.reputation, isNull);
+      expect(item.tagRating, isNull);
+      expect(item.globalRank, isNull);
+      expect(item.page, isNull);
+      expect(decoded.items.single.id, isNull);
       expect(decoded.items.single.rating, isNull);
       expect(decoded.items.single.rank, isNull);
       expect(decoded.items.single.userClass, isNull);
       expect(decoded.items.single.classPlus, isNull);
       expect(decoded.items.single.solvedCount, isNull);
+      expect(decoded.items.single.voteCount, 999);
       expect(decoded.items.single.reputation, isNull);
+      expect(decoded.items.single.tagRating, isNull);
+      expect(decoded.items.single.globalRank, isNull);
+      expect(decoded.items.single.page, isNull);
     });
 
     test('rejects a non-integer legacy user rank', () {
