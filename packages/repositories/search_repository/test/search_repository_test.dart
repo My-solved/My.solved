@@ -30,8 +30,9 @@ void main() {
 
       test('returns correct searchSuggestion on success', () async {
         final searchSuggestion = MockSearchSuggestion();
-        when(() => solvedApiClient.searchSuggestion(query))
-            .thenAnswer((_) async => searchSuggestion);
+        when(
+          () => solvedApiClient.searchSuggestion(query),
+        ).thenAnswer((_) async => searchSuggestion);
 
         expect(await searchRepository.getSuggestions(query), searchSuggestion);
       });
@@ -43,18 +44,21 @@ void main() {
       const sort = 'id';
       const direction = 'asc';
 
-      test('calls searchProblem with correct query, page, sort, direction',
-          () async {
-        try {
-          await searchRepository.getProblems(query, page, sort, direction);
-        } catch (_) {}
-        verify(() =>
-                solvedApiClient.searchProblem(query, page, sort, direction))
-            .called(1);
-      });
+      test(
+        'calls searchProblem with correct query, page, sort, direction',
+        () async {
+          try {
+            await searchRepository.getProblems(query, page, sort, direction);
+          } catch (_) {}
+          verify(
+            () => solvedApiClient.searchProblem(query, page, sort, direction),
+          ).called(1);
+        },
+      );
 
       test('returns correct searchObject on success', () async {
-        const searchObject = solved_api.SearchObject<solved_api.Problem>(
+        const searchObject =
+            solved_api.SearchObject<solved_api.ProblemSearchItem>(
           count: 0,
           items: [],
         );
@@ -105,7 +109,7 @@ void main() {
       });
 
       test('returns correct searchObject on success', () async {
-        const searchObject = solved_api.SearchObject<solved_api.Tag>(
+        const searchObject = solved_api.SearchObject<solved_api.TagSearchItem>(
           count: 0,
           items: [],
         );

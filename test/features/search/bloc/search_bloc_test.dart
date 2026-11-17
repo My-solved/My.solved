@@ -10,9 +10,9 @@ import 'package:solved_api/solved_api.dart';
 
 void main() {
   test('loads problem, user, and tag results concurrently', () async {
-    final problemsCompleter = Completer<SearchObject<Problem>>();
+    final problemsCompleter = Completer<SearchObject<ProblemSearchItem>>();
     final usersCompleter = Completer<SearchObject<UserSearchItem>>();
-    final tagsCompleter = Completer<SearchObject<Tag>>();
+    final tagsCompleter = Completer<SearchObject<TagSearchItem>>();
     final allRequestsStarted = Completer<void>();
     var startedRequestCount = 0;
 
@@ -48,9 +48,9 @@ void main() {
     await allRequestsStarted.future.timeout(const Duration(seconds: 1));
     expect(bloc.state.status, SearchStatus.loading);
 
-    const problems = SearchObject<Problem>(count: 1, items: []);
+    const problems = SearchObject<ProblemSearchItem>(count: 1, items: []);
     const users = SearchObject<UserSearchItem>(count: 1, items: []);
-    const tags = SearchObject<Tag>(count: 1, items: []);
+    const tags = SearchObject<TagSearchItem>(count: 1, items: []);
     problemsCompleter.complete(problems);
     usersCompleter.complete(users);
     tagsCompleter.complete(tags);
@@ -62,7 +62,7 @@ void main() {
   });
 
   test('emits failure when a full search request fails', () async {
-    final pendingTags = Completer<SearchObject<Tag>>();
+    final pendingTags = Completer<SearchObject<TagSearchItem>>();
     final repository = _TestSearchRepository(
       onProblems: (_, __, ___, ____) async => throw StateError('offline'),
       onUsers: (_, __) async =>
@@ -90,7 +90,7 @@ void main() {
     final repository = _TestSearchRepository(
       onProblems: (query, page, sort, direction) async {
         expect(query, 'alpha');
-        return const SearchObject<Problem>(count: 0, items: []);
+        return const SearchObject<ProblemSearchItem>(count: 0, items: []);
       },
     );
     final bloc = _createBloc(repository, handle: null);
@@ -102,9 +102,9 @@ void main() {
   });
 
   test('ignores a stale response from an older search', () async {
-    final oldProblems = Completer<SearchObject<Problem>>();
+    final oldProblems = Completer<SearchObject<ProblemSearchItem>>();
     final oldUsers = Completer<SearchObject<UserSearchItem>>();
-    final oldTags = Completer<SearchObject<Tag>>();
+    final oldTags = Completer<SearchObject<TagSearchItem>>();
     final oldRequestsStarted = Completer<void>();
     var oldStartedCount = 0;
 
@@ -113,9 +113,12 @@ void main() {
       if (oldStartedCount == 3) oldRequestsStarted.complete();
     }
 
-    const latestProblems = SearchObject<Problem>(count: 101, items: []);
+    const latestProblems = SearchObject<ProblemSearchItem>(
+      count: 101,
+      items: [],
+    );
     const latestUsers = SearchObject<UserSearchItem>(count: 102, items: []);
-    const latestTags = SearchObject<Tag>(count: 103, items: []);
+    const latestTags = SearchObject<TagSearchItem>(count: 103, items: []);
     final repository = _TestSearchRepository(
       onProblems: (query, page, sort, direction) {
         if (query.startsWith('old ')) {
@@ -154,11 +157,13 @@ void main() {
       (state) => state.status.isSuccess && state.text == 'latest',
     );
 
-    oldProblems.complete(const SearchObject<Problem>(count: 201, items: []));
+    oldProblems.complete(
+      const SearchObject<ProblemSearchItem>(count: 201, items: []),
+    );
     oldUsers.complete(
       const SearchObject<UserSearchItem>(count: 202, items: []),
     );
-    oldTags.complete(const SearchObject<Tag>(count: 203, items: []));
+    oldTags.complete(const SearchObject<TagSearchItem>(count: 203, items: []));
     await bloc.close();
 
     expect(successStates, hasLength(1));
@@ -167,10 +172,13 @@ void main() {
   });
 
   test('a full search commits the current optimistic filter values', () async {
-    final pendingFilterResult = Completer<SearchObject<Problem>>();
+    final pendingFilterResult = Completer<SearchObject<ProblemSearchItem>>();
     final pendingFilterStarted = Completer<void>();
     var failRequests = false;
-    const fullSearchProblems = SearchObject<Problem>(count: 301, items: []);
+    const fullSearchProblems = SearchObject<ProblemSearchItem>(
+      count: 301,
+      items: [],
+    );
     final repository = _TestSearchRepository(
       onProblems: (query, page, sort, direction) {
         if (query.startsWith('alpha') && !pendingFilterStarted.isCompleted) {
@@ -199,7 +207,7 @@ void main() {
     expect(bloc.state.sort, SearchSortMethod.level);
 
     pendingFilterResult.complete(
-      const SearchObject<Problem>(count: 302, items: []),
+      const SearchObject<ProblemSearchItem>(count: 302, items: []),
     );
     failRequests = true;
     bloc.add(SearchFilterDirectionSelected(direction: SearchDirection.desc));
@@ -211,7 +219,10 @@ void main() {
   });
 
   test('filter requests emit loading and failure consistently', () async {
-    const committedProblems = SearchObject<Problem>(count: 1, items: []);
+    const committedProblems = SearchObject<ProblemSearchItem>(
+      count: 1,
+      items: [],
+    );
     final repository = _TestSearchRepository(
       onProblems: (_, __, sort, ___) async {
         if (sort == SearchSortMethod.level.value) {
@@ -255,7 +266,10 @@ void main() {
   test(
     'a successful filter request updates the problem result and filter',
     () async {
-      const filteredProblems = SearchObject<Problem>(count: 1, items: []);
+      const filteredProblems = SearchObject<ProblemSearchItem>(
+        count: 1,
+        items: [],
+      );
       final repository = _TestSearchRepository(
         onProblems: (query, page, sort, direction) async {
           expect(query, 'alpha -s@w8385');
@@ -300,7 +314,7 @@ Future<void> _waitForState(
   await bloc.stream.firstWhere(predicate).timeout(const Duration(seconds: 1));
 }
 
-typedef _ProblemsHandler = Future<SearchObject<Problem>> Function(
+typedef _ProblemsHandler = Future<SearchObject<ProblemSearchItem>> Function(
   String query,
   int? page,
   String? sort,
@@ -308,7 +322,7 @@ typedef _ProblemsHandler = Future<SearchObject<Problem>> Function(
 );
 typedef _UsersHandler = Future<SearchObject<UserSearchItem>> Function(
     String query, int? page);
-typedef _TagsHandler = Future<SearchObject<Tag>> Function(
+typedef _TagsHandler = Future<SearchObject<TagSearchItem>> Function(
     String query, int? page);
 
 class _TestSearchRepository extends SearchRepository {
@@ -330,13 +344,13 @@ class _TestSearchRepository extends SearchRepository {
   final _UsersHandler _onUsers;
   final _TagsHandler _onTags;
 
-  static Future<SearchObject<Problem>> _emptyProblems(
+  static Future<SearchObject<ProblemSearchItem>> _emptyProblems(
     String query,
     int? page,
     String? sort,
     String? direction,
   ) async {
-    return const SearchObject<Problem>(count: 0, items: []);
+    return const SearchObject<ProblemSearchItem>(count: 0, items: []);
   }
 
   static Future<SearchObject<UserSearchItem>> _emptyUsers(
@@ -346,12 +360,15 @@ class _TestSearchRepository extends SearchRepository {
     return const SearchObject<UserSearchItem>(count: 0, items: []);
   }
 
-  static Future<SearchObject<Tag>> _emptyTags(String query, int? page) async {
-    return const SearchObject<Tag>(count: 0, items: []);
+  static Future<SearchObject<TagSearchItem>> _emptyTags(
+    String query,
+    int? page,
+  ) async {
+    return const SearchObject<TagSearchItem>(count: 0, items: []);
   }
 
   @override
-  Future<SearchObject<Problem>> getProblems(
+  Future<SearchObject<ProblemSearchItem>> getProblems(
     String query,
     int? page,
     String? sort,
@@ -366,7 +383,7 @@ class _TestSearchRepository extends SearchRepository {
   }
 
   @override
-  Future<SearchObject<Tag>> getTags(String query, int? page) {
+  Future<SearchObject<TagSearchItem>> getTags(String query, int? page) {
     return _onTags(query, page);
   }
 }
