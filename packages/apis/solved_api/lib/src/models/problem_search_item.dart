@@ -4,11 +4,16 @@ class ProblemSearchItem {
     required this.title,
     required this.level,
     required this.tagNames,
+    this.givesNoRating,
   });
 
   final int problemId;
   final String? title;
   final int level;
+
+  /// Whether the active contract explicitly marks the problem as not
+  /// contributing to rating. `null` means the contract did not provide it.
+  final bool? givesNoRating;
 
   /// Display labels normalized for the search UI.
   ///

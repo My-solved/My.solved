@@ -343,6 +343,27 @@ class _SearchViewState extends State<SearchView> {
                                             "${state.problems!.items[index].problemId}번",
                                             style: MySolvedTextStyle.body2,
                                           ),
+                                          if (state
+                                                  .problems!
+                                                  .items[index]
+                                                  .givesNoRating ==
+                                              true) ...[
+                                            SizedBox(width: 8),
+                                            Flexible(
+                                              child: Text(
+                                                "레이팅 미반영",
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: MySolvedTextStyle
+                                                    .caption1
+                                                    .copyWith(
+                                                      color:
+                                                          MySolvedColor
+                                                              .secondaryFont,
+                                                    ),
+                                              ),
+                                            ),
+                                          ],
                                         ],
                                       ),
                                       SizedBox(height: 4),
