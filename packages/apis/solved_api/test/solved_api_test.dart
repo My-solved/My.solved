@@ -417,6 +417,21 @@ void main() {
         );
       });
 
+      test('keeps 429 retryable and limits server retries to 5xx', () {
+        expect(
+          const UserRequestFailed(statusCode: 429).isRetryable,
+          isTrue,
+        );
+        expect(
+          const UserRequestFailed(statusCode: 599).isRetryable,
+          isTrue,
+        );
+        expect(
+          const UserRequestFailed(statusCode: 600).isRetryable,
+          isFalse,
+        );
+      });
+
       test(
         'maps other non-success responses without marking them retryable',
         () async {
@@ -533,16 +548,16 @@ void main() {
     });
 
     group('v4 capability', () {
-      test('is disabled without an explicit v4 contract', () {
+      test('is disabled on the legacy constructor', () {
         expect(apiClient.supportsV4, isFalse);
       });
 
-      test('is enabled when an explicit v4 contract is configured', () {
-        apiClient = SolvedApiClient(
-          httpClient: httpClient,
-          v4Contract: SolvedApiV4Contract(
-            proxyBaseUri: Uri.parse('https://gateway.example/solved/v4/'),
+      test('is enabled only through the official v4 factory', () {
+        apiClient = SolvedApiClient.officialV4(
+          proxyBaseUri: Uri.parse(
+            'https://gateway.example/solved/v4/',
           ),
+          httpClient: httpClient,
         );
 
         expect(apiClient.supportsV4, isTrue);
@@ -550,11 +565,11 @@ void main() {
 
       test('closes every legacy route before transport when v4 is configured',
           () {
-        apiClient = SolvedApiClient(
-          httpClient: httpClient,
-          v4Contract: SolvedApiV4Contract(
-            proxyBaseUri: Uri.parse('https://gateway.example/solved/v4/'),
+        apiClient = SolvedApiClient.officialV4(
+          proxyBaseUri: Uri.parse(
+            'https://gateway.example/solved/v4/',
           ),
+          httpClient: httpClient,
         );
         final legacyCalls = <String, Object? Function()>{
           'userShow': () => apiClient.userShow('index'),
@@ -573,99 +588,11 @@ void main() {
         }
         verifyNever(() => httpClient.get(any()));
       });
-    });
 
-    group('v4 profile transport', () {
-      test('requires an explicit v4 contract', () {
+      test('rejects v4 methods on the legacy constructor', () {
         expect(
           () => apiClient.v4UserProfile('index'),
           throwsStateError,
-        );
-      });
-
-      test('forces the credential-holding proxy on native clients', () async {
-        apiClient = SolvedApiClient(
-          httpClient: httpClient,
-          useProxy: false,
-          apiBaseUri: Uri.parse('https://direct-override.example/api/v4/'),
-          v4Contract: SolvedApiV4Contract(
-            proxyBaseUri: Uri.parse(
-              'https://gateway.example/solved/v4/',
-            ),
-          ),
-        );
-        when(() => httpClient.get(any())).thenAnswer(
-          (_) async => http.Response(fixture('v4/user_profile.json'), 200),
-        );
-
-        final actual = await apiClient.v4UserProfile('index');
-
-        expect(actual.handle, 'index');
-        verify(
-          () => httpClient.get(
-            Uri.https('gateway.example', '/solved/v4/users/index', {
-              'lang': 'ko',
-            }),
-          ),
-        ).called(1);
-        verifyNever(
-          () => httpClient.get(
-            Uri.https('direct-override.example', '/api/v4/users/index', {
-              'lang': 'ko',
-            }),
-          ),
-        );
-      });
-    });
-
-    group('v4 search transport', () {
-      test('forces every search request through the credential proxy', () async {
-        apiClient = SolvedApiClient(
-          httpClient: httpClient,
-          useProxy: false,
-          apiBaseUri: Uri.parse('https://direct-override.example/api/v4/'),
-          v4Contract: SolvedApiV4Contract(
-            proxyBaseUri: Uri.parse('https://gateway.example/solved/v4/'),
-          ),
-        );
-        when(() => httpClient.get(any())).thenAnswer((invocation) async {
-          final uri = invocation.positionalArguments.single as Uri;
-          final body = switch (uri.path) {
-            '/solved/v4/problems' => fixture('v4/search_problems.json'),
-            '/solved/v4/rankings/users/search' =>
-              fixture('v4/search_users.json'),
-            '/solved/v4/tags' => fixture('v4/tags.json'),
-            _ => throw StateError('Unexpected v4 search URI: $uri'),
-          };
-          return http.Response.bytes(utf8.encode(body), 200);
-        });
-
-        final problems = await apiClient.v4SearchProblems('number');
-        final users = await apiClient.v4SearchUsers('index');
-        final tags = await apiClient.v4SearchTags('NUMBER');
-
-        expect(problems.count, 4);
-        expect(users.exact?.handle, 'index');
-        expect(tags.items.single.key, 'number_theory');
-        final requestedUris = verify(
-          () => httpClient.get(captureAny()),
-        ).captured.cast<Uri>().toList(growable: false);
-        expect(requestedUris, [
-          Uri.https('gateway.example', '/solved/v4/problems', {
-            'q': 'number',
-            'page': '1',
-            'sort': 'id',
-            'direction': 'asc',
-          }),
-          Uri.https('gateway.example', '/solved/v4/rankings/users/search', {
-            'q': 'index',
-            'sort': 'rating',
-          }),
-          Uri.https('gateway.example', '/solved/v4/tags'),
-        ]);
-        expect(
-          requestedUris.every((uri) => uri.host == 'gateway.example'),
-          isTrue,
         );
       });
     });

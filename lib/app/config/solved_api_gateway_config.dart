@@ -118,9 +118,10 @@ final class SolvedApiGatewayConfig {
       case SolvedApiMode.legacyV3:
         return SolvedApiClient(httpClient: httpClient);
       case SolvedApiMode.officialV4:
-        return SolvedApiClient(
+        return SolvedApiClient.officialV4(
+          proxyBaseUri: v4ProxyBaseUri!,
           httpClient: httpClient,
-          v4Contract: SolvedApiV4Contract(proxyBaseUri: v4ProxyBaseUri!),
+          allowInsecureLoopback: usesInsecureV4Loopback,
         );
     }
   }
@@ -147,8 +148,7 @@ bool _isSolvedAcHost(String host) {
   while (canonicalHost.endsWith('.')) {
     canonicalHost = canonicalHost.substring(0, canonicalHost.length - 1);
   }
-  return canonicalHost == 'solved.ac' ||
-      canonicalHost.endsWith('.solved.ac');
+  return canonicalHost == 'solved.ac' || canonicalHost.endsWith('.solved.ac');
 }
 
 bool _hasCanonicalGatewayPath(String value) {
