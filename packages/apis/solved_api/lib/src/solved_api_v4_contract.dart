@@ -224,14 +224,32 @@ ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
         ),
       )
       .toList(growable: false);
+  final noRatingReasons = List<ProblemNoRatingReason>.unmodifiable(
+    _list(
+      body['noRatingReasons'],
+      'problems[].noRatingReasons',
+    ).map(_decodeV4ProblemNoRatingReason),
+  );
   return ProblemSearchItem(
     problemId: _wholeNumber(body['problemId'], 'problems[].problemId'),
     title: _decodeV4ProblemTitle(body['titles']),
     level: _wholeNumber(body['level'], 'problems[].level'),
     givesNoRating: _boolean(body['givesNoRating'], 'problems[].givesNoRating'),
+    noRatingReasons: noRatingReasons,
     // The official v4 problem shape has tag keys but no localized names.
     tagNames: tagKeys,
   );
+}
+
+ProblemNoRatingReason _decodeV4ProblemNoRatingReason(Object? value) {
+  final code = _string(value, 'problems[].noRatingReasons[]');
+  return switch (code) {
+    'unofficial' => ProblemNoRatingReason.unofficial,
+    'legacy' => ProblemNoRatingReason.legacy,
+    'staff' => ProblemNoRatingReason.staff,
+    'unsettled' => ProblemNoRatingReason.unsettled,
+    _ => throw FormatException('Unknown problem no-rating reason: $code'),
+  };
 }
 
 String? _decodeV4ProblemTitle(Object? value) {

@@ -179,8 +179,25 @@ void main() {
     ]);
     final problemItem =
         _map(_map(_properties(problemSchema)['problems'])['items']);
-    expect(_required(problemItem), contains('givesNoRating'));
-    expect(_map(_properties(problemItem)['givesNoRating'])['type'], 'boolean');
+    expect(
+      _required(problemItem),
+      containsAll(['givesNoRating', 'noRatingReasons']),
+    );
+    final problemProperties = _properties(problemItem);
+    expect(_map(problemProperties['givesNoRating'])['type'], 'boolean');
+    final noRatingReasons = _map(problemProperties['noRatingReasons']);
+    expect(noRatingReasons['type'], 'array');
+    final noRatingReasonItem = _map(noRatingReasons['items']);
+    expect(noRatingReasonItem['type'], 'string');
+    expect(noRatingReasonItem['enum'], [
+      'unofficial',
+      'legacy',
+      'staff',
+      'unsettled',
+    ]);
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(noRatingReasons.containsKey(constraint), isFalse);
+    }
 
     final users = _get(contract, '/api/v4/rankings/users/search');
     expect(_parameterNames(users), ['q', 'sort']);

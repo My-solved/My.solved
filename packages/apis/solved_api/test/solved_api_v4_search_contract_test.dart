@@ -15,6 +15,15 @@ void main() {
   });
 
   group('problem search', () {
+    test('exposes the official no-rating reason codes', () {
+      expect(ProblemNoRatingReason.values.map((reason) => reason.value), [
+        'unofficial',
+        'legacy',
+        'staff',
+        'unsettled',
+      ]);
+    });
+
     test('uses the official path, parameters, and defaults', () {
       final defaults = contract.searchProblems('tag:dp');
       final configured = contract.searchProblems(
@@ -83,11 +92,15 @@ void main() {
       expect(actual.items[0].title, '한국어 제목');
       expect(actual.items[0].level, 10);
       expect(actual.items[0].givesNoRating, isFalse);
+      expect(actual.items[0].noRatingReasons, isEmpty);
       expect(actual.items[0].tagNames, ['math', 'number_theory']);
       expect(actual.items[1].title, 'Original title');
       expect(actual.items[2].title, 'First fallback');
       expect(actual.items[3].title, isNull);
       expect(actual.items[3].givesNoRating, isTrue);
+      expect(actual.items[3].noRatingReasons, [
+        ProblemNoRatingReason.unofficial,
+      ]);
     });
 
     test('requires a boolean no-rating marker in every v4 problem', () {
@@ -119,6 +132,98 @@ void main() {
       }
     });
 
+    test('requires the documented no-rating reason array and values', () {
+      final endpoint = contract.searchProblems('sample');
+      Map<String, dynamic> source() =>
+          jsonDecode(fixture('v4/search_problems.json'))
+              as Map<String, dynamic>;
+      Map<String, dynamic> firstProblem(Map<String, dynamic> body) =>
+          (body['problems'] as List).first as Map<String, dynamic>;
+
+      final missing = source();
+      firstProblem(missing).remove('noRatingReasons');
+      expect(() => endpoint.decode(missing), throwsFormatException);
+
+      for (final invalid in <Object?>[
+        null,
+        0,
+        false,
+        'unofficial',
+        const <String, Object?>{},
+      ]) {
+        final malformed = source();
+        firstProblem(malformed)['noRatingReasons'] = invalid;
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'noRatingReasons = $invalid',
+        );
+      }
+
+      for (final invalid in <Object?>[
+        null,
+        0,
+        false,
+        const <String, Object?>{},
+        const <Object>[],
+        'future-reason',
+      ]) {
+        final malformed = source();
+        firstProblem(malformed)['noRatingReasons'] = [invalid];
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'noRatingReasons[] = $invalid',
+        );
+      }
+    });
+
+    test(
+      'preserves reason order and duplicates without inferring the marker',
+      () {
+        final body =
+            jsonDecode(fixture('v4/search_problems.json'))
+                as Map<String, dynamic>;
+        final problems = body['problems'] as List;
+        final rated = problems.first as Map<String, dynamic>;
+        rated['givesNoRating'] = false;
+        rated['noRatingReasons'] = [
+          'staff',
+          'unofficial',
+          'staff',
+          'legacy',
+          'unsettled',
+        ];
+        final unrated = problems.last as Map<String, dynamic>;
+        unrated['givesNoRating'] = true;
+        unrated['noRatingReasons'] = <Object>[];
+
+        final actual = contract.searchProblems('sample').decode(body);
+        expect(actual.items.first.givesNoRating, isFalse);
+        expect(actual.items.first.noRatingReasons, [
+          ProblemNoRatingReason.staff,
+          ProblemNoRatingReason.unofficial,
+          ProblemNoRatingReason.staff,
+          ProblemNoRatingReason.legacy,
+          ProblemNoRatingReason.unsettled,
+        ]);
+        expect(actual.items.last.givesNoRating, isTrue);
+        expect(actual.items.last.noRatingReasons, isEmpty);
+        expect(
+          () => actual.items.first.noRatingReasons!.add(
+            ProblemNoRatingReason.legacy,
+          ),
+          throwsUnsupportedError,
+        );
+        expect(
+          () =>
+              actual.items.first.noRatingReasons![0] =
+                  ProblemNoRatingReason.legacy,
+          throwsUnsupportedError,
+        );
+      },
+    );
+
     test(
       'accepts integral JSON numbers but rejects fractional model values',
       () {
@@ -129,6 +234,7 @@ void main() {
               'problemId': 1001.0,
               'level': 12.0,
               'givesNoRating': false,
+              'noRatingReasons': <Object>[],
               'titles': <Object>[],
               'tags': <Object>[],
             },
@@ -146,6 +252,7 @@ void main() {
                 'problemId': 1001.5,
                 'level': 12,
                 'givesNoRating': false,
+                'noRatingReasons': <Object>[],
                 'titles': <Object>[],
                 'tags': <Object>[],
               },
