@@ -7,5 +7,5 @@ class UserSearchItem {
 
   final String handle;
   final String? profileImageUrl;
-  final int tier;
+  final int? tier;
 }
