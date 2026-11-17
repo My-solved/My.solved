@@ -462,7 +462,19 @@ void main() {
     final tags = _get(contract, '/api/v4/tags');
     expect(_parameterNames(tags), isEmpty);
     final tagsSchema = _responseSchema(tags);
-    final tagItem = _map(_map(_properties(tagsSchema)['tags'])['items']);
+    expect(_required(tagsSchema), ['tags']);
+    final tagArray = _map(_properties(tagsSchema)['tags']);
+    expect(tagArray['type'], 'array');
+    for (final constraint in [
+      'minItems',
+      'maxItems',
+      'uniqueItems',
+      'description',
+    ]) {
+      expect(tagArray.containsKey(constraint), isFalse);
+    }
+    final tagItem = _map(tagArray['items']);
+    expect(tagItem['type'], 'object');
     expect(_required(tagItem), [
       'id',
       'key',
@@ -472,7 +484,22 @@ void main() {
       'aliases',
       'rated',
     ]);
-    expect(_properties(tagItem).containsKey('problemCount'), isFalse);
+    expect(tagItem.containsKey('additionalProperties'), isFalse);
+    final tagProperties = _properties(tagItem);
+    expect(_map(tagProperties['id']), {'type': 'number'});
+    expect(_map(tagProperties['key']), {'type': 'string'});
+    for (final field in ['isMeta', 'rated']) {
+      expect(_map(tagProperties[field]), {'type': 'boolean'});
+    }
+    for (final field in ['parents', 'aliases']) {
+      final values = _map(tagProperties[field]);
+      expect(values['type'], 'array');
+      expect(_map(values['items']), {'type': 'string'});
+    }
+    final names = _map(tagProperties['names']);
+    expect(names['type'], 'object');
+    expect(_map(names['additionalProperties']), {'type': 'string'});
+    expect(tagProperties.containsKey('problemCount'), isFalse);
 
     final item = _get(contract, '/api/v4/achievements/items/{kind}/{key}');
     expect(_parameterNames(item), ['kind', 'key', 'lang']);

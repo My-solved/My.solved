@@ -107,6 +107,12 @@ void main() {
       expect(tags.items.single.key, 'number_theory');
       expect(tags.items.single.displayName, isNull);
       expect(tags.items.single.problemCount, 1314);
+      expect(tags.items.single.id, isNull);
+      expect(tags.items.single.isMeta, isNull);
+      expect(tags.items.single.parents, isNull);
+      expect(tags.items.single.names, isNull);
+      expect(tags.items.single.aliases, isNull);
+      expect(tags.items.single.rated, isNull);
     });
 
     test('preserves an optional legacy no-rating marker as a boolean', () {
@@ -369,6 +375,12 @@ void main() {
       expect(item.key, 'stable_key');
       expect(item.displayName, isNull);
       expect(item.problemCount, isNull);
+      expect(item.id, isNull);
+      expect(item.isMeta, isNull);
+      expect(item.parents, isNull);
+      expect(item.names, isNull);
+      expect(item.aliases, isNull);
+      expect(item.rated, isNull);
     });
 
     test('selects a Korean tag name with safe fallbacks', () {

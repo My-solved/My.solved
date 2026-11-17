@@ -530,19 +530,26 @@ SearchObject<TagSearchItem> _decodeV4TagSearch(
       .where((tag) => tag.matches(normalizedQuery))
       .toList(growable: false);
   final start = (page - 1) * SolvedApiV4Contract.tagSearchPageSize;
-  final pageItems = start >= matches.length
-      ? const <TagSearchItem>[]
-      : matches
-          .skip(start)
-          .take(SolvedApiV4Contract.tagSearchPageSize)
-          .map(
-            (tag) => TagSearchItem(
-              key: tag.key,
-              problemCount: null,
-              displayName: tag.displayName,
-            ),
-          )
-          .toList(growable: false);
+  final pageItems =
+      start >= matches.length
+          ? const <TagSearchItem>[]
+          : matches
+              .skip(start)
+              .take(SolvedApiV4Contract.tagSearchPageSize)
+              .map(
+                (tag) => TagSearchItem(
+                  key: tag.key,
+                  problemCount: null,
+                  displayName: tag.displayName,
+                  id: tag.id,
+                  isMeta: tag.isMeta,
+                  parents: tag.parents,
+                  names: tag.names,
+                  aliases: tag.aliases,
+                  rated: tag.rated,
+                ),
+              )
+              .toList(growable: false);
   return SearchObject(count: matches.length, items: pageItems);
 }
 
@@ -551,14 +558,28 @@ _V4CatalogTag _decodeV4CatalogTag(Map<String, dynamic> body) {
   for (final entry in _object(body['names'], 'tags[].names').entries) {
     names[entry.key] = _string(entry.value, 'tags[].names[]');
   }
-  final aliases = _list(body['aliases'], 'tags[].aliases').map(
-        (value) => _string(value, 'tags[].aliases[]'),
-      );
+  final immutableNames = Map<String, String>.unmodifiable(names);
+  final parents = List<String>.unmodifiable(
+    _list(
+      body['parents'],
+      'tags[].parents',
+    ).map((value) => _string(value, 'tags[].parents[]')),
+  );
+  final aliases = List<String>.unmodifiable(
+    _list(
+      body['aliases'],
+      'tags[].aliases',
+    ).map((value) => _string(value, 'tags[].aliases[]')),
+  );
   return _V4CatalogTag(
+    id: _number(body['id'], 'tags[].id'),
     key: _string(body['key'], 'tags[].key'),
-    names: names.values.toList(growable: false),
-    displayName: _preferredLocalizedName(names),
-    aliases: aliases.toList(growable: false),
+    isMeta: _boolean(body['isMeta'], 'tags[].isMeta'),
+    parents: parents,
+    names: immutableNames,
+    displayName: _preferredLocalizedName(immutableNames),
+    aliases: aliases,
+    rated: _boolean(body['rated'], 'tags[].rated'),
   );
 }
 
@@ -577,21 +598,30 @@ String? _preferredLocalizedName(Map<String, String> names) {
 
 final class _V4CatalogTag {
   const _V4CatalogTag({
+    required this.id,
     required this.key,
+    required this.isMeta,
+    required this.parents,
     required this.names,
     required this.displayName,
     required this.aliases,
+    required this.rated,
   });
 
+  final num id;
   final String key;
-  final List<String> names;
+  final bool isMeta;
+  final List<String> parents;
+  final Map<String, String> names;
   final String? displayName;
   final List<String> aliases;
+  final bool rated;
 
-  bool matches(String normalizedQuery) =>
-      <String>[key, ...names, ...aliases].any(
-        (candidate) => candidate.toLowerCase().contains(normalizedQuery),
-      );
+  bool matches(String normalizedQuery) => <String>[
+    key,
+    ...names.values,
+    ...aliases,
+  ].any((candidate) => candidate.toLowerCase().contains(normalizedQuery));
 }
 
 UserProfile _decodeV4UserProfile(dynamic json) {
