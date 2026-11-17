@@ -117,7 +117,7 @@ jobs:
       - name: Test solved.ac API  🛰️
         run: |
           cd packages/apis/solved_api
-          flutter test
+          dart test
 
       - name: Test BOJ API  🛰️
         run: |
