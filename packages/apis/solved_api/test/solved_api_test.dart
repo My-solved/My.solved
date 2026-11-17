@@ -785,9 +785,8 @@ void main() {
       });
 
       test('decodes items without mutating the response JSON', () {
-        final json =
-            jsonDecode(fixture('v3/search_problem.json'))
-                as Map<String, dynamic>;
+        final json = jsonDecode(fixture('v3/search_problem.json'))
+            as Map<String, dynamic>;
         final rawItems = json['items'] as List<dynamic>;
         final rawFirstItem = rawItems.first;
 

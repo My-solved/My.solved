@@ -4,7 +4,7 @@ import 'package:solved_api/solved_api.dart';
 
 class SearchRepository {
   SearchRepository({SolvedApiClient? solvedApiClient})
-    : _solvedApiClient = solvedApiClient ?? SolvedApiClient();
+      : _solvedApiClient = solvedApiClient ?? SolvedApiClient();
 
   final SolvedApiClient _solvedApiClient;
 

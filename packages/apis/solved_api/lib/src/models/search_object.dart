@@ -10,10 +10,9 @@ class SearchObject<T> {
   ) {
     return SearchObject<T>(
       count: json['count'] as int,
-      items:
-          (json['items'] as List<dynamic>)
-              .map<T>((item) => decodeItem(item as Map<String, dynamic>))
-              .toList(),
+      items: (json['items'] as List<dynamic>)
+          .map<T>((item) => decodeItem(item as Map<String, dynamic>))
+          .toList(),
     );
   }
 }
