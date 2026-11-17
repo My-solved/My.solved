@@ -185,6 +185,8 @@ void main() {
         'givesNoRating',
         'isStandard',
         'effectiveVoteCount',
+        'levelAverage',
+        'levelStdev',
         'noRatingReasons',
         'noRatingWarnings',
         'votedUserCount',
@@ -193,6 +195,18 @@ void main() {
     );
     final problemProperties = _properties(problemItem);
     expect(_map(problemProperties['isStandard']), {'type': 'boolean'});
+    for (final field in ['levelAverage', 'levelStdev']) {
+      final schema = _map(problemProperties[field]);
+      expect(schema['type'], 'number');
+      for (final constraint in [
+        'minimum',
+        'maximum',
+        'multipleOf',
+        'description',
+      ]) {
+        expect(schema.containsKey(constraint), isFalse);
+      }
+    }
     final votedUserCount = _map(problemProperties['votedUserCount']);
     expect(votedUserCount['type'], 'number');
     for (final constraint in [

@@ -18,6 +18,8 @@ class ProblemSearchItem {
     required this.title,
     required this.level,
     required this.tagNames,
+    this.levelAverage,
+    this.levelStdev,
     this.isStandard,
     this.votedUserCount,
     this.effectiveVoteCount,
@@ -30,6 +32,14 @@ class ProblemSearchItem {
   final int problemId;
   final String? title;
   final int level;
+
+  /// The raw level average reported by the active contract.
+  /// `null` means the contract did not provide it.
+  final num? levelAverage;
+
+  /// The raw level standard deviation reported by the active contract.
+  /// `null` means the contract did not provide it.
+  final num? levelStdev;
 
   /// The raw standard-problem marker reported by the active contract.
   /// `null` means the contract did not provide it.

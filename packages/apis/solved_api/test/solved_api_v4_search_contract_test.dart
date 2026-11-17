@@ -111,6 +111,8 @@ void main() {
       expect(actual.items[0].problemId, 1001);
       expect(actual.items[0].title, '한국어 제목');
       expect(actual.items[0].level, 10);
+      expect(actual.items[0].levelAverage, 10.25);
+      expect(actual.items[0].levelStdev, 0.5);
       expect(actual.items[0].isStandard, isTrue);
       expect(actual.items[0].votedUserCount, 42);
       expect(actual.items[0].effectiveVoteCount, 40);
@@ -122,6 +124,8 @@ void main() {
       expect(actual.items[1].title, 'Original title');
       expect(actual.items[2].title, 'First fallback');
       expect(actual.items[3].title, isNull);
+      expect(actual.items[3].levelAverage, 0);
+      expect(actual.items[3].levelStdev, 0);
       expect(actual.items[3].isStandard, isFalse);
       expect(actual.items[3].votedUserCount, 0);
       expect(actual.items[3].effectiveVoteCount, 0);
@@ -131,6 +135,61 @@ void main() {
         ProblemNoRatingReason.unofficial,
       ]);
       expect(actual.items[3].noRatingWarnings, isEmpty);
+    });
+
+    test('requires finite level statistics without inventing bounds', () {
+      final endpoint = contract.searchProblems('sample');
+      Map<String, dynamic> source() =>
+          jsonDecode(fixture('v4/search_problems.json'))
+              as Map<String, dynamic>;
+      Map<String, dynamic> firstProblem(Map<String, dynamic> body) =>
+          (body['problems'] as List).first as Map<String, dynamic>;
+      Map<String, dynamic> lastProblem(Map<String, dynamic> body) =>
+          (body['problems'] as List).last as Map<String, dynamic>;
+
+      for (final field in ['levelAverage', 'levelStdev']) {
+        final missing = source();
+        firstProblem(missing).remove(field);
+        expect(
+          () => endpoint.decode(missing),
+          throwsFormatException,
+          reason: '$field missing',
+        );
+
+        for (final invalid in <Object?>[
+          null,
+          '1',
+          true,
+          const <String, Object?>{},
+          const <Object>[],
+          double.nan,
+          double.infinity,
+          double.negativeInfinity,
+        ]) {
+          final malformed = source();
+          firstProblem(malformed)[field] = invalid;
+          expect(
+            () => endpoint.decode(malformed),
+            throwsFormatException,
+            reason: '$field = $invalid',
+          );
+        }
+
+        final unbounded = source();
+        firstProblem(unbounded)[field] = -1.5;
+        lastProblem(unbounded)[field] = 0.25;
+        final actual = endpoint.decode(unbounded);
+        final firstValue =
+            field == 'levelAverage'
+                ? actual.items.first.levelAverage
+                : actual.items.first.levelStdev;
+        final lastValue =
+            field == 'levelAverage'
+                ? actual.items.last.levelAverage
+                : actual.items.last.levelStdev;
+        expect(firstValue, -1.5);
+        expect(lastValue, 0.25);
+      }
     });
 
     test('requires a boolean standard marker in every v4 problem', () {
@@ -726,6 +785,8 @@ void main() {
             {
               'problemId': 1001.0,
               'level': 12.0,
+              'levelAverage': 12,
+              'levelStdev': 0,
               'isStandard': true,
               'votedUserCount': 0,
               'effectiveVoteCount': 0,
@@ -749,6 +810,8 @@ void main() {
               {
                 'problemId': 1001.5,
                 'level': 12,
+                'levelAverage': 12,
+                'levelStdev': 0,
                 'isStandard': true,
                 'votedUserCount': 0,
                 'effectiveVoteCount': 0,
