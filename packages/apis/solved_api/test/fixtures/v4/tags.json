@@ -1,0 +1,52 @@
+{
+  "tags": [
+    {
+      "id": 1,
+      "key": "number_theory",
+      "isMeta": false,
+      "parents": [
+        "math"
+      ],
+      "names": {
+        "ko": "정수론",
+        "en": "Number Theory"
+      },
+      "aliases": [
+        "NT"
+      ],
+      "rated": true
+    },
+    {
+      "id": 2,
+      "key": "disjoint_set",
+      "isMeta": false,
+      "parents": [
+        "data_structures"
+      ],
+      "names": {
+        "ko": "분리 집합",
+        "en": "Union Find"
+      },
+      "aliases": [
+        "DSU"
+      ],
+      "rated": true
+    },
+    {
+      "id": 3,
+      "key": "shortest_path",
+      "isMeta": false,
+      "parents": [
+        "graphs"
+      ],
+      "names": {
+        "ko": "최단 경로",
+        "en": "Shortest Path"
+      },
+      "aliases": [
+        "Dijkstra"
+      ],
+      "rated": true
+    }
+  ]
+}

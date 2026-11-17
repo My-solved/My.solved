@@ -575,6 +575,58 @@ void main() {
       });
     });
 
+    group('v4 search transport', () {
+      test('forces every search request through the credential proxy', () async {
+        apiClient = SolvedApiClient(
+          httpClient: httpClient,
+          useProxy: false,
+          apiBaseUri: Uri.parse('https://direct-override.example/api/v4/'),
+          v4Contract: SolvedApiV4Contract(
+            proxyBaseUri: Uri.parse('https://gateway.example/solved/v4/'),
+          ),
+        );
+        when(() => httpClient.get(any())).thenAnswer((invocation) async {
+          final uri = invocation.positionalArguments.single as Uri;
+          final body = switch (uri.path) {
+            '/solved/v4/problems' => fixture('v4/search_problems.json'),
+            '/solved/v4/rankings/users/search' =>
+              fixture('v4/search_users.json'),
+            '/solved/v4/tags' => fixture('v4/tags.json'),
+            _ => throw StateError('Unexpected v4 search URI: $uri'),
+          };
+          return http.Response.bytes(utf8.encode(body), 200);
+        });
+
+        final problems = await apiClient.v4SearchProblems('number');
+        final users = await apiClient.v4SearchUsers('index');
+        final tags = await apiClient.v4SearchTags('NUMBER');
+
+        expect(problems.count, 4);
+        expect(users.exact?.handle, 'index');
+        expect(tags.items.single.key, 'number_theory');
+        final requestedUris = verify(
+          () => httpClient.get(captureAny()),
+        ).captured.cast<Uri>().toList(growable: false);
+        expect(requestedUris, [
+          Uri.https('gateway.example', '/solved/v4/problems', {
+            'q': 'number',
+            'page': '1',
+            'sort': 'id',
+            'direction': 'asc',
+          }),
+          Uri.https('gateway.example', '/solved/v4/rankings/users/search', {
+            'q': 'index',
+            'sort': 'rating',
+          }),
+          Uri.https('gateway.example', '/solved/v4/tags'),
+        ]);
+        expect(
+          requestedUris.every((uri) => uri.host == 'gateway.example'),
+          isTrue,
+        );
+      });
+    });
+
     group('userShow', () {
       const handle = 'w8385';
       test('makes correct http request', () async {

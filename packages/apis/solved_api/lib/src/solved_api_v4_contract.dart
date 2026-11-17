@@ -12,7 +12,41 @@ enum SolvedApiV4ReputationRange {
   final String value;
 }
 
-/// Official v4 profile endpoints and response normalization.
+/// Sort orders supported by the official v4 problem search.
+///
+/// In particular, the v3-only `title` sort is intentionally not representable.
+enum SolvedApiV4ProblemSort {
+  id('id'),
+  level('level'),
+  solved('solved'),
+  averageTry('average_try'),
+  random('random');
+
+  const SolvedApiV4ProblemSort(this.value);
+
+  final String value;
+}
+
+enum SolvedApiV4SearchDirection {
+  asc('asc'),
+  desc('desc');
+
+  const SolvedApiV4SearchDirection(this.value);
+
+  final String value;
+}
+
+enum SolvedApiV4UserSort {
+  rating('rating'),
+  solved('solved'),
+  contribution('contribution');
+
+  const SolvedApiV4UserSort(this.value);
+
+  final String value;
+}
+
+/// Official v4 endpoints and response normalization.
 ///
 /// Every ordinary v4 request needs an application secret. This contract keeps
 /// the direct target as protocol metadata, but Flutter callers must select the
@@ -26,6 +60,9 @@ final class SolvedApiV4Contract {
   final Uri _proxyBaseUri;
 
   bool get requiresProxy => true;
+
+  /// Page size used when adapting the unpaged v4 tag catalog for the UI.
+  static const int tagSearchPageSize = 50;
 
   SolvedApiEndpoint<UserProfile> userProfile(String handle) => _endpoint(
         path: 'users/${_pathSegment(handle, 'handle')}',
@@ -78,6 +115,59 @@ final class SolvedApiV4Contract {
         decode: _decodeV4BadgeAsset,
       );
 
+  SolvedApiEndpoint<SearchObject<ProblemSearchItem>> searchProblems(
+    String query, {
+    int page = 1,
+    SolvedApiV4ProblemSort sort = SolvedApiV4ProblemSort.id,
+    SolvedApiV4SearchDirection direction = SolvedApiV4SearchDirection.asc,
+    String? seed,
+  }) {
+    _positivePage(page);
+    if (seed != null && (seed.isEmpty || seed.runes.length > 64)) {
+      throw ArgumentError.value(seed, 'seed', 'Must contain 1 to 64 characters');
+    }
+    return _endpoint(
+      path: 'problems',
+      queryParameters: {
+        'q': query,
+        'page': page.toString(),
+        'sort': sort.value,
+        'direction': direction.value,
+        if (seed != null) 'seed': seed,
+      },
+      decode: _decodeV4ProblemSearch,
+    );
+  }
+
+  SolvedApiEndpoint<UserSearchResult> searchUsers(
+    String query, {
+    SolvedApiV4UserSort sort = SolvedApiV4UserSort.rating,
+  }) {
+    if (query.runes.length > 64) {
+      throw ArgumentError.value(query, 'query', 'Must not exceed 64 characters');
+    }
+    return _endpoint(
+      path: 'rankings/users/search',
+      queryParameters: {'q': query, 'sort': sort.value},
+      decode: _decodeV4UserSearch,
+    );
+  }
+
+  /// Fetches the complete official tag catalog and filters it locally.
+  ///
+  /// The v4 `/tags` endpoint accepts no query or page parameters. Matching is
+  /// case-insensitive across the tag key, every localized name, and aliases.
+  SolvedApiEndpoint<SearchObject<TagSearchItem>> searchTags(
+    String query, {
+    int page = 1,
+  }) {
+    _positivePage(page);
+    return _endpoint(
+      path: 'tags',
+      decode: (json) => _decodeV4TagSearch(json, query: query, page: page),
+    );
+  }
+
   SolvedApiEndpoint<T> _endpoint<T>({
     required String path,
     Map<String, String> queryParameters = const {},
@@ -95,6 +185,132 @@ final class SolvedApiV4Contract {
           queryParameters: queryParameters,
         ),
         decode: decode,
+      );
+}
+
+SearchObject<ProblemSearchItem> _decodeV4ProblemSearch(dynamic json) {
+  final body = _object(json, 'problem search');
+  final problems = _list(body['problems'], 'problems')
+      .map((item) => _decodeV4ProblemSearchItem(_object(item, 'problems[]')))
+      .toList(growable: false);
+  return SearchObject(
+    count: _wholeNumber(body['total'], 'total'),
+    items: problems,
+  );
+}
+
+ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
+  final tagKeys = _list(body['tags'], 'problems[].tags')
+      .map(
+        (item) => _string(
+          _object(item, 'problems[].tags[]')['key'],
+          'problems[].tags[].key',
+        ),
+      )
+      .toList(growable: false);
+  return ProblemSearchItem(
+    problemId: _wholeNumber(body['problemId'], 'problems[].problemId'),
+    title: _decodeV4ProblemTitle(body['titles']),
+    level: _wholeNumber(body['level'], 'problems[].level'),
+    // The official v4 problem shape has tag keys but no localized names.
+    tagNames: tagKeys,
+  );
+}
+
+String? _decodeV4ProblemTitle(Object? value) {
+  String? first;
+  String? original;
+  for (final item in _list(value, 'problems[].titles')) {
+    final title = _object(item, 'problems[].titles[]');
+    final language = _string(
+      title['language'],
+      'problems[].titles[].language',
+    );
+    final text = _string(title['title'], 'problems[].titles[].title');
+    final isOriginal = _boolean(
+      title['isOriginal'],
+      'problems[].titles[].isOriginal',
+    );
+    first ??= text;
+    if (language == 'ko') return text;
+    if (isOriginal) original ??= text;
+  }
+  return original ?? first;
+}
+
+UserSearchResult _decodeV4UserSearch(dynamic json) {
+  final body = _object(json, 'user search');
+  final exactValue = body['exact'];
+  return UserSearchResult(
+    exact: exactValue == null
+        ? null
+        : _decodeV4UserSearchItem(_object(exactValue, 'exact')),
+    items: _list(body['items'], 'items')
+        .map((item) => _decodeV4UserSearchItem(_object(item, 'items[]')))
+        .toList(growable: false),
+  );
+}
+
+UserSearchItem _decodeV4UserSearchItem(Map<String, dynamic> body) =>
+    UserSearchItem(
+      handle: _string(body['handle'], 'user.handle'),
+      profileImageUrl:
+          _nullableString(body['profileImageUrl'], 'user.profileImageUrl'),
+      tier: _nullableInteger(body['tier'], 'user.tier'),
+    );
+
+SearchObject<TagSearchItem> _decodeV4TagSearch(
+  dynamic json, {
+  required String query,
+  required int page,
+}) {
+  final body = _object(json, 'tag catalog');
+  final normalizedQuery = query.toLowerCase();
+  final matches = _list(body['tags'], 'tags')
+      .map((item) => _decodeV4CatalogTag(_object(item, 'tags[]')))
+      .where((tag) => tag.matches(normalizedQuery))
+      .toList(growable: false);
+  final start = (page - 1) * SolvedApiV4Contract.tagSearchPageSize;
+  final pageItems = start >= matches.length
+      ? const <TagSearchItem>[]
+      : matches
+          .skip(start)
+          .take(SolvedApiV4Contract.tagSearchPageSize)
+          .map(
+            (tag) => TagSearchItem(key: tag.key, problemCount: null),
+          )
+          .toList(growable: false);
+  return SearchObject(count: matches.length, items: pageItems);
+}
+
+_V4CatalogTag _decodeV4CatalogTag(Map<String, dynamic> body) {
+  final names = _object(body['names'], 'tags[].names').values.map(
+        (value) => _string(value, 'tags[].names[]'),
+      );
+  final aliases = _list(body['aliases'], 'tags[].aliases').map(
+        (value) => _string(value, 'tags[].aliases[]'),
+      );
+  return _V4CatalogTag(
+    key: _string(body['key'], 'tags[].key'),
+    names: names.toList(growable: false),
+    aliases: aliases.toList(growable: false),
+  );
+}
+
+final class _V4CatalogTag {
+  const _V4CatalogTag({
+    required this.key,
+    required this.names,
+    required this.aliases,
+  });
+
+  final String key;
+  final List<String> names;
+  final List<String> aliases;
+
+  bool matches(String normalizedQuery) =>
+      <String>[key, ...names, ...aliases].any(
+        (candidate) => candidate.toLowerCase().contains(normalizedQuery),
       );
 }
 
@@ -262,6 +478,12 @@ String _pathSegment(String value, String name) {
   return Uri.encodeComponent(value);
 }
 
+void _positivePage(int page) {
+  if (page < 1) {
+    throw ArgumentError.value(page, 'page', 'Must be at least 1');
+  }
+}
+
 String _formatDay(DateTime day) => '${day.year.toString().padLeft(4, '0')}-'
     '${day.month.toString().padLeft(2, '0')}-'
     '${day.day.toString().padLeft(2, '0')}';
@@ -298,6 +520,16 @@ String? _nullableString(Object? value, String field) =>
 int _integer(Object? value, String field) {
   if (value is! int) throw FormatException('Expected integer for $field');
   return value;
+}
+
+int _wholeNumber(Object? value, String field) {
+  if (value is int) return value;
+  if (value is double &&
+      value.isFinite &&
+      value == value.truncateToDouble()) {
+    return value.toInt();
+  }
+  throw FormatException('Expected whole number for $field');
 }
 
 int? _nullableInteger(Object? value, String field) =>

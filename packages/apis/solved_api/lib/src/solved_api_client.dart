@@ -206,6 +206,51 @@ class SolvedApiClient {
     );
   }
 
+  Future<SearchObject<ProblemSearchItem>> v4SearchProblems(
+    String query, {
+    int page = 1,
+    SolvedApiV4ProblemSort sort = SolvedApiV4ProblemSort.id,
+    SolvedApiV4SearchDirection direction = SolvedApiV4SearchDirection.asc,
+    String? seed,
+  }) {
+    final contract = _requireV4Contract();
+    return _get(
+      contract.searchProblems(
+        query,
+        page: page,
+        sort: sort,
+        direction: direction,
+        seed: seed,
+      ),
+      requestType: _RequestType.search,
+      forceProxy: contract.requiresProxy,
+    );
+  }
+
+  Future<UserSearchResult> v4SearchUsers(
+    String query, {
+    SolvedApiV4UserSort sort = SolvedApiV4UserSort.rating,
+  }) {
+    final contract = _requireV4Contract();
+    return _get(
+      contract.searchUsers(query, sort: sort),
+      requestType: _RequestType.search,
+      forceProxy: contract.requiresProxy,
+    );
+  }
+
+  Future<SearchObject<TagSearchItem>> v4SearchTags(
+    String query, {
+    int page = 1,
+  }) {
+    final contract = _requireV4Contract();
+    return _get(
+      contract.searchTags(query, page: page),
+      requestType: _RequestType.search,
+      forceProxy: contract.requiresProxy,
+    );
+  }
+
   Future<SearchObject<ProblemSearchItem>> searchProblem(
     String query,
     int? page,

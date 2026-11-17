@@ -10,3 +10,4 @@ export 'search_object.dart';
 export 'tag_search_item.dart';
 export 'user_profile.dart';
 export 'user_search_item.dart';
+export 'user_search_result.dart';
