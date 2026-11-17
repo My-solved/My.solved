@@ -79,11 +79,34 @@ void main() {
       expect(users.items.first.handle, 'fdsajklt2');
       expect(users.items.first.profileImageUrl, isNull);
       expect(users.items.first.tier, 16);
+      expect(users.items.first.rating, 1675);
+      expect(users.items.first.solvedCount, 489);
       expect(tags, isA<SearchObject<TagSearchItem>>());
       expect(tags.count, 1);
       expect(tags.items.single.key, 'number_theory');
       expect(tags.items.single.displayName, isNull);
       expect(tags.items.single.problemCount, 1314);
+    });
+
+    test('keeps legacy and public user-search shapes compatible', () {
+      const item = UserSearchItem(
+        handle: 'legacy',
+        profileImageUrl: null,
+        tier: 0,
+      );
+      final decoded = const SolvedApiV3Contract()
+          .searchUser('legacy', 1)
+          .decode({
+        'count': 1,
+        'items': [
+          {'handle': 'legacy', 'profileImageUrl': null, 'tier': 0},
+        ],
+      });
+
+      expect(item.rating, isNull);
+      expect(item.solvedCount, isNull);
+      expect(decoded.items.single.rating, isNull);
+      expect(decoded.items.single.solvedCount, isNull);
     });
 
     test('keeps the legacy public tag-item constructor source-compatible', () {

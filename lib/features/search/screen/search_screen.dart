@@ -475,6 +475,7 @@ Widget _userSearchSectionTitle(String title, {required Key key}) {
 }
 
 Widget _userSearchCard(UserSearchItem user, {required Key key}) {
+  final summary = _userSearchSummary(user);
   return Padding(
     padding: const EdgeInsets.only(bottom: 16),
     child: ElevatedButton(
@@ -507,12 +508,39 @@ Widget _userSearchCard(UserSearchItem user, {required Key key}) {
             ),
           ),
           const SizedBox(width: 8),
-          Text(user.handle, style: MySolvedTextStyle.body1),
-          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  user.handle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: MySolvedTextStyle.body1,
+                ),
+                if (summary != null)
+                  Text(
+                    summary,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: MySolvedTextStyle.caption1,
+                  ),
+              ],
+            ),
+          ),
         ],
       ),
     ),
   );
+}
+
+String? _userSearchSummary(UserSearchItem user) {
+  final parts = <String>[
+    if (user.rating != null) '레이팅 ${user.rating}',
+    if (user.solvedCount != null) '${user.solvedCount}문제',
+  ];
+  return parts.isEmpty ? null : parts.join(' · ');
 }
 
 String _problemTitle(ProblemSearchItem item) => item.title ?? '제목 없음';
