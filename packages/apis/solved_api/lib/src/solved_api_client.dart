@@ -1,426 +1,447 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:solved_api/solved_api.dart';
+import 'package:http_parser/http_parser.dart' show parseHttpDate;
 
-class UserRequestFailed implements Exception {}
+import 'models/models.dart';
+import 'platform/is_web.dart' as platform;
 
-class BackgroundRequestFailed implements Exception {}
+class SolvedApiException implements Exception {
+  const SolvedApiException({
+    this.uri,
+    this.statusCode,
+    this.cause,
+    this.stackTrace,
+    this.responseBody,
+    this.retryAfter,
+  });
 
-class BadgeRequestFailed implements Exception {}
+  final Uri? uri;
+  final int? statusCode;
+  final Object? cause;
+  final StackTrace? stackTrace;
+  final String? responseBody;
+  final Duration? retryAfter;
 
-class SearchRequestFailed implements Exception {}
+  bool get isRetryable {
+    final status = statusCode;
+    if (status != null) {
+      return status == 408 || status == 429 || status >= 500;
+    }
+    return cause is TimeoutException || cause is http.ClientException;
+  }
 
-class ArenaRequestFailed implements Exception {}
+  bool get isTimeout => cause is TimeoutException;
 
-class SiteRequestFailed implements Exception {}
+  @override
+  String toString() {
+    final details = <String>[
+      if (uri != null) 'uri: $uri',
+      if (statusCode != null) 'statusCode: $statusCode',
+      if (retryAfter != null) 'retryAfter: $retryAfter',
+      if (cause != null) 'cause: $cause',
+    ];
+    return '${runtimeType.toString()}(${details.join(', ')})';
+  }
+}
+
+class UserRequestFailed extends SolvedApiException {
+  const UserRequestFailed({
+    super.uri,
+    super.statusCode,
+    super.cause,
+    super.stackTrace,
+    super.responseBody,
+    super.retryAfter,
+  });
+}
+
+class BackgroundRequestFailed extends SolvedApiException {
+  const BackgroundRequestFailed({
+    super.uri,
+    super.statusCode,
+    super.cause,
+    super.stackTrace,
+    super.responseBody,
+    super.retryAfter,
+  });
+}
+
+class BadgeRequestFailed extends SolvedApiException {
+  const BadgeRequestFailed({
+    super.uri,
+    super.statusCode,
+    super.cause,
+    super.stackTrace,
+    super.responseBody,
+    super.retryAfter,
+  });
+}
+
+class SearchRequestFailed extends SolvedApiException {
+  const SearchRequestFailed({
+    super.uri,
+    super.statusCode,
+    super.cause,
+    super.stackTrace,
+    super.responseBody,
+    super.retryAfter,
+  });
+}
+
+class ArenaRequestFailed extends SolvedApiException {
+  const ArenaRequestFailed({
+    super.uri,
+    super.statusCode,
+    super.cause,
+    super.stackTrace,
+    super.responseBody,
+    super.retryAfter,
+  });
+}
+
+class SiteRequestFailed extends SolvedApiException {
+  const SiteRequestFailed({
+    super.uri,
+    super.statusCode,
+    super.cause,
+    super.stackTrace,
+    super.responseBody,
+    super.retryAfter,
+  });
+}
+
+enum _RequestType { user, background, badge, search, arena, site }
 
 class SolvedApiClient {
-  SolvedApiClient({http.Client? httpClient})
-      : _httpClient = httpClient ?? http.Client();
-
-  static const String _baseUrl = 'solved.ac';
-  static const String _bypassUrl = 'codepoker.w8385.dev';
+  SolvedApiClient({
+    http.Client? httpClient,
+    bool? useProxy,
+    Uri? apiBaseUri,
+    Uri? proxyBaseUri,
+    this.requestTimeout = const Duration(seconds: 10),
+  })  : _httpClient = httpClient ?? http.Client(),
+        _useProxy = useProxy ?? platform.isWeb,
+        _apiBaseUri = _normalizeBaseUri(
+          apiBaseUri ?? Uri.https('solved.ac', '/api/v3/'),
+        ),
+        _proxyBaseUri = _normalizeBaseUri(
+          proxyBaseUri ?? Uri.https('codepoker.w8385.dev', '/solved/'),
+        );
 
   final http.Client _httpClient;
+  final bool _useProxy;
+  final Uri _apiBaseUri;
+  final Uri _proxyBaseUri;
+  final Duration requestTimeout;
 
-  Future<User> userShow(String handle) async {
-    final userRequest =
-        Uri.https(_baseUrl, '/api/v3/user/show', {'handle': handle});
+  Future<User> userShow(String handle) => _get(
+        'user/show',
+        queryParameters: {'handle': handle},
+        requestType: _RequestType.user,
+        parser: (json) => User.fromJson(json),
+      );
 
-    http.Response userResponse;
+  Future<List<Organization>> userOrganizations(String handle) => _get(
+        'user/organizations',
+        queryParameters: {'handle': handle},
+        requestType: _RequestType.user,
+        parser: (json) => json
+            .map((item) => Organization.fromJson(item))
+            .toList()
+            .cast<Organization>(),
+      );
 
-    try {
-      if (GetPlatform.isWeb) {
-        final bypassRequest =
-            Uri.https(_bypassUrl, '/solved/user/show', {'handle': handle});
+  Future<List<Badge>> userAvailableBadges(String handle) => _get(
+        'user/available_badges',
+        queryParameters: {'handle': handle},
+        requestType: _RequestType.user,
+        parser: (json) => json['items']
+            .map((item) => Badge.fromJson(item))
+            .toList()
+            .cast<Badge>(),
+      );
 
-        userResponse = await _httpClient.get(bypassRequest);
-      } else {
-        userResponse = await _httpClient.get(userRequest);
-      }
-    } catch (e) {
-      throw UserRequestFailed();
-    }
+  Future<Streak> userGrass(String handle, String? topic) => _get(
+        'user/grass',
+        queryParameters: {'handle': handle, 'topic': topic ?? 'default'},
+        requestType: _RequestType.user,
+        parser: (json) => Streak.fromJson(json),
+      );
 
-    final userJson = jsonDecode(userResponse.body);
+  Future<List<Problem>> userTop100(String handle) => _get(
+        'user/top_100',
+        queryParameters: {'handle': handle},
+        requestType: _RequestType.user,
+        parser: (json) => json['items']
+            .map((item) => Problem.fromJson(item))
+            .toList()
+            .cast<Problem>(),
+      );
 
-    return User.fromJson(userJson);
-  }
+  Future<List<ProblemStat>> userProblemStats(String handle) => _get(
+        'user/problem_stats',
+        queryParameters: {'handle': handle},
+        requestType: _RequestType.user,
+        parser: (json) => List<ProblemStat>.from(
+          json.map((item) => ProblemStat.fromJson(item)),
+        ),
+      );
 
-  Future<List<Organization>> userOrganizations(String handle) async {
-    final userRequest =
-        Uri.https(_baseUrl, '/api/v3/user/organizations', {'handle': handle});
+  Future<List<TagRating>> userTagRatings(String handle) => _get(
+        'user/tag_ratings',
+        queryParameters: {'handle': handle},
+        requestType: _RequestType.user,
+        parser: (json) =>
+            List<TagRating>.from(json.map((item) => TagRating.fromJson(item))),
+      );
 
-    http.Response userResponse;
+  Future<Background> backgroundShow(String backgroundId) => _get(
+        'background/show',
+        queryParameters: {'backgroundId': backgroundId},
+        requestType: _RequestType.background,
+        parser: (json) => Background.fromJson(json),
+      );
 
-    try {
-      if (GetPlatform.isWeb) {
-        final bypassRequest = Uri.https(
-            _bypassUrl, '/solved/user/organizations', {'handle': handle});
+  Future<Badge> badgeShow(String badgeId) => _get(
+        'badge/show',
+        queryParameters: {'badgeId': badgeId},
+        requestType: _RequestType.badge,
+        parser: (json) => Badge.fromJson(json),
+      );
 
-        userResponse = await _httpClient.get(bypassRequest);
-      } else {
-        userResponse = await _httpClient.get(userRequest);
-      }
-    } catch (e) {
-      throw UserRequestFailed();
-    }
-
-    final userJson = jsonDecode(userResponse.body);
-
-    return userJson
-        .map((i) => Organization.fromJson(i))
-        .toList()
-        .cast<Organization>();
-  }
-
-  Future<List<Badge>> userAvailableBadges(String handle) async {
-    final userRequest = Uri.https(
-        _baseUrl, '/api/v3/user/available_badges', {'handle': handle});
-
-    http.Response userResponse;
-
-    try {
-      if (GetPlatform.isWeb) {
-        final bypassRequest = Uri.https(
-            _bypassUrl, '/solved/user/available_badges', {'handle': handle});
-
-        userResponse = await _httpClient.get(bypassRequest);
-      } else {
-        userResponse = await _httpClient.get(userRequest);
-      }
-    } catch (e) {
-      throw UserRequestFailed();
-    }
-
-    final userJson = jsonDecode(userResponse.body);
-
-    return userJson['items']
-        .map((i) => Badge.fromJson(i))
-        .toList()
-        .cast<Badge>();
-  }
-
-  Future<Streak> userGrass(String handle, String? topic) async {
-    final userRequest = Uri.https(_baseUrl, '/api/v3/user/grass',
-        {'handle': handle, 'topic': topic ?? 'default'});
-
-    http.Response userResponse;
-
-    try {
-      if (GetPlatform.isWeb) {
-        final bypassRequest = Uri.https(_bypassUrl, '/solved/user/grass',
-            {'handle': handle, 'topic': topic ?? 'default'});
-
-        userResponse = await _httpClient.get(bypassRequest);
-      } else {
-        userResponse = await _httpClient.get(userRequest);
-      }
-    } catch (e) {
-      throw UserRequestFailed();
-    }
-
-    final userJson = jsonDecode(userResponse.body);
-
-    return Streak.fromJson(userJson);
-  }
-
-  Future<List<Problem>> userTop100(String handle) async {
-    final userRequest =
-        Uri.https(_baseUrl, '/api/v3/user/top_100', {'handle': handle});
-
-    http.Response userResponse;
-
-    try {
-      if (GetPlatform.isWeb) {
-        final bypassRequest =
-            Uri.https(_bypassUrl, '/solved/user/top_100', {'handle': handle});
-
-        userResponse = await _httpClient.get(bypassRequest);
-      } else {
-        userResponse = await _httpClient.get(userRequest);
-      }
-    } catch (e) {
-      throw UserRequestFailed();
-    }
-
-    final userJson = jsonDecode(userResponse.body);
-
-    return userJson['items']
-        .map((i) => Problem.fromJson(i))
-        .cast<Problem>()
-        .toList();
-  }
-
-  Future<List<ProblemStat>> userProblemStats(String handle) async {
-    final userRequest =
-        Uri.https(_baseUrl, '/api/v3/user/problem_stats', {'handle': handle});
-
-    http.Response userResponse;
-
-    try {
-      if (GetPlatform.isWeb) {
-        final bypassRequest = Uri.https(
-            _bypassUrl, '/solved/user/problem_stats', {'handle': handle});
-
-        userResponse = await _httpClient.get(bypassRequest);
-      } else {
-        userResponse = await _httpClient.get(userRequest);
-      }
-    } catch (e) {
-      throw UserRequestFailed();
-    }
-
-    final userJson = jsonDecode(userResponse.body);
-
-    return List<ProblemStat>.from(
-        userJson.map((problemStats) => ProblemStat.fromJson(problemStats)));
-  }
-
-  Future<List<TagRating>> userTagRatings(String handle) async {
-    final userRequest =
-        Uri.https(_baseUrl, '/api/v3/user/tag_ratings', {'handle': handle});
-
-    http.Response userResponse;
-
-    try {
-      if (GetPlatform.isWeb) {
-        final bypassRequest = Uri.https(
-            _bypassUrl, '/solved/user/tag_ratings', {'handle': handle});
-
-        userResponse = await _httpClient.get(bypassRequest);
-      } else {
-        userResponse = await _httpClient.get(userRequest);
-      }
-    } catch (e) {
-      throw UserRequestFailed();
-    }
-
-    final userJson = jsonDecode(userResponse.body);
-
-    return List<TagRating>.from(
-        userJson.map((tagRating) => TagRating.fromJson(tagRating)));
-  }
-
-  Future<Background> backgroundShow(String backgroundId) async {
-    final backgroundRequest = Uri.https(
-        _baseUrl, '/api/v3/background/show', {'backgroundId': backgroundId});
-
-    http.Response backgroundResponse;
-
-    try {
-      if (GetPlatform.isWeb) {
-        final bypassRequest = Uri.https(_bypassUrl, '/solved/background/show',
-            {'backgroundId': backgroundId});
-
-        backgroundResponse = await _httpClient.get(bypassRequest);
-      } else {
-        backgroundResponse = await _httpClient.get(backgroundRequest);
-      }
-    } catch (e) {
-      throw BackgroundRequestFailed();
-    }
-
-    final backgroundJson = jsonDecode(backgroundResponse.body);
-
-    return Background.fromJson(backgroundJson);
-  }
-
-  Future<Badge> badgeShow(String badgeId) async {
-    final badgeRequest =
-        Uri.https(_baseUrl, '/api/v3/badge/show', {'badgeId': badgeId});
-
-    http.Response badgeResponse;
-
-    try {
-      if (GetPlatform.isWeb) {
-        final bypassRequest =
-            Uri.https(_bypassUrl, '/solved/badge/show', {'badgeId': badgeId});
-
-        badgeResponse = await _httpClient.get(bypassRequest);
-      } else {
-        badgeResponse = await _httpClient.get(badgeRequest);
-      }
-    } catch (e) {
-      throw BadgeRequestFailed();
-    }
-
-    final badgeJson = jsonDecode(badgeResponse.body);
-
-    return Badge.fromJson(badgeJson);
-  }
-
-  Future<SearchSuggestion> searchSuggestion(String query) async {
-    final searchRequest =
-        Uri.https(_baseUrl, '/api/v3/search/suggestion', {'query': query});
-
-    http.Response searchResponse;
-
-    try {
-      if (GetPlatform.isWeb) {
-        final bypassRequest = Uri.https(
-            _bypassUrl, '/solved/search/suggestion', {'query': query});
-
-        searchResponse = await _httpClient.get(bypassRequest);
-      } else {
-        searchResponse = await _httpClient.get(searchRequest);
-      }
-    } catch (e) {
-      throw SearchRequestFailed();
-    }
-
-    final searchJson = jsonDecode(searchResponse.body);
-
-    return SearchSuggestion.fromJson(searchJson);
-  }
+  Future<SearchSuggestion> searchSuggestion(String query) => _get(
+        'search/suggestion',
+        queryParameters: {'query': query},
+        requestType: _RequestType.search,
+        parser: (json) => SearchSuggestion.fromJson(json),
+      );
 
   Future<SearchObject> searchProblem(
-      String query, int? page, String? sort, String? direction) async {
-    final searchRequest = Uri.https(_baseUrl, '/api/v3/search/problem', {
-      'query': query,
-      'page': page?.toString() ?? '1',
-      'sort': sort ?? 'solved',
-      'direction': direction ?? 'descending',
-    });
-
-    http.Response searchResponse;
-
-    try {
-      if (GetPlatform.isWeb) {
-        final bypassRequest = Uri.https(_bypassUrl, '/solved/search/problem', {
+    String query,
+    int? page,
+    String? sort,
+    String? direction,
+  ) =>
+      _get(
+        'search/problem',
+        queryParameters: {
           'query': query,
           'page': page?.toString() ?? '1',
           'sort': sort ?? 'solved',
           'direction': direction ?? 'descending',
-        });
+        },
+        requestType: _RequestType.search,
+        parser: (json) {
+          json['items'] = json['items']
+              .map((problem) => Problem.fromJson(problem))
+              .toList()
+              .cast<Problem>();
+          return SearchObject.fromJson(json);
+        },
+      );
 
-        searchResponse = await _httpClient.get(bypassRequest);
-      } else {
-        searchResponse = await _httpClient.get(searchRequest);
-      }
-    } catch (e) {
-      throw SearchRequestFailed();
-    }
+  Future<SearchObject> searchUser(String query, int? page) => _get(
+        'search/user',
+        queryParameters: {'query': query, 'page': page?.toString() ?? '1'},
+        requestType: _RequestType.search,
+        parser: (json) {
+          json['items'] = json['items']
+              .map((user) => User.fromJson(user))
+              .toList()
+              .cast<User>();
+          return SearchObject.fromJson(json);
+        },
+      );
 
-    final searchJson = jsonDecode(searchResponse.body);
-    searchJson['items'] = searchJson['items']
-        .map((problem) => Problem.fromJson(problem))
-        .toList()
-        .cast<Problem>();
+  Future<SearchObject> searchTag(String query, int? page) => _get(
+        'search/tag',
+        queryParameters: {'query': query, 'page': page?.toString() ?? '1'},
+        requestType: _RequestType.search,
+        parser: (json) {
+          json['items'] = json['items']
+              .map((tag) => Tag.fromJson(tag))
+              .toList()
+              .cast<Tag>();
+          return SearchObject.fromJson(json);
+        },
+      );
 
-    return SearchObject.fromJson(searchJson);
-  }
+  Future<List<ArenaContest>> arenaContests() => _get(
+        'arena/contests',
+        requestType: _RequestType.arena,
+        parser: (json) {
+          final contests = <ArenaContest>[];
+          for (final status in json.keys) {
+            json[status].forEach(
+              (contest) => contests.add(ArenaContest.fromJson(contest)),
+            );
+          }
+          return contests;
+        },
+      );
 
-  Future<SearchObject> searchUser(String query, int? page) async {
-    final searchRequest = Uri.https(_baseUrl, '/api/v3/search/user',
-        {'query': query, 'page': page?.toString() ?? '1'});
+  Future<SiteStats> siteStats() => _get(
+        'site/stats',
+        requestType: _RequestType.site,
+        parser: (json) => SiteStats.fromJson(json),
+      );
 
-    http.Response searchResponse;
-
-    try {
-      if (GetPlatform.isWeb) {
-        final bypassRequest = Uri.https(_bypassUrl, '/solved/search/user', {
-          'query': query,
-          'page': page?.toString() ?? '1',
-        });
-
-        searchResponse = await _httpClient.get(bypassRequest);
-      } else {
-        searchResponse = await _httpClient.get(searchRequest);
-      }
-    } catch (e) {
-      throw SearchRequestFailed();
-    }
-
-    final searchJson = jsonDecode(utf8.decode(searchResponse.bodyBytes));
-    searchJson['items'] = searchJson['items']
-        .map((user) => User.fromJson(user))
-        .toList()
-        .cast<User>();
-
-    return SearchObject.fromJson(searchJson);
-  }
-
-  Future<SearchObject> searchTag(String query, int? page) async {
-    final searchRequest = Uri.https(_baseUrl, '/api/v3/search/tag',
-        {'query': query, 'page': page?.toString() ?? '1'});
-
-    http.Response searchResponse;
-
-    try {
-      if (GetPlatform.isWeb) {
-        final bypassRequest = Uri.https(_bypassUrl, '/solved/search/tag', {
-          'query': query,
-          'page': page?.toString() ?? '1',
-        });
-
-        searchResponse = await _httpClient.get(bypassRequest);
-      } else {
-        searchResponse = await _httpClient.get(searchRequest);
-      }
-    } catch (e) {
-      throw SearchRequestFailed();
-    }
-
-    final searchJson = jsonDecode(searchResponse.body);
-    searchJson['items'] = searchJson['items']
-        .map((tag) => Tag.fromJson(tag))
-        .toList()
-        .cast<Tag>();
-
-    return SearchObject.fromJson(searchJson);
-  }
-
-  Future<List<ArenaContest>> arenaContests() async {
-    final arenaRequest = Uri.https(_baseUrl, '/api/v3/arena/contests');
-
-    http.Response arenaResponse;
+  Future<T> _get<T>(
+    String path, {
+    Map<String, String> queryParameters = const {},
+    required _RequestType requestType,
+    required T Function(dynamic json) parser,
+  }) async {
+    final uri = _buildUri(path, queryParameters);
+    late http.Response response;
 
     try {
-      if (GetPlatform.isWeb) {
-        final bypassRequest = Uri.https(_bypassUrl, '/solved/arena/contests');
-
-        arenaResponse = await _httpClient.get(bypassRequest);
-      } else {
-        arenaResponse = await _httpClient.get(arenaRequest);
-      }
-    } catch (e) {
-      throw ArenaRequestFailed();
+      response = await _httpClient.get(uri).timeout(requestTimeout);
+    } on Object catch (error, stackTrace) {
+      throw _failure(
+        requestType,
+        uri: uri,
+        cause: error,
+        stackTrace: stackTrace,
+      );
     }
 
-    final arenaJson = jsonDecode(arenaResponse.body);
-
-    final List<ArenaContest> arenaContests = [];
-    for (var status in arenaJson.keys) {
-      arenaJson[status].forEach((contest) {
-        arenaContests.add(ArenaContest.fromJson(contest));
-      });
+    late String body;
+    try {
+      body = _decodeBody(response);
+    } on Object catch (error, stackTrace) {
+      throw _failure(
+        requestType,
+        uri: uri,
+        statusCode: response.statusCode,
+        cause: error,
+        stackTrace: stackTrace,
+        retryAfter: _parseRetryAfter(response.headers),
+      );
     }
-    return arenaContests;
-  }
-
-  Future<SiteStats> siteStats() async {
-    final siteRequest = Uri.https(_baseUrl, '/api/v3/site/stats');
-
-    http.Response siteResponse;
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw _failure(
+        requestType,
+        uri: uri,
+        statusCode: response.statusCode,
+        responseBody: body,
+        retryAfter: _parseRetryAfter(response.headers),
+      );
+    }
 
     try {
-      if (GetPlatform.isWeb) {
-        final bypassRequest = Uri.https(_bypassUrl, '/solved/site/stats');
+      return parser(jsonDecode(body));
+    } on Object catch (error, stackTrace) {
+      throw _failure(
+        requestType,
+        uri: uri,
+        statusCode: response.statusCode,
+        cause: error,
+        stackTrace: stackTrace,
+        responseBody: body,
+      );
+    }
+  }
 
-        siteResponse = await _httpClient.get(bypassRequest);
-      } else {
-        siteResponse = await _httpClient.get(siteRequest);
+  Uri _buildUri(String path, Map<String, String> queryParameters) {
+    final baseUri = _useProxy ? _proxyBaseUri : _apiBaseUri;
+    return baseUri.resolve(path).replace(
+          queryParameters: queryParameters.isEmpty ? null : queryParameters,
+        );
+  }
+
+  String _decodeBody(http.Response response) {
+    return utf8.decode(response.bodyBytes);
+  }
+
+  Duration? _parseRetryAfter(Map<String, String> headers) {
+    String? value;
+    for (final header in headers.entries) {
+      if (header.key.toLowerCase() == 'retry-after') {
+        value = header.value.trim();
+        break;
       }
-    } catch (e) {
-      throw SiteRequestFailed();
+    }
+    if (value == null || value.isEmpty) return null;
+
+    final seconds = int.tryParse(value);
+    if (seconds != null) {
+      return seconds < 0 ? null : Duration(seconds: seconds);
     }
 
-    final siteJson = jsonDecode(siteResponse.body);
+    try {
+      final delay = parseHttpDate(value).difference(DateTime.now().toUtc());
+      return delay.isNegative ? Duration.zero : delay;
+    } on FormatException {
+      return null;
+    }
+  }
 
-    return SiteStats.fromJson(siteJson);
+  SolvedApiException _failure(
+    _RequestType requestType, {
+    required Uri uri,
+    int? statusCode,
+    Object? cause,
+    StackTrace? stackTrace,
+    String? responseBody,
+    Duration? retryAfter,
+  }) {
+    return switch (requestType) {
+      _RequestType.user => UserRequestFailed(
+          uri: uri,
+          statusCode: statusCode,
+          cause: cause,
+          stackTrace: stackTrace,
+          responseBody: responseBody,
+          retryAfter: retryAfter,
+        ),
+      _RequestType.background => BackgroundRequestFailed(
+          uri: uri,
+          statusCode: statusCode,
+          cause: cause,
+          stackTrace: stackTrace,
+          responseBody: responseBody,
+          retryAfter: retryAfter,
+        ),
+      _RequestType.badge => BadgeRequestFailed(
+          uri: uri,
+          statusCode: statusCode,
+          cause: cause,
+          stackTrace: stackTrace,
+          responseBody: responseBody,
+          retryAfter: retryAfter,
+        ),
+      _RequestType.search => SearchRequestFailed(
+          uri: uri,
+          statusCode: statusCode,
+          cause: cause,
+          stackTrace: stackTrace,
+          responseBody: responseBody,
+          retryAfter: retryAfter,
+        ),
+      _RequestType.arena => ArenaRequestFailed(
+          uri: uri,
+          statusCode: statusCode,
+          cause: cause,
+          stackTrace: stackTrace,
+          responseBody: responseBody,
+          retryAfter: retryAfter,
+        ),
+      _RequestType.site => SiteRequestFailed(
+          uri: uri,
+          statusCode: statusCode,
+          cause: cause,
+          stackTrace: stackTrace,
+          responseBody: responseBody,
+          retryAfter: retryAfter,
+        ),
+    };
+  }
+
+  static Uri _normalizeBaseUri(Uri uri) {
+    if (uri.path.endsWith('/')) return uri;
+    return uri.replace(path: '${uri.path}/');
   }
 }

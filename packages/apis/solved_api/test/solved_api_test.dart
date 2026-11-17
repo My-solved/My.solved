@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 import 'package:mocktail/mocktail.dart';
@@ -7,7 +9,10 @@ import 'package:test/test.dart';
 
 class MockHttpClient extends Mock implements http.Client {}
 
-class MockResponse extends Mock implements http.Response {}
+class MockResponse extends Mock implements http.Response {
+  @override
+  Uint8List get bodyBytes => Uint8List.fromList(utf8.encode(body));
+}
 
 class FakeUri extends Fake implements Uri {}
 
@@ -23,6 +28,292 @@ void main() {
     setUp(() {
       httpClient = MockHttpClient();
       apiClient = SolvedApiClient(httpClient: httpClient);
+    });
+
+    group('transport', () {
+      test('uses the direct API URI when proxying is disabled', () async {
+        apiClient = SolvedApiClient(httpClient: httpClient, useProxy: false);
+        when(() => httpClient.get(any()))
+            .thenAnswer((_) async => http.Response('{}', 200));
+
+        await expectLater(
+          apiClient.userShow('w8385'),
+          throwsA(isA<UserRequestFailed>()),
+        );
+
+        verify(
+          () => httpClient.get(
+            Uri.https(
+              'solved.ac',
+              '/api/v3/user/show',
+              {'handle': 'w8385'},
+            ),
+          ),
+        ).called(1);
+      });
+
+      test('uses the web proxy URI when proxying is enabled', () async {
+        apiClient = SolvedApiClient(httpClient: httpClient, useProxy: true);
+        when(() => httpClient.get(any()))
+            .thenAnswer((_) async => http.Response('{}', 200));
+
+        await expectLater(
+          apiClient.userShow('w8385'),
+          throwsA(isA<UserRequestFailed>()),
+        );
+
+        verify(
+          () => httpClient.get(
+            Uri.https(
+              'codepoker.w8385.dev',
+              '/solved/user/show',
+              {'handle': 'w8385'},
+            ),
+          ),
+        ).called(1);
+      });
+
+      test('normalizes and uses a custom v4 API base URI', () async {
+        apiClient = SolvedApiClient(
+          httpClient: httpClient,
+          useProxy: false,
+          apiBaseUri: Uri.https('api.example.com', '/api/v4'),
+        );
+        when(() => httpClient.get(any()))
+            .thenAnswer((_) async => http.Response('{}', 200));
+
+        await expectLater(
+          apiClient.userShow('w8385'),
+          throwsA(isA<UserRequestFailed>()),
+        );
+
+        verify(
+          () => httpClient.get(
+            Uri.https(
+              'api.example.com',
+              '/api/v4/user/show',
+              {'handle': 'w8385'},
+            ),
+          ),
+        ).called(1);
+      });
+
+      test('normalizes and uses a custom proxy base URI', () async {
+        apiClient = SolvedApiClient(
+          httpClient: httpClient,
+          useProxy: true,
+          proxyBaseUri: Uri.https('proxy.example.com', '/gateway/solved'),
+        );
+        when(() => httpClient.get(any()))
+            .thenAnswer((_) async => http.Response('{}', 200));
+
+        await expectLater(
+          apiClient.userShow('w8385'),
+          throwsA(isA<UserRequestFailed>()),
+        );
+
+        verify(
+          () => httpClient.get(
+            Uri.https(
+              'proxy.example.com',
+              '/gateway/solved/user/show',
+              {'handle': 'w8385'},
+            ),
+          ),
+        ).called(1);
+      });
+
+      test('decodes successful response bodies as UTF-8', () async {
+        final payload = jsonEncode({
+          'backgroundId': 'test',
+          'backgroundImageUrl': 'https://example.com/background.png',
+          'fallbackBackgroundImageUrl': null,
+          'backgroundVideoUrl': null,
+          'unlockedUserCount': 1,
+          'displayName': '한글 배경',
+          'displayDescription': '설명',
+          'conditions': null,
+          'hiddenConditions': false,
+          'isIllust': false,
+        });
+        when(() => httpClient.get(any())).thenAnswer(
+          (_) async => http.Response.bytes(
+            utf8.encode(payload),
+            200,
+            headers: {
+              'content-type': 'application/json; charset=iso-8859-1',
+            },
+          ),
+        );
+
+        final background = await apiClient.backgroundShow('test');
+
+        expect(background.displayName, '한글 배경');
+        expect(background.displayDescription, '설명');
+      });
+
+      test('preserves rate-limit metadata on non-success responses', () async {
+        when(() => httpClient.get(any())).thenAnswer(
+          (_) async => http.Response(
+            '{"message":"rate limited"}',
+            429,
+            headers: {'retry-after': '12'},
+          ),
+        );
+
+        await expectLater(
+          apiClient.siteStats(),
+          throwsA(
+            isA<SiteRequestFailed>()
+                .having(
+                  (error) => error.uri,
+                  'uri',
+                  Uri.https('solved.ac', '/api/v3/site/stats'),
+                )
+                .having((error) => error.statusCode, 'statusCode', 429)
+                .having(
+                  (error) => error.retryAfter,
+                  'retryAfter',
+                  const Duration(seconds: 12),
+                )
+                .having((error) => error.isRetryable, 'isRetryable', isTrue)
+                .having(
+                  (error) => error.responseBody,
+                  'responseBody',
+                  '{"message":"rate limited"}',
+                ),
+          ),
+        );
+      });
+
+      test('parses an HTTP-date Retry-After value', () async {
+        when(() => httpClient.get(any())).thenAnswer(
+          (_) async => http.Response(
+            '{"message":"rate limited"}',
+            429,
+            headers: {'Retry-After': 'Sun, 06 Nov 1994 08:49:37 GMT'},
+          ),
+        );
+
+        await expectLater(
+          apiClient.siteStats(),
+          throwsA(
+            isA<SiteRequestFailed>().having(
+              (error) => error.retryAfter,
+              'retryAfter',
+              Duration.zero,
+            ),
+          ),
+        );
+      });
+
+      test(
+        'maps other non-success responses without marking them retryable',
+        () async {
+          when(() => httpClient.get(any()))
+              .thenAnswer((_) async => http.Response('not found', 404));
+
+          await expectLater(
+            apiClient.badgeShow('missing'),
+            throwsA(
+              isA<BadgeRequestFailed>()
+                  .having((error) => error.statusCode, 'statusCode', 404)
+                  .having((error) => error.isRetryable, 'isRetryable', isFalse)
+                  .having(
+                    (error) => error.responseBody,
+                    'responseBody',
+                    'not found',
+                  ),
+            ),
+          );
+        },
+      );
+
+      test('maps request timeouts to the endpoint failure type', () async {
+        apiClient = SolvedApiClient(
+          httpClient: httpClient,
+          requestTimeout: const Duration(milliseconds: 1),
+        );
+        when(() => httpClient.get(any()))
+            .thenAnswer((_) => Completer<http.Response>().future);
+
+        await expectLater(
+          apiClient.userShow('w8385'),
+          throwsA(
+            isA<UserRequestFailed>()
+                .having((error) => error.isTimeout, 'isTimeout', isTrue)
+                .having((error) => error.statusCode, 'statusCode', isNull)
+                .having((error) => error.isRetryable, 'isRetryable', isTrue),
+          ),
+        );
+      });
+
+      test('maps client failures to the endpoint failure type', () async {
+        final cause = StateError('offline');
+        when(() => httpClient.get(any())).thenThrow(cause);
+
+        await expectLater(
+          apiClient.userShow('w8385'),
+          throwsA(
+            isA<UserRequestFailed>()
+                .having((error) => error.cause, 'cause', same(cause))
+                .having((error) => error.statusCode, 'statusCode', isNull)
+                .having((error) => error.isRetryable, 'isRetryable', isFalse),
+          ),
+        );
+      });
+
+      test('marks HTTP client failures as retryable', () async {
+        final cause = http.ClientException('offline');
+        when(() => httpClient.get(any())).thenThrow(cause);
+
+        await expectLater(
+          apiClient.userShow('w8385'),
+          throwsA(
+            isA<UserRequestFailed>()
+                .having((error) => error.cause, 'cause', same(cause))
+                .having((error) => error.isRetryable, 'isRetryable', isTrue),
+          ),
+        );
+      });
+
+      test('maps invalid JSON to the endpoint failure type', () async {
+        when(() => httpClient.get(any()))
+            .thenAnswer((_) async => http.Response('not json', 200));
+
+        await expectLater(
+          apiClient.badgeShow('test'),
+          throwsA(
+            isA<BadgeRequestFailed>()
+                .having((error) => error.statusCode, 'statusCode', 200)
+                .having(
+                  (error) => error.cause,
+                  'cause',
+                  isA<FormatException>(),
+                )
+                .having((error) => error.isRetryable, 'isRetryable', isFalse),
+          ),
+        );
+      });
+
+      test('maps invalid UTF-8 to the endpoint failure type', () async {
+        when(() => httpClient.get(any())).thenAnswer(
+          (_) async => http.Response.bytes([0xff], 200),
+        );
+
+        await expectLater(
+          apiClient.badgeShow('test'),
+          throwsA(
+            isA<BadgeRequestFailed>()
+                .having((error) => error.statusCode, 'statusCode', 200)
+                .having(
+                  (error) => error.cause,
+                  'cause',
+                  isA<FormatException>(),
+                ),
+          ),
+        );
+      });
     });
 
     group('userShow', () {
@@ -13935,8 +14226,6 @@ void main() {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(() => response.body).thenReturn('''
-        {}''');
-        when(() => response.bodyBytes).thenReturn(utf8.encode('''
         {
     "count": 2,
     "items": [
@@ -14004,7 +14293,7 @@ void main() {
         }
     ]
 }
-        '''));
+        ''');
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
 
         final actual = await apiClient.searchUser(query, page);
