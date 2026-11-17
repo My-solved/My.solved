@@ -72,7 +72,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     final requests = <Future<void> Function()>[
       if (!usesV4 && user.backgroundId != null)
         () async {
-          auxiliary.background = await _optional(
+          auxiliary.background = await _optional<ProfileBackgroundAsset?>(
             () => _userRepository.getBackground(user.backgroundId!),
           );
         },
