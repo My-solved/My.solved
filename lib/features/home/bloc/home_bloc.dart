@@ -154,14 +154,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     }
   }
 
-  bool _hasSolvedToday(Streak? streak, DateTime now) {
+  bool _hasSolvedToday(ProfileStreak? streak, DateTime now) {
     if (streak == null) return false;
-    return streak.grass.any(
-      (grass) =>
-          grass.year == now.year &&
-          grass.month == now.month &&
-          grass.day == now.day &&
-          grass.solvedCount > 0,
+    return streak.days.any(
+      (entry) =>
+          entry.year == now.year &&
+          entry.month == now.month &&
+          entry.day == now.day &&
+          entry.solvedCount > 0,
     );
   }
 
@@ -181,7 +181,7 @@ class _HomeAuxiliaryData {
   ProfileBadgeAsset? badge;
   List<Badge> badges = const [];
   List<Organization> organizations = const [];
-  Streak? streak;
-  List<TagRating> tagRatings = const [];
-  List<ProblemStat> problemStats = const [];
+  ProfileStreak? streak;
+  List<ProfileTagRating> tagRatings = const [];
+  List<ProfileTierStat> problemStats = const [];
 }

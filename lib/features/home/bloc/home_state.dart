@@ -22,10 +22,10 @@ class HomeState extends Equatable {
   final ProfileBadgeAsset? badge;
   final List<Badge> badges;
   final List<Organization> organizations;
-  final Streak? streak;
+  final ProfileStreak? streak;
   final bool? solvedToday;
-  final List<TagRating>? tagRatings;
-  final List<ProblemStat>? problemStats;
+  final List<ProfileTagRating>? tagRatings;
+  final List<ProfileTierStat>? problemStats;
 
   const HomeState({
     this.status = HomeStatus.initial,
@@ -53,10 +53,10 @@ class HomeState extends Equatable {
     ProfileBadgeAsset? badge,
     List<Badge>? badges,
     List<Organization>? organizations,
-    Streak? streak,
+    ProfileStreak? streak,
     bool? solvedToday,
-    List<TagRating>? tagRatings,
-    List<ProblemStat>? problemStats,
+    List<ProfileTagRating>? tagRatings,
+    List<ProfileTierStat>? problemStats,
   }) {
     return HomeState(
       status: status ?? this.status,

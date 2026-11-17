@@ -550,7 +550,7 @@ void main() {
         ).called(1);
       });
 
-      test('returns Streak on valid response', () async {
+      test('returns normalized profile streak on valid response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(() => response.body).thenReturn(fixture('v3/user_grass.json'));
@@ -559,12 +559,18 @@ void main() {
         final actual = await apiClient.userGrass(handle, topic);
         expect(
           actual,
-          isA<Streak>().having(
-            (streak) => streak.grass,
-            'grass',
-            isA<List<Grass>>(),
-          ),
+          isA<ProfileStreak>()
+              .having(
+                (streak) => streak.currentStreak,
+                'currentStreak',
+                478,
+              )
+              .having((streak) => streak.days, 'days', hasLength(3)),
         );
+        expect(actual.days.first.year, 2023);
+        expect(actual.days.first.month, 11);
+        expect(actual.days.first.day, 25);
+        expect(actual.days.first.solvedCount, 0);
       });
     });
 
@@ -619,7 +625,7 @@ void main() {
         ).called(1);
       });
 
-      test('returns List<ProblemStat> on valid response', () async {
+      test('returns normalized profile tier stats on valid response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(
@@ -628,10 +634,13 @@ void main() {
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
 
         final actual = await apiClient.userProblemStats(handle);
-        expect(actual, isA<List<ProblemStat>>());
-        for (final stat in actual) {
-          expect(stat, isA<ProblemStat>());
-        }
+        expect(actual, isA<List<ProfileTierStat>>().having(
+          (stats) => stats.length,
+          'length',
+          31,
+        ));
+        expect(actual.first.tier, 0);
+        expect(actual.first.solvedCount, 15);
       });
     });
 
@@ -654,7 +663,8 @@ void main() {
         ).called(1);
       });
 
-      test('returns List<TagRating> on valid response', () async {
+      test('returns normalized profile tag ratings on valid response',
+          () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(
@@ -663,10 +673,8 @@ void main() {
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
 
         final actual = await apiClient.userTagRatings(handle);
-        expect(actual, isA<List<TagRating>>());
-        for (final tagRating in actual) {
-          expect(tagRating.tag, isA<Tag>());
-        }
+        expect(actual, isA<List<ProfileTagRating>>());
+        expect(actual.first.rating, 1011);
       });
     });
 

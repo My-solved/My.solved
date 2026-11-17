@@ -9,7 +9,7 @@ void main() {
 
   test('emits loading then success and limits auxiliary concurrency', () async {
     final repository = _FakeUserRepository(
-      streak: _streak(currentStreak: 3, grass: const []),
+      streak: _streak(currentStreak: 3, days: const []),
       userDelay: const Duration(milliseconds: 5),
       auxiliaryDelay: const Duration(milliseconds: 5),
     );
@@ -69,7 +69,7 @@ void main() {
 
   test('keeps a success state when auxiliary requests fail', () async {
     final repository = _FakeUserRepository(
-      streak: _streak(currentStreak: 10, grass: const []),
+      streak: _streak(currentStreak: 10, days: const []),
       failingAuxiliaryRequests: const {'background', 'streak', 'tagRatings'},
     );
     final bloc = _createBloc(repository, today);
@@ -107,15 +107,12 @@ void main() {
     final failures = <String>{};
     final cachedStreak = _streak(
       currentStreak: 1,
-      grass: const [
-        Grass(
+      days: const [
+        ProfileSolvedDay(
           day: 17,
           month: 11,
           year: 2026,
           solvedCount: 1,
-          isSolved: true,
-          isFrozen: false,
-          isRepaired: false,
         ),
       ],
     );
@@ -146,15 +143,12 @@ void main() {
     final repository = _FakeUserRepository(
       streak: _streak(
         currentStreak: 0,
-        grass: const [
-          Grass(
+        days: const [
+          ProfileSolvedDay(
             day: 17,
             month: 11,
             year: 2026,
             solvedCount: 1,
-            isSolved: true,
-            isFrozen: false,
-            isRepaired: false,
           ),
         ],
       ),
@@ -172,15 +166,12 @@ void main() {
     final repository = _FakeUserRepository(
       streak: _streak(
         currentStreak: 100,
-        grass: const [
-          Grass(
+        days: const [
+          ProfileSolvedDay(
             day: 16,
             month: 11,
             year: 2026,
             solvedCount: 5,
-            isSolved: true,
-            isFrozen: false,
-            isRepaired: false,
           ),
         ],
       ),
@@ -211,16 +202,16 @@ class _FakeUserRepository implements UserRepository {
     this.userDelay = Duration.zero,
     this.auxiliaryDelay = Duration.zero,
     UserProfile? user,
-    Streak? streak,
+    ProfileStreak? streak,
   })  : user = user ?? _user,
-        streak = streak ?? _streak(currentStreak: 0, grass: const []);
+        streak = streak ?? _streak(currentStreak: 0, days: const []);
 
   final bool failUser;
   final Set<String> failingAuxiliaryRequests;
   final Duration userDelay;
   final Duration auxiliaryDelay;
   final UserProfile user;
-  final Streak streak;
+  final ProfileStreak streak;
 
   int _activeAuxiliaryRequests = 0;
   int maxActiveAuxiliaryRequests = 0;
@@ -275,15 +266,15 @@ class _FakeUserRepository implements UserRepository {
       _auxiliary('badges', const []);
 
   @override
-  Future<Streak> getStreak(String handle, String? topic) =>
+  Future<ProfileStreak> getStreak(String handle, String? topic) =>
       _auxiliary('streak', streak);
 
   @override
-  Future<List<TagRating>> getTagRatings(String handle) =>
+  Future<List<ProfileTagRating>> getTagRatings(String handle) =>
       _auxiliary('tagRatings', const []);
 
   @override
-  Future<List<ProblemStat>> getProblemStats(String handle) =>
+  Future<List<ProfileTierStat>> getProblemStats(String handle) =>
       _auxiliary('problemStats', const []);
 
   @override
@@ -299,13 +290,13 @@ class _FakeSharedPreferencesRepository extends SharedPreferencesRepository {
   Future<bool> getIsOnIllustBackground() async => true;
 }
 
-Streak _streak({required int currentStreak, required List<Grass> grass}) {
-  return Streak(
-    grass: grass,
-    theme: null,
+ProfileStreak _streak({
+  required int currentStreak,
+  required List<ProfileSolvedDay> days,
+}) {
+  return ProfileStreak(
+    days: days,
     currentStreak: currentStreak,
-    longestStreak: currentStreak,
-    topic: 'default',
   );
 }
 

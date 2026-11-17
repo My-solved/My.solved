@@ -20,7 +20,7 @@ class UserRepository {
     return await _solvedApiClient.userAvailableBadges(handle);
   }
 
-  Future<Streak> getStreak(String handle, String? topic) async {
+  Future<ProfileStreak> getStreak(String handle, String? topic) async {
     return await _solvedApiClient.userGrass(handle, topic);
   }
 
@@ -28,11 +28,11 @@ class UserRepository {
     return await _solvedApiClient.userTop100(handle);
   }
 
-  Future<List<ProblemStat>> getProblemStats(String handle) async {
+  Future<List<ProfileTierStat>> getProblemStats(String handle) async {
     return await _solvedApiClient.userProblemStats(handle);
   }
 
-  Future<List<TagRating>> getTagRatings(String handle) async {
+  Future<List<ProfileTagRating>> getTagRatings(String handle) async {
     return await _solvedApiClient.userTagRatings(handle);
   }
 

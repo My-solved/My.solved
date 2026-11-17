@@ -52,13 +52,13 @@ abstract interface class SolvedApiContract {
 
   SolvedApiEndpoint<List<Badge>> userAvailableBadges(String handle);
 
-  SolvedApiEndpoint<Streak> userGrass(String handle, String? topic);
+  SolvedApiEndpoint<ProfileStreak> userGrass(String handle, String? topic);
 
   SolvedApiEndpoint<List<Problem>> userTop100(String handle);
 
-  SolvedApiEndpoint<List<ProblemStat>> userProblemStats(String handle);
+  SolvedApiEndpoint<List<ProfileTierStat>> userProblemStats(String handle);
 
-  SolvedApiEndpoint<List<TagRating>> userTagRatings(String handle);
+  SolvedApiEndpoint<List<ProfileTagRating>> userTagRatings(String handle);
 
   SolvedApiEndpoint<ProfileBackgroundAsset> backgroundShow(
     String backgroundId,
@@ -121,11 +121,11 @@ class SolvedApiV3Contract implements SolvedApiContract {
       );
 
   @override
-  SolvedApiEndpoint<Streak> userGrass(String handle, String? topic) =>
+  SolvedApiEndpoint<ProfileStreak> userGrass(String handle, String? topic) =>
       _endpoint(
         path: 'user/grass',
         queryParameters: {'handle': handle, 'topic': topic ?? 'default'},
-        decode: (json) => Streak.fromJson(json),
+        decode: _decodeV3ProfileStreak,
       );
 
   @override
@@ -139,21 +139,19 @@ class SolvedApiV3Contract implements SolvedApiContract {
       );
 
   @override
-  SolvedApiEndpoint<List<ProblemStat>> userProblemStats(String handle) =>
+  SolvedApiEndpoint<List<ProfileTierStat>> userProblemStats(String handle) =>
       _endpoint(
         path: 'user/problem_stats',
         queryParameters: {'handle': handle},
-        decode: (json) => List<ProblemStat>.from(
-          json.map((item) => ProblemStat.fromJson(item)),
-        ),
+        decode: _decodeV3ProfileTierStats,
       );
 
   @override
-  SolvedApiEndpoint<List<TagRating>> userTagRatings(String handle) => _endpoint(
+  SolvedApiEndpoint<List<ProfileTagRating>> userTagRatings(String handle) =>
+      _endpoint(
         path: 'user/tag_ratings',
         queryParameters: {'handle': handle},
-        decode: (json) =>
-            List<TagRating>.from(json.map((item) => TagRating.fromJson(item))),
+        decode: _decodeV3ProfileTagRatings,
       );
 
   @override
@@ -299,6 +297,46 @@ ProfileBadgeAsset _decodeV3ProfileBadgeAsset(dynamic json) {
   final body = Map<String, dynamic>.from(json as Map);
   return ProfileBadgeAsset(imageUrl: body['badgeImageUrl']);
 }
+
+ProfileStreak _decodeV3ProfileStreak(dynamic json) {
+  final body = Map<String, dynamic>.from(json as Map);
+  final days = List<dynamic>.from(body['grass'] as List).map((item) {
+    final day = Map<String, dynamic>.from(item as Map);
+    final date = (day['date'] as String).split('-');
+    final value = day['value'];
+    final solvedCount = value is int
+        ? value
+        : value.toString().contains('repaired')
+            ? 1
+            : 0;
+    return ProfileSolvedDay(
+      year: int.parse(date[0]),
+      month: int.parse(date[1]),
+      day: int.parse(date[2]),
+      solvedCount: solvedCount,
+    );
+  }).toList(growable: false);
+
+  return ProfileStreak(
+    days: days,
+    currentStreak: body['currentStreak'],
+  );
+}
+
+List<ProfileTierStat> _decodeV3ProfileTierStats(dynamic json) =>
+    List<dynamic>.from(json as List).map((item) {
+      final body = Map<String, dynamic>.from(item as Map);
+      return ProfileTierStat(
+        tier: body['level'],
+        solvedCount: body['solved'],
+      );
+    }).toList(growable: false);
+
+List<ProfileTagRating> _decodeV3ProfileTagRatings(dynamic json) =>
+    List<dynamic>.from(json as List).map((item) {
+      final body = Map<String, dynamic>.from(item as Map);
+      return ProfileTagRating(rating: body['rating']);
+    }).toList(growable: false);
 
 Uri _normalizeBaseUri(Uri uri) {
   if (uri.path.endsWith('/')) return uri;

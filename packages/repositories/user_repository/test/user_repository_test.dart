@@ -11,13 +11,13 @@ class MockOrganization extends Mock implements solved_api.Organization {}
 
 class MockBadge extends Mock implements solved_api.Badge {}
 
-class MockStreak extends Mock implements solved_api.Streak {}
+class MockProfileStreak extends Mock implements solved_api.ProfileStreak {}
 
 class MockProblem extends Mock implements solved_api.Problem {}
 
-class MockProblemStats extends Mock implements solved_api.ProblemStat {}
+class MockProfileTierStat extends Mock implements solved_api.ProfileTierStat {}
 
-class MockTagRating extends Mock implements solved_api.TagRating {}
+class MockProfileTagRating extends Mock implements solved_api.ProfileTagRating {}
 
 class MockProfileBackgroundAsset extends Mock
     implements solved_api.ProfileBackgroundAsset {}
@@ -106,7 +106,7 @@ void main() {
       });
 
       test('returns correct streak on success', () async {
-        final streak = MockStreak();
+        final streak = MockProfileStreak();
         when(() => solvedApiClient.userGrass(handle, topic))
             .thenAnswer((_) async => streak);
 
@@ -125,7 +125,7 @@ void main() {
       });
 
       test('returns correct problemStats on success', () async {
-        final problemStats = [MockProblemStats()];
+        final problemStats = [MockProfileTierStat()];
         when(() => solvedApiClient.userProblemStats(handle))
             .thenAnswer((_) async => problemStats);
 
@@ -166,7 +166,7 @@ void main() {
       });
 
       test('returns correct tagRatings on success', () async {
-        final tagRatings = [MockTagRating()];
+        final tagRatings = [MockProfileTagRating()];
         when(() => solvedApiClient.userTagRatings(handle))
             .thenAnswer((_) async => tagRatings);
 

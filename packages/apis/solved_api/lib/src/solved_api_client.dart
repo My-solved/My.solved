@@ -162,16 +162,16 @@ class SolvedApiClient {
         requestType: _RequestType.user,
       );
 
-  Future<Streak> userGrass(String handle, String? topic) =>
+  Future<ProfileStreak> userGrass(String handle, String? topic) =>
       _get(_contract.userGrass(handle, topic), requestType: _RequestType.user);
 
   Future<List<Problem>> userTop100(String handle) =>
       _get(_contract.userTop100(handle), requestType: _RequestType.user);
 
-  Future<List<ProblemStat>> userProblemStats(String handle) =>
+  Future<List<ProfileTierStat>> userProblemStats(String handle) =>
       _get(_contract.userProblemStats(handle), requestType: _RequestType.user);
 
-  Future<List<TagRating>> userTagRatings(String handle) =>
+  Future<List<ProfileTagRating>> userTagRatings(String handle) =>
       _get(_contract.userTagRatings(handle), requestType: _RequestType.user);
 
   Future<ProfileBackgroundAsset> backgroundShow(String backgroundId) => _get(
