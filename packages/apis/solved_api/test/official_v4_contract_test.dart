@@ -195,7 +195,13 @@ void main() {
     for (final userSchema in [exactUser, listedUser]) {
       expect(
         _required(userSchema),
-        containsAll(['rank', 'globalRank', 'reputation']),
+        containsAll([
+          'rank',
+          'globalRank',
+          'reputation',
+          'class',
+          'classPlus',
+        ]),
       );
       final properties = _properties(userSchema);
       final rank = _map(properties['rank']);
@@ -205,6 +211,11 @@ void main() {
       }
       final globalRank = _map(properties['globalRank']);
       expect(globalRank['type'], ['integer', 'null']);
+      final userClass = _map(properties['class']);
+      expect(userClass['type'], 'integer');
+      expect(userClass.containsKey('minimum'), isFalse);
+      expect(userClass.containsKey('maximum'), isFalse);
+      expect(_map(properties['classPlus'])['type'], 'boolean');
       final reputation = _map(properties['reputation']);
       expect(reputation['type'], 'integer');
       expect(reputation.containsKey('minimum'), isFalse);

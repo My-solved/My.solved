@@ -314,6 +314,7 @@ UserSearchItem _decodeV3UserSearchItem(Map<String, dynamic> json) {
     profileImageUrl: json['profileImageUrl'] as String?,
     tier: json['tier'] as int,
     rank: json['rank'] as int?,
+    userClass: json['class'] as int?,
     rating: json['rating'] as int?,
     solvedCount: json['solvedCount'] as int?,
   );

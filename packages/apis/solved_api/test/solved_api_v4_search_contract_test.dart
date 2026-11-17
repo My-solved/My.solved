@@ -190,6 +190,8 @@ void main() {
       expect(actual.exact?.handle, 'index');
       expect(actual.exact?.tier, isNull);
       expect(actual.exact?.rank, 1);
+      expect(actual.exact?.userClass, 10);
+      expect(actual.exact?.classPlus, isTrue);
       expect(actual.exact?.rating, 3000);
       expect(actual.exact?.solvedCount, 5000);
       expect(actual.exact?.reputation, 500);
@@ -197,12 +199,16 @@ void main() {
       expect(actual.items.first.handle, 'index');
       expect(actual.items.first.tier, isNull);
       expect(actual.items.first.rank, 1);
+      expect(actual.items.first.userClass, 10);
+      expect(actual.items.first.classPlus, isTrue);
       expect(actual.items.first.rating, 3000);
       expect(actual.items.first.solvedCount, 5000);
       expect(actual.items.first.reputation, 500);
       expect(actual.items.last.handle, 'index2');
       expect(actual.items.last.tier, 20);
       expect(actual.items.last.rank, 2);
+      expect(actual.items.last.userClass, 8);
+      expect(actual.items.last.classPlus, isFalse);
       expect(actual.items.last.rating, 2500);
       expect(actual.items.last.solvedCount, 2500);
       expect(actual.items.last.reputation, 250);
@@ -220,7 +226,13 @@ void main() {
           ? body['exact'] as Map<String, dynamic>
           : (body['items'] as List).first as Map<String, dynamic>;
 
-      for (final field in ['rank', 'rating', 'solvedCount', 'reputation']) {
+      for (final field in [
+        'rank',
+        'class',
+        'rating',
+        'solvedCount',
+        'reputation',
+      ]) {
         for (final location in ['exact', 'items']) {
           final missing = source();
           item(missing, location).remove(field);
@@ -245,11 +257,49 @@ void main() {
       final unbounded = source();
       item(unbounded, 'exact')['rank'] = -1;
       item(unbounded, 'items')['rank'] = 0;
+      item(unbounded, 'exact')['class'] = -1;
+      item(unbounded, 'items')['class'] = 0;
       item(unbounded, 'exact')['reputation'] = -1;
       final actual = endpoint.decode(unbounded);
       expect(actual.exact?.rank, -1);
       expect(actual.items.first.rank, 0);
+      expect(actual.exact?.userClass, -1);
+      expect(actual.items.first.userClass, 0);
       expect(actual.exact?.reputation, -1);
+    });
+
+    test('requires the CLASS+ marker in every v4 user item', () {
+      final endpoint = contract.searchUsers('index');
+      Map<String, dynamic> source() => Map<String, dynamic>.from(
+            jsonDecode(fixture('v4/search_users.json')) as Map,
+          );
+      Map<String, dynamic> item(
+        Map<String, dynamic> body,
+        String location,
+      ) =>
+          location == 'exact'
+              ? body['exact'] as Map<String, dynamic>
+              : (body['items'] as List).first as Map<String, dynamic>;
+
+      for (final location in ['exact', 'items']) {
+        final missing = source();
+        item(missing, location).remove('classPlus');
+        expect(
+          () => endpoint.decode(missing),
+          throwsFormatException,
+          reason: '$location.classPlus missing',
+        );
+
+        for (final invalid in <Object?>[null, 0, 'true']) {
+          final malformed = source();
+          item(malformed, location)['classPlus'] = invalid;
+          expect(
+            () => endpoint.decode(malformed),
+            throwsFormatException,
+            reason: '$location.classPlus = $invalid',
+          );
+        }
+      }
     });
 
     test('preserves zero public summaries', () {
@@ -259,6 +309,8 @@ void main() {
           'tier': 0,
           'profileImageUrl': null,
           'rank': 0,
+          'class': 0,
+          'classPlus': false,
           'rating': 0,
           'solvedCount': 0,
           'reputation': 0,
@@ -267,6 +319,8 @@ void main() {
       });
 
       expect(actual.exact?.rank, 0);
+      expect(actual.exact?.userClass, 0);
+      expect(actual.exact?.classPlus, isFalse);
       expect(actual.exact?.rating, 0);
       expect(actual.exact?.solvedCount, 0);
       expect(actual.exact?.reputation, 0);

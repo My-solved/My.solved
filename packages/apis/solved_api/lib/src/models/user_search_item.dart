@@ -4,6 +4,8 @@ class UserSearchItem {
     required this.profileImageUrl,
     required this.tier,
     this.rank,
+    this.userClass,
+    this.classPlus,
     this.rating,
     this.solvedCount,
     this.reputation,
@@ -16,6 +18,13 @@ class UserSearchItem {
   /// Rank returned by the active search contract. This must not be replaced
   /// with a separate global-rank or page field.
   final int? rank;
+
+  /// CLASS value returned by the active search contract.
+  final int? userClass;
+
+  /// Whether the active contract explicitly marks [userClass] as CLASS+.
+  /// Legacy decoration fields must not be reinterpreted as this marker.
+  final bool? classPlus;
 
   /// Public rating, or `null` when the active contract did not expose it.
   final int? rating;
