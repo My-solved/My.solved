@@ -178,7 +178,7 @@ void main() {
       'pageSize',
     ]);
     final problemResponseProperties = _properties(problemSchema);
-    for (final field in ['page', 'pageSize']) {
+    for (final field in ['total', 'page', 'pageSize']) {
       expect(_map(problemResponseProperties[field]), {'type': 'number'});
     }
     final diagnostics = _map(problemResponseProperties['diagnostics']);

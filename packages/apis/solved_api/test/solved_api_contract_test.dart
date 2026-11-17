@@ -64,6 +64,7 @@ void main() {
 
       expect(problems, isA<SearchObject<ProblemSearchItem>>());
       expect(problems.count, 1);
+      expect(problems.count, isA<int>());
       expect(problems.items.single.problemId, 3734);
       expect(problems.items.single.id, isNull);
       expect(problems.items.single.subId, isNull);
@@ -92,6 +93,7 @@ void main() {
       ]);
       expect(users, isA<SearchObject<UserSearchItem>>());
       expect(users.count, 2);
+      expect(users.count, isA<int>());
       expect(users.items.first.handle, 'fdsajklt2');
       expect(users.items.first.profileImageUrl, isNull);
       expect(users.items.first.tier, 16);
@@ -104,6 +106,7 @@ void main() {
       expect(users.items.first.solvedCount, 489);
       expect(tags, isA<SearchObject<TagSearchItem>>());
       expect(tags.count, 1);
+      expect(tags.count, isA<int>());
       expect(tags.items.single.key, 'number_theory');
       expect(tags.items.single.displayName, isNull);
       expect(tags.items.single.problemCount, 1314);
@@ -113,6 +116,24 @@ void main() {
       expect(tags.items.single.names, isNull);
       expect(tags.items.single.aliases, isNull);
       expect(tags.items.single.rated, isNull);
+    });
+
+    test('requires integer counts in every v3 search response', () {
+      const contract = SolvedApiV3Contract();
+      final source = {'count': 1.0, 'items': <Object>[]};
+
+      expect(
+        () => contract.searchProblem('q', 1, 'id', 'asc').decode(source),
+        throwsA(isA<TypeError>()),
+      );
+      expect(
+        () => contract.searchUser('q', 1).decode(source),
+        throwsA(isA<TypeError>()),
+      );
+      expect(
+        () => contract.searchTag('q', 1).decode(source),
+        throwsA(isA<TypeError>()),
+      );
     });
 
     test('preserves an optional legacy no-rating marker as a boolean', () {
