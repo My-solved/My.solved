@@ -14,15 +14,19 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     required UserRepository userRepository,
     required SharedPreferencesRepository sharedPreferencesRepository,
     required String handle,
+    DateTime Function()? now,
   })  : _userRepository = userRepository,
         _sharedPreferencesRepository = sharedPreferencesRepository,
         _handle = handle,
-        super(HomeState(
-          handle: handle,
-          isOnIllustBackground: true,
-          organizations: [],
-          badges: [],
-        )) {
+        _now = now ?? _currentSolvedDay,
+        super(
+          HomeState(
+            handle: handle,
+            isOnIllustBackground: true,
+            organizations: [],
+            badges: [],
+          ),
+        ) {
     on<HomeInit>(_onInit);
     on<HomeIsOnIllustBackgroundChanged>(_onIsOnIllustBackgroundChanged);
   }
@@ -30,65 +34,134 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   final UserRepository _userRepository;
   final SharedPreferencesRepository _sharedPreferencesRepository;
   final String _handle;
+  final DateTime Function() _now;
 
-  Future<void> _onInit(
-    HomeInit event,
-    Emitter<HomeState> emit,
-  ) async {
-    state.copyWith(status: HomeStatus.loading);
+  static const int _maxConcurrentAuxiliaryRequests = 3;
+  bool _isInitializing = false;
 
+  static DateTime _currentSolvedDay() =>
+      tz.TZDateTime.now(tz.UTC).add(const Duration(hours: 3));
+
+  Future<void> _onInit(HomeInit event, Emitter<HomeState> emit) async {
+    if (_isInitializing) return;
+    _isInitializing = true;
     try {
-      final user = await _userRepository.getUser(_handle);
-      final profileImageUrl = user.profileImageUrl;
-      final background = await _userRepository.getBackground(user.backgroundId);
-      final organizations = await _userRepository.getOrganizations(_handle);
-      final isOnIllustBackground =
-          await _sharedPreferencesRepository.getIsOnIllustBackground();
-      Badge? badge;
+      await _loadHome(emit);
+    } finally {
+      _isInitializing = false;
+    }
+  }
 
-      if (user.badgeId != null) {
-        badge = await _userRepository.getBadge(user.badgeId!);
-      }
-      final badges = await _userRepository.getBadges(_handle);
-      final streak = await _userRepository.getStreak(_handle, "default");
+  Future<void> _loadHome(Emitter<HomeState> emit) async {
+    emit(state.copyWith(status: HomeStatus.loading));
 
-      streak.grass.sort((a, b) {
-        if (a.year != b.year) {
-          return a.year.compareTo(b.year);
-        } else if (a.month != b.month) {
-          return a.month.compareTo(b.month);
-        } else {
-          return a.day.compareTo(b.day);
-        }
-      });
+    late User user;
+    try {
+      user = await _userRepository.getUser(_handle);
+    } catch (_) {
+      emit(state.copyWith(status: HomeStatus.failure));
+      return;
+    }
 
-      tz.TZDateTime? today =
-          tz.TZDateTime.now(tz.UTC).add(const Duration(hours: 3));
+    final auxiliary = _HomeAuxiliaryData(
+      isOnIllustBackground: state.isOnIllustBackground,
+    );
+    final requests = <Future<void> Function()>[
+      () async {
+        auxiliary.background = await _optional(
+          () => _userRepository.getBackground(user.backgroundId),
+        );
+      },
+      () async {
+        auxiliary.organizations =
+            await _optional(() => _userRepository.getOrganizations(_handle)) ??
+                const [];
+      },
+      () async {
+        auxiliary.isOnIllustBackground = await _optional(
+              _sharedPreferencesRepository.getIsOnIllustBackground,
+            ) ??
+            auxiliary.isOnIllustBackground;
+      },
+      if (user.badgeId != null)
+        () async {
+          auxiliary.badge = await _optional(
+            () => _userRepository.getBadge(user.badgeId!),
+          );
+        },
+      () async {
+        auxiliary.badges =
+            await _optional(() => _userRepository.getBadges(_handle)) ??
+                const [];
+      },
+      () async {
+        auxiliary.streak = await _optional(
+          () => _userRepository.getStreak(_handle, "default"),
+        );
+      },
+      () async {
+        auxiliary.tagRatings =
+            await _optional(() => _userRepository.getTagRatings(_handle)) ??
+                const [];
+      },
+      () async {
+        auxiliary.problemStats =
+            await _optional(() => _userRepository.getProblemStats(_handle)) ??
+                const [];
+      },
+    ];
 
-      late bool solvedToday = today.year == streak.grass.last.year &&
-          today.month == streak.grass.last.month &&
-          today.day == streak.grass.last.day;
+    await _runLimited(requests);
+    final effectiveStreak = auxiliary.streak ?? state.streak;
 
-      final tagRatings = await _userRepository.getTagRatings(_handle);
-      final problemStats = await _userRepository.getProblemStats(_handle);
-
-      emit(state.copyWith(
-        isOnIllustBackground: isOnIllustBackground,
+    emit(
+      state.copyWith(
+        isOnIllustBackground: auxiliary.isOnIllustBackground,
         status: HomeStatus.success,
         user: user,
-        profileImageUrl: profileImageUrl,
-        background: background,
-        badge: badge,
-        badges: badges,
-        organizations: organizations,
-        streak: streak,
-        solvedToday: solvedToday,
-        tagRatings: tagRatings,
-        problemStats: problemStats,
-      ));
-    } catch (e) {
-      emit(state.copyWith(status: HomeStatus.failure));
+        profileImageUrl: user.profileImageUrl,
+        background: auxiliary.background,
+        badge: auxiliary.badge,
+        badges: auxiliary.badges,
+        organizations: auxiliary.organizations,
+        streak: effectiveStreak,
+        solvedToday: _hasSolvedToday(effectiveStreak, _now()),
+        tagRatings: auxiliary.tagRatings,
+        problemStats: auxiliary.problemStats,
+      ),
+    );
+  }
+
+  Future<T?> _optional<T>(Future<T> Function() request) async {
+    try {
+      return await request();
+    } catch (_) {
+      return null;
     }
+  }
+
+  Future<void> _runLimited(List<Future<void> Function()> requests) async {
+    for (var offset = 0;
+        offset < requests.length;
+        offset += _maxConcurrentAuxiliaryRequests) {
+      final end = (offset + _maxConcurrentAuxiliaryRequests < requests.length)
+          ? offset + _maxConcurrentAuxiliaryRequests
+          : requests.length;
+      await Future.wait(
+        requests.sublist(offset, end).map((request) => request()),
+      );
+    }
+  }
+
+  bool _hasSolvedToday(Streak? streak, DateTime now) {
+    if (streak == null) return false;
+    return streak.grass.any(
+      (grass) =>
+          grass.year == now.year &&
+          grass.month == now.month &&
+          grass.day == now.day &&
+          grass.solvedCount > 0,
+    );
   }
 
   void _onIsOnIllustBackgroundChanged(
@@ -97,4 +170,17 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   ) {
     emit(state.copyWith(isOnIllustBackground: event.isOn));
   }
+}
+
+class _HomeAuxiliaryData {
+  _HomeAuxiliaryData({required this.isOnIllustBackground});
+
+  bool isOnIllustBackground;
+  Background? background;
+  Badge? badge;
+  List<Badge> badges = const [];
+  List<Organization> organizations = const [];
+  Streak? streak;
+  List<TagRating> tagRatings = const [];
+  List<ProblemStat> problemStats = const [];
 }

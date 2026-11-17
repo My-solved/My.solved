@@ -149,7 +149,7 @@ class _HomeViewState extends State<HomeView> {
             ),
             GridItem(
                 title: "스트릭",
-                value: state.streak!.currentStreak.toString(),
+                value: state.streak?.currentStreak.toString() ?? "—",
                 unit: "일",
                 onPressed: () async {
                   Fluttertoast.showToast(
