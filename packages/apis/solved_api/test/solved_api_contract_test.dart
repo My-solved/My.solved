@@ -209,7 +209,13 @@ void main() {
       final actual =
           const SolvedApiV3Contract().userTagRatings('index').decode(json);
 
+      expect(actual.single.key, 'bfs');
       expect(actual.single.rating, 1138);
+      expect(actual.single.solvedCount, 51);
+      expect(actual.single.ratingByProblemsSum, 1058);
+      expect(actual.single.ratingByClass, 0);
+      expect(actual.single.ratingBySolvedCount, 80);
+      expect(actual.single.ratingProblemsCutoff, 9);
       expect((json.single['tag'] as Map)['key'], 'bfs');
     });
 
@@ -227,6 +233,7 @@ void main() {
               );
 
       expect(actual.imageUrl, 'https://example.com/background.png');
+      expect(actual.key, 'anniversary_1st');
       expect(actual.fallbackImageUrl, 'https://example.com/fallback.png');
       expect(json['wireOnlyField'], isTrue);
     });
@@ -239,6 +246,7 @@ void main() {
       });
 
       expect(actual.imageUrl, 'https://example.com/badge.png');
+      expect(actual.key, 'boardgame');
     });
   });
 

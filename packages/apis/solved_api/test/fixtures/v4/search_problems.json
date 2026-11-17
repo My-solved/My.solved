@@ -1,0 +1,145 @@
+{
+  "problems": [
+    {
+      "id": 1001,
+      "problemId": 1001,
+      "subId": "",
+      "level": 10,
+      "levelAverage": 10.25,
+      "levelStdev": 0.5,
+      "isStandard": true,
+      "votedUserCount": 42,
+      "effectiveVoteCount": 40,
+      "solvedUserCount": 1234,
+      "givesNoRating": false,
+      "noRatingReasons": [],
+      "noRatingWarnings": [],
+      "titles": [
+        {
+          "language": "en",
+          "title": "English original",
+          "isOriginal": true,
+          "latex": false,
+          "html": false
+        },
+        {
+          "language": "ko",
+          "title": "한국어 제목",
+          "isOriginal": false,
+          "latex": false,
+          "html": false
+        }
+      ],
+      "userStatus": null,
+      "contests": [],
+      "tags": [
+        {
+          "id": 1,
+          "key": "math",
+          "isMeta": false
+        },
+        {
+          "id": 2,
+          "key": "number_theory",
+          "isMeta": false
+        }
+      ],
+      "viewerFolders": []
+    },
+    {
+      "id": 1002,
+      "problemId": 1002,
+      "subId": "",
+      "level": 11,
+      "levelAverage": 11,
+      "levelStdev": 0,
+      "isStandard": true,
+      "votedUserCount": 12,
+      "effectiveVoteCount": 12,
+      "solvedUserCount": 500,
+      "givesNoRating": false,
+      "noRatingReasons": [],
+      "noRatingWarnings": [],
+      "titles": [
+        {
+          "language": "ja",
+          "title": "最初の翻訳",
+          "isOriginal": false,
+          "latex": false,
+          "html": false
+        },
+        {
+          "language": "en",
+          "title": "Original title",
+          "isOriginal": true,
+          "latex": false,
+          "html": false
+        }
+      ],
+      "userStatus": "solved",
+      "contests": [],
+      "tags": [],
+      "viewerFolders": []
+    },
+    {
+      "id": 1003,
+      "problemId": 1003,
+      "subId": "",
+      "level": 12,
+      "levelAverage": 12,
+      "levelStdev": 0,
+      "isStandard": true,
+      "votedUserCount": 8,
+      "effectiveVoteCount": 8,
+      "solvedUserCount": 300,
+      "givesNoRating": false,
+      "noRatingReasons": [],
+      "noRatingWarnings": [],
+      "titles": [
+        {
+          "language": "en",
+          "title": "First fallback",
+          "isOriginal": false,
+          "latex": false,
+          "html": false
+        },
+        {
+          "language": "ja",
+          "title": "二番目",
+          "isOriginal": false,
+          "latex": false,
+          "html": false
+        }
+      ],
+      "userStatus": "tried",
+      "contests": [],
+      "tags": [],
+      "viewerFolders": []
+    },
+    {
+      "id": 1004,
+      "problemId": 1004,
+      "subId": "",
+      "level": 0,
+      "levelAverage": 0,
+      "levelStdev": 0,
+      "isStandard": false,
+      "votedUserCount": 0,
+      "effectiveVoteCount": 0,
+      "solvedUserCount": 0,
+      "givesNoRating": true,
+      "noRatingReasons": [
+        "unofficial"
+      ],
+      "noRatingWarnings": [],
+      "titles": [],
+      "userStatus": null,
+      "contests": [],
+      "tags": [],
+      "viewerFolders": []
+    }
+  ],
+  "total": 4,
+  "page": 1,
+  "pageSize": 50
+}
