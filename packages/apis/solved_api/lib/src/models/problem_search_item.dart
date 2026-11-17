@@ -1,4 +1,5 @@
 import 'problem_no_rating_warning.dart';
+import 'problem_search_contest.dart';
 import 'problem_search_tag.dart';
 import 'problem_search_title.dart';
 
@@ -23,6 +24,7 @@ class ProblemSearchItem {
     this.id,
     this.subId,
     this.titles,
+    this.contests,
     this.tags,
     this.levelAverage,
     this.levelStdev,
@@ -54,6 +56,13 @@ class ProblemSearchItem {
   /// the legacy v3 contract. An empty list means v4 explicitly reported no
   /// titles.
   final List<ProblemSearchTitle>? titles;
+
+  /// Contest associations reported by the official v4 contract.
+  ///
+  /// `null` means this complete representation is unavailable, including on
+  /// the legacy v3 contract. An empty list means v4 explicitly reported no
+  /// associated contests.
+  final List<ProblemSearchContest>? contests;
 
   /// Full official-v4 tag entries reported by the active contract.
   ///

@@ -223,6 +223,13 @@ ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
       ),
     ),
   );
+  final contests = List<ProblemSearchContest>.unmodifiable(
+    _list(body['contests'], 'problems[].contests').map(
+      (value) => _decodeV4ProblemSearchContest(
+        _object(value, 'problems[].contests[]'),
+      ),
+    ),
+  );
   final tags = List<ProblemSearchTag>.unmodifiable(
     _list(body['tags'], 'problems[].tags').map(
       (value) => _decodeV4ProblemSearchTag(_object(value, 'problems[].tags[]')),
@@ -258,6 +265,7 @@ ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
     subId: _string(body['subId'], 'problems[].subId'),
     title: _selectV4ProblemTitle(titles),
     titles: titles,
+    contests: contests,
     tags: tags,
     level: _wholeNumber(body['level'], 'problems[].level'),
     levelAverage: _number(body['levelAverage'], 'problems[].levelAverage'),
@@ -405,6 +413,23 @@ ProblemSearchTag _decodeV4ProblemSearchTag(Map<String, dynamic> body) =>
       key: _string(body['key'], 'problems[].tags[].key'),
       isMeta: _boolean(body['isMeta'], 'problems[].tags[].isMeta'),
     );
+
+ProblemSearchContest _decodeV4ProblemSearchContest(Map<String, dynamic> body) {
+  if (!body.containsKey('abbreviation')) {
+    throw const FormatException(
+      'Missing required field problems[].contests[].abbreviation',
+    );
+  }
+  return ProblemSearchContest(
+    id: _number(body['id'], 'problems[].contests[].id'),
+    displayId: _string(body['displayId'], 'problems[].contests[].displayId'),
+    name: _string(body['name'], 'problems[].contests[].name'),
+    abbreviation: _nullableString(
+      body['abbreviation'],
+      'problems[].contests[].abbreviation',
+    ),
+  );
+}
 
 String? _selectV4ProblemTitle(List<ProblemSearchTitle> titles) {
   String? first;

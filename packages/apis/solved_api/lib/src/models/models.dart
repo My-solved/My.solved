@@ -1,4 +1,5 @@
 export 'problem_no_rating_warning.dart';
+export 'problem_search_contest.dart';
 export 'problem_search_item.dart';
 export 'problem_search_tag.dart';
 export 'problem_search_title.dart';

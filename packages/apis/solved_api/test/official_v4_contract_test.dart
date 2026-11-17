@@ -182,6 +182,7 @@ void main() {
     expect(
       _required(problemItem),
       containsAll([
+        'contests',
         'givesNoRating',
         'id',
         'isStandard',
@@ -228,6 +229,33 @@ void main() {
     for (final field in ['isOriginal', 'latex', 'html']) {
       expect(_map(titleProperties[field]), {'type': 'boolean'});
     }
+    final contests = _map(problemProperties['contests']);
+    expect(contests['type'], 'array');
+    for (final constraint in [
+      'minItems',
+      'maxItems',
+      'uniqueItems',
+      'description',
+    ]) {
+      expect(contests.containsKey(constraint), isFalse);
+    }
+    final contestItem = _map(contests['items']);
+    expect(contestItem['type'], 'object');
+    expect(_required(contestItem), [
+      'id',
+      'displayId',
+      'name',
+      'abbreviation',
+    ]);
+    expect(contestItem.containsKey('additionalProperties'), isFalse);
+    final contestProperties = _properties(contestItem);
+    expect(_map(contestProperties['id']), {'type': 'number'});
+    for (final field in ['displayId', 'name']) {
+      expect(_map(contestProperties[field]), {'type': 'string'});
+    }
+    expect(_map(contestProperties['abbreviation']), {
+      'type': ['string', 'null'],
+    });
     final tags = _map(problemProperties['tags']);
     expect(tags['type'], 'array');
     for (final constraint in [
