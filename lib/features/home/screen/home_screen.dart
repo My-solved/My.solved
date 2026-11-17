@@ -196,7 +196,7 @@ class _HomeViewState extends State<HomeView> {
               onPressed: () {},
               widget: state.badge != null
                   ? ExtendedImage.network(
-                      state.badge!.badgeImageUrl,
+                      state.badge!.imageUrl,
                       width: 60,
                       height: 60,
                     )
@@ -205,7 +205,7 @@ class _HomeViewState extends State<HomeView> {
             GridItem(
               onPressed: () {},
               title: "배경",
-              backgroundImageUrl: state.background?.backgroundImageUrl,
+              backgroundImageUrl: state.background?.imageUrl,
             ),
             GridItem(
               onPressed: () {},
@@ -286,11 +286,11 @@ class _HomeViewState extends State<HomeView> {
 
   Widget _backgroundImage({
     required bool isShowIllustBackground,
-    required solved_api.Background? background,
+    required solved_api.ProfileBackgroundAsset? background,
   }) {
-    final backgroundImageUrl = background?.backgroundImageUrl ??
+    final backgroundImageUrl = background?.imageUrl ??
         "https://static.solved.ac/profile_bg/abstract_001/abstract_001_light.png";
-    final illustBackgroundImageUrl = background?.fallbackBackgroundImageUrl;
+    final illustBackgroundImageUrl = background?.fallbackImageUrl;
     final url = isShowIllustBackground && illustBackgroundImageUrl != null
         ? illustBackgroundImageUrl
         : backgroundImageUrl;

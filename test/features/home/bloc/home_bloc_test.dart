@@ -259,7 +259,7 @@ class _FakeUserRepository implements UserRepository {
   }
 
   @override
-  Future<Background> getBackground(String backgroundId) =>
+  Future<ProfileBackgroundAsset> getBackground(String backgroundId) =>
       _auxiliary('background', _background);
 
   @override
@@ -267,7 +267,8 @@ class _FakeUserRepository implements UserRepository {
       _auxiliary('organizations', const []);
 
   @override
-  Future<Badge> getBadge(String badgeId) => _auxiliary('badge', _badge);
+  Future<ProfileBadgeAsset> getBadge(String badgeId) =>
+      _auxiliary('badge', _badge);
 
   @override
   Future<List<Badge>> getBadges(String handle) =>
@@ -323,27 +324,11 @@ UserProfile _profile({String? backgroundId = 'default'}) => UserProfile(
 
 final _user = _profile();
 
-final _background = Background(
-  backgroundId: 'default',
-  backgroundImageUrl: 'https://example.com/background.png',
-  fallbackBackgroundImageUrl: null,
-  backgroundVideoUrl: null,
-  unlockedUserCount: 1,
-  displayName: 'Default',
-  displayDescription: '',
-  conditions: null,
-  hiddenConditions: false,
-  isIllust: false,
+final _background = ProfileBackgroundAsset(
+  imageUrl: 'https://example.com/background.png',
+  fallbackImageUrl: null,
 );
 
-final _badge = Badge(
-  badgeId: 'badge',
-  badgeImageUrl: 'https://example.com/badge.png',
-  unlockedUserCount: 1,
-  displayName: 'Badge',
-  displayDescription: '',
-  badgeTier: 'bronze',
-  badgeCategory: 'test',
-  solvedCompanyRights: false,
-  createdAt: DateTime.utc(2020),
+final _badge = ProfileBadgeAsset(
+  imageUrl: 'https://example.com/badge.png',
 );

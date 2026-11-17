@@ -214,15 +214,8 @@ void main() {
       test('decodes successful response bodies as UTF-8', () async {
         final payload = jsonEncode({
           'backgroundId': 'test',
-          'backgroundImageUrl': 'https://example.com/background.png',
+          'backgroundImageUrl': 'https://example.com/한글-배경.png',
           'fallbackBackgroundImageUrl': null,
-          'backgroundVideoUrl': null,
-          'unlockedUserCount': 1,
-          'displayName': '한글 배경',
-          'displayDescription': '설명',
-          'conditions': null,
-          'hiddenConditions': false,
-          'isIllust': false,
         });
         when(() => httpClient.get(any())).thenAnswer(
           (_) async => http.Response.bytes(
@@ -234,8 +227,7 @@ void main() {
 
         final background = await apiClient.backgroundShow('test');
 
-        expect(background.displayName, '한글 배경');
-        expect(background.displayDescription, '설명');
+        expect(background.imageUrl, 'https://example.com/한글-배경.png');
       });
 
       test('preserves rate-limit metadata on non-success responses', () async {
@@ -697,7 +689,7 @@ void main() {
         ).called(1);
       });
 
-      test('returns Background on valid response', () async {
+      test('returns normalized background asset on valid response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(
@@ -708,11 +700,17 @@ void main() {
         final actual = await apiClient.backgroundShow(backgroundId);
         expect(
           actual,
-          isA<Background>().having(
-            (b) => b.backgroundId,
-            'backgroundId',
-            backgroundId,
-          ),
+          isA<ProfileBackgroundAsset>()
+              .having(
+                (background) => background.imageUrl,
+                'imageUrl',
+                'https://static.solved.ac/profile_bg/anniversary_1st/anniversary_1st.png',
+              )
+              .having(
+                (background) => background.fallbackImageUrl,
+                'fallbackImageUrl',
+                isNull,
+              ),
         );
       });
     });
@@ -734,7 +732,7 @@ void main() {
         ).called(1);
       });
 
-      test('returns Badge on valid response', () async {
+      test('returns normalized badge asset on valid response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(() => response.body).thenReturn(fixture('v3/badge_show.json'));
@@ -743,7 +741,11 @@ void main() {
         final actual = await apiClient.badgeShow(badgeId);
         expect(
           actual,
-          isA<Badge>().having((b) => b.badgeId, 'badgeId', badgeId),
+          isA<ProfileBadgeAsset>().having(
+            (badge) => badge.imageUrl,
+            'imageUrl',
+            'https://static.solved.ac/profile_badge/boardgame.png',
+          ),
         );
       });
     });

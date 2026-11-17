@@ -17,6 +17,34 @@ void main() {
       expect(endpoint.proxy.path, 'user/show');
       expect(endpoint.proxy.queryParameters, {'handle': 'index'});
     });
+
+    test('normalizes background wire fields without mutating the response', () {
+      final json = <String, dynamic>{
+        'backgroundId': 'anniversary_1st',
+        'backgroundImageUrl': 'https://example.com/background.png',
+        'fallbackBackgroundImageUrl': 'https://example.com/fallback.png',
+        'wireOnlyField': true,
+      };
+
+      final actual =
+          const SolvedApiV3Contract().backgroundShow('anniversary_1st').decode(
+                json,
+              );
+
+      expect(actual.imageUrl, 'https://example.com/background.png');
+      expect(actual.fallbackImageUrl, 'https://example.com/fallback.png');
+      expect(json['wireOnlyField'], isTrue);
+    });
+
+    test('normalizes selected badge wire fields', () {
+      final actual = const SolvedApiV3Contract().badgeShow('boardgame').decode({
+        'badgeId': 'boardgame',
+        'badgeImageUrl': 'https://example.com/badge.png',
+        'wireOnlyField': true,
+      });
+
+      expect(actual.imageUrl, 'https://example.com/badge.png');
+    });
   });
 
   group('SolvedApiTarget', () {

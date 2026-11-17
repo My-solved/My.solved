@@ -18,8 +18,8 @@ class HomeState extends Equatable {
   final bool isOnIllustBackground;
   final UserProfile? user;
   final String? profileImageUrl;
-  final Background? background;
-  final Badge? badge;
+  final ProfileBackgroundAsset? background;
+  final ProfileBadgeAsset? badge;
   final List<Badge> badges;
   final List<Organization> organizations;
   final Streak? streak;
@@ -49,8 +49,8 @@ class HomeState extends Equatable {
     bool? isOnIllustBackground,
     UserProfile? user,
     String? profileImageUrl,
-    Background? background,
-    Badge? badge,
+    ProfileBackgroundAsset? background,
+    ProfileBadgeAsset? badge,
     List<Badge>? badges,
     List<Organization>? organizations,
     Streak? streak,

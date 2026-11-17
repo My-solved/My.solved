@@ -36,11 +36,11 @@ class UserRepository {
     return await _solvedApiClient.userTagRatings(handle);
   }
 
-  Future<Background> getBackground(String backgroundId) async {
+  Future<ProfileBackgroundAsset> getBackground(String backgroundId) async {
     return await _solvedApiClient.backgroundShow(backgroundId);
   }
 
-  Future<Badge> getBadge(String badgeId) async {
+  Future<ProfileBadgeAsset> getBadge(String badgeId) async {
     return await _solvedApiClient.badgeShow(badgeId);
   }
 

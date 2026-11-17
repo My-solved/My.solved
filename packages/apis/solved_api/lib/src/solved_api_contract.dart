@@ -60,9 +60,11 @@ abstract interface class SolvedApiContract {
 
   SolvedApiEndpoint<List<TagRating>> userTagRatings(String handle);
 
-  SolvedApiEndpoint<Background> backgroundShow(String backgroundId);
+  SolvedApiEndpoint<ProfileBackgroundAsset> backgroundShow(
+    String backgroundId,
+  );
 
-  SolvedApiEndpoint<Badge> badgeShow(String badgeId);
+  SolvedApiEndpoint<ProfileBadgeAsset> badgeShow(String badgeId);
 
   SolvedApiEndpoint<SearchSuggestion> searchSuggestion(String query);
 
@@ -155,18 +157,20 @@ class SolvedApiV3Contract implements SolvedApiContract {
       );
 
   @override
-  SolvedApiEndpoint<Background> backgroundShow(String backgroundId) =>
+  SolvedApiEndpoint<ProfileBackgroundAsset> backgroundShow(
+    String backgroundId,
+  ) =>
       _endpoint(
         path: 'background/show',
         queryParameters: {'backgroundId': backgroundId},
-        decode: (json) => Background.fromJson(json),
+        decode: _decodeV3ProfileBackgroundAsset,
       );
 
   @override
-  SolvedApiEndpoint<Badge> badgeShow(String badgeId) => _endpoint(
+  SolvedApiEndpoint<ProfileBadgeAsset> badgeShow(String badgeId) => _endpoint(
         path: 'badge/show',
         queryParameters: {'badgeId': badgeId},
-        decode: (json) => Badge.fromJson(json),
+        decode: _decodeV3ProfileBadgeAsset,
       );
 
   @override
@@ -281,6 +285,19 @@ UserProfile _decodeV3UserProfile(dynamic json) {
     tier: body['tier'],
     rating: body['rating'],
   );
+}
+
+ProfileBackgroundAsset _decodeV3ProfileBackgroundAsset(dynamic json) {
+  final body = Map<String, dynamic>.from(json as Map);
+  return ProfileBackgroundAsset(
+    imageUrl: body['backgroundImageUrl'],
+    fallbackImageUrl: body['fallbackBackgroundImageUrl'],
+  );
+}
+
+ProfileBadgeAsset _decodeV3ProfileBadgeAsset(dynamic json) {
+  final body = Map<String, dynamic>.from(json as Map);
+  return ProfileBadgeAsset(imageUrl: body['badgeImageUrl']);
 }
 
 Uri _normalizeBaseUri(Uri uri) {

@@ -177,8 +177,8 @@ class _HomeAuxiliaryData {
   _HomeAuxiliaryData({required this.isOnIllustBackground});
 
   bool isOnIllustBackground;
-  Background? background;
-  Badge? badge;
+  ProfileBackgroundAsset? background;
+  ProfileBadgeAsset? badge;
   List<Badge> badges = const [];
   List<Organization> organizations = const [];
   Streak? streak;

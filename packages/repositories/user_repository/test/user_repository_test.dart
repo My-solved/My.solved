@@ -19,7 +19,11 @@ class MockProblemStats extends Mock implements solved_api.ProblemStat {}
 
 class MockTagRating extends Mock implements solved_api.TagRating {}
 
-class MockBackground extends Mock implements solved_api.Background {}
+class MockProfileBackgroundAsset extends Mock
+    implements solved_api.ProfileBackgroundAsset {}
+
+class MockProfileBadgeAsset extends Mock
+    implements solved_api.ProfileBadgeAsset {}
 
 class MockSiteStats extends Mock implements solved_api.SiteStats {}
 
@@ -181,7 +185,7 @@ void main() {
       });
 
       test('returns correct background on success', () async {
-        final background = MockBackground();
+        final background = MockProfileBackgroundAsset();
         when(() => solvedApiClient.backgroundShow(backgroundId))
             .thenAnswer((_) async => background);
 
@@ -200,7 +204,7 @@ void main() {
       });
 
       test('returns correct badge on success', () async {
-        final badge = MockBadge();
+        final badge = MockProfileBadgeAsset();
         when(() => solvedApiClient.badgeShow(badgeId))
             .thenAnswer((_) async => badge);
 

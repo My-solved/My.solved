@@ -174,12 +174,12 @@ class SolvedApiClient {
   Future<List<TagRating>> userTagRatings(String handle) =>
       _get(_contract.userTagRatings(handle), requestType: _RequestType.user);
 
-  Future<Background> backgroundShow(String backgroundId) => _get(
+  Future<ProfileBackgroundAsset> backgroundShow(String backgroundId) => _get(
         _contract.backgroundShow(backgroundId),
         requestType: _RequestType.background,
       );
 
-  Future<Badge> badgeShow(String badgeId) =>
+  Future<ProfileBadgeAsset> badgeShow(String badgeId) =>
       _get(_contract.badgeShow(badgeId), requestType: _RequestType.badge);
 
   Future<SearchSuggestion> searchSuggestion(String query) =>
