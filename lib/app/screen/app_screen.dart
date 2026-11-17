@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:my_solved/app/bloc/app_bloc.dart';
 import 'package:my_solved/app/config/solved_api_gateway_config.dart';
+import 'package:my_solved/app/config/solved_oauth_runtime_config.dart';
 import 'package:my_solved/features/login/screen/login_screen.dart';
 import 'package:my_solved/features/root/screen/root_screen.dart';
 import 'package:my_solved/features/splash/screen/splash_screen.dart';
@@ -23,29 +24,46 @@ class AppScreen extends StatefulWidget {
 }
 
 class _AppScreenState extends State<AppScreen> {
+  bool _resourcesInitialized = false;
   late final http.Client _httpClient;
   late final bool _ownsHttpClient;
+  late final SolvedApiGatewayConfig _solvedApiGatewayConfig;
   late final SolvedApiClient _solvedApiClient;
+  late final SolvedOAuthRuntimeConfig _solvedOAuthRuntimeConfig;
+  late final SolvedOAuthClient? _solvedOAuthClient;
   late final UserRepository _userRepository;
   late final SearchRepository _searchRepository;
 
   @override
   void initState() {
     super.initState();
-    _ownsHttpClient = widget.httpClient == null;
-    _httpClient = widget.httpClient ?? http.Client();
-    final gatewayConfig =
+    _solvedApiGatewayConfig =
         widget.solvedApiGatewayConfig ??
         SolvedApiGatewayConfig.fromEnvironment();
-    _solvedApiClient = gatewayConfig.createClient(httpClient: _httpClient);
+    _solvedOAuthRuntimeConfig = SolvedOAuthRuntimeConfig.fromEnvironment(
+      gatewayConfig: _solvedApiGatewayConfig,
+    );
+    _ownsHttpClient = widget.httpClient == null;
+    _httpClient = widget.httpClient ?? http.Client();
+    _solvedApiClient = _solvedApiGatewayConfig.createClient(
+      httpClient: _httpClient,
+    );
+    _solvedOAuthClient =
+        _solvedOAuthRuntimeConfig.isConfigured
+            ? _solvedOAuthRuntimeConfig.createClient(httpClient: _httpClient)
+            : null;
     _userRepository = UserRepository(solvedApiClient: _solvedApiClient);
     _searchRepository = SearchRepository(solvedApiClient: _solvedApiClient);
+    _resourcesInitialized = true;
   }
 
   @override
   void dispose() {
-    _solvedApiClient.close();
-    if (_ownsHttpClient) _httpClient.close();
+    if (_resourcesInitialized) {
+      _solvedOAuthClient?.close();
+      _solvedApiClient.close();
+      if (_ownsHttpClient) _httpClient.close();
+    }
     super.dispose();
   }
 
@@ -54,6 +72,11 @@ class _AppScreenState extends State<AppScreen> {
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider.value(value: _solvedApiClient),
+        RepositoryProvider.value(value: _solvedOAuthRuntimeConfig),
+        if (_solvedOAuthClient != null)
+          RepositoryProvider<SolvedOAuthClient>.value(
+            value: _solvedOAuthClient,
+          ),
         RepositoryProvider.value(value: _userRepository),
         RepositoryProvider.value(value: _searchRepository),
       ],
