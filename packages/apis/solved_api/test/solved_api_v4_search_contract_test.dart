@@ -131,6 +131,13 @@ void main() {
       expect(actual.items[0].givesNoRating, isFalse);
       expect(actual.items[0].noRatingReasons, isEmpty);
       expect(actual.items[0].noRatingWarnings, isEmpty);
+      expect(actual.items.map((item) => item.tags!.length), [2, 0, 0, 0]);
+      expect(actual.items[0].tags![0].id, 1);
+      expect(actual.items[0].tags![0].key, 'math');
+      expect(actual.items[0].tags![0].isMeta, isFalse);
+      expect(actual.items[0].tags![1].id, 2);
+      expect(actual.items[0].tags![1].key, 'number_theory');
+      expect(actual.items[0].tags![1].isMeta, isFalse);
       expect(actual.items[0].tagNames, ['math', 'number_theory']);
       expect(actual.items[1].title, 'Original title');
       expect(actual.items[1].userStatus, ProblemUserStatus.solved);
@@ -301,6 +308,142 @@ void main() {
         () => titles[0] = titles[1],
         throwsUnsupportedError,
       );
+    });
+
+    test('requires the documented full tag array and fields', () {
+      final endpoint = contract.searchProblems('sample');
+      Map<String, dynamic> source() =>
+          jsonDecode(fixture('v4/search_problems.json'))
+              as Map<String, dynamic>;
+      Map<String, dynamic> firstProblem(Map<String, dynamic> body) =>
+          (body['problems'] as List).first as Map<String, dynamic>;
+      Map<String, dynamic> tag() => {'id': 1, 'key': 'math', 'isMeta': false};
+
+      final missing = source();
+      firstProblem(missing).remove('tags');
+      expect(() => endpoint.decode(missing), throwsFormatException);
+
+      for (final invalid in <Object?>[
+        null,
+        0,
+        false,
+        'tag',
+        const <String, Object?>{},
+      ]) {
+        final malformed = source();
+        firstProblem(malformed)['tags'] = invalid;
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'tags = $invalid',
+        );
+      }
+
+      final invalidItem = source();
+      firstProblem(invalidItem)['tags'] = [0];
+      expect(() => endpoint.decode(invalidItem), throwsFormatException);
+
+      for (final field in ['id', 'key', 'isMeta']) {
+        final malformed = source();
+        firstProblem(malformed)['tags'] = [tag()..remove(field)];
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'tag $field missing',
+        );
+      }
+
+      for (final invalid in <Object?>[
+        null,
+        '1',
+        false,
+        const <String, Object?>{},
+        const <Object>[],
+        double.nan,
+        double.infinity,
+        double.negativeInfinity,
+      ]) {
+        final malformed = source();
+        firstProblem(malformed)['tags'] = [tag()..['id'] = invalid];
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'tag id = $invalid',
+        );
+      }
+
+      for (final invalid in <Object?>[
+        null,
+        0,
+        false,
+        const <String, Object?>{},
+        const <Object>[],
+      ]) {
+        final malformed = source();
+        firstProblem(malformed)['tags'] = [tag()..['key'] = invalid];
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'tag key = $invalid',
+        );
+      }
+
+      for (final invalid in <Object?>[
+        null,
+        0,
+        'false',
+        const <String, Object?>{},
+        const <Object>[],
+      ]) {
+        final malformed = source();
+        firstProblem(malformed)['tags'] = [tag()..['isMeta'] = invalid];
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'tag isMeta = $invalid',
+        );
+      }
+
+      final malformedAfterValid = source();
+      firstProblem(malformedAfterValid)['tags'] = [
+        tag(),
+        tag()..['isMeta'] = 'false',
+      ];
+      expect(() => endpoint.decode(malformedAfterValid), throwsFormatException);
+    });
+
+    test('preserves full tag order, duplicates, flags, and raw values', () {
+      final body =
+          jsonDecode(fixture('v4/search_problems.json'))
+              as Map<String, dynamic>;
+      final firstProblem =
+          (body['problems'] as List).first as Map<String, dynamic>;
+      Map<String, dynamic> firstTag() => {
+        'id': -1.5,
+        'key': ' 첫째 ',
+        'isMeta': true,
+        'futureTagField': true,
+      };
+      final sourceTags = <Map<String, dynamic>>[
+        firstTag(),
+        {'id': 0, 'key': '', 'isMeta': false},
+        firstTag(),
+      ];
+      firstProblem['tags'] = sourceTags;
+
+      final item = contract.searchProblems('sample').decode(body).items.first;
+      final tags = item.tags!;
+      expect(tags.map((tag) => tag.id), [-1.5, 0, -1.5]);
+      expect(tags.map((tag) => tag.key), [' 첫째 ', '', ' 첫째 ']);
+      expect(tags.map((tag) => tag.isMeta), [true, false, true]);
+      expect(item.tagNames, [' 첫째 ', '', ' 첫째 ']);
+
+      sourceTags[0]['key'] = 'mutated';
+      sourceTags.add({'id': 2, 'key': 'later', 'isMeta': false});
+      expect(tags.first.key, ' 첫째 ');
+      expect(tags, hasLength(3));
+      expect(() => tags.add(tags.first), throwsUnsupportedError);
+      expect(() => tags[0] = tags[1], throwsUnsupportedError);
     });
 
     test('requires and preserves independent wire identifiers', () {

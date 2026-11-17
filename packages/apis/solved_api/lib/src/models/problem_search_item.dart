@@ -1,4 +1,5 @@
 import 'problem_no_rating_warning.dart';
+import 'problem_search_tag.dart';
 import 'problem_search_title.dart';
 
 /// Codes exposed by the official v4 `noRatingReasons` field.
@@ -22,6 +23,7 @@ class ProblemSearchItem {
     this.id,
     this.subId,
     this.titles,
+    this.tags,
     this.levelAverage,
     this.levelStdev,
     this.isStandard,
@@ -52,6 +54,13 @@ class ProblemSearchItem {
   /// the legacy v3 contract. An empty list means v4 explicitly reported no
   /// titles.
   final List<ProblemSearchTitle>? titles;
+
+  /// Full official-v4 tag entries reported by the active contract.
+  ///
+  /// `null` means this complete representation is unavailable, including on
+  /// the legacy v3 contract. An empty list means v4 explicitly reported no
+  /// tags.
+  final List<ProblemSearchTag>? tags;
 
   final int level;
 

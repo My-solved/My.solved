@@ -69,6 +69,7 @@ void main() {
       expect(problems.items.single.subId, isNull);
       expect(problems.items.single.title, 'RSA 인수 분해');
       expect(problems.items.single.titles, isNull);
+      expect(problems.items.single.tags, isNull);
       expect(problems.items.single.level, 16);
       expect(problems.items.single.levelAverage, isNull);
       expect(problems.items.single.levelStdev, isNull);
@@ -140,6 +141,7 @@ void main() {
       expect(item.id, isNull);
       expect(item.subId, isNull);
       expect(item.titles, isNull);
+      expect(item.tags, isNull);
       expect(item.levelAverage, isNull);
       expect(item.levelStdev, isNull);
       expect(item.isStandard, isNull);

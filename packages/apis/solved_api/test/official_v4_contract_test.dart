@@ -194,6 +194,7 @@ void main() {
         'votedUserCount',
         'solvedUserCount',
         'subId',
+        'tags',
         'titles',
       ]),
     );
@@ -227,6 +228,24 @@ void main() {
     for (final field in ['isOriginal', 'latex', 'html']) {
       expect(_map(titleProperties[field]), {'type': 'boolean'});
     }
+    final tags = _map(problemProperties['tags']);
+    expect(tags['type'], 'array');
+    for (final constraint in [
+      'minItems',
+      'maxItems',
+      'uniqueItems',
+      'description',
+    ]) {
+      expect(tags.containsKey(constraint), isFalse);
+    }
+    final tagItem = _map(tags['items']);
+    expect(tagItem['type'], 'object');
+    expect(_required(tagItem), ['id', 'key', 'isMeta']);
+    expect(tagItem.containsKey('additionalProperties'), isFalse);
+    final tagProperties = _properties(tagItem);
+    expect(_map(tagProperties['id']), {'type': 'number'});
+    expect(_map(tagProperties['key']), {'type': 'string'});
+    expect(_map(tagProperties['isMeta']), {'type': 'boolean'});
     expect(_map(problemProperties['isStandard']), {'type': 'boolean'});
     final userStatus = _map(problemProperties['userStatus']);
     expect(userStatus['type'], ['string', 'null']);
