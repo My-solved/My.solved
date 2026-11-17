@@ -67,6 +67,8 @@ void main() {
       expect(problems.items.single.problemId, 3734);
       expect(problems.items.single.title, 'RSA 인수 분해');
       expect(problems.items.single.level, 16);
+      expect(problems.items.single.levelAverage, isNull);
+      expect(problems.items.single.levelStdev, isNull);
       expect(problems.items.single.isStandard, isNull);
       expect(problems.items.single.votedUserCount, 10);
       expect(problems.items.single.effectiveVoteCount, isNull);
@@ -131,6 +133,8 @@ void main() {
           };
 
       expect(item.givesNoRating, isNull);
+      expect(item.levelAverage, isNull);
+      expect(item.levelStdev, isNull);
       expect(item.isStandard, isNull);
       expect(item.votedUserCount, isNull);
       expect(item.effectiveVoteCount, isNull);
@@ -162,6 +166,31 @@ void main() {
           reason: 'givesNoRating = $invalid',
         );
       }
+    });
+
+    test('does not infer v4 level statistics from legacy values', () {
+      final endpoint = const SolvedApiV3Contract().searchProblem(
+        'rsa',
+        1,
+        'id',
+        'asc',
+      );
+      Map<String, dynamic> source() =>
+          jsonDecode(fixture('v3/search_problem.json')) as Map<String, dynamic>;
+      Map<String, dynamic> firstProblem(Map<String, dynamic> body) =>
+          (body['items'] as List).first as Map<String, dynamic>;
+
+      final captured = endpoint.decode(source()).items.single;
+      expect(captured.levelAverage, isNull);
+      expect(captured.levelStdev, isNull);
+
+      final changed = source();
+      firstProblem(changed)
+        ..['level'] = -1
+        ..['averageTries'] = 0.25;
+      final decoded = endpoint.decode(changed).items.single;
+      expect(decoded.levelAverage, isNull);
+      expect(decoded.levelStdev, isNull);
     });
 
     test('does not infer v4 standard status from legacy flags', () {
