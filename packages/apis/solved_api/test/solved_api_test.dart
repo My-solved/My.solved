@@ -547,6 +547,32 @@ void main() {
 
         expect(apiClient.supportsV4, isTrue);
       });
+
+      test('closes every legacy route before transport when v4 is configured',
+          () {
+        apiClient = SolvedApiClient(
+          httpClient: httpClient,
+          v4Contract: SolvedApiV4Contract(
+            proxyBaseUri: Uri.parse('https://gateway.example/solved/v4/'),
+          ),
+        );
+        final legacyCalls = <String, Object? Function()>{
+          'userShow': () => apiClient.userShow('index'),
+          'userGrass': () => apiClient.userGrass('index', 'default'),
+          'userProblemStats': () => apiClient.userProblemStats('index'),
+          'userTagRatings': () => apiClient.userTagRatings('index'),
+          'backgroundShow': () => apiClient.backgroundShow('background'),
+          'badgeShow': () => apiClient.badgeShow('badge'),
+          'searchProblem': () => apiClient.searchProblem('dp', 1, 'id', 'asc'),
+          'searchUser': () => apiClient.searchUser('index', 1),
+          'searchTag': () => apiClient.searchTag('dp', 1),
+        };
+
+        for (final entry in legacyCalls.entries) {
+          expect(entry.value, throwsStateError, reason: entry.key);
+        }
+        verifyNever(() => httpClient.get(any()));
+      });
     });
 
     group('v4 profile transport', () {

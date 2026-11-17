@@ -124,6 +124,8 @@ class SolvedApiClient {
   bool _isClosed = false;
 
   /// Whether this instance has the credential-safe contract needed for v4 calls.
+  ///
+  /// When true, legacy v3 methods fail before issuing a transport request.
   bool get supportsV4 => _v4Contract != null;
 
   /// Releases the internally-created HTTP client.
@@ -136,25 +138,35 @@ class SolvedApiClient {
     if (_ownsHttpClient) _httpClient.close();
   }
 
-  Future<UserProfile> userShow(String handle) =>
-      _get(_contract.userShow(handle), requestType: _RequestType.user);
+  Future<UserProfile> userShow(String handle) => _get(
+        _requireLegacyContract().userShow(handle),
+        requestType: _RequestType.user,
+      );
 
-  Future<ProfileStreak> userGrass(String handle, String? topic) =>
-      _get(_contract.userGrass(handle, topic), requestType: _RequestType.user);
+  Future<ProfileStreak> userGrass(String handle, String? topic) => _get(
+        _requireLegacyContract().userGrass(handle, topic),
+        requestType: _RequestType.user,
+      );
 
-  Future<List<ProfileTierStat>> userProblemStats(String handle) =>
-      _get(_contract.userProblemStats(handle), requestType: _RequestType.user);
+  Future<List<ProfileTierStat>> userProblemStats(String handle) => _get(
+        _requireLegacyContract().userProblemStats(handle),
+        requestType: _RequestType.user,
+      );
 
-  Future<List<ProfileTagRating>> userTagRatings(String handle) =>
-      _get(_contract.userTagRatings(handle), requestType: _RequestType.user);
+  Future<List<ProfileTagRating>> userTagRatings(String handle) => _get(
+        _requireLegacyContract().userTagRatings(handle),
+        requestType: _RequestType.user,
+      );
 
   Future<ProfileBackgroundAsset> backgroundShow(String backgroundId) => _get(
-        _contract.backgroundShow(backgroundId),
+        _requireLegacyContract().backgroundShow(backgroundId),
         requestType: _RequestType.background,
       );
 
-  Future<ProfileBadgeAsset> badgeShow(String badgeId) =>
-      _get(_contract.badgeShow(badgeId), requestType: _RequestType.badge);
+  Future<ProfileBadgeAsset> badgeShow(String badgeId) => _get(
+        _requireLegacyContract().badgeShow(badgeId),
+        requestType: _RequestType.badge,
+      );
 
   /// Requests the official v4 profile through its credential-holding proxy.
   Future<UserProfile> v4UserProfile(String handle) {
@@ -261,15 +273,21 @@ class SolvedApiClient {
     String? direction,
   ) =>
       _get(
-        _contract.searchProblem(query, page, sort, direction),
+        _requireLegacyContract().searchProblem(query, page, sort, direction),
         requestType: _RequestType.search,
       );
 
   Future<SearchObject<UserSearchItem>> searchUser(String query, int? page) =>
-      _get(_contract.searchUser(query, page), requestType: _RequestType.search);
+      _get(
+        _requireLegacyContract().searchUser(query, page),
+        requestType: _RequestType.search,
+      );
 
   Future<SearchObject<TagSearchItem>> searchTag(String query, int? page) =>
-      _get(_contract.searchTag(query, page), requestType: _RequestType.search);
+      _get(
+        _requireLegacyContract().searchTag(query, page),
+        requestType: _RequestType.search,
+      );
 
   Future<T> _get<T>(
     SolvedApiEndpoint<T> endpoint, {
@@ -347,6 +365,15 @@ class SolvedApiClient {
       throw StateError('A SolvedApiV4Contract is required for v4 requests');
     }
     return contract;
+  }
+
+  SolvedApiContract _requireLegacyContract() {
+    if (_v4Contract != null) {
+      throw StateError(
+        'Legacy solved.ac v3 requests are disabled when v4 is configured',
+      );
+    }
+    return _contract;
   }
 
   String _decodeBody(http.Response response) {
