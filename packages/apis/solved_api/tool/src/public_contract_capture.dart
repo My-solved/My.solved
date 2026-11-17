@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:http_parser/http_parser.dart';
+
 const _redactedValue = '<redacted>';
 
 final RegExp _captureIdPattern = RegExp(r'^[a-z0-9][a-z0-9_-]{0,63}$');
@@ -20,6 +22,9 @@ bool isPublicCapturePath(String path) => _isPublicPath(path);
 
 bool isPublicCaptureQueryName(String name) =>
     _publicQueryNamePattern.hasMatch(name) && !_isRequestCredentialName(name);
+
+bool isPublicCaptureHost(String host) =>
+    host == host.toLowerCase() && _hostnamePattern.hasMatch(host);
 
 const _requestCredentialNameTokens = {
   'auth',
@@ -238,9 +243,7 @@ class PublicContractCapturePlan {
     }
 
     final host = root['host'];
-    if (host is! String ||
-        host != host.toLowerCase() ||
-        !_hostnamePattern.hasMatch(host)) {
+    if (host is! String || !isPublicCaptureHost(host)) {
       throw const FormatException('Capture plan host must be exact');
     }
 
@@ -435,6 +438,252 @@ class PublicContractCapture {
   }
 }
 
+/// Fixed, value-free reasons why a HAR entry was not an inventory candidate.
+enum PublicHarInventoryExclusion {
+  invalidEntry,
+  unsupportedMethod,
+  unsupportedOrigin,
+  unsafeRequest,
+  unsupportedResponse,
+}
+
+/// One distinct public request/response contract shape observed in a raw HAR.
+class PublicHarInventoryCandidate {
+  PublicHarInventoryCandidate._({
+    required this.path,
+    required List<PublicHarInventoryQueryParameter> query,
+    required this.statusCode,
+    required this.contentType,
+    required this.topLevelType,
+    required this.occurrences,
+  }) : query = List<PublicHarInventoryQueryParameter>.unmodifiable(query);
+
+  final String path;
+  final List<PublicHarInventoryQueryParameter> query;
+  final int statusCode;
+  final String contentType;
+  final String topLevelType;
+  final int occurrences;
+
+  Map<String, Object?> toJson() => {
+        'request': {
+          'method': 'GET',
+          'scheme': 'https',
+          'path': path,
+          'query': [for (final parameter in query) parameter.toJson()],
+        },
+        'response': {
+          'status': statusCode,
+          'contentType': contentType,
+          'topLevelType': topLevelType,
+        },
+        'occurrences': occurrences,
+      };
+}
+
+class PublicHarInventoryQueryParameter {
+  const PublicHarInventoryQueryParameter({
+    required this.name,
+    required this.valueCount,
+  });
+
+  final String name;
+  final int valueCount;
+
+  Map<String, Object?> toJson() => {'name': name, 'valueCount': valueCount};
+}
+
+class PublicHarInventoryResult {
+  PublicHarInventoryResult._({
+    required this.host,
+    required this.totalEntries,
+    required this.candidateOccurrences,
+    required List<PublicHarInventoryCandidate> candidates,
+    required Map<PublicHarInventoryExclusion, int> excluded,
+  })  : candidates = List<PublicHarInventoryCandidate>.unmodifiable(candidates),
+        excluded = Map<PublicHarInventoryExclusion, int>.unmodifiable(excluded);
+
+  final String host;
+  final int totalEntries;
+  final int candidateOccurrences;
+  final List<PublicHarInventoryCandidate> candidates;
+  final Map<PublicHarInventoryExclusion, int> excluded;
+
+  Map<String, Object?> toJson() => {
+        'schemaVersion': 1,
+        'source': 'public-har-inventory',
+        'host': host,
+        'summary': {
+          'totalEntries': totalEntries,
+          'candidateOccurrences': candidateOccurrences,
+          'candidateContracts': candidates.length,
+          'excludedEntries': {
+            for (final reason in PublicHarInventoryExclusion.values)
+              reason.name: excluded[reason] ?? 0,
+          },
+        },
+        'candidates': [for (final candidate in candidates) candidate.toJson()],
+      };
+}
+
+/// Inventories safe public JSON GET shapes without retaining any wire values.
+class PublicHarInventory {
+  PublicHarInventory(this.host) {
+    if (!isPublicCaptureHost(host)) {
+      throw const FormatException('Inventory host must be exact');
+    }
+  }
+
+  final String host;
+
+  PublicHarInventoryResult inspect(Object? har) {
+    final entries = _harEntries(har);
+    final candidates = <String, _MutableInventoryCandidate>{};
+    final excluded = <PublicHarInventoryExclusion, int>{};
+    var candidateOccurrences = 0;
+
+    void exclude(PublicHarInventoryExclusion reason) {
+      excluded.update(reason, (count) => count + 1, ifAbsent: () => 1);
+    }
+
+    for (final rawEntry in entries) {
+      final entry = _stringMap(rawEntry);
+      final request = _stringMap(entry?['request']);
+      final response = _stringMap(entry?['response']);
+      final method = request?['method'];
+      final rawUrl = request?['url'];
+      final status = response?['status'];
+
+      if (entry == null ||
+          request == null ||
+          response == null ||
+          method is! String ||
+          rawUrl is! String ||
+          status is! int ||
+          status < 100 ||
+          status > 599) {
+        exclude(PublicHarInventoryExclusion.invalidEntry);
+        continue;
+      }
+      if (method != 'GET') {
+        exclude(PublicHarInventoryExclusion.unsupportedMethod);
+        continue;
+      }
+
+      final uri = Uri.tryParse(rawUrl);
+      if (!_hasExpectedOrigin(uri, host)) {
+        exclude(PublicHarInventoryExclusion.unsupportedOrigin);
+        continue;
+      }
+      if (!_isPublicPath(uri!.path)) {
+        exclude(PublicHarInventoryExclusion.unsafeRequest);
+        continue;
+      }
+
+      late Map<String, List<String>> query;
+      try {
+        query = _validatePublicRequest(request, uri);
+      } on StateError {
+        exclude(PublicHarInventoryExclusion.unsafeRequest);
+        continue;
+      } on FormatException {
+        exclude(PublicHarInventoryExclusion.invalidEntry);
+        continue;
+      }
+
+      late _JsonResponseMetadata? responseMetadata;
+      try {
+        responseMetadata = _readJsonResponseMetadata(response);
+      } on FormatException {
+        exclude(PublicHarInventoryExclusion.unsupportedResponse);
+        continue;
+      }
+      if (responseMetadata == null) {
+        exclude(PublicHarInventoryExclusion.unsupportedResponse);
+        continue;
+      }
+
+      final inventoryQuery = [
+        for (final entry in query.entries)
+          PublicHarInventoryQueryParameter(
+            name: entry.key,
+            valueCount: entry.value.length,
+          ),
+      ];
+      final key = jsonEncode([
+        uri.path,
+        [
+          for (final parameter in inventoryQuery)
+            [parameter.name, parameter.valueCount],
+        ],
+        status,
+        responseMetadata.contentType,
+        responseMetadata.topLevelType,
+      ]);
+      candidates
+          .putIfAbsent(
+            key,
+            () => _MutableInventoryCandidate(
+              path: uri.path,
+              query: inventoryQuery,
+              statusCode: status,
+              contentType: responseMetadata!.contentType,
+              topLevelType: responseMetadata.topLevelType,
+            ),
+          )
+          .occurrences++;
+      candidateOccurrences++;
+    }
+
+    final sortedKeys = candidates.keys.toList()..sort();
+    return PublicHarInventoryResult._(
+      host: host,
+      totalEntries: entries.length,
+      candidateOccurrences: candidateOccurrences,
+      candidates: [
+        for (final key in sortedKeys) candidates[key]!.freeze(),
+      ],
+      excluded: excluded,
+    );
+  }
+}
+
+class _MutableInventoryCandidate {
+  _MutableInventoryCandidate({
+    required this.path,
+    required this.query,
+    required this.statusCode,
+    required this.contentType,
+    required this.topLevelType,
+  });
+
+  final String path;
+  final List<PublicHarInventoryQueryParameter> query;
+  final int statusCode;
+  final String contentType;
+  final String topLevelType;
+  int occurrences = 0;
+
+  PublicHarInventoryCandidate freeze() => PublicHarInventoryCandidate._(
+        path: path,
+        query: query,
+        statusCode: statusCode,
+        contentType: contentType,
+        topLevelType: topLevelType,
+        occurrences: occurrences,
+      );
+}
+
+class _JsonResponseMetadata {
+  const _JsonResponseMetadata({
+    required this.contentType,
+    required this.topLevelType,
+  });
+
+  final String contentType;
+  final String topLevelType;
+}
+
 void writeCapture(
   PublicContractCaptureResult capture,
   Directory outputDirectory,
@@ -532,7 +781,10 @@ PublicCaptureOperation _parseOperation(Object? value) {
   );
 }
 
-void _validatePublicRequest(Map<String, Object?> request, Uri uri) {
+Map<String, List<String>> _validatePublicRequest(
+  Map<String, Object?> request,
+  Uri uri,
+) {
   if (request.containsKey('postData')) {
     throw StateError('Planned request contains a body field');
   }
@@ -560,13 +812,72 @@ void _validatePublicRequest(Map<String, Object?> request, Uri uri) {
 
   final queryString =
       _requiredNameValueList(request['queryString'], 'queryString');
-  final harQuery = _nameValueQuery(queryString);
-  if (!_queryEquals(harQuery, _sortedQuery(uri.queryParametersAll))) {
+  final urlQueryString = _urlQueryString(uri);
+  if (!_nameValueListsEqual(queryString, urlQueryString)) {
     throw const FormatException('HAR query metadata does not match its URL');
   }
-  if (harQuery.keys.any(_isRequestCredentialName)) {
-    throw StateError('Planned request contains credential query data');
+  final harQuery = _nameValueQuery(queryString);
+  if (harQuery.keys.any((name) => !isPublicCaptureQueryName(name))) {
+    throw StateError('Planned request contains non-public query data');
   }
+  return harQuery;
+}
+
+_JsonResponseMetadata? _readJsonResponseMetadata(
+  Map<String, Object?> response,
+) {
+  final content = _requiredStringMap(response['content'], 'response content');
+  final rawMimeType = content['mimeType'];
+  if (rawMimeType is! String || rawMimeType.isEmpty) {
+    throw const FormatException('Response content type is missing');
+  }
+
+  final normalizedContentType = _normalizeMediaType(rawMimeType);
+  final headers =
+      _requiredNameValueList(response['headers'], 'response headers');
+  final contentTypeHeaders = <String>[];
+  for (final header in headers) {
+    if (!_httpHeaderNamePattern.hasMatch(header.name)) {
+      throw const FormatException('HAR response header name is malformed');
+    }
+    if (header.name.toLowerCase() == 'content-type') {
+      contentTypeHeaders.add(header.value);
+    }
+  }
+  if (contentTypeHeaders.length > 1 ||
+      contentTypeHeaders.isNotEmpty &&
+          _normalizeMediaType(contentTypeHeaders.single) !=
+              normalizedContentType) {
+    throw const FormatException('Response content types do not match');
+  }
+
+  final separator = normalizedContentType.indexOf('/');
+  final type = normalizedContentType.substring(0, separator);
+  final subtype = normalizedContentType.substring(separator + 1);
+  if (type != 'application' ||
+      !(subtype == 'json' || subtype.endsWith('+json'))) {
+    return null;
+  }
+
+  final responseJson = _readResponseJson(response);
+  return _JsonResponseMetadata(
+    contentType: '$type/$subtype',
+    topLevelType: switch (responseJson) {
+      Map<String, Object?>() => 'object',
+      List<Object?>() => 'array',
+      _ => 'scalar',
+    },
+  );
+}
+
+String _normalizeMediaType(String value) {
+  late MediaType mediaType;
+  try {
+    mediaType = MediaType.parse(value);
+  } on FormatException {
+    throw const FormatException('Response content type is malformed');
+  }
+  return '${mediaType.type.toLowerCase()}/${mediaType.subtype.toLowerCase()}';
 }
 
 Object? _readResponseJson(Map<String, Object?> response) {
@@ -661,6 +972,36 @@ Map<String, List<String>> _nameValueQuery(List<_NameValue> values) {
     result.putIfAbsent(item.name, () => <String>[]).add(item.value);
   }
   return _sortedQuery(result);
+}
+
+List<_NameValue> _urlQueryString(Uri uri) {
+  if (uri.query.isEmpty) return const [];
+
+  final result = <_NameValue>[];
+  for (final component in uri.query.split('&')) {
+    final separator = component.indexOf('=');
+    final rawName =
+        separator == -1 ? component : component.substring(0, separator);
+    final rawValue = separator == -1 ? '' : component.substring(separator + 1);
+    result.add(
+      _NameValue(
+        Uri.decodeQueryComponent(rawName),
+        Uri.decodeQueryComponent(rawValue),
+      ),
+    );
+  }
+  return result;
+}
+
+bool _nameValueListsEqual(List<_NameValue> left, List<_NameValue> right) {
+  if (left.length != right.length) return false;
+  for (var index = 0; index < left.length; index++) {
+    if (left[index].name != right[index].name ||
+        left[index].value != right[index].value) {
+      return false;
+    }
+  }
+  return true;
 }
 
 Map<String, List<String>> _sortedQuery(Map<String, List<String>> query) => {
