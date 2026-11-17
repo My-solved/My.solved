@@ -64,6 +64,14 @@ final class SolvedApiV4Contract {
   /// Page size used when adapting the unpaged v4 tag catalog for the UI.
   static const int tagSearchPageSize = 50;
 
+  /// Resolves the stable identity spoken for by a user access token.
+  ///
+  /// Transport for this endpoint must attach a profile-scoped Bearer token.
+  SolvedApiEndpoint<SolvedUserIdentity> currentUser() => _endpoint(
+        path: 'me',
+        decode: _decodeV4UserIdentity,
+      );
+
   SolvedApiEndpoint<UserProfile> userProfile(String handle) => _endpoint(
         path: 'users/${_pathSegment(handle, 'handle')}',
         queryParameters: const {'lang': 'ko'},
@@ -186,6 +194,14 @@ final class SolvedApiV4Contract {
         ),
         decode: decode,
       );
+}
+
+SolvedUserIdentity _decodeV4UserIdentity(dynamic json) {
+  final body = _object(json, 'current user');
+  return SolvedUserIdentity(
+    id: _number(body['id'], 'id'),
+    handle: _string(body['handle'], 'handle'),
+  );
 }
 
 SearchObject<ProblemSearchItem> _decodeV4ProblemSearch(dynamic json) {
@@ -516,6 +532,13 @@ String _string(Object? value, String field) {
 
 String? _nullableString(Object? value, String field) =>
     value == null ? null : _string(value, field);
+
+num _number(Object? value, String field) {
+  if (value is! num || !value.isFinite) {
+    throw FormatException('Expected finite number for $field');
+  }
+  return value;
+}
 
 int _integer(Object? value, String field) {
   if (value is! int) throw FormatException('Expected integer for $field');

@@ -38,6 +38,7 @@ void main() {
     final allPaths = List<String>.from(contract['allPaths'] as List);
 
     expect(allPaths, hasLength(79));
+    expect(allPaths, contains('/api/v4/me'));
     expect(allPaths, contains('/api/v4/users/{handle}'));
     expect(allPaths, contains('/api/v4/problems'));
     expect(allPaths, isNot(contains('/api/v4/user/show')));
@@ -49,6 +50,21 @@ void main() {
     expect(allPaths, isNot(contains('/api/v4/search/tag')));
     expect(allPaths, isNot(contains('/api/v4/background/show')));
     expect(allPaths, isNot(contains('/api/v4/badge/show')));
+  });
+
+  test('pins the authenticated identity and profile scope', () {
+    final me = _get(contract, '/api/v4/me');
+
+    expect(_accessClass(me), 'user');
+    expect(_accessScope(me), 'profile');
+    expect(_parameterNames(me), isEmpty);
+    expect(me['description'], contains('never changes'));
+    expect(me['description'], contains('handle can'));
+    expect(_map(me['responses']).keys, containsAll(['200', '401']));
+    final schema = _responseSchema(me);
+    expect(_required(schema), ['id', 'handle']);
+    expect(_map(_properties(schema)['id'])['type'], 'number');
+    expect(_map(_properties(schema)['handle'])['type'], 'string');
   });
 
   test('pins the integrated public profile and contribution schemas', () {
@@ -177,6 +193,9 @@ Map<String, dynamic> _map(Object? value) =>
 
 String _accessClass(Map<String, dynamic> operation) =>
     _map(operation['x-access'])['class'] as String;
+
+String _accessScope(Map<String, dynamic> operation) =>
+    _map(operation['x-access'])['scope'] as String;
 
 List<Map<String, dynamic>> _parameters(Map<String, dynamic> operation) =>
     List<dynamic>.from(

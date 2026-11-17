@@ -133,6 +133,86 @@
         }
       }
     },
+    "/api/v4/me": {
+      "get": {
+        "description": "`id` is the account's and never changes; the handle can. Every token carries `profile`.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "handle": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "handle"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The user."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "No user."
+          }
+        },
+        "summary": "Who the access token speaks for",
+        "x-access": {
+          "class": "user",
+          "scope": "profile"
+        }
+      }
+    },
     "/api/v4/oauth/token": {
       "post": {
         "x-access": {
