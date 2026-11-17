@@ -81,8 +81,29 @@ flutter run \
   mode와 주소가 어긋나면 앱 구성 단계에서 실패합니다.
 - debug가 아닌 빌드는 HTTPS와 정확한 `/solved/v4/` 경로만 허용합니다.
 - debug 빌드에서는 로컬 개발을 위해 loopback HTTP 주소도 허용합니다.
-- `x-client-id`, `x-client-secret` 등 solved.ac 자격 증명은 Flutter define이나
-  저장소에 넣지 않고 `solved-proxy` runtime secret으로만 관리합니다.
+- Flutter는 `x-client-id`나 `x-client-secret` upstream header를 보내지 않으며,
+  proxy가 두 header를 주입합니다. client secret은 `solved-proxy` runtime
+  secret으로만 관리하고, 공개 client ID 값만 아래 OAuth authorization
+  define으로 사용할 수 있습니다.
+
+OAuth 로그인 계약을 로컬에서 구성하려면 위의 `official-v4` 설정에 공개
+client ID와 solved.ac 개발자 콘솔에 등록한 redirect URI를 함께 추가합니다.
+
+```sh
+flutter run \
+  --dart-define=SOLVED_API_MODE=official-v4 \
+  --dart-define=SOLVED_API_V4_PROXY_BASE_URI=https://api.example.com/solved/v4/ \
+  --dart-define=SOLVED_OAUTH_CLIENT_ID=public-client-id \
+  --dart-define=SOLVED_OAUTH_REDIRECT_URI=https://app.example.com/oauth/callback
+```
+
+- OAuth define 두 개를 모두 생략하면 로그인 계약은 비활성 상태입니다.
+- 둘 중 하나만 전달하거나 `official-v4` gateway 없이 전달하면 앱 구성
+  단계에서 실패합니다.
+- client ID와 redirect URI는 공개 프로토콜 값입니다. client secret은 OAuth
+  설정에도 추가하지 않습니다.
+- 현재 기본 요청 scope는 `profile`뿐이며 refresh token 저장을 결정하기 전에는
+  `offline.access`를 기본 요청하지 않습니다.
  
 
 ## 영감을 주신 분들
