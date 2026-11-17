@@ -176,6 +176,204 @@ void main() {
       expect(request.bodyBytes, isEmpty);
     });
 
+    test('sends one bodyless public GET with an encoded typed query', () async {
+      final httpClient = _RecordingClient(
+        (_) async => _response(
+          <int>[1, 2, 3],
+          statusCode: 302,
+          headers: const <String, String>{
+            'location': 'https://elsewhere.example/',
+          },
+        ),
+      );
+      final transport = _transport(httpClient);
+      final query = <String, String>{
+        'q': 'a+b & = # / % 한글',
+        'next&target': 'https://elsewhere.example/path?x=1#fragment',
+        'empty': '',
+      };
+
+      final response = await transport.getPublic(
+        relativePath: 'problems',
+        queryParameters: query,
+      );
+
+      expect(httpClient.requests, hasLength(1));
+      final request = httpClient.requests.single;
+      expect(request.method, 'GET');
+      expect(
+        request.url,
+        Uri.parse(
+          'https://proxy.example/solved/v4/problems',
+        ).replace(queryParameters: query),
+      );
+      expect(request.url.host, 'proxy.example');
+      expect(request.url.path, '/solved/v4/problems');
+      expect(request.url.queryParameters, query);
+      expect(request.followRedirects, isFalse);
+      expect(request.maxRedirects, 0);
+      expect(request.headers, const <String, String>{
+        'accept': 'application/json',
+      });
+      expect(request.bodyBytes, isEmpty);
+      expect(response.statusCode, 302);
+      expect(response.bodyBytes, <int>[1, 2, 3]);
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test(
+      'keeps authenticated responses at 64 KiB while public GET opts up',
+      () async {
+        final responseBytes = List<int>.filled(
+          SolvedProxyTransport.maximumPayloadBytes + 1,
+          0x20,
+        );
+        final httpClient = _RecordingClient(
+          (_) async => _response(responseBytes, statusCode: 418),
+        );
+        final transport = _transport(httpClient);
+        final authorization = SolvedBearerAuthorization.fromAccessToken(
+          'access-token',
+        );
+
+        await expectLater(
+          transport.getWithBearer(
+            relativePath: 'me',
+            authorization: authorization,
+          ),
+          throwsA(
+            isA<SolvedProxyResponseTooLarge>().having(
+              (error) => error.statusCode,
+              'statusCode',
+              418,
+            ),
+          ),
+        );
+        await expectLater(
+          transport.getPublic(relativePath: 'tags'),
+          throwsA(isA<SolvedProxyResponseTooLarge>()),
+        );
+        final response = await transport.getPublic(
+          relativePath: 'tags',
+          maximumResponseBytes: SolvedProxyTransport.maximumPayloadBytes + 1,
+        );
+
+        expect(response.statusCode, 418);
+        expect(response.bodyBytes, hasLength(64 * 1024 + 1));
+        expect(httpClient.requests, hasLength(3));
+      },
+    );
+
+    test('applies a custom public cap across response chunks', () async {
+      var overflow = false;
+      final httpClient = _RecordingClient(
+        (_) async => http.StreamedResponse(
+          Stream<List<int>>.fromIterable(<List<int>>[
+            <int>[1, 2, 3],
+            overflow ? <int>[4, 5] : <int>[4],
+          ]),
+          413,
+        ),
+      );
+      final transport = _transport(httpClient);
+
+      final response = await transport.getPublic(
+        relativePath: 'tags',
+        maximumResponseBytes: 4,
+      );
+      expect(response.bodyBytes, <int>[1, 2, 3, 4]);
+      expect(
+        httpClient.requests.first.url,
+        Uri.parse('https://proxy.example/solved/v4/tags'),
+      );
+      expect(httpClient.requests.first.url.hasQuery, isFalse);
+
+      overflow = true;
+      await expectLater(
+        transport.getPublic(
+          relativePath: 'tags',
+          maximumResponseBytes: 4,
+        ),
+        throwsA(
+          isA<SolvedProxyResponseTooLarge>().having(
+            (error) => error.statusCode,
+            'statusCode',
+            413,
+          ),
+        ),
+      );
+      expect(httpClient.requests, hasLength(2));
+    });
+
+    test('cancels an oversized public response stream', () async {
+      final streamCancelled = Completer<void>();
+      late StreamController<List<int>> responseController;
+      responseController = StreamController<List<int>>(
+        onListen: () {
+          responseController.add(<int>[1, 2, 3]);
+          responseController.add(<int>[4, 5]);
+        },
+        onCancel: () {
+          if (!streamCancelled.isCompleted) streamCancelled.complete();
+        },
+      );
+      final httpClient = _RecordingClient(
+        (_) async => http.StreamedResponse(responseController.stream, 429),
+      );
+      final transport = _transport(httpClient);
+
+      await expectLater(
+        transport.getPublic(
+          relativePath: 'tags',
+          maximumResponseBytes: 4,
+        ),
+        throwsA(
+          isA<SolvedProxyResponseTooLarge>().having(
+            (error) => error.statusCode,
+            'statusCode',
+            429,
+          ),
+        ),
+      );
+      await streamCancelled.future.timeout(const Duration(seconds: 1));
+      await responseController.close();
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('validates public response limits before sending', () async {
+      final httpClient = _RecordingClient(
+        (_) async => _response(const <int>[]),
+      );
+      final transport = _transport(httpClient);
+
+      expect(
+        SolvedProxyTransport.maximumPublicResponseBytes,
+        5 * 1024 * 1024,
+      );
+
+      for (final limit in <int>[
+        0,
+        -1,
+        SolvedProxyTransport.maximumPublicResponseBytes + 1,
+      ]) {
+        expect(
+          () => transport.getPublic(
+            relativePath: 'tags',
+            maximumResponseBytes: limit,
+          ),
+          throwsArgumentError,
+          reason: limit.toString(),
+        );
+      }
+      expect(httpClient.requests, isEmpty);
+
+      await transport.getPublic(
+        relativePath: 'tags',
+        maximumResponseBytes: SolvedProxyTransport.maximumPublicResponseBytes,
+      );
+      expect(httpClient.requests, hasLength(1));
+    });
+
     test('rejects relative paths that can escape or change the request target',
         () {
       final httpClient = _RecordingClient(_unusedHandler);
@@ -204,6 +402,11 @@ void main() {
             relativePath: relativePath,
             fields: const <String, String>{},
           ),
+          throwsArgumentError,
+          reason: relativePath,
+        );
+        expect(
+          () => transport.getPublic(relativePath: relativePath),
           throwsArgumentError,
           reason: relativePath,
         );
@@ -298,6 +501,30 @@ void main() {
       expect(httpClient.requests, hasLength(1));
     });
 
+    test(
+      'aborts a public GET that times out before response headers',
+      () async {
+        final wasAborted = Completer<void>();
+        final neverResponds = Completer<http.StreamedResponse>();
+        final httpClient = _RecordingClient((request) {
+          final abortTrigger = (request as http.AbortableRequest).abortTrigger!;
+          unawaited(abortTrigger.then((_) => wasAborted.complete()));
+          return neverResponds.future;
+        });
+        final transport = _transport(
+          httpClient,
+          requestTimeout: const Duration(milliseconds: 1),
+        );
+
+        await expectLater(
+          transport.getPublic(relativePath: 'tags'),
+          throwsA(isA<SolvedProxyDeadlineExceeded>()),
+        );
+        await wasAborted.future.timeout(const Duration(seconds: 1));
+        expect(httpClient.requests, hasLength(1));
+      },
+    );
+
     test('aborts a request that times out while reading the response',
         () async {
       final wasAborted = Completer<void>();
@@ -327,6 +554,35 @@ void main() {
       await wasAborted.future.timeout(const Duration(seconds: 1));
       expect(httpClient.requests, hasLength(1));
     });
+
+    test(
+      'aborts a public GET that times out while reading the response',
+      () async {
+        final wasAborted = Completer<void>();
+        final responseController = StreamController<List<int>>();
+        final httpClient = _RecordingClient((request) async {
+          final abortTrigger = (request as http.AbortableRequest).abortTrigger!;
+          unawaited(
+            abortTrigger.then((_) async {
+              wasAborted.complete();
+              await responseController.close();
+            }),
+          );
+          return http.StreamedResponse(responseController.stream, 200);
+        });
+        final transport = _transport(
+          httpClient,
+          requestTimeout: const Duration(milliseconds: 1),
+        );
+
+        await expectLater(
+          transport.getPublic(relativePath: 'tags'),
+          throwsA(isA<SolvedProxyDeadlineExceeded>()),
+        );
+        await wasAborted.future.timeout(const Duration(seconds: 1));
+        expect(httpClient.requests, hasLength(1));
+      },
+    );
 
     test('preserves an injected client timeout and its stack', () async {
       final injectedTimeout = TimeoutException('injected timeout');
@@ -364,6 +620,16 @@ void main() {
           relativePath: 'oauth/token',
           fields: const <String, String>{},
         ),
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            'SolvedProxyTransport is closed',
+          ),
+        ),
+      );
+      expect(
+        () => transport.getPublic(relativePath: 'tags'),
         throwsA(
           isA<StateError>().having(
             (error) => error.message,
