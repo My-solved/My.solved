@@ -83,6 +83,7 @@ void main() {
         'maxStreak',
         'voteCount',
         'reputation',
+        'noRatingSolvedCount',
         'background',
         'badge',
         'ratingByProblemsSum',
@@ -94,7 +95,11 @@ void main() {
     );
     final profileProperties = _properties(profileSchema);
     expect(_map(profileProperties['tier'])['type'], ['integer', 'null']);
-    for (final field in ['currentStreak', 'maxStreak']) {
+    for (final field in [
+      'currentStreak',
+      'maxStreak',
+      'noRatingSolvedCount',
+    ]) {
       final property = _map(profileProperties[field]);
       expect(property['type'], 'integer');
       expect(property.containsKey('minimum'), isFalse);

@@ -390,6 +390,8 @@ UserProfile _decodeV4UserProfile(dynamic json) {
           _list(body['ratingProblemsHistogram'], 'ratingProblemsHistogram')
               .map((value) => _integer(value, 'ratingProblemsHistogram[]'))
               .toList(growable: false),
+      noRatingSolvedCount:
+          _integer(body['noRatingSolvedCount'], 'noRatingSolvedCount'),
     ),
     background: background,
     badge: badge,

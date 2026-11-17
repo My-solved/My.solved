@@ -327,6 +327,11 @@ class _HomeViewState extends State<HomeView> {
                 label: '해결 수 레이팅',
                 value: breakdown.ratingBySolvedCount,
               ),
+              if (breakdown.noRatingSolvedCount != null)
+                _RatingDetailRow(
+                  label: '레이팅 미반영 문제',
+                  value: breakdown.noRatingSolvedCount!,
+                ),
             ],
           ),
         ),

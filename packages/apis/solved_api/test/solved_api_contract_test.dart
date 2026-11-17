@@ -193,8 +193,10 @@ void main() {
 
       expect(actual.currentStreak, isNull);
       expect(actual.maxStreak, 477);
+      expect(actual.ratingBreakdown, isNull);
       expect(minimal.currentStreak, isNull);
       expect(minimal.maxStreak, isNull);
+      expect(minimal.ratingBreakdown, isNull);
     });
 
     test('normalizes profile streak days without mutating v3 wire data', () {
