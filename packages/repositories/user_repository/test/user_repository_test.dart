@@ -143,6 +143,22 @@ void main() {
 
         expect(await userRepository.getProblemStats(handle), problemStats);
       });
+
+      test('does not leak to v3 when v4 has no equivalent', () async {
+        when(() => solvedApiClient.supportsV4).thenReturn(true);
+
+        await expectLater(
+          userRepository.getProblemStats(handle),
+          throwsA(
+            isA<UnsupportedError>().having(
+              (error) => error.message,
+              'message',
+              contains('tier distribution'),
+            ),
+          ),
+        );
+        verifyNever(() => solvedApiClient.userProblemStats(any()));
+      });
     });
 
     group('getTagRatings', () {
@@ -161,6 +177,20 @@ void main() {
             .thenAnswer((_) async => tagRatings);
 
         expect(await userRepository.getTagRatings(handle), tagRatings);
+      });
+
+      test('uses tag ratings embedded in the v4 profile', () async {
+        final profile = MockUserProfile();
+        final tagRatings = [MockProfileTagRating()];
+        when(() => solvedApiClient.supportsV4).thenReturn(true);
+        when(() => profile.tagRatings).thenReturn(tagRatings);
+        when(
+          () => solvedApiClient.v4UserProfile(handle),
+        ).thenAnswer((_) async => profile);
+
+        expect(await userRepository.getTagRatings(handle), tagRatings);
+        verify(() => solvedApiClient.v4UserProfile(handle)).called(1);
+        verifyNever(() => solvedApiClient.userTagRatings(any()));
       });
     });
 
@@ -181,6 +211,32 @@ void main() {
 
         expect(await userRepository.getBackground(backgroundId), background);
       });
+
+      test(
+        'uses only the official v4 background endpoint when configured',
+        () async {
+          final background = MockProfileBackgroundAsset();
+          when(() => solvedApiClient.supportsV4).thenReturn(true);
+          when(
+            () => solvedApiClient.v4BackgroundShow(backgroundId),
+          ).thenAnswer((_) async => background);
+
+          expect(await userRepository.getBackground(backgroundId), background);
+          verify(
+            () => solvedApiClient.v4BackgroundShow(backgroundId),
+          ).called(1);
+          verifyNever(() => solvedApiClient.backgroundShow(any()));
+        },
+      );
+
+      test('preserves an unavailable v4 background as null', () async {
+        when(() => solvedApiClient.supportsV4).thenReturn(true);
+        when(
+          () => solvedApiClient.v4BackgroundShow(backgroundId),
+        ).thenAnswer((_) async => null);
+
+        expect(await userRepository.getBackground(backgroundId), isNull);
+      });
     });
 
     group('getBadge', () {
@@ -200,6 +256,21 @@ void main() {
 
         expect(await userRepository.getBadge(badgeId), badge);
       });
+
+      test(
+        'uses only the official v4 badge endpoint when configured',
+        () async {
+          final badge = MockProfileBadgeAsset();
+          when(() => solvedApiClient.supportsV4).thenReturn(true);
+          when(
+            () => solvedApiClient.v4BadgeShow(badgeId),
+          ).thenAnswer((_) async => badge);
+
+          expect(await userRepository.getBadge(badgeId), badge);
+          verify(() => solvedApiClient.v4BadgeShow(badgeId)).called(1);
+          verifyNever(() => solvedApiClient.badgeShow(any()));
+        },
+      );
     });
   });
 }
