@@ -143,16 +143,23 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
       final handle = await sharedPreferencesRepository.requestHandle();
       if (!_isCurrent(requestGeneration)) return;
 
-      final results = await Future.wait<SearchObject>([
-        searchRepository.getProblems(
-          _problemQuery(text, showSolvedProblem, handle),
-          null,
-          sort.value,
-          direction.value,
-        ),
-        searchRepository.getUsers(text, null),
-        searchRepository.getTags(text, null),
+      final problemsFuture = searchRepository.getProblems(
+        _problemQuery(text, showSolvedProblem, handle),
+        null,
+        sort.value,
+        direction.value,
+      );
+      final usersFuture = searchRepository.getUsers(text, null);
+      final tagsFuture = searchRepository.getTags(text, null);
+      await Future.wait<Object>([
+        problemsFuture,
+        usersFuture,
+        tagsFuture,
       ], eagerError: true);
+
+      final problems = await problemsFuture;
+      final users = await usersFuture;
+      final tags = await tagsFuture;
       if (!_isCurrent(requestGeneration)) return;
 
       _commitFilters(sort, direction, showSolvedProblem);
@@ -160,9 +167,9 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
         state.copyWith(
           status: SearchStatus.success,
           text: text,
-          problems: results[0],
-          users: results[1],
-          tags: results[2],
+          problems: problems,
+          users: users,
+          tags: tags,
         ),
       );
     } catch (_) {

@@ -346,27 +346,27 @@ class _SearchViewState extends State<SearchView> {
                                       ),
                                       SizedBox(height: 4),
                                       // 문제 제목에 HTML 태그가 포함되어 있을 경우
-                                      state.problems!.items[index].titleKo
+                                      state.problems!.items[index].title
                                               .contains("</")
                                           ? HtmlWidget(
                                               state.problems!.items[index]
-                                                  .titleKo,
+                                                  .title,
                                               textStyle:
                                                   MySolvedTextStyle.body1,
                                             )
                                           : Text(
                                               state.problems!.items[index]
-                                                  .titleKo,
+                                                  .title,
                                               style: MySolvedTextStyle.body1,
                                             ),
                                       SizedBox(height: 8),
                                       if (state.showProblemTag)
                                         Wrap(
                                           children: List.generate(
-                                            state.problems!.items[index].tags
+                                            state.problems!.items[index].tagNames
                                                 .length,
                                             (subIndex) => Text(
-                                              "#${state.problems!.items[index].tags[subIndex].displayNames[0]["name"]} ",
+                                              "#${state.problems!.items[index].tagNames[subIndex]} ",
                                               style: MySolvedTextStyle.caption1
                                                   .copyWith(
                                                 color:
