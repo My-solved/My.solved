@@ -20,6 +20,11 @@ class HomeState extends Equatable {
   final String? profileImageUrl;
   final ProfileBackgroundAsset? background;
   final ProfileBadgeAsset? badge;
+
+  /// Best-known summary for display. [streak] remains the activity-day
+  /// evidence used to derive whether the user solved a problem today.
+  final int? currentStreak;
+  final int? maxStreak;
   final ProfileStreak? streak;
   final bool? solvedToday;
   final List<ProfileTagRating>? tagRatings;
@@ -33,6 +38,8 @@ class HomeState extends Equatable {
     this.profileImageUrl,
     this.background,
     this.badge,
+    this.currentStreak,
+    this.maxStreak,
     this.streak,
     this.solvedToday,
     this.tagRatings,
@@ -47,6 +54,8 @@ class HomeState extends Equatable {
     String? profileImageUrl,
     ProfileBackgroundAsset? background,
     ProfileBadgeAsset? badge,
+    int? currentStreak,
+    int? maxStreak,
     ProfileStreak? streak,
     bool? solvedToday,
     List<ProfileTagRating>? tagRatings,
@@ -60,6 +69,8 @@ class HomeState extends Equatable {
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       background: background ?? this.background,
       badge: badge ?? this.badge,
+      currentStreak: currentStreak ?? this.currentStreak,
+      maxStreak: maxStreak ?? this.maxStreak,
       streak: streak ?? this.streak,
       solvedToday: solvedToday ?? this.solvedToday,
       tagRatings: tagRatings ?? this.tagRatings,
@@ -76,6 +87,8 @@ class HomeState extends Equatable {
         profileImageUrl,
         background,
         badge,
+        currentStreak,
+        maxStreak,
         streak,
         solvedToday,
         tagRatings,

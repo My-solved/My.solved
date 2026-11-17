@@ -84,10 +84,17 @@ void main() {
       const tagRatings = [ProfileTagRating(key: 'dp', rating: 1700)];
       final repository = _FakeUserRepository(
         supportsV4: true,
+        streak: _streak(
+          currentStreak: 0,
+          maxStreak: 0,
+          days: const [],
+        ),
         user: _profile(
           backgroundId: 'must-not-be-requested',
           badgeId: 'must-not-be-requested',
           reputation: 42,
+          currentStreak: 12,
+          maxStreak: 365,
           background: _background,
           badge: _badge,
           tagRatings: tagRatings,
@@ -114,12 +121,82 @@ void main() {
       expect(state.tagRatings, same(tagRatings));
       expect(state.problemStats, isNull);
       expect(state.user?.reputation, 42);
+      expect(state.currentStreak, 0);
+      expect(state.maxStreak, 0);
+      expect(state.streak, same(repository.streak));
       expect(repository.requestedAuxiliaryNames, ['streak']);
       expect(repository.requestedStreakFrom, today);
       expect(repository.requestedStreakTo, today);
       expect(nowCalls, 1);
     },
   );
+
+  test(
+    'uses the v4 profile summary when activity is unavailable without '
+    'inferring solvedToday',
+    () async {
+      final repository = _FakeUserRepository(
+        supportsV4: true,
+        user: _profile(currentStreak: 12, maxStreak: 365),
+        failingAuxiliaryRequests: const {'streak'},
+      );
+      final bloc = _createBloc(repository, today);
+      addTearDown(bloc.close);
+
+      final success = bloc.stream.firstWhere((state) => state.status.isSuccess);
+      bloc.add(HomeInit());
+
+      final state = await success;
+      expect(state.currentStreak, 12);
+      expect(state.maxStreak, 365);
+      expect(state.streak, isNull);
+      expect(state.solvedToday, isFalse);
+      expect(repository.requestedAuxiliaryNames, ['streak']);
+    },
+  );
+
+  testWidgets('shows the v4 profile streak when activity is unavailable', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repository = _FakeUserRepository(
+      supportsV4: true,
+      user: _profile(
+        currentStreak: 12,
+        maxStreak: 365,
+        tagRatings: const [ProfileTagRating(key: 'dp', rating: 1700)],
+      ),
+      failingAuxiliaryRequests: const {'streak'},
+    );
+    final bloc = _createBloc(repository, today);
+    addTearDown(bloc.close);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BlocProvider<HomeBloc>.value(
+          value: bloc,
+          child: const HomeView(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    final streakCard = find.ancestor(
+      of: find.text('스트릭'),
+      matching: find.byType(OutlinedButton),
+    );
+    expect(streakCard, findsOneWidget);
+    expect(
+      find.descendant(of: streakCard, matching: find.text('12')),
+      findsOneWidget,
+    );
+    expect(repository.requestedAuxiliaryNames, ['streak']);
+  });
 
   testWidgets('shows v4 reputation instead of unavailable difficulty stats', (
     tester,
@@ -336,6 +413,7 @@ void main() {
     final failures = <String>{};
     final cachedStreak = _streak(
       currentStreak: 1,
+      maxStreak: 10,
       days: const [
         ProfileSolvedDay(
           day: 17,
@@ -365,7 +443,95 @@ void main() {
 
     final state = await refreshed;
     expect(state.streak, same(cachedStreak));
+    expect(state.currentStreak, 1);
+    expect(state.maxStreak, 10);
     expect(state.solvedToday, isTrue);
+  });
+
+  test('prefers a fresh v4 profile summary to cached activity', () async {
+    final failures = <String>{};
+    final cachedStreak = _streak(
+      currentStreak: 9,
+      maxStreak: 90,
+      days: const [
+        ProfileSolvedDay(
+          day: 17,
+          month: 11,
+          year: 2026,
+          solvedCount: 1,
+        ),
+      ],
+    );
+    final repository = _FakeUserRepository(
+      supportsV4: true,
+      user: _profile(currentStreak: 8, maxStreak: 80),
+      streak: cachedStreak,
+      failingAuxiliaryRequests: failures,
+    );
+    final bloc = _createBloc(repository, today);
+    addTearDown(bloc.close);
+
+    final firstSuccess = bloc.stream.firstWhere(
+      (state) => state.status.isSuccess,
+    );
+    bloc.add(HomeInit());
+    final initial = await firstSuccess;
+    expect(initial.currentStreak, 9);
+    expect(initial.maxStreak, 90);
+    await Future<void>.delayed(Duration.zero);
+
+    repository.user = _profile(currentStreak: 12, maxStreak: 365);
+    failures.add('streak');
+    final refreshed = bloc.stream.firstWhere((state) => state.status.isSuccess);
+    bloc.add(HomeInit());
+
+    final state = await refreshed;
+    expect(state.streak, same(cachedStreak));
+    expect(state.currentStreak, 12);
+    expect(state.maxStreak, 365);
+    expect(state.solvedToday, isTrue);
+  });
+
+  test('does not use a legacy profile max streak as an activity fallback',
+      () async {
+    final repository = _FakeUserRepository(
+      user: _profile(maxStreak: 477),
+      failingAuxiliaryRequests: const {'streak'},
+    );
+    final bloc = _createBloc(repository, today);
+    addTearDown(bloc.close);
+
+    final success = bloc.stream.firstWhere((state) => state.status.isSuccess);
+    bloc.add(HomeInit());
+
+    final state = await success;
+    expect(state.currentStreak, isNull);
+    expect(state.maxStreak, isNull);
+    expect(state.streak, isNull);
+    expect(state.solvedToday, isFalse);
+  });
+
+  test('keeps streak summaries in copyWith and Equatable comparisons', () {
+    const state = HomeState(
+      handle: 'w8385',
+      isOnIllustBackground: true,
+      currentStreak: 12,
+      maxStreak: 365,
+    );
+
+    expect(state.copyWith(status: HomeStatus.loading).currentStreak, 12);
+    expect(state.copyWith(status: HomeStatus.loading).maxStreak, 365);
+    expect(
+      state,
+      isNot(
+        const HomeState(
+          handle: 'w8385',
+          isOnIllustBackground: true,
+          currentStreak: 13,
+          maxStreak: 365,
+        ),
+      ),
+    );
   });
 
   test('derives solvedToday from the grass entry for the solved day', () async {
@@ -444,7 +610,7 @@ class _FakeUserRepository implements UserRepository {
   final Duration userDelay;
   final Duration auxiliaryDelay;
   final List<ProfileTierStat> problemStats;
-  final UserProfile user;
+  UserProfile user;
   final ProfileStreak streak;
 
   int _activeAuxiliaryRequests = 0;
@@ -520,11 +686,13 @@ class _FakeSharedPreferencesRepository extends SharedPreferencesRepository {
 
 ProfileStreak _streak({
   required int currentStreak,
+  int? maxStreak,
   required List<ProfileSolvedDay> days,
 }) {
   return ProfileStreak(
     days: days,
     currentStreak: currentStreak,
+    maxStreak: maxStreak,
   );
 }
 
@@ -533,6 +701,8 @@ UserProfile _profile({
   String? badgeId,
   int rating = 1,
   int? reputation,
+  int? currentStreak,
+  int? maxStreak,
   ProfileRatingBreakdown? ratingBreakdown,
   ProfileBackgroundAsset? background,
   ProfileBadgeAsset? badge,
@@ -550,6 +720,8 @@ UserProfile _profile({
       tier: 1,
       rating: rating,
       reputation: reputation,
+      currentStreak: currentStreak,
+      maxStreak: maxStreak,
       ratingBreakdown: ratingBreakdown,
       background: background,
       badge: badge,

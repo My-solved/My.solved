@@ -113,7 +113,18 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     ];
 
     await _runLimited(requests);
-    final effectiveStreak = auxiliary.streak ?? state.streak;
+    final freshStreak = auxiliary.streak;
+    final effectiveStreak = freshStreak ?? state.streak;
+    final profileCurrentStreak = usesV4 ? user.currentStreak : null;
+    final profileMaxStreak = usesV4 ? user.maxStreak : null;
+    final currentStreak = freshStreak?.currentStreak ??
+        profileCurrentStreak ??
+        state.currentStreak ??
+        state.streak?.currentStreak;
+    final maxStreak = freshStreak?.maxStreak ??
+        profileMaxStreak ??
+        state.maxStreak ??
+        state.streak?.maxStreak;
 
     emit(
       HomeState(
@@ -124,6 +135,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         profileImageUrl: user.profileImageUrl,
         background: auxiliary.background,
         badge: auxiliary.badge,
+        currentStreak: currentStreak,
+        maxStreak: maxStreak,
         streak: effectiveStreak,
         solvedToday: _hasSolvedToday(effectiveStreak, solvedDay),
         tagRatings: auxiliary.tagRatings,
