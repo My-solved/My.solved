@@ -539,6 +539,7 @@ String? _userSearchSummary(UserSearchItem user) {
   final parts = <String>[
     if (user.rating != null) '레이팅 ${user.rating}',
     if (user.solvedCount != null) '${user.solvedCount}문제',
+    if (user.reputation != null) '평판 ${user.reputation}',
   ];
   return parts.isEmpty ? null : parts.join(' · ');
 }

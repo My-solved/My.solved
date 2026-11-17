@@ -172,7 +172,19 @@ void main() {
     final users = _get(contract, '/api/v4/rankings/users/search');
     expect(_parameterNames(users), ['q', 'sort']);
     expect(_parameterNames(users), isNot(contains('page')));
-    expect(_required(_responseSchema(users)), ['exact', 'items']);
+    final usersSchema = _responseSchema(users);
+    expect(_required(usersSchema), ['exact', 'items']);
+    final userSearchProperties = _properties(usersSchema);
+    final exactUser = _map(userSearchProperties['exact']);
+    final listedUser = _map(
+      _map(userSearchProperties['items'])['items'],
+    );
+    for (final userSchema in [exactUser, listedUser]) {
+      expect(_required(userSchema), contains('reputation'));
+      final reputation = _map(_properties(userSchema)['reputation']);
+      expect(reputation['type'], 'integer');
+      expect(reputation.containsKey('minimum'), isFalse);
+    }
   });
 
   test('pins the tag catalog and standalone asset lookup limitations', () {

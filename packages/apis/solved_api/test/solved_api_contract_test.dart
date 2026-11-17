@@ -99,14 +99,21 @@ void main() {
           .decode({
         'count': 1,
         'items': [
-          {'handle': 'legacy', 'profileImageUrl': null, 'tier': 0},
+          {
+            'handle': 'legacy',
+            'profileImageUrl': null,
+            'tier': 0,
+            'voteCount': 999,
+          },
         ],
       });
 
       expect(item.rating, isNull);
       expect(item.solvedCount, isNull);
+      expect(item.reputation, isNull);
       expect(decoded.items.single.rating, isNull);
       expect(decoded.items.single.solvedCount, isNull);
+      expect(decoded.items.single.reputation, isNull);
     });
 
     test('keeps the legacy public tag-item constructor source-compatible', () {

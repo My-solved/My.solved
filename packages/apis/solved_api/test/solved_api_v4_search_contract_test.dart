@@ -158,18 +158,21 @@ void main() {
       expect(actual.exact?.tier, isNull);
       expect(actual.exact?.rating, 3000);
       expect(actual.exact?.solvedCount, 5000);
+      expect(actual.exact?.reputation, 500);
       expect(actual.items, hasLength(2));
       expect(actual.items.first.handle, 'index');
       expect(actual.items.first.tier, isNull);
       expect(actual.items.first.rating, 3000);
       expect(actual.items.first.solvedCount, 5000);
+      expect(actual.items.first.reputation, 500);
       expect(actual.items.last.handle, 'index2');
       expect(actual.items.last.tier, 20);
       expect(actual.items.last.rating, 2500);
       expect(actual.items.last.solvedCount, 2500);
+      expect(actual.items.last.reputation, 250);
     });
 
-    test('requires integer rating and solved count in every v4 user item', () {
+    test('requires integer summaries in every v4 user item', () {
       final endpoint = contract.searchUsers('index');
       Map<String, dynamic> source() => Map<String, dynamic>.from(
             jsonDecode(fixture('v4/search_users.json')) as Map,
@@ -181,7 +184,7 @@ void main() {
           ? body['exact'] as Map<String, dynamic>
           : (body['items'] as List).first as Map<String, dynamic>;
 
-      for (final field in ['rating', 'solvedCount']) {
+      for (final field in ['rating', 'solvedCount', 'reputation']) {
         for (final location in ['exact', 'items']) {
           final missing = source();
           item(missing, location).remove(field);
@@ -202,9 +205,13 @@ void main() {
           }
         }
       }
+
+      final unbounded = source();
+      item(unbounded, 'exact')['reputation'] = -1;
+      expect(endpoint.decode(unbounded).exact?.reputation, -1);
     });
 
-    test('preserves zero rating and solved count', () {
+    test('preserves zero public summaries', () {
       final actual = contract.searchUsers('zero').decode({
         'exact': {
           'handle': 'zero',
@@ -212,12 +219,14 @@ void main() {
           'profileImageUrl': null,
           'rating': 0,
           'solvedCount': 0,
+          'reputation': 0,
         },
         'items': <Object>[],
       });
 
       expect(actual.exact?.rating, 0);
       expect(actual.exact?.solvedCount, 0);
+      expect(actual.exact?.reputation, 0);
     });
 
     test('preserves an absent exact match', () {
