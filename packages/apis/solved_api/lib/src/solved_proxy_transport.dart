@@ -24,6 +24,7 @@ final class SolvedProxyTransport {
         _ownsHttpClient = httpClient == null;
 
   static const int maximumPayloadBytes = 64 * 1024;
+  static const int maximumPublicResponseBytes = 5 * 1024 * 1024;
 
   final Uri proxyBaseUri;
   final Duration requestTimeout;
@@ -57,7 +58,51 @@ final class SolvedProxyTransport {
       throw const SolvedProxyRequestTooLarge();
     }
 
-    return _sendAndRead(request).timeout(
+    return _sendAndRead(
+      request,
+      maximumResponseBytes: maximumPayloadBytes,
+    ).timeout(
+      requestTimeout,
+      onTimeout: () {
+        abortTrigger.complete();
+        throw const SolvedProxyDeadlineExceeded();
+      },
+    );
+  }
+
+  /// Sends one bounded public GET without following redirects or interpreting
+  /// its response.
+  ///
+  /// OAuth and authenticated operations remain hard-limited to 64 KiB. A
+  /// larger limit must be selected explicitly for a known public operation.
+  Future<SolvedProxyResponse> getPublic({
+    required String relativePath,
+    Map<String, String> queryParameters = const <String, String>{},
+    int maximumResponseBytes = maximumPayloadBytes,
+  }) {
+    if (_isClosed) {
+      throw StateError('SolvedProxyTransport is closed');
+    }
+
+    _validateMaximumResponseBytes(maximumResponseBytes);
+    final resolvedPath = _resolveRelativePath(relativePath);
+    final uri = queryParameters.isEmpty
+        ? resolvedPath
+        : resolvedPath.replace(queryParameters: queryParameters);
+    final abortTrigger = Completer<void>();
+    final request = http.AbortableRequest(
+      'GET',
+      uri,
+      abortTrigger: abortTrigger.future,
+    )
+      ..followRedirects = false
+      ..maxRedirects = 0
+      ..headers['accept'] = 'application/json';
+
+    return _sendAndRead(
+      request,
+      maximumResponseBytes: maximumResponseBytes,
+    ).timeout(
       requestTimeout,
       onTimeout: () {
         abortTrigger.complete();
@@ -88,7 +133,10 @@ final class SolvedProxyTransport {
       ..headers['accept'] = 'application/json'
       ..headers['authorization'] = authorization.headerValue;
 
-    return _sendAndRead(request).timeout(
+    return _sendAndRead(
+      request,
+      maximumResponseBytes: maximumPayloadBytes,
+    ).timeout(
       requestTimeout,
       onTimeout: () {
         abortTrigger.complete();
@@ -170,11 +218,14 @@ final class SolvedProxyTransport {
     return resolved;
   }
 
-  Future<SolvedProxyResponse> _sendAndRead(http.Request request) async {
+  Future<SolvedProxyResponse> _sendAndRead(
+    http.Request request, {
+    required int maximumResponseBytes,
+  }) async {
     final response = await _httpClient.send(request);
     final builder = BytesBuilder(copy: false);
     await for (final chunk in response.stream) {
-      if (builder.length + chunk.length > maximumPayloadBytes) {
+      if (builder.length + chunk.length > maximumResponseBytes) {
         throw SolvedProxyResponseTooLarge(response.statusCode);
       }
       builder.add(chunk);
@@ -253,4 +304,15 @@ Duration _validateRequestTimeout(Duration timeout) {
     throw ArgumentError.value(timeout, 'requestTimeout', 'Must be positive');
   }
   return timeout;
+}
+
+void _validateMaximumResponseBytes(int value) {
+  if (value <= 0 || value > SolvedProxyTransport.maximumPublicResponseBytes) {
+    throw ArgumentError.value(
+      value,
+      'maximumResponseBytes',
+      'Must be between 1 and '
+          '${SolvedProxyTransport.maximumPublicResponseBytes} bytes',
+    );
+  }
 }
