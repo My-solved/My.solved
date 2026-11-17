@@ -3,6 +3,7 @@ export 'problem_search_contest.dart';
 export 'problem_search_item.dart';
 export 'problem_search_tag.dart';
 export 'problem_search_title.dart';
+export 'problem_search_viewer_folder.dart';
 export 'profile_background_asset.dart';
 export 'profile_badge_asset.dart';
 export 'profile_contribution_stats.dart';

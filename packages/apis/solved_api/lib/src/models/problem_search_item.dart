@@ -2,6 +2,7 @@ import 'problem_no_rating_warning.dart';
 import 'problem_search_contest.dart';
 import 'problem_search_tag.dart';
 import 'problem_search_title.dart';
+import 'problem_search_viewer_folder.dart';
 
 /// Codes exposed by the official v4 `noRatingReasons` field.
 enum ProblemNoRatingReason {
@@ -26,6 +27,7 @@ class ProblemSearchItem {
     this.titles,
     this.contests,
     this.tags,
+    this.viewerFolders,
     this.levelAverage,
     this.levelStdev,
     this.isStandard,
@@ -70,6 +72,13 @@ class ProblemSearchItem {
   /// the legacy v3 contract. An empty list means v4 explicitly reported no
   /// tags.
   final List<ProblemSearchTag>? tags;
+
+  /// Viewer-folder associations reported by the official v4 contract.
+  ///
+  /// `null` means this complete representation is unavailable, including on
+  /// the legacy v3 contract. An empty list means v4 explicitly reported no
+  /// associations; it does not imply anything about a viewer's local state.
+  final List<ProblemSearchViewerFolder>? viewerFolders;
 
   final int level;
 

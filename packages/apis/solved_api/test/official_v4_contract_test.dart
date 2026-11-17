@@ -197,6 +197,7 @@ void main() {
         'subId',
         'tags',
         'titles',
+        'viewerFolders',
       ]),
     );
     final problemProperties = _properties(problemItem);
@@ -274,6 +275,36 @@ void main() {
     expect(_map(tagProperties['id']), {'type': 'number'});
     expect(_map(tagProperties['key']), {'type': 'string'});
     expect(_map(tagProperties['isMeta']), {'type': 'boolean'});
+    final viewerFolders = _map(problemProperties['viewerFolders']);
+    expect(viewerFolders['type'], 'array');
+    for (final constraint in [
+      'minItems',
+      'maxItems',
+      'uniqueItems',
+      'description',
+    ]) {
+      expect(viewerFolders.containsKey(constraint), isFalse);
+    }
+    final viewerFolderItem = _map(viewerFolders['items']);
+    expect(viewerFolderItem['type'], 'object');
+    expect(_required(viewerFolderItem), ['slug', 'name', 'color']);
+    expect(viewerFolderItem.containsKey('additionalProperties'), isFalse);
+    final viewerFolderProperties = _properties(viewerFolderItem);
+    for (final field in ['slug', 'name']) {
+      expect(_map(viewerFolderProperties[field]), {'type': 'string'});
+    }
+    final viewerFolderColor = _map(viewerFolderProperties['color']);
+    expect(viewerFolderColor['type'], ['string', 'null']);
+    expect(viewerFolderColor['enum'], [
+      'red',
+      'violet',
+      'blue',
+      'teal',
+      'lime',
+      'yellow',
+      'orange',
+      null,
+    ]);
     expect(_map(problemProperties['isStandard']), {'type': 'boolean'});
     final userStatus = _map(problemProperties['userStatus']);
     expect(userStatus['type'], ['string', 'null']);

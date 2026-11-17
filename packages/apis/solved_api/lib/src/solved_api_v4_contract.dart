@@ -235,6 +235,13 @@ ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
       (value) => _decodeV4ProblemSearchTag(_object(value, 'problems[].tags[]')),
     ),
   );
+  final viewerFolders = List<ProblemSearchViewerFolder>.unmodifiable(
+    _list(body['viewerFolders'], 'problems[].viewerFolders').map(
+      (value) => _decodeV4ProblemSearchViewerFolder(
+        _object(value, 'problems[].viewerFolders[]'),
+      ),
+    ),
+  );
   final noRatingReasons = List<ProblemNoRatingReason>.unmodifiable(
     _list(
       body['noRatingReasons'],
@@ -267,6 +274,7 @@ ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
     titles: titles,
     contests: contests,
     tags: tags,
+    viewerFolders: viewerFolders,
     level: _wholeNumber(body['level'], 'problems[].level'),
     levelAverage: _number(body['levelAverage'], 'problems[].levelAverage'),
     levelStdev: _number(body['levelStdev'], 'problems[].levelStdev'),
@@ -429,6 +437,44 @@ ProblemSearchContest _decodeV4ProblemSearchContest(Map<String, dynamic> body) {
       'problems[].contests[].abbreviation',
     ),
   );
+}
+
+ProblemSearchViewerFolder _decodeV4ProblemSearchViewerFolder(
+  Map<String, dynamic> body,
+) {
+  if (!body.containsKey('color')) {
+    throw const FormatException(
+      'Missing required field problems[].viewerFolders[].color',
+    );
+  }
+  final colorValue = body['color'];
+  return ProblemSearchViewerFolder(
+    slug: _string(body['slug'], 'problems[].viewerFolders[].slug'),
+    name: _string(body['name'], 'problems[].viewerFolders[].name'),
+    color:
+        colorValue == null
+            ? null
+            : _decodeV4ProblemSearchViewerFolderColor(colorValue),
+  );
+}
+
+ProblemSearchViewerFolderColor _decodeV4ProblemSearchViewerFolderColor(
+  Object? value,
+) {
+  final color = _string(value, 'problems[].viewerFolders[].color');
+  return switch (color) {
+    'red' => ProblemSearchViewerFolderColor.red,
+    'violet' => ProblemSearchViewerFolderColor.violet,
+    'blue' => ProblemSearchViewerFolderColor.blue,
+    'teal' => ProblemSearchViewerFolderColor.teal,
+    'lime' => ProblemSearchViewerFolderColor.lime,
+    'yellow' => ProblemSearchViewerFolderColor.yellow,
+    'orange' => ProblemSearchViewerFolderColor.orange,
+    _ =>
+      throw const FormatException(
+        'Unsupported problems[].viewerFolders[].color',
+      ),
+  };
 }
 
 String? _selectV4ProblemTitle(List<ProblemSearchTitle> titles) {

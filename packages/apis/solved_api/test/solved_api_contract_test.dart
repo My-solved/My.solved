@@ -71,6 +71,7 @@ void main() {
       expect(problems.items.single.titles, isNull);
       expect(problems.items.single.contests, isNull);
       expect(problems.items.single.tags, isNull);
+      expect(problems.items.single.viewerFolders, isNull);
       expect(problems.items.single.level, 16);
       expect(problems.items.single.levelAverage, isNull);
       expect(problems.items.single.levelStdev, isNull);
@@ -144,6 +145,7 @@ void main() {
       expect(item.titles, isNull);
       expect(item.contests, isNull);
       expect(item.tags, isNull);
+      expect(item.viewerFolders, isNull);
       expect(item.levelAverage, isNull);
       expect(item.levelStdev, isNull);
       expect(item.isStandard, isNull);
