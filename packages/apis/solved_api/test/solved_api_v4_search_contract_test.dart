@@ -24,6 +24,13 @@ void main() {
       ]);
     });
 
+    test('exposes the official viewer-folder colors', () {
+      expect(
+        ProblemSearchViewerFolderColor.values.map((color) => color.value),
+        ['red', 'violet', 'blue', 'teal', 'lime', 'yellow', 'orange'],
+      );
+    });
+
     test('exposes the official no-rating warning and user-status codes', () {
       expect(
         ProblemNoRatingWarningType.values.map((warning) => warning.value),
@@ -136,6 +143,10 @@ void main() {
         [0, 0, 0, 0],
       );
       expect(actual.items.map((item) => item.tags!.length), [2, 0, 0, 0]);
+      expect(
+        actual.items.map((item) => item.viewerFolders!.length),
+        [0, 0, 0, 0],
+      );
       expect(actual.items[0].tags![0].id, 1);
       expect(actual.items[0].tags![0].key, 'math');
       expect(actual.items[0].tags![0].isMeta, isFalse);
@@ -614,6 +625,166 @@ void main() {
       expect(tags, hasLength(3));
       expect(() => tags.add(tags.first), throwsUnsupportedError);
       expect(() => tags[0] = tags[1], throwsUnsupportedError);
+    });
+
+    test('requires the documented viewer-folder array and fields', () {
+      final endpoint = contract.searchProblems('sample');
+      Map<String, dynamic> source() =>
+          jsonDecode(fixture('v4/search_problems.json'))
+              as Map<String, dynamic>;
+      Map<String, dynamic> firstProblem(Map<String, dynamic> body) =>
+          (body['problems'] as List).first as Map<String, dynamic>;
+      Map<String, dynamic> folder() => {
+        'slug': 'folder',
+        'name': 'Folder',
+        'color': 'red',
+      };
+
+      final missing = source();
+      firstProblem(missing).remove('viewerFolders');
+      expect(() => endpoint.decode(missing), throwsFormatException);
+
+      for (final invalid in <Object?>[
+        null,
+        0,
+        false,
+        'folder',
+        const <String, Object?>{},
+      ]) {
+        final malformed = source();
+        firstProblem(malformed)['viewerFolders'] = invalid;
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'viewerFolders = $invalid',
+        );
+      }
+
+      final invalidItem = source();
+      firstProblem(invalidItem)['viewerFolders'] = [0];
+      expect(() => endpoint.decode(invalidItem), throwsFormatException);
+
+      for (final field in ['slug', 'name', 'color']) {
+        final malformed = source();
+        firstProblem(malformed)['viewerFolders'] = [folder()..remove(field)];
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'viewer folder $field missing',
+        );
+      }
+
+      for (final field in ['slug', 'name']) {
+        for (final invalid in <Object?>[
+          null,
+          0,
+          false,
+          const <String, Object?>{},
+          const <Object>[],
+        ]) {
+          final malformed = source();
+          firstProblem(malformed)['viewerFolders'] = [
+            folder()..[field] = invalid,
+          ];
+          expect(
+            () => endpoint.decode(malformed),
+            throwsFormatException,
+            reason: 'viewer folder $field = $invalid',
+          );
+        }
+      }
+
+      for (final invalid in <Object?>[
+        0,
+        false,
+        const <String, Object?>{},
+        const <Object>[],
+        '',
+        ' ',
+        'green',
+        'Red',
+        ' red ',
+      ]) {
+        final malformed = source();
+        firstProblem(malformed)['viewerFolders'] = [
+          folder()..['color'] = invalid,
+        ];
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'viewer folder color = $invalid',
+        );
+      }
+
+      final malformedAfterValid = source();
+      firstProblem(malformedAfterValid)['viewerFolders'] = [
+        folder(),
+        folder()..['color'] = 'green',
+      ];
+      expect(() => endpoint.decode(malformedAfterValid), throwsFormatException);
+    });
+
+    test('preserves viewer-folder order, colors, and duplicates', () {
+      final body =
+          jsonDecode(fixture('v4/search_problems.json'))
+              as Map<String, dynamic>;
+      final firstProblem =
+          (body['problems'] as List).first as Map<String, dynamic>;
+      Map<String, dynamic> firstFolder() => {
+        'slug': ' 폴더-α ',
+        'name': ' 첫째 ',
+        'color': 'red',
+        'futureFolderField': true,
+      };
+      final sourceFolders = <Map<String, dynamic>>[
+        firstFolder(),
+        {'slug': '', 'name': '', 'color': null},
+        for (final color in [
+          'violet',
+          'blue',
+          'teal',
+          'lime',
+          'yellow',
+          'orange',
+        ])
+          {'slug': color, 'name': '이름-$color', 'color': color},
+        firstFolder(),
+      ];
+      firstProblem['viewerFolders'] = sourceFolders;
+
+      final item = contract.searchProblems('sample').decode(body).items.first;
+      final folders = item.viewerFolders!;
+      expect(folders.map((folder) => folder.slug), [
+        ' 폴더-α ',
+        '',
+        'violet',
+        'blue',
+        'teal',
+        'lime',
+        'yellow',
+        'orange',
+        ' 폴더-α ',
+      ]);
+      expect(folders.first.name, ' 첫째 ');
+      expect(folders[1].name, '');
+      expect(folders.map((folder) => folder.color), [
+        ProblemSearchViewerFolderColor.red,
+        null,
+        ProblemSearchViewerFolderColor.violet,
+        ProblemSearchViewerFolderColor.blue,
+        ProblemSearchViewerFolderColor.teal,
+        ProblemSearchViewerFolderColor.lime,
+        ProblemSearchViewerFolderColor.yellow,
+        ProblemSearchViewerFolderColor.orange,
+        ProblemSearchViewerFolderColor.red,
+      ]);
+
+      sourceFolders[0]['slug'] = 'mutated';
+      sourceFolders.add({'slug': 'later', 'name': 'later', 'color': null});
+      expect(folders.first.slug, ' 폴더-α ');
+      expect(folders, hasLength(9));
+      expect(() => folders.add(folders.first), throwsUnsupportedError);
+      expect(() => folders[0] = folders[1], throwsUnsupportedError);
     });
 
     test('requires and preserves independent wire identifiers', () {
@@ -1383,6 +1554,7 @@ void main() {
               'titles': <Object>[],
               'contests': <Object>[],
               'tags': <Object>[],
+              'viewerFolders': <Object>[],
             },
           ],
           'total': 1.0,
@@ -1412,6 +1584,7 @@ void main() {
                 'titles': <Object>[],
                 'contests': <Object>[],
                 'tags': <Object>[],
+                'viewerFolders': <Object>[],
               },
             ],
             'total': 1,
