@@ -216,6 +216,13 @@ SearchObject<ProblemSearchItem> _decodeV4ProblemSearch(dynamic json) {
 }
 
 ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
+  final titles = List<ProblemSearchTitle>.unmodifiable(
+    _list(body['titles'], 'problems[].titles').map(
+      (value) => _decodeV4ProblemSearchTitle(
+        _object(value, 'problems[].titles[]'),
+      ),
+    ),
+  );
   final tagKeys = _list(body['tags'], 'problems[].tags')
       .map(
         (item) => _string(
@@ -252,7 +259,8 @@ ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
     problemId: _wholeNumber(body['problemId'], 'problems[].problemId'),
     id: _number(body['id'], 'problems[].id'),
     subId: _string(body['subId'], 'problems[].subId'),
-    title: _decodeV4ProblemTitle(body['titles']),
+    title: _selectV4ProblemTitle(titles),
+    titles: titles,
     level: _wholeNumber(body['level'], 'problems[].level'),
     levelAverage: _number(body['levelAverage'], 'problems[].levelAverage'),
     levelStdev: _number(body['levelStdev'], 'problems[].levelStdev'),
@@ -381,23 +389,25 @@ ProblemNoRatingReason _decodeV4ProblemNoRatingReason(Object? value) {
   };
 }
 
-String? _decodeV4ProblemTitle(Object? value) {
+ProblemSearchTitle _decodeV4ProblemSearchTitle(Map<String, dynamic> body) =>
+    ProblemSearchTitle(
+      language: _string(body['language'], 'problems[].titles[].language'),
+      title: _string(body['title'], 'problems[].titles[].title'),
+      isOriginal: _boolean(
+        body['isOriginal'],
+        'problems[].titles[].isOriginal',
+      ),
+      latex: _boolean(body['latex'], 'problems[].titles[].latex'),
+      html: _boolean(body['html'], 'problems[].titles[].html'),
+    );
+
+String? _selectV4ProblemTitle(List<ProblemSearchTitle> titles) {
   String? first;
   String? original;
-  for (final item in _list(value, 'problems[].titles')) {
-    final title = _object(item, 'problems[].titles[]');
-    final language = _string(
-      title['language'],
-      'problems[].titles[].language',
-    );
-    final text = _string(title['title'], 'problems[].titles[].title');
-    final isOriginal = _boolean(
-      title['isOriginal'],
-      'problems[].titles[].isOriginal',
-    );
-    first ??= text;
-    if (language == 'ko') return text;
-    if (isOriginal) original ??= text;
+  for (final title in titles) {
+    first ??= title.title;
+    if (title.language == 'ko') return title.title;
+    if (title.isOriginal) original ??= title.title;
   }
   return original ?? first;
 }

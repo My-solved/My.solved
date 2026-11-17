@@ -1,4 +1,5 @@
 import 'problem_no_rating_warning.dart';
+import 'problem_search_title.dart';
 
 /// Codes exposed by the official v4 `noRatingReasons` field.
 enum ProblemNoRatingReason {
@@ -20,6 +21,7 @@ class ProblemSearchItem {
     required this.tagNames,
     this.id,
     this.subId,
+    this.titles,
     this.levelAverage,
     this.levelStdev,
     this.isStandard,
@@ -43,6 +45,14 @@ class ProblemSearchItem {
   final String? subId;
 
   final String? title;
+
+  /// Full official-v4 title entries reported by the active contract.
+  ///
+  /// `null` means this complete representation is unavailable, including on
+  /// the legacy v3 contract. An empty list means v4 explicitly reported no
+  /// titles.
+  final List<ProblemSearchTitle>? titles;
+
   final int level;
 
   /// The raw level average reported by the active contract.

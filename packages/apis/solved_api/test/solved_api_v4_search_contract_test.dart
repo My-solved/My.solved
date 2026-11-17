@@ -112,6 +112,14 @@ void main() {
       expect(actual.items[0].id, 1001);
       expect(actual.items[0].subId, '');
       expect(actual.items[0].title, '한국어 제목');
+      expect(actual.items[0].titles, hasLength(2));
+      expect(actual.items[0].titles![0].language, 'en');
+      expect(actual.items[0].titles![0].title, 'English original');
+      expect(actual.items[0].titles![0].isOriginal, isTrue);
+      expect(actual.items[0].titles![0].latex, isFalse);
+      expect(actual.items[0].titles![0].html, isFalse);
+      expect(actual.items[0].titles![1].language, 'ko');
+      expect(actual.items[0].titles![1].title, '한국어 제목');
       expect(actual.items[0].level, 10);
       expect(actual.items[0].levelAverage, 10.25);
       expect(actual.items[0].levelStdev, 0.5);
@@ -129,6 +137,7 @@ void main() {
       expect(actual.items[2].title, 'First fallback');
       expect(actual.items[2].userStatus, ProblemUserStatus.tried);
       expect(actual.items[3].title, isNull);
+      expect(actual.items[3].titles, isEmpty);
       expect(actual.items[3].id, 1004);
       expect(actual.items[3].subId, '');
       expect(actual.items[3].levelAverage, 0);
@@ -143,6 +152,155 @@ void main() {
         ProblemNoRatingReason.unofficial,
       ]);
       expect(actual.items[3].noRatingWarnings, isEmpty);
+    });
+
+    test('requires the documented full title array and fields', () {
+      final endpoint = contract.searchProblems('sample');
+      Map<String, dynamic> source() =>
+          jsonDecode(fixture('v4/search_problems.json'))
+              as Map<String, dynamic>;
+      Map<String, dynamic> firstProblem(Map<String, dynamic> body) =>
+          (body['problems'] as List).first as Map<String, dynamic>;
+      Map<String, dynamic> title() => {
+        'language': 'ko',
+        'title': '제목',
+        'isOriginal': false,
+        'latex': false,
+        'html': false,
+      };
+
+      final missing = source();
+      firstProblem(missing).remove('titles');
+      expect(() => endpoint.decode(missing), throwsFormatException);
+
+      for (final invalid in <Object?>[
+        null,
+        0,
+        false,
+        'title',
+        const <String, Object?>{},
+      ]) {
+        final malformed = source();
+        firstProblem(malformed)['titles'] = invalid;
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'titles = $invalid',
+        );
+      }
+
+      final invalidItem = source();
+      firstProblem(invalidItem)['titles'] = [0];
+      expect(() => endpoint.decode(invalidItem), throwsFormatException);
+
+      for (final field in [
+        'language',
+        'title',
+        'isOriginal',
+        'latex',
+        'html',
+      ]) {
+        final malformed = source();
+        firstProblem(malformed)['titles'] = [title()..remove(field)];
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'title $field missing',
+        );
+      }
+
+      for (final field in ['language', 'title']) {
+        for (final invalid in <Object?>[
+          null,
+          0,
+          false,
+          const <String, Object?>{},
+          const <Object>[],
+        ]) {
+          final malformed = source();
+          firstProblem(malformed)['titles'] = [title()..[field] = invalid];
+          expect(
+            () => endpoint.decode(malformed),
+            throwsFormatException,
+            reason: 'title $field = $invalid',
+          );
+        }
+      }
+
+      for (final field in ['isOriginal', 'latex', 'html']) {
+        for (final invalid in <Object?>[
+          null,
+          0,
+          'false',
+          const <String, Object?>{},
+          const <Object>[],
+        ]) {
+          final malformed = source();
+          firstProblem(malformed)['titles'] = [title()..[field] = invalid];
+          expect(
+            () => endpoint.decode(malformed),
+            throwsFormatException,
+            reason: 'title $field = $invalid',
+          );
+        }
+      }
+
+      final malformedAfterKorean = source();
+      firstProblem(malformedAfterKorean)['titles'] = [
+        title(),
+        title()..['html'] = 'false',
+      ];
+      expect(
+        () => endpoint.decode(malformedAfterKorean),
+        throwsFormatException,
+      );
+    });
+
+    test('preserves full title order, duplicates, flags, and raw strings', () {
+      final body =
+          jsonDecode(fixture('v4/search_problems.json'))
+              as Map<String, dynamic>;
+      final firstProblem =
+          (body['problems'] as List).first as Map<String, dynamic>;
+      Map<String, dynamic> firstTitle() => {
+        'language': ' ',
+        'title': ' 첫째 ',
+        'isOriginal': true,
+        'latex': true,
+        'html': false,
+        'futureTitleField': true,
+      };
+      firstProblem['titles'] = [
+        firstTitle(),
+        {
+          'language': 'ko',
+          'title': '',
+          'isOriginal': false,
+          'latex': false,
+          'html': true,
+          'futureTitleField': true,
+        },
+        firstTitle(),
+      ];
+
+      final item = contract.searchProblems('sample').decode(body).items.first;
+      final titles = item.titles!;
+      expect(item.title, '');
+      expect(titles.map((title) => title.title), [' 첫째 ', '', ' 첫째 ']);
+      expect(titles.map((title) => title.language), [' ', 'ko', ' ']);
+      expect(titles[0].isOriginal, isTrue);
+      expect(titles[0].latex, isTrue);
+      expect(titles[0].html, isFalse);
+      expect(titles[1].latex, isFalse);
+      expect(titles[1].html, isTrue);
+      expect(
+        () => titles.add(titles.first),
+        throwsUnsupportedError,
+      );
+      expect(
+        () => titles[0] = titles[1],
+        throwsUnsupportedError,
+      );
     });
 
     test('requires and preserves independent wire identifiers', () {
