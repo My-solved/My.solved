@@ -91,29 +91,7 @@ class SearchRequestFailed extends SolvedApiException {
   });
 }
 
-class ArenaRequestFailed extends SolvedApiException {
-  const ArenaRequestFailed({
-    super.uri,
-    super.statusCode,
-    super.cause,
-    super.stackTrace,
-    super.responseBody,
-    super.retryAfter,
-  });
-}
-
-class SiteRequestFailed extends SolvedApiException {
-  const SiteRequestFailed({
-    super.uri,
-    super.statusCode,
-    super.cause,
-    super.stackTrace,
-    super.responseBody,
-    super.retryAfter,
-  });
-}
-
-enum _RequestType { user, background, badge, search, arena, site }
+enum _RequestType { user, background, badge, search }
 
 class SolvedApiClient {
   SolvedApiClient({
@@ -154,19 +132,8 @@ class SolvedApiClient {
   Future<UserProfile> userShow(String handle) =>
       _get(_contract.userShow(handle), requestType: _RequestType.user);
 
-  Future<List<Organization>> userOrganizations(String handle) =>
-      _get(_contract.userOrganizations(handle), requestType: _RequestType.user);
-
-  Future<List<Badge>> userAvailableBadges(String handle) => _get(
-        _contract.userAvailableBadges(handle),
-        requestType: _RequestType.user,
-      );
-
   Future<ProfileStreak> userGrass(String handle, String? topic) =>
       _get(_contract.userGrass(handle, topic), requestType: _RequestType.user);
-
-  Future<List<Problem>> userTop100(String handle) =>
-      _get(_contract.userTop100(handle), requestType: _RequestType.user);
 
   Future<List<ProfileTierStat>> userProblemStats(String handle) =>
       _get(_contract.userProblemStats(handle), requestType: _RequestType.user);
@@ -201,12 +168,6 @@ class SolvedApiClient {
 
   Future<SearchObject> searchTag(String query, int? page) =>
       _get(_contract.searchTag(query, page), requestType: _RequestType.search);
-
-  Future<List<ArenaContest>> arenaContests() =>
-      _get(_contract.arenaContests(), requestType: _RequestType.arena);
-
-  Future<SiteStats> siteStats() =>
-      _get(_contract.siteStats(), requestType: _RequestType.site);
 
   Future<T> _get<T>(
     SolvedApiEndpoint<T> endpoint, {
@@ -335,22 +296,6 @@ class SolvedApiClient {
           retryAfter: retryAfter,
         ),
       _RequestType.search => SearchRequestFailed(
-          uri: uri,
-          statusCode: statusCode,
-          cause: cause,
-          stackTrace: stackTrace,
-          responseBody: responseBody,
-          retryAfter: retryAfter,
-        ),
-      _RequestType.arena => ArenaRequestFailed(
-          uri: uri,
-          statusCode: statusCode,
-          cause: cause,
-          stackTrace: stackTrace,
-          responseBody: responseBody,
-          retryAfter: retryAfter,
-        ),
-      _RequestType.site => SiteRequestFailed(
           uri: uri,
           statusCode: statusCode,
           cause: cause,

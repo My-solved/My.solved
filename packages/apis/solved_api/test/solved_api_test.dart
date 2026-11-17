@@ -240,13 +240,17 @@ void main() {
         );
 
         await expectLater(
-          apiClient.siteStats(),
+          apiClient.userShow('w8385'),
           throwsA(
-            isA<SiteRequestFailed>()
+            isA<UserRequestFailed>()
                 .having(
                   (error) => error.uri,
                   'uri',
-                  Uri.https('solved.ac', '/api/v3/site/stats'),
+                  Uri.https(
+                    'solved.ac',
+                    '/api/v3/user/show',
+                    {'handle': 'w8385'},
+                  ),
                 )
                 .having((error) => error.statusCode, 'statusCode', 429)
                 .having(
@@ -274,9 +278,9 @@ void main() {
         );
 
         await expectLater(
-          apiClient.siteStats(),
+          apiClient.userShow('w8385'),
           throwsA(
-            isA<SiteRequestFailed>().having(
+            isA<UserRequestFailed>().having(
               (error) => error.retryAfter,
               'retryAfter',
               Duration.zero,
@@ -462,73 +466,6 @@ void main() {
       });
     });
 
-    group('userOrganizations', () {
-      const handle = 'w8385';
-      test('makes correct http request', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn('{}');
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-        try {
-          await apiClient.userOrganizations(handle);
-        } catch (_) {}
-        verify(
-          () => httpClient.get(
-            Uri.https('solved.ac', '/api/v3/user/organizations', {
-              'handle': handle,
-            }),
-          ),
-        ).called(1);
-      });
-
-      test('returns List<Organization> on valid response', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(
-          () => response.body,
-        ).thenReturn(fixture('v3/user_organizations.json'));
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-
-        final actual = await apiClient.userOrganizations(handle);
-        expect(
-          actual,
-          isA<List<Organization>>().having((l) => l.length, 'length', 3),
-        );
-      });
-    });
-
-    group('userAvailableBadges', () {
-      const handle = 'w8385';
-      test('makes correct http request', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn('{}');
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-        try {
-          await apiClient.userAvailableBadges(handle);
-        } catch (_) {}
-        verify(
-          () => httpClient.get(
-            Uri.https('solved.ac', '/api/v3/user/available_badges', {
-              'handle': handle,
-            }),
-          ),
-        ).called(1);
-      });
-
-      test('returns List<Badge> on valid response', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(
-          () => response.body,
-        ).thenReturn(fixture('v3/user_available_badges.json'));
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-
-        final actual = await apiClient.userAvailableBadges(handle);
-        expect(actual, isA<List<Badge>>().having((l) => l.length, 'length', 3));
-      });
-    });
-
     group('userGrass', () {
       const handle = 'w8385';
       const topic = 'default';
@@ -571,38 +508,6 @@ void main() {
         expect(actual.days.first.month, 11);
         expect(actual.days.first.day, 25);
         expect(actual.days.first.solvedCount, 0);
-      });
-    });
-
-    group('userTop100', () {
-      const handle = 'w8385';
-      test('makes correct http request', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn('{}');
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-        try {
-          await apiClient.userTop100(handle);
-        } catch (_) {}
-        verify(
-          () => httpClient.get(
-            Uri.https('solved.ac', '/api/v3/user/top_100', {'handle': handle}),
-          ),
-        ).called(1);
-      });
-
-      test('returns List<Problem> on valid response', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn(fixture('v3/user_top_100.json'));
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-
-        final actual = await apiClient.userTop100(handle);
-        expect(actual, isA<List<Problem>>());
-        for (final problem in actual) {
-          expect(problem, isA<Problem>());
-          expect(problem.tags, isA<List<Tag>>());
-        }
       });
     });
 
@@ -901,57 +806,6 @@ void main() {
         final actual = await apiClient.searchTag(query, page);
         expect(actual, isA<SearchObject>());
         expect(actual.items, isA<List<Tag>>());
-      });
-    });
-
-    group('arenaContests', () {
-      test('makes correct http request', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn('{}');
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-        try {
-          await apiClient.arenaContests();
-        } catch (_) {}
-        verify(
-          () =>
-              httpClient.get(Uri.https('solved.ac', '/api/v3/arena/contests')),
-        ).called(1);
-      });
-
-      test('returns List<ArenaContest> on valid response', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn(fixture('v3/arena_contests.json'));
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-
-        final actual = await apiClient.arenaContests();
-        expect(actual, isA<List<ArenaContest>>());
-      });
-    });
-
-    group('siteStats', () {
-      test('makes correct http request', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn('{}');
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-        try {
-          await apiClient.siteStats();
-        } catch (_) {}
-        verify(
-          () => httpClient.get(Uri.https('solved.ac', '/api/v3/site/stats')),
-        ).called(1);
-      });
-
-      test('returns SiteStats on valid response', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn(fixture('v3/site_stats.json'));
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-
-        final actual = await apiClient.siteStats();
-        expect(actual, isA<SiteStats>());
       });
     });
   });

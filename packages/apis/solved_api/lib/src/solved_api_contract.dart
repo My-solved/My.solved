@@ -48,13 +48,7 @@ final class SolvedApiEndpoint<T> {
 abstract interface class SolvedApiContract {
   SolvedApiEndpoint<UserProfile> userShow(String handle);
 
-  SolvedApiEndpoint<List<Organization>> userOrganizations(String handle);
-
-  SolvedApiEndpoint<List<Badge>> userAvailableBadges(String handle);
-
   SolvedApiEndpoint<ProfileStreak> userGrass(String handle, String? topic);
-
-  SolvedApiEndpoint<List<Problem>> userTop100(String handle);
 
   SolvedApiEndpoint<List<ProfileTierStat>> userProblemStats(String handle);
 
@@ -78,10 +72,6 @@ abstract interface class SolvedApiContract {
   SolvedApiEndpoint<SearchObject> searchUser(String query, int? page);
 
   SolvedApiEndpoint<SearchObject> searchTag(String query, int? page);
-
-  SolvedApiEndpoint<List<ArenaContest>> arenaContests();
-
-  SolvedApiEndpoint<SiteStats> siteStats();
 }
 
 /// The verified v3 request paths, query parameters, and response decoders.
@@ -99,43 +89,11 @@ class SolvedApiV3Contract implements SolvedApiContract {
       );
 
   @override
-  SolvedApiEndpoint<List<Organization>> userOrganizations(String handle) =>
-      _endpoint(
-        path: 'user/organizations',
-        queryParameters: {'handle': handle},
-        decode: (json) => json
-            .map((item) => Organization.fromJson(item))
-            .toList()
-            .cast<Organization>(),
-      );
-
-  @override
-  SolvedApiEndpoint<List<Badge>> userAvailableBadges(String handle) =>
-      _endpoint(
-        path: 'user/available_badges',
-        queryParameters: {'handle': handle},
-        decode: (json) => json['items']
-            .map((item) => Badge.fromJson(item))
-            .toList()
-            .cast<Badge>(),
-      );
-
-  @override
   SolvedApiEndpoint<ProfileStreak> userGrass(String handle, String? topic) =>
       _endpoint(
         path: 'user/grass',
         queryParameters: {'handle': handle, 'topic': topic ?? 'default'},
         decode: _decodeV3ProfileStreak,
-      );
-
-  @override
-  SolvedApiEndpoint<List<Problem>> userTop100(String handle) => _endpoint(
-        path: 'user/top_100',
-        queryParameters: {'handle': handle},
-        decode: (json) => json['items']
-            .map((item) => Problem.fromJson(item))
-            .toList()
-            .cast<Problem>(),
       );
 
   @override
@@ -230,24 +188,6 @@ class SolvedApiV3Contract implements SolvedApiContract {
           return SearchObject.fromJson(json);
         },
       );
-
-  @override
-  SolvedApiEndpoint<List<ArenaContest>> arenaContests() => _endpoint(
-        path: 'arena/contests',
-        decode: (json) {
-          final contests = <ArenaContest>[];
-          for (final status in json.keys) {
-            json[status].forEach(
-              (contest) => contests.add(ArenaContest.fromJson(contest)),
-            );
-          }
-          return contests;
-        },
-      );
-
-  @override
-  SolvedApiEndpoint<SiteStats> siteStats() =>
-      _endpoint(path: 'site/stats', decode: (json) => SiteStats.fromJson(json));
 
   SolvedApiEndpoint<T> _endpoint<T>({
     required String path,
