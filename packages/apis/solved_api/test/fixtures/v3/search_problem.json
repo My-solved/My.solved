@@ -1,0 +1,196 @@
+{
+  "count": 1,
+  "items": [
+    {
+      "problemId": 3734,
+      "titleKo": "RSA 인수 분해",
+      "titles": [
+        {
+          "language": "ko",
+          "languageDisplayName": "ko",
+          "title": "RSA 인수 분해",
+          "isOriginal": false
+        },
+        {
+          "language": "en",
+          "languageDisplayName": "en",
+          "title": "RSA Factorization",
+          "isOriginal": true
+        }
+      ],
+      "isSolvable": true,
+      "isPartial": false,
+      "acceptedUserCount": 28,
+      "level": 16,
+      "votedUserCount": 10,
+      "sprout": false,
+      "givesNoRating": false,
+      "isLevelLocked": false,
+      "averageTries": 8.6429,
+      "official": true,
+      "tags": [
+        {
+          "key": "ad_hoc",
+          "isMeta": false,
+          "bojTagId": 109,
+          "problemCount": 1254,
+          "displayNames": [
+            {
+              "language": "ko",
+              "name": "애드 혹",
+              "short": "애드 혹"
+            },
+            {
+              "language": "en",
+              "name": "ad-hoc",
+              "short": "ad-hoc"
+            },
+            {
+              "language": "ja",
+              "name": "アドホック",
+              "short": "アドホック"
+            }
+          ],
+          "aliases": [
+
+          ]
+        },
+        {
+          "key": "arbitrary_precision",
+          "isMeta": false,
+          "bojTagId": 117,
+          "problemCount": 239,
+          "displayNames": [
+            {
+              "language": "ko",
+              "name": "임의 정밀도 / 큰 수 연산",
+              "short": "임의 정밀도 / 큰 수 연산"
+            },
+            {
+              "language": "en",
+              "name": "arbitrary precision / big integers",
+              "short": "arbitrary precision / big integers"
+            },
+            {
+              "language": "ja",
+              "name": "高精度または大きな数の演算",
+              "short": "高精度または大きな数の演算"
+            }
+          ],
+          "aliases": [
+            {
+              "alias": "빅인티저"
+            },
+            {
+              "alias": "빅데시멀"
+            },
+            {
+              "alias": "biginteger"
+            },
+            {
+              "alias": "bigdecimal"
+            }
+          ]
+        },
+        {
+          "key": "bruteforcing",
+          "isMeta": false,
+          "bojTagId": 125,
+          "problemCount": 1997,
+          "displayNames": [
+            {
+              "language": "ko",
+              "name": "브루트포스 알고리즘",
+              "short": "브루트포스 알고리즘"
+            },
+            {
+              "language": "en",
+              "name": "bruteforcing",
+              "short": "bruteforce"
+            },
+            {
+              "language": "ja",
+              "name": "全探索",
+              "short": "全探索"
+            }
+          ],
+          "aliases": [
+            {
+              "alias": "완전탐색"
+            },
+            {
+              "alias": "완전 탐색"
+            },
+            {
+              "alias": "브루트포스"
+            },
+            {
+              "alias": "bruteforce"
+            },
+            {
+              "alias": "brute force"
+            },
+            {
+              "alias": "완탐"
+            }
+          ]
+        },
+        {
+          "key": "math",
+          "isMeta": false,
+          "bojTagId": 124,
+          "problemCount": 5873,
+          "displayNames": [
+            {
+              "language": "ko",
+              "name": "수학",
+              "short": "수학"
+            },
+            {
+              "language": "en",
+              "name": "mathematics",
+              "short": "math"
+            },
+            {
+              "language": "ja",
+              "name": "数学",
+              "short": "数学"
+            }
+          ],
+          "aliases": [
+
+          ]
+        },
+        {
+          "key": "number_theory",
+          "isMeta": false,
+          "bojTagId": 95,
+          "problemCount": 1314,
+          "displayNames": [
+            {
+              "language": "ko",
+              "name": "정수론",
+              "short": "정수론"
+            },
+            {
+              "language": "en",
+              "name": "number theory",
+              "short": "number theory"
+            },
+            {
+              "language": "ja",
+              "name": "整数論",
+              "short": "整数論"
+            }
+          ],
+          "aliases": [
+
+          ]
+        }
+      ],
+      "metadata": {
+
+      }
+    }
+  ]
+}
