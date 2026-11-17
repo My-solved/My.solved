@@ -20,8 +20,6 @@ class HomeState extends Equatable {
   final String? profileImageUrl;
   final ProfileBackgroundAsset? background;
   final ProfileBadgeAsset? badge;
-  final List<Badge> badges;
-  final List<Organization> organizations;
   final ProfileStreak? streak;
   final bool? solvedToday;
   final List<ProfileTagRating>? tagRatings;
@@ -35,8 +33,6 @@ class HomeState extends Equatable {
     this.profileImageUrl,
     this.background,
     this.badge,
-    required this.badges,
-    required this.organizations,
     this.streak,
     this.solvedToday,
     this.tagRatings,
@@ -51,8 +47,6 @@ class HomeState extends Equatable {
     String? profileImageUrl,
     ProfileBackgroundAsset? background,
     ProfileBadgeAsset? badge,
-    List<Badge>? badges,
-    List<Organization>? organizations,
     ProfileStreak? streak,
     bool? solvedToday,
     List<ProfileTagRating>? tagRatings,
@@ -66,8 +60,6 @@ class HomeState extends Equatable {
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       background: background ?? this.background,
       badge: badge ?? this.badge,
-      badges: badges ?? this.badges,
-      organizations: organizations ?? this.organizations,
       streak: streak ?? this.streak,
       solvedToday: solvedToday ?? this.solvedToday,
       tagRatings: tagRatings ?? this.tagRatings,
@@ -84,8 +76,6 @@ class HomeState extends Equatable {
         profileImageUrl,
         background,
         badge,
-        badges,
-        organizations,
         streak,
         solvedToday,
         tagRatings,

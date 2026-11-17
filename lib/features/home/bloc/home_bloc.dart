@@ -23,8 +23,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           HomeState(
             handle: handle,
             isOnIllustBackground: true,
-            organizations: [],
-            badges: [],
           ),
         ) {
     on<HomeInit>(_onInit);
@@ -74,11 +72,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           );
         },
       () async {
-        auxiliary.organizations =
-            await _optional(() => _userRepository.getOrganizations(_handle)) ??
-                const [];
-      },
-      () async {
         auxiliary.isOnIllustBackground = await _optional(
               _sharedPreferencesRepository.getIsOnIllustBackground,
             ) ??
@@ -90,11 +83,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             () => _userRepository.getBadge(user.badgeId!),
           );
         },
-      () async {
-        auxiliary.badges =
-            await _optional(() => _userRepository.getBadges(_handle)) ??
-                const [];
-      },
       () async {
         auxiliary.streak = await _optional(
           () => _userRepository.getStreak(_handle, "default"),
@@ -123,8 +111,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         profileImageUrl: user.profileImageUrl,
         background: auxiliary.background,
         badge: auxiliary.badge,
-        badges: auxiliary.badges,
-        organizations: auxiliary.organizations,
         streak: effectiveStreak,
         solvedToday: _hasSolvedToday(effectiveStreak, _now()),
         tagRatings: auxiliary.tagRatings,
@@ -179,8 +165,6 @@ class _HomeAuxiliaryData {
   bool isOnIllustBackground;
   ProfileBackgroundAsset? background;
   ProfileBadgeAsset? badge;
-  List<Badge> badges = const [];
-  List<Organization> organizations = const [];
   ProfileStreak? streak;
   List<ProfileTagRating> tagRatings = const [];
   List<ProfileTierStat> problemStats = const [];

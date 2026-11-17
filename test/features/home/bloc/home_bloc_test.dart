@@ -36,8 +36,39 @@ void main() {
     await states;
     await Future<void>.delayed(Duration.zero);
     expect(repository.userRequestCount, 1);
+    expect(repository.auxiliaryRequestCount, 4);
+    expect(
+      repository.requestedAuxiliaryNames,
+      isNot(contains('organizations')),
+    );
+    expect(repository.requestedAuxiliaryNames, isNot(contains('badges')));
     expect(repository.maxActiveAuxiliaryRequests, greaterThan(1));
     expect(repository.maxActiveAuxiliaryRequests, lessThanOrEqualTo(3));
+  });
+
+  test('loads the selected badge without loading unused collections',
+      () async {
+    final repository = _FakeUserRepository(
+      user: _profile(badgeId: 'badge'),
+    );
+    final bloc = _createBloc(repository, today);
+    addTearDown(bloc.close);
+
+    final success = bloc.stream.firstWhere((state) => state.status.isSuccess);
+    bloc.add(HomeInit());
+
+    final state = await success;
+    expect(state.badge, same(_badge));
+    expect(
+      repository.requestedAuxiliaryNames,
+      unorderedEquals([
+        'background',
+        'badge',
+        'streak',
+        'tagRatings',
+        'problemStats',
+      ]),
+    );
   });
 
   test('emits failure when the core user request fails', () async {
@@ -300,9 +331,13 @@ ProfileStreak _streak({
   );
 }
 
-UserProfile _profile({String? backgroundId = 'default'}) => UserProfile(
+UserProfile _profile({
+  String? backgroundId = 'default',
+  String? badgeId,
+}) =>
+    UserProfile(
       handle: 'w8385',
-      badgeId: null,
+      badgeId: badgeId,
       backgroundId: backgroundId,
       profileImageUrl: null,
       solvedCount: 1,
