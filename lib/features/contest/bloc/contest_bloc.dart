@@ -20,19 +20,21 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
     required ContestNotificationRepository contestNotificationRepository,
     required ContestRepository contestRepository,
     required SharedPreferencesRepository sharedPreferencesRepository,
-  })  : _contestNotificationRepository = contestNotificationRepository,
-        _contestRepository = contestRepository,
-        _sharedPreferencesRepository = sharedPreferencesRepository,
-        super(ContestState(
-          filters: {
-            ContestVenue.bojOpen: false,
-            ContestVenue.atCoder: false,
-            ContestVenue.codeForces: false,
-            ContestVenue.icpc: false,
-            ContestVenue.leetCode: false,
-            ContestVenue.usaco: false,
-          },
-        )) {
+  }) : _contestNotificationRepository = contestNotificationRepository,
+       _contestRepository = contestRepository,
+       _sharedPreferencesRepository = sharedPreferencesRepository,
+       super(
+         ContestState(
+           filters: {
+             ContestVenue.bojOpen: false,
+             ContestVenue.atCoder: false,
+             ContestVenue.codeForces: false,
+             ContestVenue.icpc: false,
+             ContestVenue.leetCode: false,
+             ContestVenue.usaco: false,
+           },
+         ),
+       ) {
     on<ContestInit>(_onInit);
     on<ContestSegmentedControlPressed>(_onSegmentedControlPressed);
     on<ContestNotificationButtonPressed>(_onNotificationPressed);
@@ -50,10 +52,8 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
     try {
       final filters = state.filters;
       for (ContestVenue venue in ContestVenue.allCases) {
-        filters[venue] =
-            await _sharedPreferencesRepository.getIsOnContestFilter(
-          venue: venue.value,
-        );
+        filters[venue] = await _sharedPreferencesRepository
+            .getIsOnContestFilter(venue: venue.value);
       }
 
       final result = await _contestRepository.getContests();
@@ -90,25 +90,33 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
         }
         filteredUpcomingContests.add(contest);
         isOnContestNotifications.add(
-            await _sharedPreferencesRepository.getIsOnContestNotification(
-                title: contest.name, startTime: contest.startTime.hashCode));
+          await _sharedPreferencesRepository.getIsOnContestNotification(
+            title: contest.name,
+            startTime: contest.startTime.hashCode,
+          ),
+        );
         isOnContestCalendars.add(
-            await _sharedPreferencesRepository.getIsOnContestCalendar(
-                title: contest.name, startTime: contest.startTime.hashCode));
+          await _sharedPreferencesRepository.getIsOnContestCalendar(
+            title: contest.name,
+            startTime: contest.startTime.hashCode,
+          ),
+        );
       }
 
-      emit(state.copyWith(
-        status: ContestStatus.success,
-        filters: filters,
-        endedContests: endedContests,
-        ongoingContests: ongoingContests,
-        upcomingContests: upcomingContests,
-        isOnNotificationUpcomingContests: isOnContestNotifications,
-        isOnCalendarUpcomingContests: isOnContestCalendars,
-        filteredEndedContests: filteredEndedContests,
-        filteredOngoingContests: filteredOngoingContests,
-        filteredUpcomingContests: filteredUpcomingContests,
-      ));
+      emit(
+        state.copyWith(
+          status: ContestStatus.success,
+          filters: filters,
+          endedContests: endedContests,
+          ongoingContests: ongoingContests,
+          upcomingContests: upcomingContests,
+          isOnNotificationUpcomingContests: isOnContestNotifications,
+          isOnCalendarUpcomingContests: isOnContestCalendars,
+          filteredEndedContests: filteredEndedContests,
+          filteredOngoingContests: filteredOngoingContests,
+          filteredUpcomingContests: filteredUpcomingContests,
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(status: ContestStatus.failure));
     }
@@ -121,13 +129,14 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
     var status = await Permission.notification.request();
     if (!status.isGranted) {
       Fluttertoast.showToast(
-          msg: "알림 권한을 허용해주세요.",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIosWeb: 1,
-          backgroundColor: MySolvedColor.main.withAlpha(200),
-          textColor: Colors.white,
-          fontSize: 16.0);
+        msg: "알림 권한을 허용해주세요.",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: MySolvedColor.main.withAlpha(200),
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
       await Future.delayed(const Duration(seconds: 1));
       await openAppSettings();
       return;
@@ -145,13 +154,14 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
         await _sharedPreferencesRepository.getContestNotificationMinute();
 
     Fluttertoast.showToast(
-        msg: isOn ? "알람이 취소되었습니다." : "알람이 설정되었습니다.",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.CENTER,
-        timeInSecForIosWeb: 1,
-        backgroundColor: MySolvedColor.main.withAlpha(200),
-        textColor: Colors.white,
-        fontSize: 16.0);
+      msg: isOn ? "알람이 취소되었습니다." : "알람이 설정되었습니다.",
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.CENTER,
+      timeInSecForIosWeb: 1,
+      backgroundColor: MySolvedColor.main.withAlpha(200),
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
 
     if (isOn) {
       await _contestNotificationRepository.cancelContestNotification(
@@ -164,10 +174,12 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
         isOn: false,
       );
       isOnNotifications[event.index] = false;
-      emit(state.copyWith(
-        status: ContestStatus.success,
-        isOnNotificationUpcomingContests: isOnNotifications,
-      ));
+      emit(
+        state.copyWith(
+          status: ContestStatus.success,
+          isOnNotificationUpcomingContests: isOnNotifications,
+        ),
+      );
     } else {
       await _contestNotificationRepository.setContestNotification(
         title: contest.name,
@@ -180,10 +192,12 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
         isOn: true,
       );
       isOnNotifications[event.index] = true;
-      emit(state.copyWith(
-        status: ContestStatus.success,
-        isOnNotificationUpcomingContests: isOnNotifications,
-      ));
+      emit(
+        state.copyWith(
+          status: ContestStatus.success,
+          isOnNotificationUpcomingContests: isOnNotifications,
+        ),
+      );
     }
   }
 
@@ -206,28 +220,29 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
         isOn: false,
       );
       isOnCalendar[event.index] = false;
-      emit(state.copyWith(
-        status: ContestStatus.success,
-        isOnCalendarUpcomingContests: isOnCalendar,
-      ));
+      emit(
+        state.copyWith(
+          status: ContestStatus.success,
+          isOnCalendarUpcomingContests: isOnCalendar,
+        ),
+      );
     } else {
       Fluttertoast.showToast(
-          msg: "일정을 등록합니다.",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIosWeb: 1,
-          backgroundColor: MySolvedColor.main.withAlpha(200),
-          textColor: Colors.white,
-          fontSize: 16.0);
+        msg: "일정을 등록합니다.",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: MySolvedColor.main.withAlpha(200),
+        textColor: Colors.white,
+        fontSize: 16.0,
+      );
 
       final Event calendarEvent = Event(
         title: contest.name,
         description: contest.url,
         startDate: contest.startTime,
         endDate: contest.endTime,
-        iosParams: IOSParams(
-          url: contest.url,
-        ),
+        iosParams: IOSParams(url: contest.url),
       );
       Add2Calendar.addEvent2Cal(calendarEvent);
 
@@ -237,10 +252,12 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
         isOn: true,
       );
       isOnCalendar[event.index] = true;
-      emit(state.copyWith(
-        status: ContestStatus.success,
-        isOnCalendarUpcomingContests: isOnCalendar,
-      ));
+      emit(
+        state.copyWith(
+          status: ContestStatus.success,
+          isOnCalendarUpcomingContests: isOnCalendar,
+        ),
+      );
     }
 
     emit(state.copyWith(status: ContestStatus.success));
@@ -297,20 +314,29 @@ class ContestBloc extends Bloc<ContestEvent, ContestState> {
       }
       filteredUpcomingContests.add(contest);
       isOnContestNotifications.add(
-          await _sharedPreferencesRepository.getIsOnContestNotification(
-              title: contest.name, startTime: contest.startTime.hashCode));
+        await _sharedPreferencesRepository.getIsOnContestNotification(
+          title: contest.name,
+          startTime: contest.startTime.hashCode,
+        ),
+      );
       isOnContestCalendars.add(
-          await _sharedPreferencesRepository.getIsOnContestCalendar(
-              title: contest.name, startTime: contest.startTime.hashCode));
+        await _sharedPreferencesRepository.getIsOnContestCalendar(
+          title: contest.name,
+          startTime: contest.startTime.hashCode,
+        ),
+      );
     }
 
-    emit(state.copyWith(
+    emit(
+      state.copyWith(
         status: ContestStatus.success,
         filters: filters,
         isOnNotificationUpcomingContests: isOnContestNotifications,
         isOnCalendarUpcomingContests: isOnContestCalendars,
         filteredEndedContests: filteredEndedContests,
         filteredOngoingContests: filteredOngoingContests,
-        filteredUpcomingContests: filteredUpcomingContests));
+        filteredUpcomingContests: filteredUpcomingContests,
+      ),
+    );
   }
 }
