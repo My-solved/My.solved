@@ -10,7 +10,7 @@ on:
 
 env:
   JAVA_VERSION: "21.x"
-  FLUTTER_VERSION: "3.29.x"
+  FLUTTER_VERSION: "3.29.0"
 
 jobs:
   analyze:
@@ -43,6 +43,18 @@ jobs:
           flutter pub get
           flutter analyze
 
+      - name: Analyze Notification API  🔍
+        run: |
+          cd packages/apis/notification_api
+          flutter pub get
+          flutter analyze
+
+      - name: Analyze Shared Preferences API  🔍
+        run: |
+          cd packages/apis/shared_preferences_api
+          flutter pub get
+          flutter analyze
+
       - name: Analyze User Repository  🔍
         run: |
           cd packages/repositories/user_repository
@@ -58,6 +70,24 @@ jobs:
       - name: Analyze Contest Repository  🔍
         run: |
           cd packages/repositories/contest_repository
+          flutter pub get
+          flutter analyze
+
+      - name: Analyze Contest Notification Repository  🔍
+        run: |
+          cd packages/repositories/contest_notification_repository
+          flutter pub get
+          flutter analyze
+
+      - name: Analyze Shared Preferences Repository  🔍
+        run: |
+          cd packages/repositories/shared_preferences_repository
+          flutter pub get
+          flutter analyze
+
+      - name: Analyze Streak Notification Repository  🔍
+        run: |
+          cd packages/repositories/streak_notification_repository
           flutter pub get
           flutter analyze
 
@@ -106,6 +136,11 @@ jobs:
       - name: Test Contest Repository  🛰️
         run: |
           cd packages/repositories/contest_repository
+          flutter test
+
+      - name: Test Shared Preferences Repository  🛰️
+        run: |
+          cd packages/repositories/shared_preferences_repository
           flutter test
 
   build:
