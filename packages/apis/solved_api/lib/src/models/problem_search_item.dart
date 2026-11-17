@@ -1,3 +1,5 @@
+import 'problem_no_rating_warning.dart';
+
 /// Codes exposed by the official v4 `noRatingReasons` field.
 enum ProblemNoRatingReason {
   unofficial('unofficial'),
@@ -18,6 +20,7 @@ class ProblemSearchItem {
     required this.tagNames,
     this.givesNoRating,
     this.noRatingReasons,
+    this.noRatingWarnings,
   });
 
   final int problemId;
@@ -33,6 +36,12 @@ class ProblemSearchItem {
   /// `null` means the contract did not provide this field, while an empty list
   /// means it explicitly reported no reasons.
   final List<ProblemNoRatingReason>? noRatingReasons;
+
+  /// Warnings explicitly reported by the active contract.
+  ///
+  /// `null` means the contract did not provide this field, while an empty list
+  /// means it explicitly reported no warnings.
+  final List<ProblemNoRatingWarning>? noRatingWarnings;
 
   /// Display labels normalized for the search UI.
   ///

@@ -69,6 +69,7 @@ void main() {
       expect(problems.items.single.level, 16);
       expect(problems.items.single.givesNoRating, isFalse);
       expect(problems.items.single.noRatingReasons, isNull);
+      expect(problems.items.single.noRatingWarnings, isNull);
       expect(problems.items.single.tagNames, [
         '애드 혹',
         '임의 정밀도 / 큰 수 연산',
@@ -127,6 +128,7 @@ void main() {
 
       expect(item.givesNoRating, isNull);
       expect(item.noRatingReasons, isNull);
+      expect(item.noRatingWarnings, isNull);
       expect(
         endpoint
             .decode(source(includeMarker: false))
@@ -138,9 +140,11 @@ void main() {
       final missingMarker = endpoint.decode(source()).items.single;
       expect(missingMarker.givesNoRating, isNull);
       expect(missingMarker.noRatingReasons, isNull);
+      expect(missingMarker.noRatingWarnings, isNull);
       final unrated = endpoint.decode(source(givesNoRating: true)).items.single;
       expect(unrated.givesNoRating, isTrue);
       expect(unrated.noRatingReasons, isNull);
+      expect(unrated.noRatingWarnings, isNull);
       for (final invalid in <Object>[0, 'false', const <Object>[]]) {
         expect(
           () => endpoint.decode(source(givesNoRating: invalid)),
