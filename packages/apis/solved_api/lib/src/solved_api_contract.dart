@@ -60,8 +60,6 @@ abstract interface class SolvedApiContract {
 
   SolvedApiEndpoint<ProfileBadgeAsset> badgeShow(String badgeId);
 
-  SolvedApiEndpoint<SearchSuggestion> searchSuggestion(String query);
-
   SolvedApiEndpoint<SearchObject<ProblemSearchItem>> searchProblem(
     String query,
     int? page,
@@ -133,14 +131,6 @@ class SolvedApiV3Contract implements SolvedApiContract {
         path: 'badge/show',
         queryParameters: {'badgeId': badgeId},
         decode: _decodeV3ProfileBadgeAsset,
-      );
-
-  @override
-  SolvedApiEndpoint<SearchSuggestion> searchSuggestion(String query) =>
-      _endpoint(
-        path: 'search/suggestion',
-        queryParameters: {'query': query},
-        decode: (json) => SearchSuggestion.fromJson(json),
       );
 
   @override

@@ -5,9 +5,6 @@ import 'package:test/test.dart';
 
 class MockSolvedApiClient extends Mock implements solved_api.SolvedApiClient {}
 
-class MockSearchSuggestion extends Mock
-    implements solved_api.SearchSuggestion {}
-
 void main() {
   group('SearchRepository', () {
     late solved_api.SolvedApiClient solvedApiClient;
@@ -16,26 +13,6 @@ void main() {
     setUp(() {
       solvedApiClient = MockSolvedApiClient();
       searchRepository = SearchRepository(solvedApiClient: solvedApiClient);
-    });
-
-    group('getSuggestions', () {
-      const query = 'rsa';
-
-      test('calls searchSuggestion with correct query', () async {
-        try {
-          await searchRepository.getSuggestions(query);
-        } catch (_) {}
-        verify(() => solvedApiClient.searchSuggestion(query)).called(1);
-      });
-
-      test('returns correct searchSuggestion on success', () async {
-        final searchSuggestion = MockSearchSuggestion();
-        when(
-          () => solvedApiClient.searchSuggestion(query),
-        ).thenAnswer((_) async => searchSuggestion);
-
-        expect(await searchRepository.getSuggestions(query), searchSuggestion);
-      });
     });
 
     group('getProblems', () {

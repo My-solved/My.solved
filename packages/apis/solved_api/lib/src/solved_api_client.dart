@@ -149,9 +149,6 @@ class SolvedApiClient {
   Future<ProfileBadgeAsset> badgeShow(String badgeId) =>
       _get(_contract.badgeShow(badgeId), requestType: _RequestType.badge);
 
-  Future<SearchSuggestion> searchSuggestion(String query) =>
-      _get(_contract.searchSuggestion(query), requestType: _RequestType.search);
-
   Future<SearchObject<ProblemSearchItem>> searchProblem(
     String query,
     int? page,

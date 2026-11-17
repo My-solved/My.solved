@@ -791,41 +791,6 @@ void main() {
       });
     });
 
-    group('searchSuggestions', () {
-      const query = 'rsa';
-      test('makes correct http request', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn('{}');
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-        try {
-          await apiClient.searchSuggestion(query);
-        } catch (_) {}
-        verify(
-          () => httpClient.get(
-            Uri.https('solved.ac', '/api/v3/search/suggestion', {
-              'query': query,
-            }),
-          ),
-        ).called(1);
-      });
-
-      test('returns SearchSuggestion on valid response', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(
-          () => response.body,
-        ).thenReturn(fixture('v3/search_suggestion.json'));
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-
-        final actual = await apiClient.searchSuggestion(query);
-        expect(actual, isA<SearchSuggestion>());
-        expect(actual.problems, isA<List<ProblemSuggestion>>());
-        expect(actual.tags, isA<List<TagSuggestion>>());
-        expect(actual.users, isA<List<UserSuggestion>>());
-      });
-    });
-
     group('searchProblems', () {
       const query = 'rsa';
       const page = 1;

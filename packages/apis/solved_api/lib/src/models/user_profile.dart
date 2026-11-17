@@ -1,7 +1,7 @@
 /// Version-neutral profile data consumed by the app's profile surfaces.
 ///
 /// Each API contract is responsible for normalizing its own wire response into
-/// this model. Search results intentionally continue to use [User].
+/// this model. Search results use their own version-neutral item models.
 class UserProfile {
   const UserProfile({
     required this.handle,
