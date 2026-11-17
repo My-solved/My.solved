@@ -37,7 +37,7 @@ void main() {
         clientId: '',
         redirectUri: '',
         gatewayConfig: _legacyGateway(),
-        allowInsecureLoopback: false,
+        allowInsecureRedirectLoopback: false,
       );
       final httpClient = _TrackingClient((_) async => _jsonResponse('{}'));
 
@@ -62,7 +62,7 @@ void main() {
             clientId: values.$1,
             redirectUri: values.$2,
             gatewayConfig: _v4Gateway(),
-            allowInsecureLoopback: false,
+            allowInsecureRedirectLoopback: false,
           ),
           throwsFormatException,
         );
@@ -75,7 +75,7 @@ void main() {
           clientId: 'client-id',
           redirectUri: 'https://app.example/oauth/callback',
           gatewayConfig: _legacyGateway(),
-          allowInsecureLoopback: false,
+          allowInsecureRedirectLoopback: false,
         ),
         throwsFormatException,
       );
@@ -87,7 +87,7 @@ void main() {
         redirectUri:
             'https://app.example/oauth/callback?source=solved&source=mobile',
         gatewayConfig: _v4Gateway(),
-        allowInsecureLoopback: false,
+        allowInsecureRedirectLoopback: false,
       );
       final httpClient = _TrackingClient((_) async => _jsonResponse('{}'));
       final runtime = config.createRuntime(
@@ -225,7 +225,7 @@ void main() {
             clientId: values.$1,
             redirectUri: values.$2,
             gatewayConfig: _v4Gateway(),
-            allowInsecureLoopback: false,
+            allowInsecureRedirectLoopback: false,
           ),
           throwsFormatException,
         );
@@ -239,7 +239,7 @@ void main() {
           clientId: 'client-id',
           redirectUri: redirectUri,
           gatewayConfig: _v4Gateway(),
-          allowInsecureLoopback: true,
+          allowInsecureRedirectLoopback: true,
         ).redirectUri,
         Uri.parse(redirectUri),
       );
@@ -248,7 +248,7 @@ void main() {
           clientId: 'client-id',
           redirectUri: redirectUri,
           gatewayConfig: _v4Gateway(),
-          allowInsecureLoopback: false,
+          allowInsecureRedirectLoopback: false,
         ),
         throwsFormatException,
       );
@@ -257,32 +257,23 @@ void main() {
           clientId: 'client-id',
           redirectUri: 'http://127.0.0.1:8080/oauth/callback',
           gatewayConfig: _v4Gateway(),
-          allowInsecureLoopback: true,
+          allowInsecureRedirectLoopback: true,
         ),
         throwsFormatException,
       );
     });
 
-    test('passes explicit loopback permission to the complete runtime', () {
+    test('keeps gateway and redirect loopback capabilities separate', () {
       final gateway = SolvedApiGatewayConfig.parse(
         mode: solvedApiOfficialV4Mode,
         v4ProxyBaseUri: 'http://localhost:3000/solved/v4/',
         allowInsecureLoopback: true,
       );
-      expect(
-        () => SolvedOAuthRuntimeConfig.parse(
-          clientId: 'client-id',
-          redirectUri: 'https://app.example/oauth/callback',
-          gatewayConfig: gateway,
-          allowInsecureLoopback: false,
-        ),
-        throwsFormatException,
-      );
       final config = SolvedOAuthRuntimeConfig.parse(
         clientId: 'client-id',
-        redirectUri: 'http://localhost:8080/oauth/callback',
+        redirectUri: 'https://app.example/oauth/callback',
         gatewayConfig: gateway,
-        allowInsecureLoopback: true,
+        allowInsecureRedirectLoopback: false,
       );
       final httpClient = _TrackingClient((_) async => _jsonResponse('{}'));
       final runtime = config.createRuntime(httpClient: httpClient);
@@ -314,7 +305,7 @@ void main() {
             clientId: 'client-id',
             redirectUri: redirectUri,
             gatewayConfig: _v4Gateway(),
-            allowInsecureLoopback: false,
+            allowInsecureRedirectLoopback: false,
           ),
           throwsFormatException,
           reason: redirectUri,
@@ -337,7 +328,7 @@ SolvedOAuthRuntimeConfig _configured() => SolvedOAuthRuntimeConfig.parse(
   clientId: 'client-id',
   redirectUri: 'https://app.example/oauth/callback',
   gatewayConfig: _v4Gateway(),
-  allowInsecureLoopback: false,
+  allowInsecureRedirectLoopback: false,
 );
 
 SolvedApiGatewayConfig _legacyGateway() => SolvedApiGatewayConfig.parse(

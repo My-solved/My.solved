@@ -40,9 +40,7 @@ final class SolvedOAuthRuntimeConfig {
     required this.clientId,
     required this.redirectUri,
     required SolvedApiGatewayConfig gatewayConfig,
-    required bool allowInsecureLoopback,
-  }) : _gatewayConfig = gatewayConfig,
-       _allowInsecureLoopback = allowInsecureLoopback;
+  }) : _gatewayConfig = gatewayConfig;
 
   factory SolvedOAuthRuntimeConfig.fromEnvironment({
     required SolvedApiGatewayConfig gatewayConfig,
@@ -50,21 +48,20 @@ final class SolvedOAuthRuntimeConfig {
     clientId: const String.fromEnvironment(solvedOAuthClientIdDefine),
     redirectUri: const String.fromEnvironment(solvedOAuthRedirectUriDefine),
     gatewayConfig: gatewayConfig,
-    allowInsecureLoopback: kDebugMode,
+    allowInsecureRedirectLoopback: kDebugMode,
   );
 
   factory SolvedOAuthRuntimeConfig.parse({
     required String clientId,
     required String redirectUri,
     required SolvedApiGatewayConfig gatewayConfig,
-    required bool allowInsecureLoopback,
+    required bool allowInsecureRedirectLoopback,
   }) {
     if (clientId.isEmpty && redirectUri.isEmpty) {
       return SolvedOAuthRuntimeConfig._(
         clientId: null,
         redirectUri: null,
         gatewayConfig: gatewayConfig,
-        allowInsecureLoopback: allowInsecureLoopback,
       );
     }
     if (clientId.isEmpty || redirectUri.isEmpty) {
@@ -87,11 +84,6 @@ final class SolvedOAuthRuntimeConfig {
         'Solved OAuth requires the $solvedApiOfficialV4Mode API mode',
       );
     }
-    if (!allowInsecureLoopback &&
-        gatewayConfig.v4ProxyBaseUri!.scheme != 'https') {
-      throw const FormatException('Solved OAuth gateway must use HTTPS');
-    }
-
     final parsedRedirectUri = Uri.tryParse(redirectUri);
     if (parsedRedirectUri == null ||
         !parsedRedirectUri.isAbsolute ||
@@ -107,7 +99,7 @@ final class SolvedOAuthRuntimeConfig {
     }
     final isSecure = parsedRedirectUri.scheme == 'https';
     final isAllowedLoopback =
-        allowInsecureLoopback &&
+        allowInsecureRedirectLoopback &&
         parsedRedirectUri.scheme == 'http' &&
         parsedRedirectUri.host == 'localhost';
     if (!isSecure && !isAllowedLoopback) {
@@ -127,14 +119,12 @@ final class SolvedOAuthRuntimeConfig {
       clientId: clientId,
       redirectUri: parsedRedirectUri,
       gatewayConfig: gatewayConfig,
-      allowInsecureLoopback: allowInsecureLoopback,
     );
   }
 
   final String? clientId;
   final Uri? redirectUri;
   final SolvedApiGatewayConfig _gatewayConfig;
-  final bool _allowInsecureLoopback;
 
   bool get isConfigured => clientId != null;
 
@@ -151,13 +141,13 @@ final class SolvedOAuthRuntimeConfig {
     final oauthClient = SolvedOAuthClient(
       proxyBaseUri: _gatewayConfig.v4ProxyBaseUri!,
       httpClient: httpClient,
-      allowInsecureLoopback: _allowInsecureLoopback,
+      allowInsecureLoopback: _gatewayConfig.usesInsecureV4Loopback,
     );
     try {
       final identityResolver = SolvedOAuthProxyIdentityResolver(
         proxyBaseUri: _gatewayConfig.v4ProxyBaseUri!,
         httpClient: httpClient,
-        allowInsecureLoopback: _allowInsecureLoopback,
+        allowInsecureLoopback: _gatewayConfig.usesInsecureV4Loopback,
       );
       return SolvedOAuthRuntime._(
         oauthClient: oauthClient,
