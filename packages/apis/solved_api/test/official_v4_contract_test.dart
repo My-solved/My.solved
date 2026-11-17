@@ -194,11 +194,39 @@ void main() {
         'votedUserCount',
         'solvedUserCount',
         'subId',
+        'titles',
       ]),
     );
     final problemProperties = _properties(problemItem);
     expect(_map(problemProperties['id']), {'type': 'number'});
     expect(_map(problemProperties['subId']), {'type': 'string'});
+    final titles = _map(problemProperties['titles']);
+    expect(titles['type'], 'array');
+    for (final constraint in [
+      'minItems',
+      'maxItems',
+      'uniqueItems',
+      'description',
+    ]) {
+      expect(titles.containsKey(constraint), isFalse);
+    }
+    final titleItem = _map(titles['items']);
+    expect(titleItem['type'], 'object');
+    expect(_required(titleItem), [
+      'language',
+      'title',
+      'isOriginal',
+      'latex',
+      'html',
+    ]);
+    expect(titleItem.containsKey('additionalProperties'), isFalse);
+    final titleProperties = _properties(titleItem);
+    for (final field in ['language', 'title']) {
+      expect(_map(titleProperties[field]), {'type': 'string'});
+    }
+    for (final field in ['isOriginal', 'latex', 'html']) {
+      expect(_map(titleProperties[field]), {'type': 'boolean'});
+    }
     expect(_map(problemProperties['isStandard']), {'type': 'boolean'});
     final userStatus = _map(problemProperties['userStatus']);
     expect(userStatus['type'], ['string', 'null']);
