@@ -30,7 +30,7 @@ class _AppScreenState extends State<AppScreen> {
   late final SolvedApiGatewayConfig _solvedApiGatewayConfig;
   late final SolvedApiClient _solvedApiClient;
   late final SolvedOAuthRuntimeConfig _solvedOAuthRuntimeConfig;
-  late final SolvedOAuthClient? _solvedOAuthClient;
+  late final SolvedOAuthRuntime? _solvedOAuthRuntime;
   late final UserRepository _userRepository;
   late final SearchRepository _searchRepository;
 
@@ -48,9 +48,9 @@ class _AppScreenState extends State<AppScreen> {
     _solvedApiClient = _solvedApiGatewayConfig.createClient(
       httpClient: _httpClient,
     );
-    _solvedOAuthClient =
+    _solvedOAuthRuntime =
         _solvedOAuthRuntimeConfig.isConfigured
-            ? _solvedOAuthRuntimeConfig.createClient(httpClient: _httpClient)
+            ? _solvedOAuthRuntimeConfig.createRuntime(httpClient: _httpClient)
             : null;
     _userRepository = UserRepository(solvedApiClient: _solvedApiClient);
     _searchRepository = SearchRepository(solvedApiClient: _solvedApiClient);
@@ -60,7 +60,7 @@ class _AppScreenState extends State<AppScreen> {
   @override
   void dispose() {
     if (_resourcesInitialized) {
-      _solvedOAuthClient?.close();
+      _solvedOAuthRuntime?.close();
       _solvedApiClient.close();
       if (_ownsHttpClient) _httpClient.close();
     }
@@ -72,10 +72,9 @@ class _AppScreenState extends State<AppScreen> {
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider.value(value: _solvedApiClient),
-        RepositoryProvider.value(value: _solvedOAuthRuntimeConfig),
-        if (_solvedOAuthClient != null)
-          RepositoryProvider<SolvedOAuthClient>.value(
-            value: _solvedOAuthClient,
+        if (_solvedOAuthRuntime != null)
+          RepositoryProvider<SolvedOAuthAuthorizationCoordinator>.value(
+            value: _solvedOAuthRuntime.coordinator,
           ),
         RepositoryProvider.value(value: _userRepository),
         RepositoryProvider.value(value: _searchRepository),

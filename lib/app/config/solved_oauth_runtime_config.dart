@@ -6,6 +6,31 @@ import 'package:solved_api/solved_api.dart';
 const solvedOAuthClientIdDefine = 'SOLVED_OAUTH_CLIENT_ID';
 const solvedOAuthRedirectUriDefine = 'SOLVED_OAUTH_REDIRECT_URI';
 
+/// Caller-owned app composition for one optional solved.ac OAuth runtime.
+///
+/// Only the memory-only coordinator is exposed. The raw OAuth mutation client
+/// remains private and is closed without closing the shared HTTP client.
+final class SolvedOAuthRuntime {
+  SolvedOAuthRuntime._({
+    required SolvedOAuthClient oauthClient,
+    required this.coordinator,
+  }) : _oauthClient = oauthClient;
+
+  final SolvedOAuthClient _oauthClient;
+  final SolvedOAuthAuthorizationCoordinator coordinator;
+
+  bool _isClosed = false;
+
+  void close() {
+    if (_isClosed) return;
+    _isClosed = true;
+    _oauthClient.close();
+  }
+
+  @override
+  String toString() => 'SolvedOAuthRuntime(<redacted>)';
+}
+
 /// Public Flutter configuration for an optional solved.ac OAuth sign-in.
 ///
 /// The client ID and redirect URI are public protocol values. The solved.ac
@@ -113,7 +138,8 @@ final class SolvedOAuthRuntimeConfig {
 
   bool get isConfigured => clientId != null;
 
-  SolvedOAuthAuthorizationSession createAuthorizationSession({
+  SolvedOAuthRuntime createRuntime({
+    required http.Client httpClient,
     Iterable<SolvedOAuthScope> scopes = const <SolvedOAuthScope>[],
   }) {
     final configuredClientId = clientId;
@@ -121,20 +147,32 @@ final class SolvedOAuthRuntimeConfig {
     if (configuredClientId == null || configuredRedirectUri == null) {
       throw StateError('Solved OAuth is not configured');
     }
-    return SolvedOAuthAuthorizationSession.generate(
-      clientId: configuredClientId,
-      redirectUri: configuredRedirectUri,
-      scopes: scopes,
-    );
-  }
 
-  SolvedOAuthClient createClient({required http.Client httpClient}) {
-    if (!isConfigured) throw StateError('Solved OAuth is not configured');
-    return SolvedOAuthClient(
+    final oauthClient = SolvedOAuthClient(
       proxyBaseUri: _gatewayConfig.v4ProxyBaseUri!,
       httpClient: httpClient,
       allowInsecureLoopback: _allowInsecureLoopback,
     );
+    try {
+      final identityResolver = SolvedOAuthProxyIdentityResolver(
+        proxyBaseUri: _gatewayConfig.v4ProxyBaseUri!,
+        httpClient: httpClient,
+        allowInsecureLoopback: _allowInsecureLoopback,
+      );
+      return SolvedOAuthRuntime._(
+        oauthClient: oauthClient,
+        coordinator: SolvedOAuthAuthorizationCoordinator(
+          clientId: configuredClientId,
+          redirectUri: configuredRedirectUri,
+          scopes: scopes,
+          oauthClient: oauthClient,
+          identityResolver: identityResolver,
+        ),
+      );
+    } on Object {
+      oauthClient.close();
+      rethrow;
+    }
   }
 }
 
