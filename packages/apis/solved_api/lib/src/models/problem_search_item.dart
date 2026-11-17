@@ -18,6 +18,7 @@ class ProblemSearchItem {
     required this.title,
     required this.level,
     required this.tagNames,
+    this.solvedUserCount,
     this.givesNoRating,
     this.noRatingReasons,
     this.noRatingWarnings,
@@ -26,6 +27,10 @@ class ProblemSearchItem {
   final int problemId;
   final String? title;
   final int level;
+
+  /// The raw solved-user count reported by the active contract.
+  /// `null` means the contract did not provide it.
+  final num? solvedUserCount;
 
   /// Whether the active contract explicitly marks the problem as not
   /// contributing to rating. `null` means the contract did not provide it.
