@@ -5,6 +5,17 @@ import 'package:crypto/crypto.dart';
 
 import 'solved_oauth_contract.dart';
 
+/// A callback that cannot be bound to its originating authorization attempt.
+///
+/// Details are intentionally withheld because callback URIs contain an
+/// authorization code and anti-forgery state.
+final class SolvedOAuthAuthorizationCallbackRejected implements Exception {
+  const SolvedOAuthAuthorizationCallbackRejected();
+
+  @override
+  String toString() => 'SolvedOAuthAuthorizationCallbackRejected(<redacted>)';
+}
+
 /// One in-progress solved.ac OAuth authorization attempt.
 ///
 /// The authorization request and its PKCE verifier are generated together so
@@ -31,34 +42,122 @@ final class SolvedOAuthAuthorizationSession {
     final codeVerifier = _randomBase64Url(random);
     final codeChallenge = _s256Challenge(codeVerifier);
 
+    final authorizationRequest = SolvedOAuthAuthorizationRequest(
+      clientId: clientId,
+      redirectUri: redirectUri,
+      scopes: scopes,
+      state: state,
+      codeChallenge: codeChallenge,
+    );
+    _requireCallbackParametersAvailable(authorizationRequest.redirectUri);
+
     return SolvedOAuthAuthorizationSession._(
-      authorizationRequest: SolvedOAuthAuthorizationRequest(
-        clientId: clientId,
-        redirectUri: redirectUri,
-        scopes: scopes,
-        state: state,
-        codeChallenge: codeChallenge,
-      ),
+      authorizationRequest: authorizationRequest,
       codeVerifier: codeVerifier,
     );
   }
 
   final SolvedOAuthAuthorizationRequest authorizationRequest;
-  final String _codeVerifier;
+  String? _codeVerifier;
 
-  /// Builds the single-use token grant bound to this authorization attempt.
+  /// Validates and consumes the successful callback for this attempt.
   ///
-  /// The same grant must not be retried after an outcome-unknown failure.
-  SolvedOAuthAuthorizationCodeGrant createAuthorizationCodeGrant({
-    required String code,
-  }) => SolvedOAuthAuthorizationCodeGrant(
-    code: code,
-    redirectUri: authorizationRequest.redirectUri,
-    codeVerifier: _codeVerifier,
-  );
+  /// Invalid callbacks do not consume the session. After a successful call,
+  /// no second grant can be created from this session. The returned grant must
+  /// not be retried after an outcome-unknown token exchange failure.
+  SolvedOAuthAuthorizationCodeGrant consumeAuthorizationCodeCallback({
+    required Uri callbackUri,
+  }) {
+    final codeVerifier = _codeVerifier;
+    if (codeVerifier == null) {
+      throw StateError('OAuth authorization session has already been consumed');
+    }
+
+    final code = _validateCallback(
+      callbackUri: callbackUri,
+      redirectUri: authorizationRequest.redirectUri,
+      expectedState: authorizationRequest.state,
+    );
+    final grant = SolvedOAuthAuthorizationCodeGrant(
+      code: code,
+      redirectUri: authorizationRequest.redirectUri,
+      codeVerifier: codeVerifier,
+    );
+    _codeVerifier = null;
+    return grant;
+  }
 
   @override
   String toString() => 'SolvedOAuthAuthorizationSession(<redacted>)';
+}
+
+void _requireCallbackParametersAvailable(Uri redirectUri) {
+  final query = redirectUri.queryParametersAll;
+  if (query.containsKey('code') || query.containsKey('state')) {
+    throw ArgumentError.value(
+      redirectUri,
+      'redirectUri',
+      'Must not contain reserved OAuth callback parameters',
+    );
+  }
+}
+
+String _validateCallback({
+  required Uri callbackUri,
+  required Uri redirectUri,
+  required String expectedState,
+}) {
+  try {
+    if (callbackUri.hasFragment ||
+        callbackUri.scheme != redirectUri.scheme ||
+        callbackUri.hasAuthority != redirectUri.hasAuthority ||
+        callbackUri.authority != redirectUri.authority ||
+        callbackUri.path != redirectUri.path) {
+      throw const SolvedOAuthAuthorizationCallbackRejected();
+    }
+
+    final expectedQuery = redirectUri.queryParametersAll;
+    final callbackQuery = callbackUri.queryParametersAll;
+    final codeValues = callbackQuery['code'];
+    final stateValues = callbackQuery['state'];
+    if (callbackQuery.length != expectedQuery.length + 2 ||
+        codeValues == null ||
+        codeValues.length != 1 ||
+        codeValues.single.isEmpty ||
+        stateValues == null ||
+        stateValues.length != 1 ||
+        !_fixedLengthEquals(stateValues.single, expectedState)) {
+      throw const SolvedOAuthAuthorizationCallbackRejected();
+    }
+
+    for (final entry in expectedQuery.entries) {
+      if (!_sameStrings(callbackQuery[entry.key], entry.value)) {
+        throw const SolvedOAuthAuthorizationCallbackRejected();
+      }
+    }
+    return codeValues.single;
+  } on SolvedOAuthAuthorizationCallbackRejected {
+    rethrow;
+  } on FormatException {
+    throw const SolvedOAuthAuthorizationCallbackRejected();
+  }
+}
+
+bool _sameStrings(List<String>? actual, List<String> expected) {
+  if (actual == null || actual.length != expected.length) return false;
+  for (var index = 0; index < expected.length; index += 1) {
+    if (actual[index] != expected[index]) return false;
+  }
+  return true;
+}
+
+bool _fixedLengthEquals(String actual, String expected) {
+  if (actual.length != expected.length) return false;
+  var difference = 0;
+  for (var index = 0; index < expected.length; index += 1) {
+    difference |= actual.codeUnitAt(index) ^ expected.codeUnitAt(index);
+  }
+  return difference == 0;
 }
 
 String _randomBase64Url(Random random) => _withoutBase64Padding(
