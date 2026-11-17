@@ -145,12 +145,12 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
 
       final problemsFuture = searchRepository.getProblems(
         _problemQuery(text, showSolvedProblem, handle),
-        null,
-        sort.value,
-        direction.value,
+        page: 1,
+        sort: sort.apiValue,
+        direction: direction.apiValue,
       );
-      final usersFuture = searchRepository.getUsers(text, null);
-      final tagsFuture = searchRepository.getTags(text, null);
+      final usersFuture = searchRepository.getUsers(text, page: 1);
+      final tagsFuture = searchRepository.getTags(text, page: 1);
       await Future.wait<Object>([
         problemsFuture,
         usersFuture,
@@ -206,9 +206,9 @@ class SearchBloc extends Bloc<SearchEvent, SearchState> {
 
       final problems = await searchRepository.getProblems(
         _problemQuery(text, nextShowSolvedProblem, handle),
-        null,
-        nextSort.value,
-        nextDirection.value,
+        page: 1,
+        sort: nextSort.apiValue,
+        direction: nextDirection.apiValue,
       );
       if (!_isCurrent(requestGeneration)) return;
 

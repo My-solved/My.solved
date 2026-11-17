@@ -388,56 +388,7 @@ class _SearchViewState extends State<SearchView> {
                           ),
                         ),
                       if (state.currentIndex == 1 && state.users != null)
-                        Column(
-                          children: List.generate(
-                            state.users!.items.length,
-                            (index) => Column(
-                              children: [
-                                ElevatedButton(
-                                  onPressed: () {},
-                                  style: ElevatedButton.styleFrom(
-                                    alignment: Alignment.centerLeft,
-                                    padding: EdgeInsets.all(16),
-                                    backgroundColor: MySolvedColor.background,
-                                    foregroundColor: MySolvedColor.font,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    minimumSize: Size.fromHeight(52),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      SvgPicture.asset(
-                                        "assets/images/tiers/${state.users!.items[index].tier ?? 0}.svg",
-                                        width: 24,
-                                        height: 24,
-                                      ),
-                                      SizedBox(width: 8),
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: ExtendedImage.network(
-                                          state.users!.items[index]
-                                                  .profileImageUrl ??
-                                              "https://static.solved.ac/misc/360x360/default_profile.png",
-                                          width: 24,
-                                          height: 24,
-                                        ),
-                                      ),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        state.users!.items[index].handle,
-                                        style: MySolvedTextStyle.body1,
-                                      ),
-                                      SizedBox(width: 8),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(height: 16),
-                              ],
-                            ),
-                          ),
-                        ),
+                        _userSearchResults(state.users!),
                       if (state.currentIndex == 2 && state.tags != null)
                         Column(
                           children: List.generate(
@@ -482,6 +433,86 @@ class _SearchViewState extends State<SearchView> {
     );
     // return
   }
+}
+
+Widget _userSearchResults(UserSearchResult users) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      if (users.exact != null) ...[
+        _userSearchSectionTitle(
+          '정확히 일치',
+          key: const Key('user-search-exact-section'),
+        ),
+        _userSearchCard(
+          users.exact!,
+          key: ValueKey('user-search-exact-${users.exact!.handle}'),
+        ),
+      ],
+      if (users.items.isNotEmpty) ...[
+        _userSearchSectionTitle(
+          '검색 결과',
+          key: const Key('user-search-items-section'),
+        ),
+        for (var index = 0; index < users.items.length; index++)
+          _userSearchCard(
+            users.items[index],
+            key: ValueKey(
+              'user-search-item-$index-${users.items[index].handle}',
+            ),
+          ),
+      ],
+    ],
+  );
+}
+
+Widget _userSearchSectionTitle(String title, {required Key key}) {
+  return Padding(
+    key: key,
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Text(title, style: MySolvedTextStyle.body2),
+  );
+}
+
+Widget _userSearchCard(UserSearchItem user, {required Key key}) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 16),
+    child: ElevatedButton(
+      key: key,
+      onPressed: () {},
+      style: ElevatedButton.styleFrom(
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.all(16),
+        backgroundColor: MySolvedColor.background,
+        foregroundColor: MySolvedColor.font,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        minimumSize: const Size.fromHeight(52),
+      ),
+      child: Row(
+        children: [
+          SvgPicture.asset(
+            'assets/images/tiers/${user.tier ?? 0}.svg',
+            width: 24,
+            height: 24,
+          ),
+          const SizedBox(width: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: ExtendedImage.network(
+              user.profileImageUrl ??
+                  'https://static.solved.ac/misc/360x360/default_profile.png',
+              width: 24,
+              height: 24,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(user.handle, style: MySolvedTextStyle.body1),
+          const SizedBox(width: 8),
+        ],
+      ),
+    ),
+  );
 }
 
 String _problemTitle(ProblemSearchItem item) => item.title ?? '제목 없음';
