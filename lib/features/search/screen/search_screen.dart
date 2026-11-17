@@ -517,9 +517,15 @@ Widget _userSearchCard(UserSearchItem user, {required Key key}) {
 
 String _problemTitle(ProblemSearchItem item) => item.title ?? '제목 없음';
 
-String _tagLabel(TagSearchItem item) => item.problemCount == null
-    ? item.key
-    : '${item.key}:${item.problemCount}';
+String _tagLabel(TagSearchItem item) {
+  final displayName = item.displayName?.trim();
+  final name = displayName == null ||
+          displayName.isEmpty ||
+          displayName.toLowerCase() == item.key.toLowerCase()
+      ? item.key
+      : '$displayName (${item.key})';
+  return item.problemCount == null ? name : '$name:${item.problemCount}';
+}
 
 class SearchHeaderDelegate extends SliverPersistentHeaderDelegate {
   Widget body;

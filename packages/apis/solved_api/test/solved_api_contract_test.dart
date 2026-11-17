@@ -82,7 +82,16 @@ void main() {
       expect(tags, isA<SearchObject<TagSearchItem>>());
       expect(tags.count, 1);
       expect(tags.items.single.key, 'number_theory');
+      expect(tags.items.single.displayName, isNull);
       expect(tags.items.single.problemCount, 1314);
+    });
+
+    test('keeps the legacy public tag-item constructor source-compatible', () {
+      const item = TagSearchItem(key: 'stable_key', problemCount: null);
+
+      expect(item.key, 'stable_key');
+      expect(item.displayName, isNull);
+      expect(item.problemCount, isNull);
     });
 
     test('selects a Korean tag name with safe fallbacks', () {

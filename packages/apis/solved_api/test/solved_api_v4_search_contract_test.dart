@@ -192,9 +192,90 @@ void main() {
       final aliasMatch = contract.searchTags('DIJKSTRA').decode(source);
 
       expect(keyMatch.items.single.key, 'number_theory');
+      expect(keyMatch.items.single.displayName, '정수론');
       expect(nameMatch.items.single.key, 'disjoint_set');
+      expect(nameMatch.items.single.displayName, '분리 집합');
       expect(aliasMatch.items.single.key, 'shortest_path');
+      expect(aliasMatch.items.single.displayName, '최단 경로');
       expect(aliasMatch.items.single.problemCount, isNull);
+    });
+
+    test('selects Korean, English, deterministic fallback, then none', () {
+      final actual = contract.searchTags('fallback').decode({
+        'tags': [
+          {
+            'key': 'fallback_korean',
+            'names': {'ja': '日本語', 'en': 'English', 'ko': ' 한국어 '},
+            'aliases': <String>[],
+          },
+          {
+            'key': 'fallback_english',
+            'names': {'ja': '日本語', 'ko': '', 'en': 'English'},
+            'aliases': <String>[],
+          },
+          {
+            'key': 'fallback_first',
+            'names': {'zh': '中文', 'ja': '最初'},
+            'aliases': <String>[],
+          },
+          {
+            'key': 'fallback_key_only',
+            'names': {'ko': '', 'en': '   '},
+            'aliases': <String>[],
+          },
+        ],
+      });
+
+      expect(
+        actual.items.map((item) => (item.key, item.displayName)),
+        [
+          ('fallback_korean', '한국어'),
+          ('fallback_english', 'English'),
+          ('fallback_first', '最初'),
+          ('fallback_key_only', null),
+        ],
+      );
+      expect(actual.items.every((item) => item.problemCount == null), isTrue);
+    });
+
+    test('keeps strict validation for every localized name value', () {
+      final endpoint = contract.searchTags('invalid');
+
+      expect(
+        () => endpoint.decode({
+          'tags': [
+            {
+              'key': 'invalid_missing',
+              'aliases': <String>[],
+            },
+          ],
+        }),
+        throwsFormatException,
+      );
+      expect(
+        () => endpoint.decode({
+          'tags': [
+            {
+              'key': 'invalid_shape',
+              'names': <String>[],
+              'aliases': <String>[],
+            },
+          ],
+        }),
+        throwsFormatException,
+      );
+      expect(
+        () => endpoint.decode({
+          'tags': [
+            {
+              'key': 'invalid_value',
+              'names': {'ko': '정상', 'later': 42},
+              'aliases': <String>[],
+            },
+          ],
+        }),
+        throwsFormatException,
+      );
     });
 
     test('paginates filtered catalog results locally', () {
@@ -218,6 +299,7 @@ void main() {
       expect(first.items.last.key, 'tag_49');
       expect(second.count, 51);
       expect(second.items.single.key, 'tag_50');
+      expect(second.items.single.displayName, 'Tag 50');
       expect(second.items.single.problemCount, isNull);
     });
   });
