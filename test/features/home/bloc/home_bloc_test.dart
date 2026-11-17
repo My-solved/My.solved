@@ -285,16 +285,8 @@ class _FakeUserRepository implements UserRepository {
       _auxiliary('background', _background);
 
   @override
-  Future<List<Organization>> getOrganizations(String handle) =>
-      _auxiliary('organizations', const []);
-
-  @override
   Future<ProfileBadgeAsset> getBadge(String badgeId) =>
       _auxiliary('badge', _badge);
-
-  @override
-  Future<List<Badge>> getBadges(String handle) =>
-      _auxiliary('badges', const []);
 
   @override
   Future<ProfileStreak> getStreak(String handle, String? topic) =>
@@ -307,13 +299,6 @@ class _FakeUserRepository implements UserRepository {
   @override
   Future<List<ProfileTierStat>> getProblemStats(String handle) =>
       _auxiliary('problemStats', const []);
-
-  @override
-  Future<List<Problem>> getTopProblems(String handle) =>
-      throw UnimplementedError();
-
-  @override
-  Future<SiteStats> getSiteStats() => throw UnimplementedError();
 }
 
 class _FakeSharedPreferencesRepository extends SharedPreferencesRepository {

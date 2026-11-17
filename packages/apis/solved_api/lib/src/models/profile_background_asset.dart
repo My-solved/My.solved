@@ -4,10 +4,12 @@
 /// model so UI code does not depend on solved.ac response keys.
 class ProfileBackgroundAsset {
   const ProfileBackgroundAsset({
+    this.key,
     required this.imageUrl,
     required this.fallbackImageUrl,
   });
 
+  final String? key;
   final String imageUrl;
   final String? fallbackImageUrl;
 }
