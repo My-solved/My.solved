@@ -173,7 +173,8 @@ class HomeDrawer extends StatelessWidget {
                       ),
                       style: ButtonStyle(
                         elevation: WidgetStateProperty.all(0),
-                        overlayColor: WidgetStateProperty.all(Colors.transparent),
+                        overlayColor:
+                            WidgetStateProperty.all(Colors.transparent),
                         minimumSize: WidgetStateProperty.all(Size.zero),
                         padding: WidgetStateProperty.all(EdgeInsets.zero),
                         splashFactory: NoSplash.splashFactory,
@@ -196,7 +197,8 @@ class HomeDrawer extends StatelessWidget {
                       onPressed: () => context.read<AppBloc>().add(Logout()),
                       style: ButtonStyle(
                         elevation: WidgetStateProperty.all(0),
-                        overlayColor: WidgetStateProperty.all(Colors.transparent),
+                        overlayColor:
+                            WidgetStateProperty.all(Colors.transparent),
                         minimumSize: WidgetStateProperty.all(Size.zero),
                         padding: WidgetStateProperty.all(EdgeInsets.zero),
                         splashFactory: NoSplash.splashFactory,
