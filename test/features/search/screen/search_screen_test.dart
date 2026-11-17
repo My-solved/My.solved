@@ -79,7 +79,11 @@ void main() {
       await _waitForState(bloc, (state) => state.currentIndex == 2);
       await tester.pump();
 
-      expect(find.text('dynamic_programming'), findsOneWidget);
+      expect(find.text('다이나믹 프로그래밍 (dynamic_programming)'), findsOneWidget);
+      expect(find.text('number_theory:1314'), findsOneWidget);
+      expect(find.text('same_key'), findsOneWidget);
+      expect(find.text('same_key (same_key)'), findsNothing);
+      expect(find.text('key_only:7'), findsOneWidget);
       expect(find.textContaining('null'), findsNothing);
     },
   );
@@ -121,8 +125,21 @@ final class _SearchScreenRepository extends SearchRepository {
     String query, {
     int page = 1,
   }) async => const SearchObject(
-    count: 1,
-    items: [TagSearchItem(key: 'dynamic_programming', problemCount: null)],
+    count: 4,
+    items: [
+      TagSearchItem(
+        key: 'dynamic_programming',
+        problemCount: null,
+        displayName: '다이나믹 프로그래밍',
+      ),
+      TagSearchItem(key: 'number_theory', problemCount: 1314),
+      TagSearchItem(
+        key: 'same_key',
+        problemCount: null,
+        displayName: ' SAME_KEY ',
+      ),
+      TagSearchItem(key: 'key_only', problemCount: 7),
+    ],
   );
 }
 

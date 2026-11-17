@@ -293,35 +293,56 @@ SearchObject<TagSearchItem> _decodeV4TagSearch(
           .skip(start)
           .take(SolvedApiV4Contract.tagSearchPageSize)
           .map(
-            (tag) => TagSearchItem(key: tag.key, problemCount: null),
+            (tag) => TagSearchItem(
+              key: tag.key,
+              problemCount: null,
+              displayName: tag.displayName,
+            ),
           )
           .toList(growable: false);
   return SearchObject(count: matches.length, items: pageItems);
 }
 
 _V4CatalogTag _decodeV4CatalogTag(Map<String, dynamic> body) {
-  final names = _object(body['names'], 'tags[].names').values.map(
-        (value) => _string(value, 'tags[].names[]'),
-      );
+  final names = <String, String>{};
+  for (final entry in _object(body['names'], 'tags[].names').entries) {
+    names[entry.key] = _string(entry.value, 'tags[].names[]');
+  }
   final aliases = _list(body['aliases'], 'tags[].aliases').map(
         (value) => _string(value, 'tags[].aliases[]'),
       );
   return _V4CatalogTag(
     key: _string(body['key'], 'tags[].key'),
-    names: names.toList(growable: false),
+    names: names.values.toList(growable: false),
+    displayName: _preferredLocalizedName(names),
     aliases: aliases.toList(growable: false),
   );
+}
+
+String? _preferredLocalizedName(Map<String, String> names) {
+  for (final language in const ['ko', 'en']) {
+    final name = names[language]?.trim();
+    if (name != null && name.isNotEmpty) return name;
+  }
+  final fallbackLanguages = names.keys.toList(growable: false)..sort();
+  for (final language in fallbackLanguages) {
+    final name = names[language]!.trim();
+    if (name.isNotEmpty) return name;
+  }
+  return null;
 }
 
 final class _V4CatalogTag {
   const _V4CatalogTag({
     required this.key,
     required this.names,
+    required this.displayName,
     required this.aliases,
   });
 
   final String key;
   final List<String> names;
+  final String? displayName;
   final List<String> aliases;
 
   bool matches(String normalizedQuery) =>
