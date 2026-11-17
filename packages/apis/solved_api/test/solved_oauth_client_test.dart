@@ -367,6 +367,10 @@ void main() {
         ),
         _jsonResponse('{'),
         _jsonResponse(
+          '{"access_token":"do-not-log-this-token bad",'
+          '"token_type":"Bearer","expires_in":3600,"scope":"profile"}',
+        ),
+        _jsonResponse(
           '{"access_token":"do-not-log-this-token",'
           '"token_type":"wrong","expires_in":3600,"scope":"profile"}',
         ),
