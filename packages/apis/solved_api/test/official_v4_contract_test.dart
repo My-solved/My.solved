@@ -28,7 +28,9 @@ void main() {
     expect(description, contains('x-client-secret'));
     expect(description, contains('authorization code grant with PKCE'));
     expect(description, contains('S256 only'));
-    expect(description, contains('300 units'));
+    expect(description, contains('600 units'));
+    expect(description, contains('refilled at 2 per second'));
+    expect(description, contains('one 200 times that'));
     expect(description, contains('Retry-After'));
   });
 
