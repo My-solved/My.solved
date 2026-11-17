@@ -118,6 +118,7 @@ void main() {
     expect(actual.ratingBreakdown?.ratingBySolvedCount, 207);
     expect(actual.ratingBreakdown?.ratingProblemsCutoff, 100);
     expect(actual.ratingBreakdown?.ratingProblemsHistogram, [2, 7, 15]);
+    expect(actual.ratingBreakdown?.noRatingSolvedCount, 4);
     expect(actual.ratingBreakdown?.overRating, isNull);
     expect(actual.tagRatings, hasLength(2));
     expect(actual.tagRatings.first.key, 'dp');
@@ -156,6 +157,30 @@ void main() {
     final actual = endpoint.decode(unbounded);
     expect(actual.currentStreak, -1);
     expect(actual.maxStreak, -2);
+  });
+
+  test('requires the no-rating solved count without inventing bounds', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_profile.json')) as Map,
+        );
+
+    expect(
+      () => endpoint.decode(source()..remove('noRatingSolvedCount')),
+      throwsFormatException,
+    );
+    for (final invalid in <Object?>[null, '4', 4.5]) {
+      expect(
+        () => endpoint.decode(source()..['noRatingSolvedCount'] = invalid),
+        throwsFormatException,
+        reason: 'noRatingSolvedCount = $invalid',
+      );
+    }
+
+    for (final value in [0, -4]) {
+      final actual = endpoint.decode(source()..['noRatingSolvedCount'] = value);
+      expect(actual.ratingBreakdown?.noRatingSolvedCount, value);
+    }
   });
 
   test('normalizes sparse activity days for an explicit date range', () {

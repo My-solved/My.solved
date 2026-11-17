@@ -248,6 +248,7 @@ void main() {
       ratingBySolvedCount: -207,
       ratingProblemsCutoff: 100,
       ratingProblemsHistogram: [2, 7, 15],
+      noRatingSolvedCount: -4,
     );
     final repository = _FakeUserRepository(
       supportsV4: true,
@@ -293,6 +294,8 @@ void main() {
     );
     expect(find.text('해결 수 레이팅'), findsOneWidget);
     expect(find.text('-207'), findsOneWidget);
+    expect(find.text('레이팅 미반영 문제'), findsOneWidget);
+    expect(find.text('-4'), findsOneWidget);
     expect(find.textContaining('cutoff'), findsNothing);
     expect(find.textContaining('histogram'), findsNothing);
     expect(find.textContaining('Over'), findsNothing);

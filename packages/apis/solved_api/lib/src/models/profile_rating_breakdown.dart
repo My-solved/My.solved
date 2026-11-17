@@ -11,6 +11,7 @@ class ProfileRatingBreakdown {
     required this.ratingBySolvedCount,
     required this.ratingProblemsCutoff,
     required this.ratingProblemsHistogram,
+    this.noRatingSolvedCount,
     this.overRating,
   });
 
@@ -20,5 +21,9 @@ class ProfileRatingBreakdown {
   final int ratingBySolvedCount;
   final int ratingProblemsCutoff;
   final List<int> ratingProblemsHistogram;
+
+  /// Problems that the active contract reports outside rating calculation.
+  /// No non-negative bound is implied by the official v4 schema.
+  final int? noRatingSolvedCount;
   final int? overRating;
 }
