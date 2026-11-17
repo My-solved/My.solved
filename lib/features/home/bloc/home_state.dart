@@ -16,16 +16,14 @@ class HomeState extends Equatable {
   final HomeStatus status;
   final String handle;
   final bool isOnIllustBackground;
-  final User? user;
+  final UserProfile? user;
   final String? profileImageUrl;
-  final Background? background;
-  final Badge? badge;
-  final List<Badge> badges;
-  final List<Organization> organizations;
-  final Streak? streak;
+  final ProfileBackgroundAsset? background;
+  final ProfileBadgeAsset? badge;
+  final ProfileStreak? streak;
   final bool? solvedToday;
-  final List<TagRating>? tagRatings;
-  final List<ProblemStat>? problemStats;
+  final List<ProfileTagRating>? tagRatings;
+  final List<ProfileTierStat>? problemStats;
 
   const HomeState({
     this.status = HomeStatus.initial,
@@ -35,8 +33,6 @@ class HomeState extends Equatable {
     this.profileImageUrl,
     this.background,
     this.badge,
-    required this.badges,
-    required this.organizations,
     this.streak,
     this.solvedToday,
     this.tagRatings,
@@ -47,16 +43,14 @@ class HomeState extends Equatable {
     HomeStatus? status,
     String? handle,
     bool? isOnIllustBackground,
-    User? user,
+    UserProfile? user,
     String? profileImageUrl,
-    Background? background,
-    Badge? badge,
-    List<Badge>? badges,
-    List<Organization>? organizations,
-    Streak? streak,
+    ProfileBackgroundAsset? background,
+    ProfileBadgeAsset? badge,
+    ProfileStreak? streak,
     bool? solvedToday,
-    List<TagRating>? tagRatings,
-    List<ProblemStat>? problemStats,
+    List<ProfileTagRating>? tagRatings,
+    List<ProfileTierStat>? problemStats,
   }) {
     return HomeState(
       status: status ?? this.status,
@@ -66,8 +60,6 @@ class HomeState extends Equatable {
       profileImageUrl: profileImageUrl ?? this.profileImageUrl,
       background: background ?? this.background,
       badge: badge ?? this.badge,
-      badges: badges ?? this.badges,
-      organizations: organizations ?? this.organizations,
       streak: streak ?? this.streak,
       solvedToday: solvedToday ?? this.solvedToday,
       tagRatings: tagRatings ?? this.tagRatings,
@@ -84,8 +76,6 @@ class HomeState extends Equatable {
         profileImageUrl,
         background,
         badge,
-        badges,
-        organizations,
         streak,
         solvedToday,
         tagRatings,

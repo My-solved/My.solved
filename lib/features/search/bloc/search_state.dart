@@ -20,9 +20,9 @@ class SearchState extends Equatable {
   final bool showProblemTag;
   final String text;
   final int currentIndex;
-  final SearchObject? problems;
-  final SearchObject? users;
-  final SearchObject? tags;
+  final SearchObject<ProblemSearchItem>? problems;
+  final SearchObject<UserSearchItem>? users;
+  final SearchObject<TagSearchItem>? tags;
 
   const SearchState({
     this.status = SearchStatus.initial,
@@ -45,9 +45,9 @@ class SearchState extends Equatable {
     bool? showProblemTag,
     String? text,
     int? currentIndex,
-    SearchObject? problems,
-    SearchObject? users,
-    SearchObject? tags,
+    SearchObject<ProblemSearchItem>? problems,
+    SearchObject<UserSearchItem>? users,
+    SearchObject<TagSearchItem>? tags,
   }) {
     return SearchState(
       status: status ?? this.status,

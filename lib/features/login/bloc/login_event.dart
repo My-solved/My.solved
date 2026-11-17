@@ -22,11 +22,10 @@ class HandleTextFieldOnSummited extends LoginEvent {
 }
 
 class LoginButtonTapped extends LoginEvent {
-  final BuildContext context;
   final String handle;
 
-  LoginButtonTapped({required this.context, required this.handle});
+  LoginButtonTapped({required this.handle});
 
   @override
-  List<Object?> get props => [context];
+  List<Object?> get props => [handle];
 }

@@ -1,0 +1,224 @@
+import 'dart:convert';
+
+import 'package:solved_api/solved_api.dart';
+import 'package:test/test.dart';
+
+import 'helpers/fixture.dart';
+
+void main() {
+  late SolvedApiV4Contract contract;
+
+  setUp(() {
+    contract = SolvedApiV4Contract(
+      proxyBaseUri: Uri.parse('https://proxy.example.com/solved/v4/'),
+    );
+  });
+
+  group('problem search', () {
+    test('uses the official path, parameters, and defaults', () {
+      final defaults = contract.searchProblems('tag:dp');
+      final configured = contract.searchProblems(
+        'tag:dp',
+        page: 3,
+        sort: SolvedApiV4ProblemSort.averageTry,
+        direction: SolvedApiV4SearchDirection.desc,
+        seed: 'reroll-1',
+      );
+
+      expect(defaults.direct.path, 'problems');
+      expect(defaults.direct.queryParameters, {
+        'q': 'tag:dp',
+        'page': '1',
+        'sort': 'id',
+        'direction': 'asc',
+      });
+      expect(configured.direct.queryParameters, {
+        'q': 'tag:dp',
+        'page': '3',
+        'sort': 'average_try',
+        'direction': 'desc',
+        'seed': 'reroll-1',
+      });
+      expect(configured.proxy.path, 'problems');
+      expect(
+        configured.proxy.queryParameters,
+        configured.direct.queryParameters,
+      );
+    });
+
+    test('does not represent the unsupported v3 title sort', () {
+      expect(SolvedApiV4ProblemSort.values.map((sort) => sort.value), [
+        'id',
+        'level',
+        'solved',
+        'average_try',
+        'random',
+      ]);
+      expect(
+        SolvedApiV4ProblemSort.values.map((sort) => sort.value),
+        isNot(contains('title')),
+      );
+    });
+
+    test('validates page and seed before creating a request', () {
+      expect(() => contract.searchProblems('dp', page: 0), throwsArgumentError);
+      expect(
+        () => contract.searchProblems('dp', seed: ''),
+        throwsArgumentError,
+      );
+      expect(
+        () => contract.searchProblems('dp', seed: List.filled(65, 'a').join()),
+        throwsArgumentError,
+      );
+    });
+
+    test('normalizes total, title fallbacks, levels, and tag keys', () {
+      final actual = contract
+          .searchProblems('sample')
+          .decode(jsonDecode(fixture('v4/search_problems.json')));
+
+      expect(actual.count, 4);
+      expect(actual.items, hasLength(4));
+      expect(actual.items[0].problemId, 1001);
+      expect(actual.items[0].title, '한국어 제목');
+      expect(actual.items[0].level, 10);
+      expect(actual.items[0].tagNames, ['math', 'number_theory']);
+      expect(actual.items[1].title, 'Original title');
+      expect(actual.items[2].title, 'First fallback');
+      expect(actual.items[3].title, isNull);
+    });
+
+    test(
+      'accepts integral JSON numbers but rejects fractional model values',
+      () {
+        final endpoint = contract.searchProblems('number');
+        final actual = endpoint.decode({
+          'problems': [
+            {
+              'problemId': 1001.0,
+              'level': 12.0,
+              'titles': <Object>[],
+              'tags': <Object>[],
+            },
+          ],
+          'total': 1.0,
+        });
+
+        expect(actual.count, 1);
+        expect(actual.items.single.problemId, 1001);
+        expect(actual.items.single.level, 12);
+        expect(
+          () => endpoint.decode({
+            'problems': [
+              {
+                'problemId': 1001.5,
+                'level': 12,
+                'titles': <Object>[],
+                'tags': <Object>[],
+              },
+            ],
+            'total': 1,
+          }),
+          throwsFormatException,
+        );
+      },
+    );
+  });
+
+  group('user search', () {
+    test('uses q and sort without inventing a page parameter', () {
+      final endpoint = contract.searchUsers(
+        'index',
+        sort: SolvedApiV4UserSort.contribution,
+      );
+
+      expect(endpoint.direct.path, 'rankings/users/search');
+      expect(endpoint.direct.queryParameters, {
+        'q': 'index',
+        'sort': 'contribution',
+      });
+      expect(endpoint.direct.queryParameters, isNot(containsPair('page', '1')));
+    });
+
+    test('enforces only the documented maximum query length', () {
+      expect(() => contract.searchUsers(''), returnsNormally);
+      expect(() => contract.searchUsers('a'), returnsNormally);
+      expect(
+        () => contract.searchUsers(List.filled(65, 'a').join()),
+        throwsArgumentError,
+      );
+    });
+
+    test('preserves nullable tier and keeps exact separate from items', () {
+      final actual = contract
+          .searchUsers('index')
+          .decode(jsonDecode(fixture('v4/search_users.json')));
+
+      expect(actual.exact?.handle, 'index');
+      expect(actual.exact?.tier, isNull);
+      expect(actual.items, hasLength(2));
+      expect(actual.items.first.handle, 'index');
+      expect(actual.items.first.tier, isNull);
+      expect(actual.items.last.handle, 'index2');
+      expect(actual.items.last.tier, 20);
+    });
+
+    test('preserves an absent exact match', () {
+      final actual = contract.searchUsers('missing').decode({
+        'exact': null,
+        'items': <Object>[],
+      });
+
+      expect(actual.exact, isNull);
+      expect(actual.items, isEmpty);
+    });
+  });
+
+  group('tag search', () {
+    test('requests the parameterless catalog', () {
+      final endpoint = contract.searchTags('graph', page: 2);
+
+      expect(endpoint.direct.path, 'tags');
+      expect(endpoint.direct.queryParameters, isEmpty);
+      expect(endpoint.proxy.path, 'tags');
+      expect(endpoint.proxy.queryParameters, isEmpty);
+      expect(() => contract.searchTags('graph', page: 0), throwsArgumentError);
+    });
+
+    test('matches key, localized names, and aliases case-insensitively', () {
+      final source = jsonDecode(fixture('v4/tags.json'));
+      final keyMatch = contract.searchTags('NUMBER_THEORY').decode(source);
+      final nameMatch = contract.searchTags('union FIND').decode(source);
+      final aliasMatch = contract.searchTags('DIJKSTRA').decode(source);
+
+      expect(keyMatch.items.single.key, 'number_theory');
+      expect(nameMatch.items.single.key, 'disjoint_set');
+      expect(aliasMatch.items.single.key, 'shortest_path');
+      expect(aliasMatch.items.single.problemCount, isNull);
+    });
+
+    test('paginates filtered catalog results locally', () {
+      final source = {
+        'tags': List.generate(
+          51,
+          (index) => {
+            'key': 'tag_$index',
+            'names': {'en': 'Tag $index'},
+            'aliases': <String>[],
+          },
+        ),
+      };
+
+      final first = contract.searchTags('TAG').decode(source);
+      final second = contract.searchTags('TAG', page: 2).decode(source);
+
+      expect(first.count, 51);
+      expect(first.items, hasLength(SolvedApiV4Contract.tagSearchPageSize));
+      expect(first.items.first.key, 'tag_0');
+      expect(first.items.last.key, 'tag_49');
+      expect(second.count, 51);
+      expect(second.items.single.key, 'tag_50');
+      expect(second.items.single.problemCount, isNull);
+    });
+  });
+}
