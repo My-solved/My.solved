@@ -6,6 +6,7 @@ import 'package:http_parser/http_parser.dart' show parseHttpDate;
 
 import 'models/models.dart';
 import 'platform/is_web.dart' as platform;
+import 'solved_api_contract.dart';
 
 class SolvedApiException implements Exception {
   const SolvedApiException({
@@ -120,103 +121,55 @@ class SolvedApiClient {
     bool? useProxy,
     Uri? apiBaseUri,
     Uri? proxyBaseUri,
+    SolvedApiContract contract = const SolvedApiV3Contract(),
     this.requestTimeout = const Duration(seconds: 10),
   })  : _httpClient = httpClient ?? http.Client(),
         _useProxy = useProxy ?? platform.isWeb,
-        _apiBaseUri = _normalizeBaseUri(
-          apiBaseUri ?? Uri.https('solved.ac', '/api/v3/'),
-        ),
-        _proxyBaseUri = _normalizeBaseUri(
-          proxyBaseUri ?? Uri.https('codepoker.w8385.dev', '/solved/'),
-        );
+        _apiBaseUri = apiBaseUri == null ? null : _normalizeBaseUri(apiBaseUri),
+        _proxyBaseUri =
+            proxyBaseUri == null ? null : _normalizeBaseUri(proxyBaseUri),
+        _contract = contract;
 
   final http.Client _httpClient;
   final bool _useProxy;
-  final Uri _apiBaseUri;
-  final Uri _proxyBaseUri;
+  final Uri? _apiBaseUri;
+  final Uri? _proxyBaseUri;
+  final SolvedApiContract _contract;
   final Duration requestTimeout;
 
-  Future<User> userShow(String handle) => _get(
-        'user/show',
-        queryParameters: {'handle': handle},
-        requestType: _RequestType.user,
-        parser: (json) => User.fromJson(json),
-      );
+  Future<User> userShow(String handle) =>
+      _get(_contract.userShow(handle), requestType: _RequestType.user);
 
-  Future<List<Organization>> userOrganizations(String handle) => _get(
-        'user/organizations',
-        queryParameters: {'handle': handle},
-        requestType: _RequestType.user,
-        parser: (json) => json
-            .map((item) => Organization.fromJson(item))
-            .toList()
-            .cast<Organization>(),
-      );
+  Future<List<Organization>> userOrganizations(String handle) =>
+      _get(_contract.userOrganizations(handle), requestType: _RequestType.user);
 
   Future<List<Badge>> userAvailableBadges(String handle) => _get(
-        'user/available_badges',
-        queryParameters: {'handle': handle},
+        _contract.userAvailableBadges(handle),
         requestType: _RequestType.user,
-        parser: (json) => json['items']
-            .map((item) => Badge.fromJson(item))
-            .toList()
-            .cast<Badge>(),
       );
 
-  Future<Streak> userGrass(String handle, String? topic) => _get(
-        'user/grass',
-        queryParameters: {'handle': handle, 'topic': topic ?? 'default'},
-        requestType: _RequestType.user,
-        parser: (json) => Streak.fromJson(json),
-      );
+  Future<Streak> userGrass(String handle, String? topic) =>
+      _get(_contract.userGrass(handle, topic), requestType: _RequestType.user);
 
-  Future<List<Problem>> userTop100(String handle) => _get(
-        'user/top_100',
-        queryParameters: {'handle': handle},
-        requestType: _RequestType.user,
-        parser: (json) => json['items']
-            .map((item) => Problem.fromJson(item))
-            .toList()
-            .cast<Problem>(),
-      );
+  Future<List<Problem>> userTop100(String handle) =>
+      _get(_contract.userTop100(handle), requestType: _RequestType.user);
 
-  Future<List<ProblemStat>> userProblemStats(String handle) => _get(
-        'user/problem_stats',
-        queryParameters: {'handle': handle},
-        requestType: _RequestType.user,
-        parser: (json) => List<ProblemStat>.from(
-          json.map((item) => ProblemStat.fromJson(item)),
-        ),
-      );
+  Future<List<ProblemStat>> userProblemStats(String handle) =>
+      _get(_contract.userProblemStats(handle), requestType: _RequestType.user);
 
-  Future<List<TagRating>> userTagRatings(String handle) => _get(
-        'user/tag_ratings',
-        queryParameters: {'handle': handle},
-        requestType: _RequestType.user,
-        parser: (json) =>
-            List<TagRating>.from(json.map((item) => TagRating.fromJson(item))),
-      );
+  Future<List<TagRating>> userTagRatings(String handle) =>
+      _get(_contract.userTagRatings(handle), requestType: _RequestType.user);
 
   Future<Background> backgroundShow(String backgroundId) => _get(
-        'background/show',
-        queryParameters: {'backgroundId': backgroundId},
+        _contract.backgroundShow(backgroundId),
         requestType: _RequestType.background,
-        parser: (json) => Background.fromJson(json),
       );
 
-  Future<Badge> badgeShow(String badgeId) => _get(
-        'badge/show',
-        queryParameters: {'badgeId': badgeId},
-        requestType: _RequestType.badge,
-        parser: (json) => Badge.fromJson(json),
-      );
+  Future<Badge> badgeShow(String badgeId) =>
+      _get(_contract.badgeShow(badgeId), requestType: _RequestType.badge);
 
-  Future<SearchSuggestion> searchSuggestion(String query) => _get(
-        'search/suggestion',
-        queryParameters: {'query': query},
-        requestType: _RequestType.search,
-        parser: (json) => SearchSuggestion.fromJson(json),
-      );
+  Future<SearchSuggestion> searchSuggestion(String query) =>
+      _get(_contract.searchSuggestion(query), requestType: _RequestType.search);
 
   Future<SearchObject> searchProblem(
     String query,
@@ -225,76 +178,27 @@ class SolvedApiClient {
     String? direction,
   ) =>
       _get(
-        'search/problem',
-        queryParameters: {
-          'query': query,
-          'page': page?.toString() ?? '1',
-          'sort': sort ?? 'solved',
-          'direction': direction ?? 'descending',
-        },
+        _contract.searchProblem(query, page, sort, direction),
         requestType: _RequestType.search,
-        parser: (json) {
-          json['items'] = json['items']
-              .map((problem) => Problem.fromJson(problem))
-              .toList()
-              .cast<Problem>();
-          return SearchObject.fromJson(json);
-        },
       );
 
-  Future<SearchObject> searchUser(String query, int? page) => _get(
-        'search/user',
-        queryParameters: {'query': query, 'page': page?.toString() ?? '1'},
-        requestType: _RequestType.search,
-        parser: (json) {
-          json['items'] = json['items']
-              .map((user) => User.fromJson(user))
-              .toList()
-              .cast<User>();
-          return SearchObject.fromJson(json);
-        },
-      );
+  Future<SearchObject> searchUser(String query, int? page) =>
+      _get(_contract.searchUser(query, page), requestType: _RequestType.search);
 
-  Future<SearchObject> searchTag(String query, int? page) => _get(
-        'search/tag',
-        queryParameters: {'query': query, 'page': page?.toString() ?? '1'},
-        requestType: _RequestType.search,
-        parser: (json) {
-          json['items'] = json['items']
-              .map((tag) => Tag.fromJson(tag))
-              .toList()
-              .cast<Tag>();
-          return SearchObject.fromJson(json);
-        },
-      );
+  Future<SearchObject> searchTag(String query, int? page) =>
+      _get(_contract.searchTag(query, page), requestType: _RequestType.search);
 
-  Future<List<ArenaContest>> arenaContests() => _get(
-        'arena/contests',
-        requestType: _RequestType.arena,
-        parser: (json) {
-          final contests = <ArenaContest>[];
-          for (final status in json.keys) {
-            json[status].forEach(
-              (contest) => contests.add(ArenaContest.fromJson(contest)),
-            );
-          }
-          return contests;
-        },
-      );
+  Future<List<ArenaContest>> arenaContests() =>
+      _get(_contract.arenaContests(), requestType: _RequestType.arena);
 
-  Future<SiteStats> siteStats() => _get(
-        'site/stats',
-        requestType: _RequestType.site,
-        parser: (json) => SiteStats.fromJson(json),
-      );
+  Future<SiteStats> siteStats() =>
+      _get(_contract.siteStats(), requestType: _RequestType.site);
 
   Future<T> _get<T>(
-    String path, {
-    Map<String, String> queryParameters = const {},
+    SolvedApiEndpoint<T> endpoint, {
     required _RequestType requestType,
-    required T Function(dynamic json) parser,
   }) async {
-    final uri = _buildUri(path, queryParameters);
+    final uri = _buildUri(endpoint);
     late http.Response response;
 
     try {
@@ -332,7 +236,7 @@ class SolvedApiClient {
     }
 
     try {
-      return parser(jsonDecode(body));
+      return endpoint.decode(jsonDecode(body));
     } on Object catch (error, stackTrace) {
       throw _failure(
         requestType,
@@ -345,10 +249,13 @@ class SolvedApiClient {
     }
   }
 
-  Uri _buildUri(String path, Map<String, String> queryParameters) {
-    final baseUri = _useProxy ? _proxyBaseUri : _apiBaseUri;
-    return baseUri.resolve(path).replace(
-          queryParameters: queryParameters.isEmpty ? null : queryParameters,
+  Uri _buildUri<T>(SolvedApiEndpoint<T> endpoint) {
+    final target = _useProxy ? endpoint.proxy : endpoint.direct;
+    final overrideBaseUri = _useProxy ? _proxyBaseUri : _apiBaseUri;
+    final baseUri = overrideBaseUri ?? target.baseUri;
+    return baseUri.resolve(target.path).replace(
+          queryParameters:
+              target.queryParameters.isEmpty ? null : target.queryParameters,
         );
   }
 

@@ -18,6 +18,29 @@ class MockResponse extends Mock implements http.Response {
 
 class FakeUri extends Fake implements Uri {}
 
+class AlternateUserContract extends SolvedApiV3Contract {
+  const AlternateUserContract();
+
+  @override
+  SolvedApiEndpoint<User> userShow(String handle) => SolvedApiEndpoint(
+        direct: SolvedApiTarget(
+          baseUri: Uri.https('contract.example.com', '/direct/'),
+          path: 'profile/show',
+          queryParameters: {'user': handle},
+        ),
+        proxy: SolvedApiTarget(
+          baseUri: Uri.https('proxy.example.com', '/gateway/'),
+          path: 'profile/lookup',
+          queryParameters: {'proxyUser': handle},
+        ),
+        decode: (json) {
+          final decoded = Map<String, dynamic>.from(json);
+          decoded['handle'] = 'contract-decoded';
+          return User.fromJson(decoded);
+        },
+      );
+}
+
 void main() {
   group('SolvedApiClient', () {
     late http.Client httpClient;
@@ -71,11 +94,73 @@ void main() {
         ).called(1);
       });
 
-      test('normalizes and uses a custom v4 API base URI', () async {
+      test('uses contract-specific direct and proxy targets', () async {
+        when(() => httpClient.get(any())).thenAnswer(
+          (_) async => http.Response(fixture('v3/user_show.json'), 200),
+        );
+
+        final directClient = SolvedApiClient(
+          httpClient: httpClient,
+          useProxy: false,
+          contract: const AlternateUserContract(),
+        );
+        final proxyClient = SolvedApiClient(
+          httpClient: httpClient,
+          useProxy: true,
+          contract: const AlternateUserContract(),
+        );
+
+        final directUser = await directClient.userShow('w8385');
+        final proxyUser = await proxyClient.userShow('w8385');
+
+        expect(directUser.handle, 'contract-decoded');
+        expect(proxyUser.handle, 'contract-decoded');
+
+        verify(
+          () => httpClient.get(
+            Uri.https('contract.example.com', '/direct/profile/show', {
+              'user': 'w8385',
+            }),
+          ),
+        ).called(1);
+        verify(
+          () => httpClient.get(
+            Uri.https('proxy.example.com', '/gateway/profile/lookup', {
+              'proxyUser': 'w8385',
+            }),
+          ),
+        ).called(1);
+      });
+
+      test('custom base overrides only the selected contract target base',
+          () async {
+        when(() => httpClient.get(any())).thenAnswer(
+          (_) async => http.Response(fixture('v3/user_show.json'), 200),
+        );
         apiClient = SolvedApiClient(
           httpClient: httpClient,
           useProxy: false,
-          apiBaseUri: Uri.https('api.example.com', '/api/v4'),
+          apiBaseUri: Uri.https('staging.example.com', '/api'),
+          contract: const AlternateUserContract(),
+        );
+
+        final user = await apiClient.userShow('w8385');
+
+        expect(user.handle, 'contract-decoded');
+        verify(
+          () => httpClient.get(
+            Uri.https('staging.example.com', '/api/profile/show', {
+              'user': 'w8385',
+            }),
+          ),
+        ).called(1);
+      });
+
+      test('normalizes and uses a custom direct API base URI', () async {
+        apiClient = SolvedApiClient(
+          httpClient: httpClient,
+          useProxy: false,
+          apiBaseUri: Uri.https('api.example.com', '/custom/api'),
         );
         when(
           () => httpClient.get(any()),
@@ -88,7 +173,7 @@ void main() {
 
         verify(
           () => httpClient.get(
-            Uri.https('api.example.com', '/api/v4/user/show', {
+            Uri.https('api.example.com', '/custom/api/user/show', {
               'handle': 'w8385',
             }),
           ),
