@@ -1978,6 +1978,68 @@ void main() {
       },
     );
 
+    test('requires nullable tier and profile image keys in every user', () {
+      final endpoint = contract.searchUsers('index');
+      final invalidValues = <String, List<Object>>{
+        'tier': ['1', 1.0, true, const <Object>[], const <String, Object?>{}],
+        'profileImageUrl': [
+          1,
+          true,
+          const <Object>[],
+          const <String, Object?>{},
+        ],
+      };
+
+      for (final field in invalidValues.keys) {
+        for (final location in ['exact', 'items']) {
+          final missing = source();
+          item(missing, location).remove(field);
+          expect(
+            () => endpoint.decode(missing),
+            throwsFormatException,
+            reason: '$location.$field missing',
+          );
+
+          final explicitNull = source();
+          item(explicitNull, location)[field] = null;
+          final nullable = endpoint.decode(explicitNull);
+          final decoded =
+              location == 'exact' ? nullable.exact! : nullable.items.first;
+          expect(
+            field == 'tier' ? decoded.tier : decoded.profileImageUrl,
+            isNull,
+            reason: '$location.$field explicit null',
+          );
+
+          for (final invalid in invalidValues[field]!) {
+            final malformed = source();
+            item(malformed, location)[field] = invalid;
+            expect(
+              () => endpoint.decode(malformed),
+              throwsFormatException,
+              reason: '$location.$field = $invalid',
+            );
+          }
+        }
+      }
+
+      final nonNull = source();
+      item(nonNull, 'exact')
+        ..['tier'] = 10
+        ..['profileImageUrl'] = 'https://example.com/exact.png';
+      item(nonNull, 'items')
+        ..['tier'] = 20
+        ..['profileImageUrl'] = 'https://example.com/item.png';
+      final actual = endpoint.decode(nonNull);
+      expect(actual.exact?.tier, 10);
+      expect(actual.exact?.profileImageUrl, 'https://example.com/exact.png');
+      expect(actual.items.first.tier, 20);
+      expect(
+        actual.items.first.profileImageUrl,
+        'https://example.com/item.png',
+      );
+    });
+
     test('requires a finite raw id in every v4 user item', () {
       final endpoint = contract.searchUsers('index');
 

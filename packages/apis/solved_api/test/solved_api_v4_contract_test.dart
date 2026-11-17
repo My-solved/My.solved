@@ -129,6 +129,48 @@ void main() {
     expect((source as Map<String, dynamic>)['voteCount'], 37);
   });
 
+  test('requires nullable tier and profile image keys in public profiles', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+      jsonDecode(fixture('v4/user_profile.json')) as Map,
+    );
+    final invalidValues = <String, List<Object>>{
+      'tier': ['1', 1.0, true, const <Object>[], const <String, Object?>{}],
+      'profileImageUrl': [1, true, const <Object>[], const <String, Object?>{}],
+    };
+
+    for (final field in invalidValues.keys) {
+      expect(
+        () => endpoint.decode(source()..remove(field)),
+        throwsFormatException,
+        reason: '$field missing',
+      );
+
+      final nullable = endpoint.decode(source()..[field] = null);
+      expect(
+        field == 'tier' ? nullable.tier : nullable.profileImageUrl,
+        isNull,
+        reason: '$field explicit null',
+      );
+
+      for (final invalid in invalidValues[field]!) {
+        expect(
+          () => endpoint.decode(source()..[field] = invalid),
+          throwsFormatException,
+          reason: '$field = $invalid',
+        );
+      }
+    }
+
+    final actual = endpoint.decode(
+      source()
+        ..['tier'] = 20
+        ..['profileImageUrl'] = 'https://example.com/profile.png',
+    );
+    expect(actual.tier, 20);
+    expect(actual.profileImageUrl, 'https://example.com/profile.png');
+  });
+
   test('requires integer profile streak summaries without inventing bounds', () {
     final endpoint = contract.userProfile('index');
     Map<String, dynamic> source() => Map<String, dynamic>.from(

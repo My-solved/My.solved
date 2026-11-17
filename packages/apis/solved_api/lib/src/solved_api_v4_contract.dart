@@ -591,9 +591,12 @@ UserSearchItem _decodeV4UserSearchItem(Map<String, dynamic> body) =>
     UserSearchItem(
       id: _number(body['id'], 'user.id'),
       handle: _string(body['handle'], 'user.handle'),
-      profileImageUrl:
-          _nullableString(body['profileImageUrl'], 'user.profileImageUrl'),
-      tier: _nullableInteger(body['tier'], 'user.tier'),
+      profileImageUrl: _requiredNullableString(
+        body,
+        'profileImageUrl',
+        'user.profileImageUrl',
+      ),
+      tier: _requiredNullableInteger(body, 'tier', 'user.tier'),
       rank: _integer(body['rank'], 'user.rank'),
       userClass: _integer(body['class'], 'user.class'),
       classPlus: _boolean(body['classPlus'], 'user.classPlus'),
@@ -729,15 +732,14 @@ UserProfile _decodeV4UserProfile(dynamic json) {
     handle: _string(body['handle'], 'handle'),
     badgeId: badge?.key,
     backgroundId: background?.key,
-    profileImageUrl:
-        _nullableString(body['profileImageUrl'], 'profileImageUrl'),
+    profileImageUrl: _requiredNullableString(body, 'profileImageUrl'),
     bio: _requiredNullableString(body, 'bio'),
     solvedCount: _integer(body['solvedCount'], 'solvedCount'),
     legacyContributionCount: null,
     userClass: _integer(body['class'], 'class'),
     classPlus: _boolean(body['classPlus'], 'classPlus'),
     reverseRivalCount: null,
-    tier: _nullableInteger(body['tier'], 'tier'),
+    tier: _requiredNullableInteger(body, 'tier', 'tier'),
     rating: rating,
     currentStreak: _integer(body['currentStreak'], 'currentStreak'),
     maxStreak: _integer(body['maxStreak'], 'maxStreak'),
@@ -927,12 +929,14 @@ String? _nullableString(Object? value, String field) =>
 
 String? _requiredNullableString(
   Map<String, dynamic> body,
-  String field,
-) {
-  if (!body.containsKey(field)) {
-    throw FormatException('Missing required field $field');
+  String wireKey, [
+  String? field,
+]) {
+  final decodedField = field ?? wireKey;
+  if (!body.containsKey(wireKey)) {
+    throw FormatException('Missing required field $decodedField');
   }
-  return _nullableString(body[field], field);
+  return _nullableString(body[wireKey], decodedField);
 }
 
 num _number(Object? value, String field) {
