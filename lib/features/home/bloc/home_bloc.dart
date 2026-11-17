@@ -23,8 +23,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
           HomeState(
             handle: handle,
             isOnIllustBackground: true,
-            organizations: [],
-            badges: [],
           ),
         ) {
     on<HomeInit>(_onInit);
@@ -55,7 +53,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   Future<void> _loadHome(Emitter<HomeState> emit) async {
     emit(state.copyWith(status: HomeStatus.loading));
 
-    late User user;
+    late UserProfile user;
     try {
       user = await _userRepository.getUser(_handle);
     } catch (_) {
@@ -67,16 +65,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       isOnIllustBackground: state.isOnIllustBackground,
     );
     final requests = <Future<void> Function()>[
-      () async {
-        auxiliary.background = await _optional(
-          () => _userRepository.getBackground(user.backgroundId),
-        );
-      },
-      () async {
-        auxiliary.organizations =
-            await _optional(() => _userRepository.getOrganizations(_handle)) ??
-                const [];
-      },
+      if (user.backgroundId != null)
+        () async {
+          auxiliary.background = await _optional(
+            () => _userRepository.getBackground(user.backgroundId!),
+          );
+        },
       () async {
         auxiliary.isOnIllustBackground = await _optional(
               _sharedPreferencesRepository.getIsOnIllustBackground,
@@ -89,11 +83,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             () => _userRepository.getBadge(user.badgeId!),
           );
         },
-      () async {
-        auxiliary.badges =
-            await _optional(() => _userRepository.getBadges(_handle)) ??
-                const [];
-      },
       () async {
         auxiliary.streak = await _optional(
           () => _userRepository.getStreak(_handle, "default"),
@@ -122,8 +111,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         profileImageUrl: user.profileImageUrl,
         background: auxiliary.background,
         badge: auxiliary.badge,
-        badges: auxiliary.badges,
-        organizations: auxiliary.organizations,
         streak: effectiveStreak,
         solvedToday: _hasSolvedToday(effectiveStreak, _now()),
         tagRatings: auxiliary.tagRatings,
@@ -153,14 +140,14 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     }
   }
 
-  bool _hasSolvedToday(Streak? streak, DateTime now) {
+  bool _hasSolvedToday(ProfileStreak? streak, DateTime now) {
     if (streak == null) return false;
-    return streak.grass.any(
-      (grass) =>
-          grass.year == now.year &&
-          grass.month == now.month &&
-          grass.day == now.day &&
-          grass.solvedCount > 0,
+    return streak.days.any(
+      (entry) =>
+          entry.year == now.year &&
+          entry.month == now.month &&
+          entry.day == now.day &&
+          entry.solvedCount > 0,
     );
   }
 
@@ -176,11 +163,9 @@ class _HomeAuxiliaryData {
   _HomeAuxiliaryData({required this.isOnIllustBackground});
 
   bool isOnIllustBackground;
-  Background? background;
-  Badge? badge;
-  List<Badge> badges = const [];
-  List<Organization> organizations = const [];
-  Streak? streak;
-  List<TagRating> tagRatings = const [];
-  List<ProblemStat> problemStats = const [];
+  ProfileBackgroundAsset? background;
+  ProfileBadgeAsset? badge;
+  ProfileStreak? streak;
+  List<ProfileTagRating> tagRatings = const [];
+  List<ProfileTierStat> problemStats = const [];
 }

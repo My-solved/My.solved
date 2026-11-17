@@ -1,0 +1,71 @@
+{
+  "id": 1,
+  "handle": "index",
+  "tier": null,
+  "profileImageUrl": null,
+  "bio": null,
+  "rating": 2417,
+  "solvedCount": 2048,
+  "voteCount": 37,
+  "reputation": 314,
+  "maxStreak": 365,
+  "currentStreak": 12,
+  "streakVacation": null,
+  "streakCountedToday": true,
+  "streakFrozenYesterday": false,
+  "noRatingSolvedCount": 4,
+  "streakTheme": null,
+  "background": {
+    "key": "anniversary_1st",
+    "backgroundImageUrl": "https://example.com/background.png",
+    "fallbackBackgroundImageUrl": "https://example.com/background-fallback.png",
+    "backgroundVideoUrl": null,
+    "thumbnailPlaceholder": null,
+    "isIllust": true,
+    "displayName": "First Anniversary",
+    "authors": []
+  },
+  "isRival": false,
+  "isReverseRival": false,
+  "ojAccounts": [],
+  "linkedAccounts": [],
+  "affiliations": [],
+  "class": 6,
+  "classPlus": true,
+  "badge": {
+    "key": "boardgame",
+    "name": "Board Game",
+    "imageUrl": "https://example.com/badge.png"
+  },
+  "ratingByProblemsSum": 2010,
+  "ratingByClass": 200,
+  "ratingBySolvedCount": 207,
+  "ratingProblemsCutoff": 100,
+  "ratingProblemsHistogram": [2, 7, 15],
+  "bans": [],
+  "tagRatings": [
+    {
+      "key": "dp",
+      "rating": 1750,
+      "solvedCount": 120,
+      "ratingByProblemsSum": 1600,
+      "ratingBySolvedCount": 150,
+      "ratingProblemsCutoff": 50
+    },
+    {
+      "key": "math",
+      "rating": 1650,
+      "solvedCount": 100,
+      "ratingByProblemsSum": 1525,
+      "ratingBySolvedCount": 125,
+      "ratingProblemsCutoff": 50
+    }
+  ],
+  "metadata": {
+    "countryCode": null,
+    "pronouns": null,
+    "name": null,
+    "nameNative": null,
+    "birthday": null
+  }
+}

@@ -118,22 +118,24 @@ class _HomeViewState extends State<HomeView> {
       },
       builder: (context, state) {
         if (state.status.isSuccess && state.user != null) {
-          final slideItem = [
+          final slideItem = <List<String>>[
             [
               "문제 해결",
               state.user!.solvedCount.toString(),
               "https://solved.ac/profile/${state.handle}/solved"
             ],
-            [
-              "기여",
-              state.user!.voteCount.toString(),
-              "https://solved.ac/profile/${state.handle}/votes"
-            ],
-            [
-              "라이벌",
-              state.user!.reverseRivalCount.toString(),
-              "https://solved.ac/ranking/reverse_rival"
-            ],
+            if (state.user!.legacyContributionCount != null)
+              [
+                "기여",
+                state.user!.legacyContributionCount.toString(),
+                "https://solved.ac/profile/${state.handle}/votes"
+              ],
+            if (state.user!.reverseRivalCount != null)
+              [
+                "라이벌",
+                state.user!.reverseRivalCount.toString(),
+                "https://solved.ac/ranking/reverse_rival"
+              ],
           ];
 
           final solvedToday = state.solvedToday ?? false;
@@ -194,7 +196,7 @@ class _HomeViewState extends State<HomeView> {
               onPressed: () {},
               widget: state.badge != null
                   ? ExtendedImage.network(
-                      state.badge!.badgeImageUrl,
+                      state.badge!.imageUrl,
                       width: 60,
                       height: 60,
                     )
@@ -203,7 +205,7 @@ class _HomeViewState extends State<HomeView> {
             GridItem(
               onPressed: () {},
               title: "배경",
-              backgroundImageUrl: state.background?.backgroundImageUrl,
+              backgroundImageUrl: state.background?.imageUrl,
             ),
             GridItem(
               onPressed: () {},
@@ -284,11 +286,11 @@ class _HomeViewState extends State<HomeView> {
 
   Widget _backgroundImage({
     required bool isShowIllustBackground,
-    required solved_api.Background? background,
+    required solved_api.ProfileBackgroundAsset? background,
   }) {
-    final backgroundImageUrl = background?.backgroundImageUrl ??
+    final backgroundImageUrl = background?.imageUrl ??
         "https://static.solved.ac/profile_bg/abstract_001/abstract_001_light.png";
-    final illustBackgroundImageUrl = background?.fallbackBackgroundImageUrl;
+    final illustBackgroundImageUrl = background?.fallbackImageUrl;
     final url = isShowIllustBackground && illustBackgroundImageUrl != null
         ? illustBackgroundImageUrl
         : backgroundImageUrl;
@@ -355,13 +357,12 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _pieChart({required List<ProblemStat> stats}) {
+  Widget _pieChart({required List<ProfileTierStat> stats}) {
     Map<String, double> dataMap = {};
     for (var stat in stats) {
-      dataMap[stat.level.toString()] = stat.solved.toDouble();
+      dataMap[stat.tier.toString()] = stat.solvedCount.toDouble();
     }
 
-    stats.fold(0, (sum, stat) => sum + stat.solved);
     List<Color> colorList = [];
     for (var i = 0; i <= 30; i++) {
       colorList.add(MySolvedColor.tier[i]!);
@@ -389,19 +390,22 @@ class _HomeViewState extends State<HomeView> {
         ));
   }
 
-  Widget _tagChart({required List<TagRating> tags, required int rating}) {
-    tags.sort((a, b) => b.rating.compareTo(a.rating));
+  Widget _tagChart({
+    required List<ProfileTagRating> tags,
+    required int rating,
+  }) {
+    final sortedTags = [...tags]
+      ..sort((a, b) => b.rating.compareTo(a.rating));
 
     List<int> ticks = [];
     List<String> features = [];
     List<List<num>> data = [[]];
 
-    int? length = min(8, tags.length);
+    int? length = min(8, sortedTags.length);
     int maxTick = 0;
     for (var i = 0; i < length; i++) {
-      // features.add(tags[i].tag.key);
       features.add("");
-      data[0].add(tags[i].rating);
+      data[0].add(sortedTags[i].rating);
       maxTick = max(maxTick, data[0][i].toInt());
     }
     maxTick = (maxTick + 500) ~/ 500 * 500;
@@ -444,7 +448,7 @@ class _HomeViewState extends State<HomeView> {
     return Color.fromARGB(255, 79, 82, 87);
   }
 
-  String _tierText(int tier) {
+  String _tierText(int? tier) {
     if (tier == 1) return 'Bronze V';
     if (tier == 2) return 'Bronze IV';
     if (tier == 3) return 'Bronze III';
