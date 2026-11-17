@@ -26,17 +26,27 @@ void main() {
 
     setUp(() {
       solvedApiClient = MockSolvedApiClient();
+      when(() => solvedApiClient.supportsV4).thenReturn(false);
       userRepository = UserRepository(solvedApiClient: solvedApiClient);
+    });
+
+    test('exposes whether the API client supports v4', () {
+      expect(userRepository.supportsV4, isFalse);
+
+      when(() => solvedApiClient.supportsV4).thenReturn(true);
+
+      expect(userRepository.supportsV4, isTrue);
     });
 
     group('getUser', () {
       const handle = 'w8385';
 
-      test('calls userShow with correct handle', () async {
+      test('uses the v3 profile when v4 is unavailable', () async {
         try {
           await userRepository.getUser(handle);
         } catch (_) {}
         verify(() => solvedApiClient.userShow(handle)).called(1);
+        verifyNever(() => solvedApiClient.v4UserProfile(any()));
       });
 
       test('returns correct user on success', () async {
@@ -46,25 +56,73 @@ void main() {
 
         expect(await userRepository.getUser(handle), user);
       });
+
+      test('uses only the v4 profile when configured', () async {
+        final user = MockUserProfile();
+        when(() => solvedApiClient.supportsV4).thenReturn(true);
+        when(
+          () => solvedApiClient.v4UserProfile(handle),
+        ).thenAnswer((_) async => user);
+
+        expect(await userRepository.getUser(handle), user);
+        verify(() => solvedApiClient.v4UserProfile(handle)).called(1);
+        verifyNever(() => solvedApiClient.userShow(any()));
+      });
     });
 
     group('getStreak', () {
       const handle = 'w8385';
-      const topic = 'today-solved';
+      final from = DateTime.utc(2026, 11, 17);
+      final to = DateTime.utc(2026, 11, 17);
 
-      test('calls userGrass with correct handle and topic', () async {
+      test('uses the v3 default grass when v4 is unavailable', () async {
         try {
-          await userRepository.getStreak(handle, topic);
+          await userRepository.getStreak(handle, from: from, to: to);
         } catch (_) {}
-        verify(() => solvedApiClient.userGrass(handle, topic)).called(1);
+        verify(() => solvedApiClient.userGrass(handle, 'default')).called(1);
+        verifyNever(
+          () => solvedApiClient.v4UserActivity(
+            handle,
+            from: from,
+            to: to,
+          ),
+        );
       });
 
       test('returns correct streak on success', () async {
         final streak = MockProfileStreak();
-        when(() => solvedApiClient.userGrass(handle, topic))
+        when(() => solvedApiClient.userGrass(handle, 'default'))
             .thenAnswer((_) async => streak);
 
-        expect(await userRepository.getStreak(handle, topic), streak);
+        expect(
+          await userRepository.getStreak(handle, from: from, to: to),
+          streak,
+        );
+      });
+
+      test('uses the explicit day range only for v4 activity', () async {
+        final streak = MockProfileStreak();
+        when(() => solvedApiClient.supportsV4).thenReturn(true);
+        when(
+          () => solvedApiClient.v4UserActivity(
+            handle,
+            from: from,
+            to: to,
+          ),
+        ).thenAnswer((_) async => streak);
+
+        expect(
+          await userRepository.getStreak(handle, from: from, to: to),
+          streak,
+        );
+        verify(
+          () => solvedApiClient.v4UserActivity(
+            handle,
+            from: from,
+            to: to,
+          ),
+        ).called(1);
+        verifyNever(() => solvedApiClient.userGrass(any(), any()));
       });
     });
 

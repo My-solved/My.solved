@@ -8,12 +8,26 @@ class UserRepository {
 
   final SolvedApiClient _solvedApiClient;
 
+  bool get supportsV4 => _solvedApiClient.supportsV4;
+
   Future<UserProfile> getUser(String handle) async {
+    if (supportsV4) return await _solvedApiClient.v4UserProfile(handle);
     return await _solvedApiClient.userShow(handle);
   }
 
-  Future<ProfileStreak> getStreak(String handle, String? topic) async {
-    return await _solvedApiClient.userGrass(handle, topic);
+  Future<ProfileStreak> getStreak(
+    String handle, {
+    required DateTime from,
+    required DateTime to,
+  }) async {
+    if (supportsV4) {
+      return await _solvedApiClient.v4UserActivity(
+        handle,
+        from: from,
+        to: to,
+      );
+    }
+    return await _solvedApiClient.userGrass(handle, 'default');
   }
 
   Future<List<ProfileTierStat>> getProblemStats(String handle) async {

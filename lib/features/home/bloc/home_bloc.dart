@@ -52,6 +52,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   Future<void> _loadHome(Emitter<HomeState> emit) async {
     emit(state.copyWith(status: HomeStatus.loading));
+    final solvedDay = _now();
+    final usesV4 = _userRepository.supportsV4;
 
     late UserProfile user;
     try {
@@ -63,9 +65,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
     final auxiliary = _HomeAuxiliaryData(
       isOnIllustBackground: state.isOnIllustBackground,
+      background: usesV4 ? user.background : null,
+      badge: usesV4 ? user.badge : null,
+      tagRatings: usesV4 ? user.tagRatings : const [],
     );
     final requests = <Future<void> Function()>[
-      if (user.backgroundId != null)
+      if (!usesV4 && user.backgroundId != null)
         () async {
           auxiliary.background = await _optional(
             () => _userRepository.getBackground(user.backgroundId!),
@@ -77,7 +82,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
             ) ??
             auxiliary.isOnIllustBackground;
       },
-      if (user.badgeId != null)
+      if (!usesV4 && user.badgeId != null)
         () async {
           auxiliary.badge = await _optional(
             () => _userRepository.getBadge(user.badgeId!),
@@ -85,34 +90,42 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         },
       () async {
         auxiliary.streak = await _optional(
-          () => _userRepository.getStreak(_handle, "default"),
+          () => _userRepository.getStreak(
+            _handle,
+            from: solvedDay,
+            to: solvedDay,
+          ),
         );
       },
-      () async {
-        auxiliary.tagRatings =
-            await _optional(() => _userRepository.getTagRatings(_handle)) ??
-                const [];
-      },
-      () async {
-        auxiliary.problemStats =
-            await _optional(() => _userRepository.getProblemStats(_handle)) ??
-                const [];
-      },
+      if (!usesV4)
+        () async {
+          auxiliary.tagRatings =
+              await _optional(() => _userRepository.getTagRatings(_handle)) ??
+                  const [];
+        },
+      if (!usesV4)
+        () async {
+          // Official v4 has no equivalent of the legacy tier distribution.
+          auxiliary.problemStats =
+              await _optional(() => _userRepository.getProblemStats(_handle)) ??
+                  const [];
+        },
     ];
 
     await _runLimited(requests);
     final effectiveStreak = auxiliary.streak ?? state.streak;
 
     emit(
-      state.copyWith(
-        isOnIllustBackground: auxiliary.isOnIllustBackground,
+      HomeState(
         status: HomeStatus.success,
+        handle: _handle,
+        isOnIllustBackground: auxiliary.isOnIllustBackground,
         user: user,
         profileImageUrl: user.profileImageUrl,
         background: auxiliary.background,
         badge: auxiliary.badge,
         streak: effectiveStreak,
-        solvedToday: _hasSolvedToday(effectiveStreak, _now()),
+        solvedToday: _hasSolvedToday(effectiveStreak, solvedDay),
         tagRatings: auxiliary.tagRatings,
         problemStats: auxiliary.problemStats,
       ),
@@ -160,12 +173,17 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 }
 
 class _HomeAuxiliaryData {
-  _HomeAuxiliaryData({required this.isOnIllustBackground});
+  _HomeAuxiliaryData({
+    required this.isOnIllustBackground,
+    this.background,
+    this.badge,
+    this.tagRatings = const [],
+  });
 
   bool isOnIllustBackground;
   ProfileBackgroundAsset? background;
   ProfileBadgeAsset? badge;
   ProfileStreak? streak;
-  List<ProfileTagRating> tagRatings = const [];
-  List<ProfileTierStat> problemStats = const [];
+  List<ProfileTagRating> tagRatings;
+  List<ProfileTierStat>? problemStats;
 }
