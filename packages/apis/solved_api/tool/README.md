@@ -1,5 +1,34 @@
 # Public solved.ac contract capture
 
+## Pin the official v4 OpenAPI contract
+
+solved.ac publishes the machine-readable document at
+[`https://backstage.solved.ac/api/v4/openapi`](https://backstage.solved.ac/api/v4/openapi).
+Refresh the reviewable subset used by this package with:
+
+```sh
+dart run tool/fetch_official_v4_contract.dart \
+  --output test/fixtures/v4/official_openapi_contract.json
+```
+
+The snapshot retains the document metadata, production server, complete path
+inventory, and the full schemas for the profile, activity, contribution,
+search, tag, asset, health, and OAuth operations relevant to this app. The
+fetch fails closed if the source is not OpenAPI 3.1, the production server or
+one of those operations disappears, or the document exceeds 2 MiB.
+
+The committed snapshot was refreshed on 2026-11-17. The downloaded source
+document had SHA-256
+`052ab72f544140447778df687463ea5fdfe9cbd24dbefa1b1ff4793f6adbaf0a`.
+Review the resulting diff and update the contract tests before accepting a new
+upstream shape.
+
+The official document describes app authentication in `info.description` and
+per-operation `x-access`; it currently does not declare standard OpenAPI
+`security` or `components.securitySchemes`. In particular, both
+`x-client-id` and `x-client-secret` are required for ordinary v4 requests, so
+the secret belongs in the backend proxy and must not be shipped in this app.
+
 This tool converts a browser HAR into reviewable request metadata and JSON
 response fixtures. A reviewed plan explicitly names every expected scenario;
 the capture succeeds only when each planned public HTTPS `GET` exchange matches
