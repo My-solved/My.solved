@@ -1,0 +1,25 @@
+{
+  "kind": "background",
+  "id": 101,
+  "key": "anniversary_1st",
+  "name": "First Anniversary",
+  "imageUrl": "https://example.com/background-thumbnail.png",
+  "category": "event",
+  "addedAt": "2020-01-01T00:00:00Z",
+  "unlockedByDefault": false,
+  "owned": null,
+  "equipped": null,
+  "background": {
+    "key": "anniversary_1st",
+    "backgroundImageUrl": "https://example.com/background.png",
+    "fallbackBackgroundImageUrl": "https://example.com/background-fallback.png",
+    "backgroundVideoUrl": null,
+    "thumbnailPlaceholder": null,
+    "isIllust": true,
+    "displayName": "First Anniversary",
+    "authors": []
+  },
+  "credits": [],
+  "userCount": 1,
+  "achievements": []
+}
