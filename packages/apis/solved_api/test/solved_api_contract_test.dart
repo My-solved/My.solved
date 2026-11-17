@@ -1,21 +1,144 @@
+import 'dart:convert';
+
 import 'package:solved_api/solved_api.dart';
 import 'package:test/test.dart';
 
+import 'helpers/fixture.dart';
+
 void main() {
   group('SolvedApiV3Contract', () {
-    test('describes the verified user request for direct and proxy targets',
-        () {
-      final endpoint = const SolvedApiV3Contract().userShow('index');
+    test(
+      'describes the verified user request for direct and proxy targets',
+      () {
+        final endpoint = const SolvedApiV3Contract().userShow('index');
 
-      expect(endpoint.direct.baseUri, Uri.parse('https://solved.ac/api/v3/'));
-      expect(endpoint.direct.path, 'user/show');
-      expect(endpoint.direct.queryParameters, {'handle': 'index'});
+        expect(endpoint.direct.baseUri, Uri.parse('https://solved.ac/api/v3/'));
+        expect(endpoint.direct.path, 'user/show');
+        expect(endpoint.direct.queryParameters, {'handle': 'index'});
+        expect(
+          endpoint.proxy.baseUri,
+          Uri.parse('https://codepoker.w8385.dev/solved/'),
+        );
+        expect(endpoint.proxy.path, 'user/show');
+        expect(endpoint.proxy.queryParameters, {'handle': 'index'});
+      },
+    );
+
+    test('preserves verified search targets and defaults', () {
+      const contract = SolvedApiV3Contract();
+      final problem = contract.searchProblem('rsa', null, null, null);
+      final user = contract.searchUser('index', null);
+      final tag = contract.searchTag('math', null);
+
+      expect(problem.direct.baseUri, Uri.parse('https://solved.ac/api/v3/'));
+      expect(problem.direct.path, 'search/problem');
+      expect(problem.direct.queryParameters, {
+        'query': 'rsa',
+        'page': '1',
+        'sort': 'solved',
+        'direction': 'descending',
+      });
       expect(
-        endpoint.proxy.baseUri,
+        problem.proxy.baseUri,
         Uri.parse('https://codepoker.w8385.dev/solved/'),
       );
-      expect(endpoint.proxy.path, 'user/show');
-      expect(endpoint.proxy.queryParameters, {'handle': 'index'});
+      expect(problem.proxy.path, 'search/problem');
+      expect(problem.proxy.queryParameters, problem.direct.queryParameters);
+      expect(user.direct.path, 'search/user');
+      expect(user.direct.queryParameters, {'query': 'index', 'page': '1'});
+      expect(tag.direct.path, 'search/tag');
+      expect(tag.direct.queryParameters, {'query': 'math', 'page': '1'});
+    });
+
+    test('normalizes verified v3 search fixtures', () {
+      const contract = SolvedApiV3Contract();
+      final problems = contract
+          .searchProblem('rsa', 1, 'id', 'asc')
+          .decode(jsonDecode(fixture('v3/search_problem.json')));
+      final users = contract
+          .searchUser('fdsa', 1)
+          .decode(jsonDecode(fixture('v3/search_user.json')));
+      final tags = contract
+          .searchTag('number_theory', 1)
+          .decode(jsonDecode(fixture('v3/search_tag.json')));
+
+      expect(problems, isA<SearchObject<ProblemSearchItem>>());
+      expect(problems.count, 1);
+      expect(problems.items.single.problemId, 3734);
+      expect(problems.items.single.title, 'RSA 인수 분해');
+      expect(problems.items.single.level, 16);
+      expect(problems.items.single.tagNames, [
+        '애드 혹',
+        '임의 정밀도 / 큰 수 연산',
+        '브루트포스 알고리즘',
+        '수학',
+        '정수론',
+      ]);
+      expect(users, isA<SearchObject<UserSearchItem>>());
+      expect(users.count, 2);
+      expect(users.items.first.handle, 'fdsajklt2');
+      expect(users.items.first.profileImageUrl, isNull);
+      expect(users.items.first.tier, 16);
+      expect(tags, isA<SearchObject<TagSearchItem>>());
+      expect(tags.count, 1);
+      expect(tags.items.single.key, 'number_theory');
+      expect(tags.items.single.problemCount, 1314);
+    });
+
+    test('selects a Korean tag name with safe fallbacks', () {
+      final result = const SolvedApiV3Contract()
+          .searchProblem('tags', 1, 'id', 'asc')
+          .decode({
+        'count': 1,
+        'items': [
+          {
+            'problemId': 1,
+            'titleKo': '태그 이름',
+            'level': 0,
+            'tags': [
+              {
+                'key': 'korean',
+                'displayNames': [
+                  {'language': 'en', 'name': 'English name'},
+                  {'language': 'ko', 'name': '한국어 이름'},
+                ],
+              },
+              {
+                'key': 'first',
+                'displayNames': [
+                  null,
+                  {'language': 'en', 'name': 'English fallback'},
+                ],
+              },
+              {
+                'key': 'key_only',
+                'displayNames': [
+                  {'language': 'ko', 'name': ''},
+                  42,
+                ],
+              },
+            ],
+          },
+        ],
+      });
+
+      expect(result.items.single.tagNames, [
+        '한국어 이름',
+        'English fallback',
+        'key_only',
+      ]);
+    });
+
+    test('accepts empty search result lists', () {
+      const contract = SolvedApiV3Contract();
+      final empty = {'count': 0, 'items': <dynamic>[]};
+
+      expect(
+        contract.searchProblem('', null, null, null).decode(empty).items,
+        isEmpty,
+      );
+      expect(contract.searchUser('', null).decode(empty).items, isEmpty);
+      expect(contract.searchTag('', null).decode(empty).items, isEmpty);
     });
 
     test('normalizes profile streak days without mutating v3 wire data', () {
@@ -139,10 +262,8 @@ void main() {
 
     test('rejects ambiguous bases and non-relative endpoint paths', () {
       expect(
-        () => SolvedApiTarget(
-          baseUri: Uri.parse('/api/v3/'),
-          path: 'user/show',
-        ),
+        () =>
+            SolvedApiTarget(baseUri: Uri.parse('/api/v3/'), path: 'user/show'),
         throwsArgumentError,
       );
       expect(

@@ -62,16 +62,22 @@ abstract interface class SolvedApiContract {
 
   SolvedApiEndpoint<SearchSuggestion> searchSuggestion(String query);
 
-  SolvedApiEndpoint<SearchObject> searchProblem(
+  SolvedApiEndpoint<SearchObject<ProblemSearchItem>> searchProblem(
     String query,
     int? page,
     String? sort,
     String? direction,
   );
 
-  SolvedApiEndpoint<SearchObject> searchUser(String query, int? page);
+  SolvedApiEndpoint<SearchObject<UserSearchItem>> searchUser(
+    String query,
+    int? page,
+  );
 
-  SolvedApiEndpoint<SearchObject> searchTag(String query, int? page);
+  SolvedApiEndpoint<SearchObject<TagSearchItem>> searchTag(
+    String query,
+    int? page,
+  );
 }
 
 /// The verified v3 request paths, query parameters, and response decoders.
@@ -138,7 +144,7 @@ class SolvedApiV3Contract implements SolvedApiContract {
       );
 
   @override
-  SolvedApiEndpoint<SearchObject> searchProblem(
+  SolvedApiEndpoint<SearchObject<ProblemSearchItem>> searchProblem(
     String query,
     int? page,
     String? sort,
@@ -152,41 +158,30 @@ class SolvedApiV3Contract implements SolvedApiContract {
           'sort': sort ?? 'solved',
           'direction': direction ?? 'descending',
         },
-        decode: (json) {
-          json['items'] = json['items']
-              .map((problem) => Problem.fromJson(problem))
-              .toList()
-              .cast<Problem>();
-          return SearchObject.fromJson(json);
-        },
+        decode: (json) =>
+            _decodeV3SearchObject(json, _decodeV3ProblemSearchItem),
       );
 
   @override
-  SolvedApiEndpoint<SearchObject> searchUser(String query, int? page) =>
+  SolvedApiEndpoint<SearchObject<UserSearchItem>> searchUser(
+    String query,
+    int? page,
+  ) =>
       _endpoint(
         path: 'search/user',
         queryParameters: {'query': query, 'page': page?.toString() ?? '1'},
-        decode: (json) {
-          json['items'] = json['items']
-              .map((user) => User.fromJson(user))
-              .toList()
-              .cast<User>();
-          return SearchObject.fromJson(json);
-        },
+        decode: (json) => _decodeV3SearchObject(json, _decodeV3UserSearchItem),
       );
 
   @override
-  SolvedApiEndpoint<SearchObject> searchTag(String query, int? page) =>
+  SolvedApiEndpoint<SearchObject<TagSearchItem>> searchTag(
+    String query,
+    int? page,
+  ) =>
       _endpoint(
         path: 'search/tag',
         queryParameters: {'query': query, 'page': page?.toString() ?? '1'},
-        decode: (json) {
-          json['items'] = json['items']
-              .map((tag) => Tag.fromJson(tag))
-              .toList()
-              .cast<Tag>();
-          return SearchObject.fromJson(json);
-        },
+        decode: (json) => _decodeV3SearchObject(json, _decodeV3TagSearchItem),
       );
 
   SolvedApiEndpoint<T> _endpoint<T>({
@@ -277,6 +272,66 @@ List<ProfileTagRating> _decodeV3ProfileTagRatings(dynamic json) =>
       final body = Map<String, dynamic>.from(item as Map);
       return ProfileTagRating(rating: body['rating']);
     }).toList(growable: false);
+
+SearchObject<T> _decodeV3SearchObject<T>(
+  dynamic json,
+  T Function(Map<String, dynamic> item) decodeItem,
+) {
+  final body = Map<String, dynamic>.from(json as Map);
+  final items = body['items'] as List<dynamic>;
+  return SearchObject<T>(
+    count: body['count'] as int,
+    items: items
+        .map((item) => decodeItem(Map<String, dynamic>.from(item as Map)))
+        .toList(),
+  );
+}
+
+ProblemSearchItem _decodeV3ProblemSearchItem(Map<String, dynamic> json) {
+  final tags = json['tags'] as List<dynamic>;
+  return ProblemSearchItem(
+    problemId: json['problemId'] as int,
+    title: json['titleKo'] as String,
+    level: json['level'] as int,
+    tagNames: tags
+        .map(
+          (tag) => _decodeV3TagName(Map<String, dynamic>.from(tag as Map)),
+        )
+        .toList(),
+  );
+}
+
+UserSearchItem _decodeV3UserSearchItem(Map<String, dynamic> json) {
+  return UserSearchItem(
+    handle: json['handle'] as String,
+    profileImageUrl: json['profileImageUrl'] as String?,
+    tier: json['tier'] as int,
+  );
+}
+
+TagSearchItem _decodeV3TagSearchItem(Map<String, dynamic> json) {
+  return TagSearchItem(
+    key: json['key'] as String,
+    problemCount: json['problemCount'] as int,
+  );
+}
+
+String _decodeV3TagName(Map<String, dynamic> tag) {
+  final key = tag['key'] as String;
+  final displayNames = tag['displayNames'];
+  if (displayNames is! List) return key;
+
+  String? firstName;
+  for (final displayName in displayNames) {
+    if (displayName is! Map) continue;
+    final fields = Map<String, dynamic>.from(displayName);
+    final name = fields['name'];
+    if (name is! String || name.isEmpty) continue;
+    firstName ??= name;
+    if (fields['language'] == 'ko') return name;
+  }
+  return firstName ?? key;
+}
 
 Uri _normalizeBaseUri(Uri uri) {
   if (uri.path.endsWith('/')) return uri;

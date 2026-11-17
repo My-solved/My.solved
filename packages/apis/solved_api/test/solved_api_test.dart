@@ -48,6 +48,84 @@ class AlternateUserContract extends SolvedApiV3Contract {
       );
 }
 
+class AlternateSearchContract extends SolvedApiV3Contract {
+  const AlternateSearchContract();
+
+  @override
+  SolvedApiEndpoint<SearchObject<ProblemSearchItem>> searchProblem(
+    String query,
+    int? page,
+    String? sort,
+    String? direction,
+  ) =>
+      _endpoint(
+        path: 'find/problems',
+        queryParameters: {'text': query},
+        value: const SearchObject(
+          count: 1,
+          items: [
+            ProblemSearchItem(
+              problemId: 9000,
+              title: 'opaque problem',
+              level: 7,
+              tagNames: ['opaque'],
+            ),
+          ],
+        ),
+      );
+
+  @override
+  SolvedApiEndpoint<SearchObject<UserSearchItem>> searchUser(
+    String query,
+    int? page,
+  ) =>
+      _endpoint(
+        path: 'find/users',
+        queryParameters: {'text': query},
+        value: const SearchObject(
+          count: 1,
+          items: [
+            UserSearchItem(
+                handle: 'opaque-user', profileImageUrl: null, tier: 8),
+          ],
+        ),
+      );
+
+  @override
+  SolvedApiEndpoint<SearchObject<TagSearchItem>> searchTag(
+    String query,
+    int? page,
+  ) =>
+      _endpoint(
+        path: 'find/tags',
+        queryParameters: {'text': query},
+        value: const SearchObject(
+          count: 1,
+          items: [TagSearchItem(key: 'opaque-tag', problemCount: 9)],
+        ),
+      );
+
+  SolvedApiEndpoint<T> _endpoint<T>({
+    required String path,
+    required Map<String, String> queryParameters,
+    required T value,
+  }) {
+    return SolvedApiEndpoint(
+      direct: SolvedApiTarget(
+        baseUri: Uri.https('contract.example.com', '/direct/'),
+        path: path,
+        queryParameters: queryParameters,
+      ),
+      proxy: SolvedApiTarget(
+        baseUri: Uri.https('proxy.example.com', '/gateway/'),
+        path: path,
+        queryParameters: queryParameters,
+      ),
+      decode: (_) => value,
+    );
+  }
+}
+
 void main() {
   group('SolvedApiClient', () {
     late http.Client httpClient;
@@ -139,29 +217,79 @@ void main() {
         ).called(1);
       });
 
-      test('custom base overrides only the selected contract target base',
-          () async {
-        when(() => httpClient.get(any())).thenAnswer(
-          (_) async => http.Response('{"opaque":"contract-decoded"}', 200),
-        );
-        apiClient = SolvedApiClient(
-          httpClient: httpClient,
-          useProxy: false,
-          apiBaseUri: Uri.https('staging.example.com', '/api'),
-          contract: const AlternateUserContract(),
-        );
+      test(
+        'uses contract-specific search decoders without a v3 shape',
+        () async {
+          when(() => httpClient.get(any())).thenAnswer(
+            (_) async => http.Response('{"opaque":"contract-decoded"}', 200),
+          );
+          apiClient = SolvedApiClient(
+            httpClient: httpClient,
+            useProxy: false,
+            contract: const AlternateSearchContract(),
+          );
 
-        final user = await apiClient.userShow('w8385');
+          final problems = await apiClient.searchProblem(
+            'opaque',
+            null,
+            null,
+            null,
+          );
+          final users = await apiClient.searchUser('opaque', null);
+          final tags = await apiClient.searchTag('opaque', null);
 
-        expect(user.handle, 'contract-decoded');
-        verify(
-          () => httpClient.get(
-            Uri.https('staging.example.com', '/api/profile/show', {
-              'user': 'w8385',
-            }),
-          ),
-        ).called(1);
-      });
+          expect(problems.items.single.title, 'opaque problem');
+          expect(users.items.single.handle, 'opaque-user');
+          expect(tags.items.single.key, 'opaque-tag');
+          verify(
+            () => httpClient.get(
+              Uri.https('contract.example.com', '/direct/find/problems', {
+                'text': 'opaque',
+              }),
+            ),
+          ).called(1);
+          verify(
+            () => httpClient.get(
+              Uri.https('contract.example.com', '/direct/find/users', {
+                'text': 'opaque',
+              }),
+            ),
+          ).called(1);
+          verify(
+            () => httpClient.get(
+              Uri.https('contract.example.com', '/direct/find/tags', {
+                'text': 'opaque',
+              }),
+            ),
+          ).called(1);
+        },
+      );
+
+      test(
+        'custom base overrides only the selected contract target base',
+        () async {
+          when(() => httpClient.get(any())).thenAnswer(
+            (_) async => http.Response('{"opaque":"contract-decoded"}', 200),
+          );
+          apiClient = SolvedApiClient(
+            httpClient: httpClient,
+            useProxy: false,
+            apiBaseUri: Uri.https('staging.example.com', '/api'),
+            contract: const AlternateUserContract(),
+          );
+
+          final user = await apiClient.userShow('w8385');
+
+          expect(user.handle, 'contract-decoded');
+          verify(
+            () => httpClient.get(
+              Uri.https('staging.example.com', '/api/profile/show', {
+                'user': 'w8385',
+              }),
+            ),
+          ).called(1);
+        },
+      );
 
       test('normalizes and uses a custom direct API base URI', () async {
         apiClient = SolvedApiClient(
@@ -724,7 +852,7 @@ void main() {
         ).called(1);
       });
 
-      test('returns SearchObject on valid response', () async {
+      test('returns normalized problem results on valid response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(() => response.body).thenReturn(fixture('v3/search_problem.json'));
@@ -736,8 +864,38 @@ void main() {
           sort,
           direction,
         );
-        expect(actual, isA<SearchObject>());
-        expect(actual.items, isA<List<Problem>>());
+        expect(actual, isA<SearchObject<ProblemSearchItem>>());
+        expect(actual.count, 1);
+        expect(actual.items, hasLength(1));
+        expect(actual.items.single.problemId, 3734);
+        expect(actual.items.single.title, 'RSA 인수 분해');
+        expect(actual.items.single.level, 16);
+        expect(actual.items.single.tagNames, [
+          '애드 혹',
+          '임의 정밀도 / 큰 수 연산',
+          '브루트포스 알고리즘',
+          '수학',
+          '정수론',
+        ]);
+      });
+
+      test('decodes items without mutating the response JSON', () {
+        final json = jsonDecode(fixture('v3/search_problem.json'))
+            as Map<String, dynamic>;
+        final original = jsonDecode(jsonEncode(json));
+        final rawItems = json['items'] as List<dynamic>;
+        final rawFirstItem = rawItems.first;
+        final rawTags = (rawFirstItem as Map<String, dynamic>)['tags'];
+
+        final actual = const SolvedApiV3Contract()
+            .searchProblem(query, page, sort, direction)
+            .decode(json);
+
+        expect(actual.items.single, isA<ProblemSearchItem>());
+        expect(json, original);
+        expect(json['items'], same(rawItems));
+        expect(rawItems.first, same(rawFirstItem));
+        expect((rawItems.first as Map<String, dynamic>)['tags'], same(rawTags));
       });
     });
 
@@ -763,15 +921,19 @@ void main() {
         ).called(1);
       });
 
-      test('returns SearchObject on valid response', () async {
+      test('returns normalized user results on valid response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(() => response.body).thenReturn(fixture('v3/search_user.json'));
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
 
         final actual = await apiClient.searchUser(query, page);
-        expect(actual, isA<SearchObject>());
-        expect(actual.items, isA<List<User>>());
+        expect(actual, isA<SearchObject<UserSearchItem>>());
+        expect(actual.items, isA<List<UserSearchItem>>());
+        expect(actual.items, hasLength(2));
+        expect(actual.items.first.handle, 'fdsajklt2');
+        expect(actual.items.first.tier, 16);
+        expect(actual.items.first.profileImageUrl, isNull);
       });
     });
 
@@ -797,15 +959,18 @@ void main() {
         ).called(1);
       });
 
-      test('returns SearchObject on valid response', () async {
+      test('returns normalized tag results on valid response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(() => response.body).thenReturn(fixture('v3/search_tag.json'));
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
 
         final actual = await apiClient.searchTag(query, page);
-        expect(actual, isA<SearchObject>());
-        expect(actual.items, isA<List<Tag>>());
+        expect(actual, isA<SearchObject<TagSearchItem>>());
+        expect(actual.count, 1);
+        expect(actual.items, hasLength(1));
+        expect(actual.items.single.key, 'number_theory');
+        expect(actual.items.single.problemCount, 1314);
       });
     });
   });
