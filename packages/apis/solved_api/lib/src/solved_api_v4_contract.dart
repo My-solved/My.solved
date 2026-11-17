@@ -230,15 +230,115 @@ ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
       'problems[].noRatingReasons',
     ).map(_decodeV4ProblemNoRatingReason),
   );
+  final noRatingWarnings = List<ProblemNoRatingWarning>.unmodifiable(
+    _list(body['noRatingWarnings'], 'problems[].noRatingWarnings').map(
+      (value) => _decodeV4ProblemNoRatingWarning(
+        _object(value, 'problems[].noRatingWarnings[]'),
+      ),
+    ),
+  );
   return ProblemSearchItem(
     problemId: _wholeNumber(body['problemId'], 'problems[].problemId'),
     title: _decodeV4ProblemTitle(body['titles']),
     level: _wholeNumber(body['level'], 'problems[].level'),
     givesNoRating: _boolean(body['givesNoRating'], 'problems[].givesNoRating'),
     noRatingReasons: noRatingReasons,
+    noRatingWarnings: noRatingWarnings,
     // The official v4 problem shape has tag keys but no localized names.
     tagNames: tagKeys,
   );
+}
+
+ProblemNoRatingWarning _decodeV4ProblemNoRatingWarning(
+  Map<String, dynamic> body,
+) {
+  if (!body.containsKey('problem')) {
+    throw const FormatException(
+      'Missing required field problems[].noRatingWarnings[].problem',
+    );
+  }
+  final problemValue = body['problem'];
+  ProblemNoRatingWarningProblem? problem;
+  if (problemValue != null) {
+    problem = _decodeV4ProblemNoRatingWarningProblem(
+      _object(problemValue, 'problems[].noRatingWarnings[].problem'),
+    );
+  }
+  return ProblemNoRatingWarning(
+    type: _decodeV4ProblemNoRatingWarningType(body['type']),
+    problem: problem,
+  );
+}
+
+ProblemNoRatingWarningType _decodeV4ProblemNoRatingWarningType(Object? value) {
+  final code = _string(value, 'problems[].noRatingWarnings[].type');
+  return switch (code) {
+    'same' => ProblemNoRatingWarningType.same,
+    'searchable' => ProblemNoRatingWarningType.searchable,
+    'wrong-inputs' => ProblemNoRatingWarningType.wrongInputs,
+    'insufficient-conditions' =>
+      ProblemNoRatingWarningType.insufficientConditions,
+    'no-special-judge' => ProblemNoRatingWarningType.noSpecialJudge,
+    'wrong-conditions' => ProblemNoRatingWarningType.wrongConditions,
+    'wrong-statement' => ProblemNoRatingWarningType.wrongStatement,
+    _ => throw FormatException('Unknown problem no-rating warning: $code'),
+  };
+}
+
+ProblemNoRatingWarningProblem _decodeV4ProblemNoRatingWarningProblem(
+  Map<String, dynamic> body,
+) {
+  if (!body.containsKey('userStatus')) {
+    throw const FormatException(
+      'Missing required field '
+      'problems[].noRatingWarnings[].problem.userStatus',
+    );
+  }
+  final userStatusValue = body['userStatus'];
+  ProblemUserStatus? userStatus;
+  if (userStatusValue != null) {
+    userStatus = _decodeV4ProblemUserStatus(userStatusValue);
+  }
+  return ProblemNoRatingWarningProblem(
+    problemId: _number(
+      body['problemId'],
+      'problems[].noRatingWarnings[].problem.problemId',
+    ),
+    subId: _string(
+      body['subId'],
+      'problems[].noRatingWarnings[].problem.subId',
+    ),
+    level: _number(
+      body['level'],
+      'problems[].noRatingWarnings[].problem.level',
+    ),
+    effectiveVoteCount: _number(
+      body['effectiveVoteCount'],
+      'problems[].noRatingWarnings[].problem.effectiveVoteCount',
+    ),
+    givesNoRating: _boolean(
+      body['givesNoRating'],
+      'problems[].noRatingWarnings[].problem.givesNoRating',
+    ),
+    isStandard: _boolean(
+      body['isStandard'],
+      'problems[].noRatingWarnings[].problem.isStandard',
+    ),
+    userStatus: userStatus,
+  );
+}
+
+ProblemUserStatus _decodeV4ProblemUserStatus(Object? value) {
+  final code = _string(
+    value,
+    'problems[].noRatingWarnings[].problem.userStatus',
+  );
+  return switch (code) {
+    'solved' => ProblemUserStatus.solved,
+    'partial' => ProblemUserStatus.partial,
+    'tried' => ProblemUserStatus.tried,
+    _ => throw FormatException('Unknown problem user status: $code'),
+  };
 }
 
 ProblemNoRatingReason _decodeV4ProblemNoRatingReason(Object? value) {

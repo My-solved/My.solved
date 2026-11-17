@@ -181,7 +181,11 @@ void main() {
         _map(_map(_properties(problemSchema)['problems'])['items']);
     expect(
       _required(problemItem),
-      containsAll(['givesNoRating', 'noRatingReasons']),
+      containsAll([
+        'givesNoRating',
+        'noRatingReasons',
+        'noRatingWarnings',
+      ]),
     );
     final problemProperties = _properties(problemItem);
     expect(_map(problemProperties['givesNoRating'])['type'], 'boolean');
@@ -198,6 +202,58 @@ void main() {
     for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
       expect(noRatingReasons.containsKey(constraint), isFalse);
     }
+    final noRatingWarnings = _map(problemProperties['noRatingWarnings']);
+    expect(noRatingWarnings['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(noRatingWarnings.containsKey(constraint), isFalse);
+    }
+    final noRatingWarning = _map(noRatingWarnings['items']);
+    expect(noRatingWarning['type'], 'object');
+    expect(_required(noRatingWarning), ['type', 'problem']);
+    expect(noRatingWarning.containsKey('additionalProperties'), isFalse);
+    final warningProperties = _properties(noRatingWarning);
+    final warningType = _map(warningProperties['type']);
+    expect(warningType['type'], 'string');
+    expect(warningType['enum'], [
+      'same',
+      'searchable',
+      'wrong-inputs',
+      'insufficient-conditions',
+      'no-special-judge',
+      'wrong-conditions',
+      'wrong-statement',
+    ]);
+    final warningProblem = _map(warningProperties['problem']);
+    expect(warningProblem['type'], ['object', 'null']);
+    expect(_required(warningProblem), [
+      'problemId',
+      'subId',
+      'level',
+      'effectiveVoteCount',
+      'givesNoRating',
+      'isStandard',
+      'userStatus',
+    ]);
+    expect(warningProblem.containsKey('additionalProperties'), isFalse);
+    final warningProblemProperties = _properties(warningProblem);
+    for (final field in ['problemId', 'level', 'effectiveVoteCount']) {
+      final property = _map(warningProblemProperties[field]);
+      expect(property['type'], 'number');
+      for (final constraint in ['minimum', 'maximum', 'multipleOf']) {
+        expect(property.containsKey(constraint), isFalse);
+      }
+    }
+    final warningSubId = _map(warningProblemProperties['subId']);
+    expect(warningSubId['type'], 'string');
+    for (final constraint in ['minLength', 'maxLength', 'pattern', 'format']) {
+      expect(warningSubId.containsKey(constraint), isFalse);
+    }
+    for (final field in ['givesNoRating', 'isStandard']) {
+      expect(_map(warningProblemProperties[field])['type'], 'boolean');
+    }
+    final warningUserStatus = _map(warningProblemProperties['userStatus']);
+    expect(warningUserStatus['type'], ['string', 'null']);
+    expect(warningUserStatus['enum'], ['solved', 'partial', 'tried', null]);
 
     final users = _get(contract, '/api/v4/rankings/users/search');
     expect(_parameterNames(users), ['q', 'sort']);

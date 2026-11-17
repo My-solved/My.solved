@@ -24,6 +24,26 @@ void main() {
       ]);
     });
 
+    test('exposes the official no-rating warning and user-status codes', () {
+      expect(
+        ProblemNoRatingWarningType.values.map((warning) => warning.value),
+        [
+          'same',
+          'searchable',
+          'wrong-inputs',
+          'insufficient-conditions',
+          'no-special-judge',
+          'wrong-conditions',
+          'wrong-statement',
+        ],
+      );
+      expect(ProblemUserStatus.values.map((status) => status.value), [
+        'solved',
+        'partial',
+        'tried',
+      ]);
+    });
+
     test('uses the official path, parameters, and defaults', () {
       final defaults = contract.searchProblems('tag:dp');
       final configured = contract.searchProblems(
@@ -93,6 +113,7 @@ void main() {
       expect(actual.items[0].level, 10);
       expect(actual.items[0].givesNoRating, isFalse);
       expect(actual.items[0].noRatingReasons, isEmpty);
+      expect(actual.items[0].noRatingWarnings, isEmpty);
       expect(actual.items[0].tagNames, ['math', 'number_theory']);
       expect(actual.items[1].title, 'Original title');
       expect(actual.items[2].title, 'First fallback');
@@ -101,6 +122,7 @@ void main() {
       expect(actual.items[3].noRatingReasons, [
         ProblemNoRatingReason.unofficial,
       ]);
+      expect(actual.items[3].noRatingWarnings, isEmpty);
     });
 
     test('requires a boolean no-rating marker in every v4 problem', () {
@@ -224,6 +246,317 @@ void main() {
       },
     );
 
+    test('requires the documented no-rating warning array and keys', () {
+      final endpoint = contract.searchProblems('sample');
+      Map<String, dynamic> source() =>
+          jsonDecode(fixture('v4/search_problems.json'))
+              as Map<String, dynamic>;
+      Map<String, dynamic> firstProblem(Map<String, dynamic> body) =>
+          (body['problems'] as List).first as Map<String, dynamic>;
+      Map<String, dynamic> relatedProblem() => {
+        'problemId': 1000,
+        'subId': 'A',
+        'level': 10,
+        'effectiveVoteCount': 5,
+        'givesNoRating': false,
+        'isStandard': true,
+        'userStatus': null,
+      };
+      Map<String, dynamic> warning() => {
+        'type': 'same',
+        'problem': relatedProblem(),
+      };
+      SearchObject<ProblemSearchItem> decodeWarnings(Object? warnings) {
+        final body = source();
+        firstProblem(body)['noRatingWarnings'] = warnings;
+        return endpoint.decode(body);
+      }
+
+      final missing = source();
+      firstProblem(missing).remove('noRatingWarnings');
+      expect(() => endpoint.decode(missing), throwsFormatException);
+
+      for (final invalid in <Object?>[
+        null,
+        0,
+        false,
+        'same',
+        const <String, Object?>{},
+      ]) {
+        expect(
+          () => decodeWarnings(invalid),
+          throwsFormatException,
+          reason: 'noRatingWarnings = $invalid',
+        );
+      }
+
+      for (final invalid in <Object?>[
+        null,
+        0,
+        false,
+        'same',
+        const <Object>[],
+      ]) {
+        expect(
+          () => decodeWarnings([invalid]),
+          throwsFormatException,
+          reason: 'noRatingWarnings[] = $invalid',
+        );
+      }
+
+      for (final field in ['type', 'problem']) {
+        final malformed = warning()..remove(field);
+        expect(
+          () => decodeWarnings([malformed]),
+          throwsFormatException,
+          reason: 'noRatingWarnings[].$field missing',
+        );
+      }
+
+      for (final invalid in <Object?>[
+        null,
+        0,
+        false,
+        const <String, Object?>{},
+        const <Object>[],
+        'future-warning',
+      ]) {
+        final malformed = warning()..['type'] = invalid;
+        expect(
+          () => decodeWarnings([malformed]),
+          throwsFormatException,
+          reason: 'noRatingWarnings[].type = $invalid',
+        );
+      }
+
+      for (final invalid in <Object?>[
+        0,
+        false,
+        'problem',
+        const <Object>[],
+        const <String, Object?>{},
+      ]) {
+        final malformed = warning()..['problem'] = invalid;
+        expect(
+          () => decodeWarnings([malformed]),
+          throwsFormatException,
+          reason: 'noRatingWarnings[].problem = $invalid',
+        );
+      }
+
+      final actual = decodeWarnings([
+        {'type': 'same', 'problem': null},
+      ]);
+      expect(
+        actual.items.first.noRatingWarnings!.single.type,
+        ProblemNoRatingWarningType.same,
+      );
+      expect(actual.items.first.noRatingWarnings!.single.problem, isNull);
+    });
+
+    test('strictly validates every nested warning problem field', () {
+      final endpoint = contract.searchProblems('sample');
+      Map<String, dynamic> source() =>
+          jsonDecode(fixture('v4/search_problems.json'))
+              as Map<String, dynamic>;
+      Map<String, dynamic> relatedProblem() => {
+        'problemId': 1000,
+        'subId': 'A',
+        'level': 10,
+        'effectiveVoteCount': 5,
+        'givesNoRating': false,
+        'isStandard': true,
+        'userStatus': null,
+      };
+      void decodeProblem(Object? problem) {
+        final body = source();
+        final firstProblem =
+            (body['problems'] as List).first as Map<String, dynamic>;
+        firstProblem['noRatingWarnings'] = [
+          {'type': 'same', 'problem': problem},
+        ];
+        endpoint.decode(body);
+      }
+
+      for (final field in [
+        'problemId',
+        'subId',
+        'level',
+        'effectiveVoteCount',
+        'givesNoRating',
+        'isStandard',
+        'userStatus',
+      ]) {
+        final malformed = relatedProblem()..remove(field);
+        expect(
+          () => decodeProblem(malformed),
+          throwsFormatException,
+          reason: 'warning problem $field missing',
+        );
+      }
+
+      for (final field in ['problemId', 'level', 'effectiveVoteCount']) {
+        for (final invalid in <Object?>[
+          null,
+          '1',
+          true,
+          const <String, Object?>{},
+          const <Object>[],
+          double.nan,
+          double.infinity,
+          double.negativeInfinity,
+        ]) {
+          final malformed = relatedProblem()..[field] = invalid;
+          expect(
+            () => decodeProblem(malformed),
+            throwsFormatException,
+            reason: 'warning problem $field = $invalid',
+          );
+        }
+      }
+
+      for (final invalid in <Object?>[
+        null,
+        0,
+        false,
+        const <String, Object?>{},
+        const <Object>[],
+      ]) {
+        final malformed = relatedProblem()..['subId'] = invalid;
+        expect(
+          () => decodeProblem(malformed),
+          throwsFormatException,
+          reason: 'warning problem subId = $invalid',
+        );
+      }
+
+      for (final field in ['givesNoRating', 'isStandard']) {
+        for (final invalid in <Object?>[
+          null,
+          0,
+          'true',
+          const <String, Object?>{},
+          const <Object>[],
+        ]) {
+          final malformed = relatedProblem()..[field] = invalid;
+          expect(
+            () => decodeProblem(malformed),
+            throwsFormatException,
+            reason: 'warning problem $field = $invalid',
+          );
+        }
+      }
+
+      for (final invalid in <Object?>[
+        0,
+        false,
+        const <String, Object?>{},
+        const <Object>[],
+        'future-status',
+      ]) {
+        final malformed = relatedProblem()..['userStatus'] = invalid;
+        expect(
+          () => decodeProblem(malformed),
+          throwsFormatException,
+          reason: 'warning problem userStatus = $invalid',
+        );
+      }
+    });
+
+    test(
+      'preserves warning order, duplicates, nullable problems, and numbers',
+      () {
+        final body =
+            jsonDecode(fixture('v4/search_problems.json'))
+                as Map<String, dynamic>;
+        final firstProblem =
+            (body['problems'] as List).first as Map<String, dynamic>;
+        firstProblem['givesNoRating'] = false;
+        Map<String, dynamic> relatedProblem({
+          required Object? userStatus,
+          num problemId = 1000,
+          num level = 10,
+          num effectiveVoteCount = 5,
+        }) => {
+          'problemId': problemId,
+          'subId': '',
+          'level': level,
+          'effectiveVoteCount': effectiveVoteCount,
+          'givesNoRating': false,
+          'isStandard': true,
+          'userStatus': userStatus,
+          'futureProblemField': true,
+        };
+        Map<String, dynamic> duplicateWarning() => {
+          'type': 'wrong-statement',
+          'problem': relatedProblem(
+            userStatus: 'solved',
+            problemId: -1.5,
+            level: 0.25,
+            effectiveVoteCount: -2.5,
+          ),
+          'futureWarningField': true,
+        };
+        firstProblem['noRatingWarnings'] = [
+          duplicateWarning(),
+          {'type': 'same', 'problem': relatedProblem(userStatus: 'partial')},
+          duplicateWarning(),
+          {
+            'type': 'searchable',
+            'problem': relatedProblem(userStatus: 'tried'),
+          },
+          {'type': 'wrong-inputs', 'problem': relatedProblem(userStatus: null)},
+          {'type': 'insufficient-conditions', 'problem': null},
+          {'type': 'no-special-judge', 'problem': null},
+          {'type': 'wrong-conditions', 'problem': null},
+        ];
+
+        final actual = contract.searchProblems('sample').decode(body);
+        final warnings = actual.items.first.noRatingWarnings!;
+        expect(actual.items.first.givesNoRating, isFalse);
+        expect(warnings.map((warning) => warning.type), [
+          ProblemNoRatingWarningType.wrongStatement,
+          ProblemNoRatingWarningType.same,
+          ProblemNoRatingWarningType.wrongStatement,
+          ProblemNoRatingWarningType.searchable,
+          ProblemNoRatingWarningType.wrongInputs,
+          ProblemNoRatingWarningType.insufficientConditions,
+          ProblemNoRatingWarningType.noSpecialJudge,
+          ProblemNoRatingWarningType.wrongConditions,
+        ]);
+        expect(warnings[0].problem!.problemId, -1.5);
+        expect(warnings[0].problem!.subId, '');
+        expect(warnings[0].problem!.level, 0.25);
+        expect(warnings[0].problem!.effectiveVoteCount, -2.5);
+        expect(warnings[0].problem!.givesNoRating, isFalse);
+        expect(warnings[0].problem!.isStandard, isTrue);
+        expect(warnings[0].problem!.userStatus, ProblemUserStatus.solved);
+        expect(warnings[1].problem!.userStatus, ProblemUserStatus.partial);
+        expect(warnings[2].problem!.problemId, -1.5);
+        expect(warnings[2].problem!.userStatus, ProblemUserStatus.solved);
+        expect(warnings[3].problem!.userStatus, ProblemUserStatus.tried);
+        expect(warnings[4].problem!.userStatus, isNull);
+        expect(warnings[5].problem, isNull);
+        expect(
+          () => warnings.add(
+            const ProblemNoRatingWarning(
+              type: ProblemNoRatingWarningType.same,
+              problem: null,
+            ),
+          ),
+          throwsUnsupportedError,
+        );
+        expect(
+          () =>
+              warnings[0] = const ProblemNoRatingWarning(
+                type: ProblemNoRatingWarningType.same,
+                problem: null,
+              ),
+          throwsUnsupportedError,
+        );
+      },
+    );
+
     test(
       'accepts integral JSON numbers but rejects fractional model values',
       () {
@@ -235,6 +568,7 @@ void main() {
               'level': 12.0,
               'givesNoRating': false,
               'noRatingReasons': <Object>[],
+              'noRatingWarnings': <Object>[],
               'titles': <Object>[],
               'tags': <Object>[],
             },
@@ -253,6 +587,7 @@ void main() {
                 'level': 12,
                 'givesNoRating': false,
                 'noRatingReasons': <Object>[],
+                'noRatingWarnings': <Object>[],
                 'titles': <Object>[],
                 'tags': <Object>[],
               },
