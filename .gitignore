@@ -105,6 +105,11 @@ unlinked_spec.ds
 **/ios/ServiceDefinitions.json
 **/ios/Runner/GeneratedPluginRegistrant.*
 
+# fastlane generated artifacts and local App Store Connect credentials
+**/ios/fastlane/AppStoreConnectAPIKey.p8
+**/ios/fastlane/report.xml
+**/ios/fastlane/README.md
+
 # macOS
 **/Flutter/ephemeral/
 **/Pods/
