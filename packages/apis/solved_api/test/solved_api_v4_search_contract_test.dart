@@ -114,6 +114,7 @@ void main() {
       expect(actual.items[0].levelAverage, 10.25);
       expect(actual.items[0].levelStdev, 0.5);
       expect(actual.items[0].isStandard, isTrue);
+      expect(actual.items[0].userStatus, isNull);
       expect(actual.items[0].votedUserCount, 42);
       expect(actual.items[0].effectiveVoteCount, 40);
       expect(actual.items[0].solvedUserCount, 1234);
@@ -122,11 +123,14 @@ void main() {
       expect(actual.items[0].noRatingWarnings, isEmpty);
       expect(actual.items[0].tagNames, ['math', 'number_theory']);
       expect(actual.items[1].title, 'Original title');
+      expect(actual.items[1].userStatus, ProblemUserStatus.solved);
       expect(actual.items[2].title, 'First fallback');
+      expect(actual.items[2].userStatus, ProblemUserStatus.tried);
       expect(actual.items[3].title, isNull);
       expect(actual.items[3].levelAverage, 0);
       expect(actual.items[3].levelStdev, 0);
       expect(actual.items[3].isStandard, isFalse);
+      expect(actual.items[3].userStatus, isNull);
       expect(actual.items[3].votedUserCount, 0);
       expect(actual.items[3].effectiveVoteCount, 0);
       expect(actual.items[3].solvedUserCount, 0);
@@ -135,6 +139,47 @@ void main() {
         ProblemNoRatingReason.unofficial,
       ]);
       expect(actual.items[3].noRatingWarnings, isEmpty);
+    });
+
+    test('requires the documented nullable user status in every problem', () {
+      final endpoint = contract.searchProblems('sample');
+      Map<String, dynamic> source() =>
+          jsonDecode(fixture('v4/search_problems.json'))
+              as Map<String, dynamic>;
+      Map<String, dynamic> firstProblem(Map<String, dynamic> body) =>
+          (body['problems'] as List).first as Map<String, dynamic>;
+
+      final missing = source();
+      firstProblem(missing).remove('userStatus');
+      expect(() => endpoint.decode(missing), throwsFormatException);
+
+      for (final entry
+          in <String, ProblemUserStatus>{
+            'solved': ProblemUserStatus.solved,
+            'partial': ProblemUserStatus.partial,
+            'tried': ProblemUserStatus.tried,
+          }.entries) {
+        final body = source();
+        firstProblem(body)['userStatus'] = entry.key;
+        expect(endpoint.decode(body).items.first.userStatus, entry.value);
+      }
+
+      for (final invalid in <Object>[
+        '',
+        'unknown',
+        0,
+        false,
+        const <String, Object?>{},
+        const <Object>[],
+      ]) {
+        final malformed = source();
+        firstProblem(malformed)['userStatus'] = invalid;
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'userStatus = $invalid',
+        );
+      }
     });
 
     test('requires finite level statistics without inventing bounds', () {
@@ -788,6 +833,7 @@ void main() {
               'levelAverage': 12,
               'levelStdev': 0,
               'isStandard': true,
+              'userStatus': null,
               'votedUserCount': 0,
               'effectiveVoteCount': 0,
               'solvedUserCount': 0,
@@ -813,6 +859,7 @@ void main() {
                 'levelAverage': 12,
                 'levelStdev': 0,
                 'isStandard': true,
+                'userStatus': null,
                 'votedUserCount': 0,
                 'effectiveVoteCount': 0,
                 'solvedUserCount': 0,

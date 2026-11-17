@@ -189,12 +189,16 @@ void main() {
         'levelStdev',
         'noRatingReasons',
         'noRatingWarnings',
+        'userStatus',
         'votedUserCount',
         'solvedUserCount',
       ]),
     );
     final problemProperties = _properties(problemItem);
     expect(_map(problemProperties['isStandard']), {'type': 'boolean'});
+    final userStatus = _map(problemProperties['userStatus']);
+    expect(userStatus['type'], ['string', 'null']);
+    expect(userStatus['enum'], ['solved', 'partial', 'tried', null]);
     for (final field in ['levelAverage', 'levelStdev']) {
       final schema = _map(problemProperties[field]);
       expect(schema['type'], 'number');

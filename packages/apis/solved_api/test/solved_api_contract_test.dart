@@ -70,6 +70,7 @@ void main() {
       expect(problems.items.single.levelAverage, isNull);
       expect(problems.items.single.levelStdev, isNull);
       expect(problems.items.single.isStandard, isNull);
+      expect(problems.items.single.userStatus, isNull);
       expect(problems.items.single.votedUserCount, 10);
       expect(problems.items.single.effectiveVoteCount, isNull);
       expect(problems.items.single.solvedUserCount, isNull);
@@ -136,6 +137,7 @@ void main() {
       expect(item.levelAverage, isNull);
       expect(item.levelStdev, isNull);
       expect(item.isStandard, isNull);
+      expect(item.userStatus, isNull);
       expect(item.votedUserCount, isNull);
       expect(item.effectiveVoteCount, isNull);
       expect(item.solvedUserCount, isNull);
@@ -166,6 +168,27 @@ void main() {
           reason: 'givesNoRating = $invalid',
         );
       }
+    });
+
+    test('does not infer v4 user status from legacy flags', () {
+      final endpoint = const SolvedApiV3Contract().searchProblem(
+        'rsa',
+        1,
+        'id',
+        'asc',
+      );
+      Map<String, dynamic> source() =>
+          jsonDecode(fixture('v3/search_problem.json')) as Map<String, dynamic>;
+      Map<String, dynamic> firstProblem(Map<String, dynamic> body) =>
+          (body['items'] as List).first as Map<String, dynamic>;
+
+      expect(endpoint.decode(source()).items.single.userStatus, isNull);
+
+      final changed = source();
+      firstProblem(changed)
+        ..['isSolvable'] = false
+        ..['isPartial'] = true;
+      expect(endpoint.decode(changed).items.single.userStatus, isNull);
     });
 
     test('does not infer v4 level statistics from legacy values', () {

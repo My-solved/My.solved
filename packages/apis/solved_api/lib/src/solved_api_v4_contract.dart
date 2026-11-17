@@ -237,6 +237,17 @@ ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
       ),
     ),
   );
+  if (!body.containsKey('userStatus')) {
+    throw const FormatException('Missing required field problems[].userStatus');
+  }
+  final userStatusValue = body['userStatus'];
+  ProblemUserStatus? userStatus;
+  if (userStatusValue != null) {
+    userStatus = _decodeV4ProblemUserStatus(
+      userStatusValue,
+      'problems[].userStatus',
+    );
+  }
   return ProblemSearchItem(
     problemId: _wholeNumber(body['problemId'], 'problems[].problemId'),
     title: _decodeV4ProblemTitle(body['titles']),
@@ -244,6 +255,7 @@ ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
     levelAverage: _number(body['levelAverage'], 'problems[].levelAverage'),
     levelStdev: _number(body['levelStdev'], 'problems[].levelStdev'),
     isStandard: _boolean(body['isStandard'], 'problems[].isStandard'),
+    userStatus: userStatus,
     votedUserCount: _number(
       body['votedUserCount'],
       'problems[].votedUserCount',
@@ -312,7 +324,10 @@ ProblemNoRatingWarningProblem _decodeV4ProblemNoRatingWarningProblem(
   final userStatusValue = body['userStatus'];
   ProblemUserStatus? userStatus;
   if (userStatusValue != null) {
-    userStatus = _decodeV4ProblemUserStatus(userStatusValue);
+    userStatus = _decodeV4ProblemUserStatus(
+      userStatusValue,
+      'problems[].noRatingWarnings[].problem.userStatus',
+    );
   }
   return ProblemNoRatingWarningProblem(
     problemId: _number(
@@ -343,11 +358,8 @@ ProblemNoRatingWarningProblem _decodeV4ProblemNoRatingWarningProblem(
   );
 }
 
-ProblemUserStatus _decodeV4ProblemUserStatus(Object? value) {
-  final code = _string(
-    value,
-    'problems[].noRatingWarnings[].problem.userStatus',
-  );
+ProblemUserStatus _decodeV4ProblemUserStatus(Object? value, String field) {
+  final code = _string(value, field);
   return switch (code) {
     'solved' => ProblemUserStatus.solved,
     'partial' => ProblemUserStatus.partial,
