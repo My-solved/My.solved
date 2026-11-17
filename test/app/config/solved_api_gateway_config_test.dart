@@ -7,15 +7,25 @@ import 'package:my_solved/app/config/solved_api_gateway_config.dart';
 
 void main() {
   group('SolvedApiGatewayConfig', () {
-    test('keeps v4 disabled when the compile-time value is missing', () {
+    test('defaults the missing compile-time mode to legacy v3', () {
+      final config = SolvedApiGatewayConfig.fromEnvironment();
+
+      expect(config.mode, SolvedApiMode.legacyV3);
+      expect(config.hasV4Gateway, isFalse);
+      expect(config.v4ProxyBaseUri, isNull);
+    });
+
+    test('keeps the explicit legacy mode on v3 transport', () {
       final config = SolvedApiGatewayConfig.parse(
-        '',
+        mode: solvedApiLegacyV3Mode,
+        v4ProxyBaseUri: '',
         allowInsecureLoopback: false,
       );
       final client = config.createClient(
         httpClient: MockClient((_) async => http.Response('{}', 200)),
       );
 
+      expect(config.mode, SolvedApiMode.legacyV3);
       expect(config.hasV4Gateway, isFalse);
       expect(config.v4ProxyBaseUri, isNull);
       expect(() => client.v4SearchTags('dp'), throwsStateError);
@@ -24,7 +34,8 @@ void main() {
     test('injects a configured HTTPS gateway into v4 requests', () async {
       Uri? requestedUri;
       final config = SolvedApiGatewayConfig.parse(
-        'https://gateway.example/solved/v4/',
+        mode: solvedApiOfficialV4Mode,
+        v4ProxyBaseUri: 'https://gateway.example/solved/v4/',
         allowInsecureLoopback: false,
       );
       final client = config.createClient(
@@ -39,6 +50,7 @@ void main() {
 
       final result = await client.v4SearchTags('dp');
 
+      expect(config.mode, SolvedApiMode.officialV4);
       expect(config.hasV4Gateway, isTrue);
       expect(result.items, isEmpty);
       expect(requestedUri, Uri.parse('https://gateway.example/solved/v4/tags'));
@@ -47,7 +59,8 @@ void main() {
     test('closes legacy transport when a v4 gateway is configured', () {
       var requestCount = 0;
       final config = SolvedApiGatewayConfig.parse(
-        'https://gateway.example/solved/v4/',
+        mode: solvedApiOfficialV4Mode,
+        v4ProxyBaseUri: 'https://gateway.example/solved/v4/',
         allowInsecureLoopback: false,
       );
       final client = config.createClient(
@@ -61,25 +74,70 @@ void main() {
       expect(requestCount, 0);
     });
 
+    test('rejects mode and gateway partial activation', () {
+      expect(
+        () => SolvedApiGatewayConfig.parse(
+          mode: solvedApiLegacyV3Mode,
+          v4ProxyBaseUri: 'https://gateway.example/solved/v4/',
+          allowInsecureLoopback: false,
+        ),
+        throwsFormatException,
+      );
+      expect(
+        () => SolvedApiGatewayConfig.parse(
+          mode: solvedApiOfficialV4Mode,
+          v4ProxyBaseUri: '',
+          allowInsecureLoopback: false,
+        ),
+        throwsFormatException,
+      );
+    });
+
+    test('rejects unknown or non-canonical mode values', () {
+      for (final mode in <String>[
+        '',
+        'legacy_v3',
+        'Legacy-v3',
+        'official-V4',
+        ' $solvedApiOfficialV4Mode',
+        '$solvedApiOfficialV4Mode ',
+      ]) {
+        expect(
+          () => SolvedApiGatewayConfig.parse(
+            mode: mode,
+            v4ProxyBaseUri: '',
+            allowInsecureLoopback: false,
+          ),
+          throwsFormatException,
+          reason: mode,
+        );
+      }
+    });
+
     test('allows loopback HTTP only when explicitly enabled', () {
       for (final host in ['localhost', '127.0.0.1', '[::1]']) {
         final value = 'http://$host:3000/solved/v4/';
         expect(
           SolvedApiGatewayConfig.parse(
-            value,
+            mode: solvedApiOfficialV4Mode,
+            v4ProxyBaseUri: value,
             allowInsecureLoopback: true,
           ).v4ProxyBaseUri,
           Uri.parse(value),
         );
         expect(
-          () =>
-              SolvedApiGatewayConfig.parse(value, allowInsecureLoopback: false),
+          () => SolvedApiGatewayConfig.parse(
+            mode: solvedApiOfficialV4Mode,
+            v4ProxyBaseUri: value,
+            allowInsecureLoopback: false,
+          ),
           throwsFormatException,
         );
       }
       expect(
         () => SolvedApiGatewayConfig.parse(
-          'http://gateway.example/solved/v4/',
+          mode: solvedApiOfficialV4Mode,
+          v4ProxyBaseUri: 'http://gateway.example/solved/v4/',
           allowInsecureLoopback: true,
         ),
         throwsFormatException,
@@ -104,8 +162,11 @@ void main() {
 
       for (final value in invalidValues) {
         expect(
-          () =>
-              SolvedApiGatewayConfig.parse(value, allowInsecureLoopback: false),
+          () => SolvedApiGatewayConfig.parse(
+            mode: solvedApiOfficialV4Mode,
+            v4ProxyBaseUri: value,
+            allowInsecureLoopback: false,
+          ),
           throwsFormatException,
           reason: value,
         );

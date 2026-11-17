@@ -65,14 +65,20 @@
 ## 개발 설정
 
 공식 solved.ac v4 API는 앱 시크릿을 요구하므로 Flutter에서 직접 호출하지
-않습니다. 공개 gateway 주소만 compile-time define으로 전달할 수 있습니다.
+않습니다. 공개 활성화 모드와 gateway 주소만 compile-time define으로
+전달할 수 있습니다.
 
 ```sh
 flutter run \
+  --dart-define=SOLVED_API_MODE=official-v4 \
   --dart-define=SOLVED_API_V4_PROXY_BASE_URI=https://api.example.com/solved/v4/
 ```
 
-- 값을 생략하면 현재 v3 런타임 동작을 그대로 유지합니다.
+- 두 값을 모두 생략하면 기본 `legacy-v3` 모드로 현재 v3 런타임 동작을
+  그대로 유지합니다.
+- `official-v4` 모드는 gateway 주소가 필수이며, `legacy-v3` 모드는 gateway
+  주소를 거부합니다. `official-v4` 전환은 두 define을 함께 전달해야 하며,
+  mode와 주소가 어긋나면 앱 구성 단계에서 실패합니다.
 - debug가 아닌 빌드는 HTTPS와 정확한 `/solved/v4/` 경로만 허용합니다.
 - debug 빌드에서는 로컬 개발을 위해 loopback HTTP 주소도 허용합니다.
 - `x-client-id`, `x-client-secret` 등 solved.ac 자격 증명은 Flutter define이나
