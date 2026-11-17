@@ -16,6 +16,11 @@ final RegExp _httpHeaderNamePattern = RegExp(
   r"^[!#\$%&'*+\-.^_`|~0-9A-Za-z]+$",
 );
 
+bool isPublicCapturePath(String path) => _isPublicPath(path);
+
+bool isPublicCaptureQueryName(String name) =>
+    _publicQueryNamePattern.hasMatch(name) && !_isRequestCredentialName(name);
+
 const _requestCredentialNameTokens = {
   'auth',
   'authorization',

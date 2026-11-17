@@ -48,3 +48,30 @@ structurally incomplete planned requests fail the whole capture.
 Review `manifest.json` and every response fixture before committing them. A
 capture is evidence of the observed public contract, not permission to call
 private or state-changing endpoints.
+
+## Compare two captures
+
+Reuse the same operation `id` for the same semantic scenario in both reviewed
+plans. Once both sanitized capture directories exist, compare their observed
+request contracts and response shapes:
+
+```sh
+dart run tool/diff_public_contract.dart \
+  --before test/fixtures/public-capture-v3 \
+  --after test/fixtures/public-capture-v4
+```
+
+The command writes deterministic JSON to standard output. It reports added,
+removed, and modified operation IDs; request paths, query parameter names and
+arities, and statuses; and response field type or observed-presence changes.
+It never emits response values, query values, local paths, or timestamps.
+
+Response locations use JSON Pointer escaping (`~0` for `~` and `~1` for `/`)
+with `*` as an array-item wildcard. A literal `*` object key is escaped as
+`~2`. `required` and `optional` describe only the supplied capture samples;
+they do not claim an upstream schema guarantee. Array item counts and changes
+to scalar values are intentionally ignored.
+
+The diff accepts only directories produced by the capture workflow. It rejects
+unknown files, symlinks, unredacted query values, malformed manifests, and
+fixture references that do not exactly match their operation IDs.
