@@ -3,6 +3,8 @@ import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
+import 'solved_bearer_authorization.dart';
+
 /// Internal bounded transport for typed `solved-proxy` operations.
 ///
 /// This file is intentionally not exported from `solved_api.dart`. Public
@@ -54,6 +56,37 @@ final class SolvedProxyTransport {
     if (request.bodyBytes.length > maximumPayloadBytes) {
       throw const SolvedProxyRequestTooLarge();
     }
+
+    return _sendAndRead(request).timeout(
+      requestTimeout,
+      onTimeout: () {
+        abortTrigger.complete();
+        throw const SolvedProxyDeadlineExceeded();
+      },
+    );
+  }
+
+  /// Sends one bounded authenticated GET without following redirects or
+  /// interpreting its response.
+  Future<SolvedProxyResponse> getWithBearer({
+    required String relativePath,
+    required SolvedBearerAuthorization authorization,
+  }) {
+    if (_isClosed) {
+      throw StateError('SolvedProxyTransport is closed');
+    }
+
+    final uri = _resolveRelativePath(relativePath);
+    final abortTrigger = Completer<void>();
+    final request = http.AbortableRequest(
+      'GET',
+      uri,
+      abortTrigger: abortTrigger.future,
+    )
+      ..followRedirects = false
+      ..maxRedirects = 0
+      ..headers['accept'] = 'application/json'
+      ..headers['authorization'] = authorization.headerValue;
 
     return _sendAndRead(request).timeout(
       requestTimeout,

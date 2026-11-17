@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:http/http.dart' as http;
+import 'package:solved_api/src/solved_bearer_authorization.dart';
 import 'package:solved_api/src/solved_proxy_transport.dart';
 import 'package:test/test.dart';
 
@@ -137,6 +138,42 @@ void main() {
       expect(response.statusCode, 599);
       expect(response.headers['content-type'], 'text/plain');
       expect(response.bodyBytes, <int>[1, 2, 3]);
+    });
+
+    test('sends one bodyless GET with only the caller Bearer credential',
+        () async {
+      final httpClient = _RecordingClient(
+        (_) async => _response(
+          const <int>[],
+          headers: const <String, String>{
+            'content-type': 'application/json',
+          },
+        ),
+      );
+      final transport = _transport(httpClient);
+      final authorization =
+          SolvedBearerAuthorization.fromAccessToken('access-token');
+
+      await transport.getWithBearer(
+        relativePath: 'me',
+        authorization: authorization,
+      );
+
+      expect(httpClient.requests, hasLength(1));
+      final request = httpClient.requests.single;
+      expect(request.method, 'GET');
+      expect(
+        request.url,
+        Uri.parse('https://proxy.example/solved/v4/me'),
+      );
+      expect(request.followRedirects, isFalse);
+      expect(request.maxRedirects, 0);
+      expect(request.headers['accept'], 'application/json');
+      expect(request.headers['authorization'], 'Bearer access-token');
+      expect(request.headers.containsKey('content-type'), isFalse);
+      expect(request.headers.containsKey('x-client-id'), isFalse);
+      expect(request.headers.containsKey('x-client-secret'), isFalse);
+      expect(request.bodyBytes, isEmpty);
     });
 
     test('rejects relative paths that can escape or change the request target',
