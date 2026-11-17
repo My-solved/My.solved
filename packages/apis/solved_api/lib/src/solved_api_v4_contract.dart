@@ -223,14 +223,11 @@ ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
       ),
     ),
   );
-  final tagKeys = _list(body['tags'], 'problems[].tags')
-      .map(
-        (item) => _string(
-          _object(item, 'problems[].tags[]')['key'],
-          'problems[].tags[].key',
-        ),
-      )
-      .toList(growable: false);
+  final tags = List<ProblemSearchTag>.unmodifiable(
+    _list(body['tags'], 'problems[].tags').map(
+      (value) => _decodeV4ProblemSearchTag(_object(value, 'problems[].tags[]')),
+    ),
+  );
   final noRatingReasons = List<ProblemNoRatingReason>.unmodifiable(
     _list(
       body['noRatingReasons'],
@@ -261,6 +258,7 @@ ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
     subId: _string(body['subId'], 'problems[].subId'),
     title: _selectV4ProblemTitle(titles),
     titles: titles,
+    tags: tags,
     level: _wholeNumber(body['level'], 'problems[].level'),
     levelAverage: _number(body['levelAverage'], 'problems[].levelAverage'),
     levelStdev: _number(body['levelStdev'], 'problems[].levelStdev'),
@@ -282,7 +280,7 @@ ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
     noRatingReasons: noRatingReasons,
     noRatingWarnings: noRatingWarnings,
     // The official v4 problem shape has tag keys but no localized names.
-    tagNames: tagKeys,
+    tagNames: tags.map((tag) => tag.key).toList(growable: false),
   );
 }
 
@@ -399,6 +397,13 @@ ProblemSearchTitle _decodeV4ProblemSearchTitle(Map<String, dynamic> body) =>
       ),
       latex: _boolean(body['latex'], 'problems[].titles[].latex'),
       html: _boolean(body['html'], 'problems[].titles[].html'),
+    );
+
+ProblemSearchTag _decodeV4ProblemSearchTag(Map<String, dynamic> body) =>
+    ProblemSearchTag(
+      id: _number(body['id'], 'problems[].tags[].id'),
+      key: _string(body['key'], 'problems[].tags[].key'),
+      isMeta: _boolean(body['isMeta'], 'problems[].tags[].isMeta'),
     );
 
 String? _selectV4ProblemTitle(List<ProblemSearchTitle> titles) {
