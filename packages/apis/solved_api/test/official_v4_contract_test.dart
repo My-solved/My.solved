@@ -185,9 +185,20 @@ void main() {
         'givesNoRating',
         'noRatingReasons',
         'noRatingWarnings',
+        'solvedUserCount',
       ]),
     );
     final problemProperties = _properties(problemItem);
+    final solvedUserCount = _map(problemProperties['solvedUserCount']);
+    expect(solvedUserCount['type'], 'number');
+    for (final constraint in [
+      'minimum',
+      'maximum',
+      'multipleOf',
+      'description',
+    ]) {
+      expect(solvedUserCount.containsKey(constraint), isFalse);
+    }
     expect(_map(problemProperties['givesNoRating'])['type'], 'boolean');
     final noRatingReasons = _map(problemProperties['noRatingReasons']);
     expect(noRatingReasons['type'], 'array');

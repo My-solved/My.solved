@@ -111,6 +111,7 @@ void main() {
       expect(actual.items[0].problemId, 1001);
       expect(actual.items[0].title, '한국어 제목');
       expect(actual.items[0].level, 10);
+      expect(actual.items[0].solvedUserCount, 1234);
       expect(actual.items[0].givesNoRating, isFalse);
       expect(actual.items[0].noRatingReasons, isEmpty);
       expect(actual.items[0].noRatingWarnings, isEmpty);
@@ -118,11 +119,53 @@ void main() {
       expect(actual.items[1].title, 'Original title');
       expect(actual.items[2].title, 'First fallback');
       expect(actual.items[3].title, isNull);
+      expect(actual.items[3].solvedUserCount, 0);
       expect(actual.items[3].givesNoRating, isTrue);
       expect(actual.items[3].noRatingReasons, [
         ProblemNoRatingReason.unofficial,
       ]);
       expect(actual.items[3].noRatingWarnings, isEmpty);
+    });
+
+    test('requires a finite solved-user count without inventing bounds', () {
+      final endpoint = contract.searchProblems('sample');
+      Map<String, dynamic> source() =>
+          jsonDecode(fixture('v4/search_problems.json'))
+              as Map<String, dynamic>;
+      Map<String, dynamic> firstProblem(Map<String, dynamic> body) =>
+          (body['problems'] as List).first as Map<String, dynamic>;
+
+      final missing = source();
+      firstProblem(missing).remove('solvedUserCount');
+      expect(() => endpoint.decode(missing), throwsFormatException);
+
+      for (final invalid in <Object?>[
+        null,
+        '1',
+        true,
+        const <String, Object?>{},
+        const <Object>[],
+        double.nan,
+        double.infinity,
+        double.negativeInfinity,
+      ]) {
+        final malformed = source();
+        firstProblem(malformed)['solvedUserCount'] = invalid;
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'solvedUserCount = $invalid',
+        );
+      }
+
+      final unbounded = source();
+      firstProblem(unbounded)['solvedUserCount'] = -1.5;
+      final lastProblem =
+          (unbounded['problems'] as List).last as Map<String, dynamic>;
+      lastProblem['solvedUserCount'] = 0.25;
+      final actual = endpoint.decode(unbounded);
+      expect(actual.items.first.solvedUserCount, -1.5);
+      expect(actual.items.last.solvedUserCount, 0.25);
     });
 
     test('requires a boolean no-rating marker in every v4 problem', () {
@@ -566,6 +609,7 @@ void main() {
             {
               'problemId': 1001.0,
               'level': 12.0,
+              'solvedUserCount': 0,
               'givesNoRating': false,
               'noRatingReasons': <Object>[],
               'noRatingWarnings': <Object>[],
@@ -585,6 +629,7 @@ void main() {
               {
                 'problemId': 1001.5,
                 'level': 12,
+                'solvedUserCount': 0,
                 'givesNoRating': false,
                 'noRatingReasons': <Object>[],
                 'noRatingWarnings': <Object>[],

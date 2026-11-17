@@ -241,6 +241,10 @@ ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
     problemId: _wholeNumber(body['problemId'], 'problems[].problemId'),
     title: _decodeV4ProblemTitle(body['titles']),
     level: _wholeNumber(body['level'], 'problems[].level'),
+    solvedUserCount: _number(
+      body['solvedUserCount'],
+      'problems[].solvedUserCount',
+    ),
     givesNoRating: _boolean(body['givesNoRating'], 'problems[].givesNoRating'),
     noRatingReasons: noRatingReasons,
     noRatingWarnings: noRatingWarnings,
