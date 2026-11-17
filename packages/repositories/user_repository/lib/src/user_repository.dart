@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:solved_api/solved_api.dart';
 
 class UserRepository {
-  UserRepository({SolvedApiClient? solvedApiClient})
-      : _solvedApiClient = solvedApiClient ?? SolvedApiClient();
+  UserRepository({required SolvedApiClient solvedApiClient})
+      : _solvedApiClient = solvedApiClient;
 
   final SolvedApiClient _solvedApiClient;
 
