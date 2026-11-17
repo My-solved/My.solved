@@ -374,6 +374,8 @@ UserProfile _decodeV4UserProfile(dynamic json) {
     reverseRivalCount: null,
     tier: _nullableInteger(body['tier'], 'tier'),
     rating: rating,
+    currentStreak: _integer(body['currentStreak'], 'currentStreak'),
+    maxStreak: _integer(body['maxStreak'], 'maxStreak'),
     reputation: _integer(body['reputation'], 'reputation'),
     ratingBreakdown: ProfileRatingBreakdown(
       rating: rating,
