@@ -19,6 +19,7 @@ class UserProfile {
     required this.reverseRivalCount,
     required this.tier,
     required this.rating,
+    this.classPlus,
     this.currentStreak,
     this.maxStreak,
     this.reputation,
@@ -42,6 +43,9 @@ class UserProfile {
   final int? legacyContributionCount;
 
   final int userClass;
+
+  /// Whether the active contract marks the displayed CLASS as CLASS+.
+  final bool? classPlus;
   final int? reverseRivalCount;
 
   /// The public tier, or `null` when the active contract explicitly withholds

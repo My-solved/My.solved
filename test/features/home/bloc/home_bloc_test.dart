@@ -211,6 +211,7 @@ void main() {
       user: _profile(
         backgroundId: null,
         reputation: 42,
+        classPlus: true,
         tagRatings: const [ProfileTagRating(key: 'dp', rating: 1700)],
       ),
     );
@@ -230,6 +231,8 @@ void main() {
 
     expect(find.text('평판'), findsOneWidget);
     expect(find.text('42'), findsOneWidget);
+    expect(find.text('클래스+'), findsOneWidget);
+    expect(find.text('클래스'), findsNothing);
     expect(find.text('난이도 분포'), findsNothing);
   });
 
@@ -338,6 +341,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(find.text('Bronze V 1234'), findsOneWidget);
+    expect(find.text('클래스'), findsOneWidget);
+    expect(find.text('클래스+'), findsNothing);
     final ratingButton = tester.widget<OutlinedButton>(
       find.ancestor(
         of: find.text('레이팅'),
@@ -704,6 +709,7 @@ UserProfile _profile({
   String? badgeId,
   int rating = 1,
   int? reputation,
+  bool? classPlus,
   int? currentStreak,
   int? maxStreak,
   ProfileRatingBreakdown? ratingBreakdown,
@@ -723,6 +729,7 @@ UserProfile _profile({
       tier: 1,
       rating: rating,
       reputation: reputation,
+      classPlus: classPlus,
       currentStreak: currentStreak,
       maxStreak: maxStreak,
       ratingBreakdown: ratingBreakdown,
