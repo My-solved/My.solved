@@ -113,6 +113,7 @@ void main() {
       expect(actual.items[0].level, 10);
       expect(actual.items[0].isStandard, isTrue);
       expect(actual.items[0].votedUserCount, 42);
+      expect(actual.items[0].effectiveVoteCount, 40);
       expect(actual.items[0].solvedUserCount, 1234);
       expect(actual.items[0].givesNoRating, isFalse);
       expect(actual.items[0].noRatingReasons, isEmpty);
@@ -123,6 +124,7 @@ void main() {
       expect(actual.items[3].title, isNull);
       expect(actual.items[3].isStandard, isFalse);
       expect(actual.items[3].votedUserCount, 0);
+      expect(actual.items[3].effectiveVoteCount, 0);
       expect(actual.items[3].solvedUserCount, 0);
       expect(actual.items[3].givesNoRating, isTrue);
       expect(actual.items[3].noRatingReasons, [
@@ -158,6 +160,47 @@ void main() {
           reason: 'isStandard = $invalid',
         );
       }
+    });
+
+    test('requires a finite effective-vote count without inventing bounds', () {
+      final endpoint = contract.searchProblems('sample');
+      Map<String, dynamic> source() =>
+          jsonDecode(fixture('v4/search_problems.json'))
+              as Map<String, dynamic>;
+      Map<String, dynamic> firstProblem(Map<String, dynamic> body) =>
+          (body['problems'] as List).first as Map<String, dynamic>;
+
+      final missing = source();
+      firstProblem(missing).remove('effectiveVoteCount');
+      expect(() => endpoint.decode(missing), throwsFormatException);
+
+      for (final invalid in <Object?>[
+        null,
+        '1',
+        true,
+        const <String, Object?>{},
+        const <Object>[],
+        double.nan,
+        double.infinity,
+        double.negativeInfinity,
+      ]) {
+        final malformed = source();
+        firstProblem(malformed)['effectiveVoteCount'] = invalid;
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'effectiveVoteCount = $invalid',
+        );
+      }
+
+      final unbounded = source();
+      firstProblem(unbounded)['effectiveVoteCount'] = -1.5;
+      final lastProblem =
+          (unbounded['problems'] as List).last as Map<String, dynamic>;
+      lastProblem['effectiveVoteCount'] = 0.25;
+      final actual = endpoint.decode(unbounded);
+      expect(actual.items.first.effectiveVoteCount, -1.5);
+      expect(actual.items.last.effectiveVoteCount, 0.25);
     });
 
     test('requires a finite voted-user count without inventing bounds', () {
@@ -685,6 +728,7 @@ void main() {
               'level': 12.0,
               'isStandard': true,
               'votedUserCount': 0,
+              'effectiveVoteCount': 0,
               'solvedUserCount': 0,
               'givesNoRating': false,
               'noRatingReasons': <Object>[],
@@ -707,6 +751,7 @@ void main() {
                 'level': 12,
                 'isStandard': true,
                 'votedUserCount': 0,
+                'effectiveVoteCount': 0,
                 'solvedUserCount': 0,
                 'givesNoRating': false,
                 'noRatingReasons': <Object>[],

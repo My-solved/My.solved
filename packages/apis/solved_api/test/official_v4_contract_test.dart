@@ -184,6 +184,7 @@ void main() {
       containsAll([
         'givesNoRating',
         'isStandard',
+        'effectiveVoteCount',
         'noRatingReasons',
         'noRatingWarnings',
         'votedUserCount',
@@ -201,6 +202,16 @@ void main() {
       'description',
     ]) {
       expect(votedUserCount.containsKey(constraint), isFalse);
+    }
+    final effectiveVoteCount = _map(problemProperties['effectiveVoteCount']);
+    expect(effectiveVoteCount['type'], 'number');
+    for (final constraint in [
+      'minimum',
+      'maximum',
+      'multipleOf',
+      'description',
+    ]) {
+      expect(effectiveVoteCount.containsKey(constraint), isFalse);
     }
     final solvedUserCount = _map(problemProperties['solvedUserCount']);
     expect(solvedUserCount['type'], 'number');

@@ -20,6 +20,7 @@ class ProblemSearchItem {
     required this.tagNames,
     this.isStandard,
     this.votedUserCount,
+    this.effectiveVoteCount,
     this.solvedUserCount,
     this.givesNoRating,
     this.noRatingReasons,
@@ -37,6 +38,10 @@ class ProblemSearchItem {
   /// The raw voted-user count reported by the active contract.
   /// `null` means the contract did not provide it.
   final num? votedUserCount;
+
+  /// The raw effective-vote count reported by the active contract.
+  /// `null` means the contract did not provide it.
+  final num? effectiveVoteCount;
 
   /// The raw solved-user count reported by the active contract.
   /// `null` means the contract did not provide it.
