@@ -185,10 +185,21 @@ void main() {
         'givesNoRating',
         'noRatingReasons',
         'noRatingWarnings',
+        'votedUserCount',
         'solvedUserCount',
       ]),
     );
     final problemProperties = _properties(problemItem);
+    final votedUserCount = _map(problemProperties['votedUserCount']);
+    expect(votedUserCount['type'], 'number');
+    for (final constraint in [
+      'minimum',
+      'maximum',
+      'multipleOf',
+      'description',
+    ]) {
+      expect(votedUserCount.containsKey(constraint), isFalse);
+    }
     final solvedUserCount = _map(problemProperties['solvedUserCount']);
     expect(solvedUserCount['type'], 'number');
     for (final constraint in [

@@ -299,6 +299,7 @@ ProblemSearchItem _decodeV3ProblemSearchItem(Map<String, dynamic> json) {
     problemId: json['problemId'] as int,
     title: json['titleKo'] as String,
     level: json['level'] as int,
+    votedUserCount: json['votedUserCount'] as num?,
     givesNoRating: json['givesNoRating'] as bool?,
     tagNames: tags
         .map(

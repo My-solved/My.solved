@@ -67,6 +67,7 @@ void main() {
       expect(problems.items.single.problemId, 3734);
       expect(problems.items.single.title, 'RSA 인수 분해');
       expect(problems.items.single.level, 16);
+      expect(problems.items.single.votedUserCount, 10);
       expect(problems.items.single.solvedUserCount, isNull);
       expect(problems.items.single.givesNoRating, isFalse);
       expect(problems.items.single.noRatingReasons, isNull);
@@ -128,6 +129,7 @@ void main() {
           };
 
       expect(item.givesNoRating, isNull);
+      expect(item.votedUserCount, isNull);
       expect(item.solvedUserCount, isNull);
       expect(item.noRatingReasons, isNull);
       expect(item.noRatingWarnings, isNull);
@@ -154,6 +156,44 @@ void main() {
           () => endpoint.decode(source(givesNoRating: invalid)),
           throwsA(isA<TypeError>()),
           reason: 'givesNoRating = $invalid',
+        );
+      }
+    });
+
+    test('preserves an optional legacy voted-user count as a number', () {
+      final endpoint = const SolvedApiV3Contract().searchProblem(
+        'rsa',
+        1,
+        'id',
+        'asc',
+      );
+      Map<String, dynamic> source() =>
+          jsonDecode(fixture('v3/search_problem.json')) as Map<String, dynamic>;
+      Map<String, dynamic> firstProblem(Map<String, dynamic> body) =>
+          (body['items'] as List).first as Map<String, dynamic>;
+
+      expect(endpoint.decode(source()).items.single.votedUserCount, 10);
+
+      final missing = source();
+      firstProblem(missing).remove('votedUserCount');
+      expect(endpoint.decode(missing).items.single.votedUserCount, isNull);
+
+      final explicitNull = source();
+      firstProblem(explicitNull)['votedUserCount'] = null;
+      expect(endpoint.decode(explicitNull).items.single.votedUserCount, isNull);
+
+      for (final invalid in <Object>[
+        '10',
+        true,
+        const <String, Object?>{},
+        const <Object>[],
+      ]) {
+        final malformed = source();
+        firstProblem(malformed)['votedUserCount'] = invalid;
+        expect(
+          () => endpoint.decode(malformed),
+          throwsA(isA<TypeError>()),
+          reason: 'votedUserCount = $invalid',
         );
       }
     });
