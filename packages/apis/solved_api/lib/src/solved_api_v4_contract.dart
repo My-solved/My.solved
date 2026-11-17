@@ -275,6 +275,7 @@ UserSearchItem _decodeV4UserSearchItem(Map<String, dynamic> body) =>
       tier: _nullableInteger(body['tier'], 'user.tier'),
       rating: _integer(body['rating'], 'user.rating'),
       solvedCount: _integer(body['solvedCount'], 'user.solvedCount'),
+      reputation: _integer(body['reputation'], 'user.reputation'),
     );
 
 SearchObject<TagSearchItem> _decodeV4TagSearch(
