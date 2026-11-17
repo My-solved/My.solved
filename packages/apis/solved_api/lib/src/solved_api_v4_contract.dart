@@ -273,6 +273,8 @@ UserSearchItem _decodeV4UserSearchItem(Map<String, dynamic> body) =>
       profileImageUrl:
           _nullableString(body['profileImageUrl'], 'user.profileImageUrl'),
       tier: _nullableInteger(body['tier'], 'user.tier'),
+      rating: _integer(body['rating'], 'user.rating'),
+      solvedCount: _integer(body['solvedCount'], 'user.solvedCount'),
     );
 
 SearchObject<TagSearchItem> _decodeV4TagSearch(

@@ -10,12 +10,14 @@ import 'package:solved_api/solved_api.dart';
 
 void main() {
   testWidgets(
-    'renders exact users separately and preserves nullable v4 fields',
+    'renders exact users and optional rating summaries safely',
     (tester) async {
       const duplicate = UserSearchItem(
         handle: 'same-handle',
         profileImageUrl: null,
         tier: null,
+        rating: 3000,
+        solvedCount: 5000,
       );
       final repository = _SearchScreenRepository(
         users: const UserSearchResult(
@@ -24,6 +26,18 @@ void main() {
             duplicate,
             UserSearchItem(
               handle: 'second-handle',
+              profileImageUrl: null,
+              tier: 10,
+              rating: 0,
+            ),
+            UserSearchItem(
+              handle: 'third-handle',
+              profileImageUrl: null,
+              tier: 10,
+              solvedCount: 0,
+            ),
+            UserSearchItem(
+              handle: 'legacy-handle',
               profileImageUrl: null,
               tier: 10,
             ),
@@ -62,6 +76,11 @@ void main() {
       expect(find.text('정확히 일치'), findsOneWidget);
       expect(find.text('검색 결과'), findsOneWidget);
       expect(find.text('same-handle'), findsNWidgets(2));
+      expect(find.text('레이팅 3000 · 5000문제'), findsNWidgets(2));
+      expect(find.text('레이팅 0'), findsOneWidget);
+      expect(find.text('0문제'), findsOneWidget);
+      expect(find.text('legacy-handle'), findsOneWidget);
+      expect(find.textContaining('null'), findsNothing);
       expect(
         find.byKey(const ValueKey('user-search-exact-same-handle')),
         findsOneWidget,

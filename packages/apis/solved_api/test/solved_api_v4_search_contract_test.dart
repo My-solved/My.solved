@@ -156,11 +156,68 @@ void main() {
 
       expect(actual.exact?.handle, 'index');
       expect(actual.exact?.tier, isNull);
+      expect(actual.exact?.rating, 3000);
+      expect(actual.exact?.solvedCount, 5000);
       expect(actual.items, hasLength(2));
       expect(actual.items.first.handle, 'index');
       expect(actual.items.first.tier, isNull);
+      expect(actual.items.first.rating, 3000);
+      expect(actual.items.first.solvedCount, 5000);
       expect(actual.items.last.handle, 'index2');
       expect(actual.items.last.tier, 20);
+      expect(actual.items.last.rating, 2500);
+      expect(actual.items.last.solvedCount, 2500);
+    });
+
+    test('requires integer rating and solved count in every v4 user item', () {
+      final endpoint = contract.searchUsers('index');
+      Map<String, dynamic> source() => Map<String, dynamic>.from(
+            jsonDecode(fixture('v4/search_users.json')) as Map,
+          );
+      Map<String, dynamic> item(
+        Map<String, dynamic> body,
+        String location,
+      ) => location == 'exact'
+          ? body['exact'] as Map<String, dynamic>
+          : (body['items'] as List).first as Map<String, dynamic>;
+
+      for (final field in ['rating', 'solvedCount']) {
+        for (final location in ['exact', 'items']) {
+          final missing = source();
+          item(missing, location).remove(field);
+          expect(
+            () => endpoint.decode(missing),
+            throwsFormatException,
+            reason: '$location.$field missing',
+          );
+
+          for (final invalid in <Object?>[null, '1', 1.5]) {
+            final malformed = source();
+            item(malformed, location)[field] = invalid;
+            expect(
+              () => endpoint.decode(malformed),
+              throwsFormatException,
+              reason: '$location.$field = $invalid',
+            );
+          }
+        }
+      }
+    });
+
+    test('preserves zero rating and solved count', () {
+      final actual = contract.searchUsers('zero').decode({
+        'exact': {
+          'handle': 'zero',
+          'tier': 0,
+          'profileImageUrl': null,
+          'rating': 0,
+          'solvedCount': 0,
+        },
+        'items': <Object>[],
+      });
+
+      expect(actual.exact?.rating, 0);
+      expect(actual.exact?.solvedCount, 0);
     });
 
     test('preserves an absent exact match', () {
