@@ -171,6 +171,26 @@ void main() {
     expect(actual.profileImageUrl, 'https://example.com/profile.png');
   });
 
+  test('enforces documented public profile tier bounds', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+      jsonDecode(fixture('v4/user_profile.json')) as Map,
+    );
+
+    for (final value in <int?>[null, 0, 31]) {
+      final actual = endpoint.decode(source()..['tier'] = value);
+      expect(actual.tier, value, reason: 'tier = $value');
+    }
+
+    for (final value in [-1, 32]) {
+      expect(
+        () => endpoint.decode(source()..['tier'] = value),
+        throwsFormatException,
+        reason: 'tier = $value',
+      );
+    }
+  });
+
   test('requires integer profile streak summaries without inventing bounds', () {
     final endpoint = contract.userProfile('index');
     Map<String, dynamic> source() => Map<String, dynamic>.from(

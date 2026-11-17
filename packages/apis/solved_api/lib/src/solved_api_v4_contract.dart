@@ -596,7 +596,7 @@ UserSearchItem _decodeV4UserSearchItem(Map<String, dynamic> body) =>
         'profileImageUrl',
         'user.profileImageUrl',
       ),
-      tier: _requiredNullableInteger(body, 'tier', 'user.tier'),
+      tier: _requiredNullableTier(body, 'user.tier'),
       rank: _integer(body['rank'], 'user.rank'),
       userClass: _integer(body['class'], 'user.class'),
       classPlus: _boolean(body['classPlus'], 'user.classPlus'),
@@ -739,7 +739,7 @@ UserProfile _decodeV4UserProfile(dynamic json) {
     userClass: _integer(body['class'], 'class'),
     classPlus: _boolean(body['classPlus'], 'classPlus'),
     reverseRivalCount: null,
-    tier: _requiredNullableInteger(body, 'tier', 'tier'),
+    tier: _requiredNullableTier(body, 'tier'),
     rating: rating,
     currentStreak: _integer(body['currentStreak'], 'currentStreak'),
     maxStreak: _integer(body['maxStreak'], 'maxStreak'),
@@ -973,6 +973,14 @@ int? _requiredNullableInteger(
     throw FormatException('Missing required field $field');
   }
   return _nullableInteger(body[wireKey], field);
+}
+
+int? _requiredNullableTier(Map<String, dynamic> body, String field) {
+  final tier = _requiredNullableInteger(body, 'tier', field);
+  if (tier != null && (tier < 0 || tier > 31)) {
+    throw FormatException('Expected tier from 0 through 31 for $field');
+  }
+  return tier;
 }
 
 bool _boolean(Object? value, String field) {
