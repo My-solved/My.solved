@@ -100,6 +100,8 @@ void main() {
     expect(actual.tier, isNull);
     expect(actual.rating, 2417);
     expect(actual.solvedCount, 2048);
+    expect(actual.currentStreak, 12);
+    expect(actual.maxStreak, 365);
     expect(actual.legacyContributionCount, isNull);
     expect(actual.reverseRivalCount, isNull);
     expect(actual.reputation, 314);
@@ -122,6 +124,38 @@ void main() {
     expect(actual.tagRatings.first.rating, 1750);
     expect(actual.tagRatings.first.solvedCount, 120);
     expect((source as Map<String, dynamic>)['voteCount'], 37);
+  });
+
+  test('requires integer profile streak summaries without inventing bounds', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_profile.json')) as Map,
+        );
+
+    for (final field in ['currentStreak', 'maxStreak']) {
+      final missing = source()..remove(field);
+      expect(
+        () => endpoint.decode(missing),
+        throwsFormatException,
+        reason: '$field missing',
+      );
+
+      for (final invalid in <Object?>[null, '1', 1.5]) {
+        final malformed = source()..[field] = invalid;
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: '$field = $invalid',
+        );
+      }
+    }
+
+    final unbounded = source()
+      ..['currentStreak'] = -1
+      ..['maxStreak'] = -2;
+    final actual = endpoint.decode(unbounded);
+    expect(actual.currentStreak, -1);
+    expect(actual.maxStreak, -2);
   });
 
   test('normalizes sparse activity days for an explicit date range', () {

@@ -173,6 +173,30 @@ void main() {
       expect(contract.searchTag('', null).decode(empty).items, isEmpty);
     });
 
+    test('preserves only the verified v3 profile streak summary', () {
+      const contract = SolvedApiV3Contract();
+      final actual = contract
+          .userShow('w8385')
+          .decode(jsonDecode(fixture('v3/user_show.json')));
+      final minimal = contract.userShow('minimal').decode({
+        'handle': 'minimal',
+        'badgeId': null,
+        'backgroundId': null,
+        'profileImageUrl': null,
+        'solvedCount': 0,
+        'voteCount': 0,
+        'class': 0,
+        'reverseRivalCount': 0,
+        'tier': 0,
+        'rating': 0,
+      });
+
+      expect(actual.currentStreak, isNull);
+      expect(actual.maxStreak, 477);
+      expect(minimal.currentStreak, isNull);
+      expect(minimal.maxStreak, isNull);
+    });
+
     test('normalizes profile streak days without mutating v3 wire data', () {
       final json = <String, dynamic>{
         'grass': [

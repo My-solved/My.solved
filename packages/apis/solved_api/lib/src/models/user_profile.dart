@@ -19,6 +19,8 @@ class UserProfile {
     required this.reverseRivalCount,
     required this.tier,
     required this.rating,
+    this.currentStreak,
+    this.maxStreak,
     this.reputation,
     this.ratingBreakdown,
     this.background,
@@ -46,6 +48,11 @@ class UserProfile {
   /// or does not assign one. Callers must choose their own display fallback.
   final int? tier;
   final int rating;
+
+  /// Current and longest streak summaries exposed by the active profile
+  /// contract. Daily activity remains a separate response.
+  final int? currentStreak;
+  final int? maxStreak;
 
   /// Reputation from the v4 public profile, distinct from v3 `voteCount`.
   final int? reputation;

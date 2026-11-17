@@ -79,6 +79,8 @@ void main() {
         'tier',
         'rating',
         'solvedCount',
+        'currentStreak',
+        'maxStreak',
         'voteCount',
         'reputation',
         'background',
@@ -92,6 +94,11 @@ void main() {
     );
     final profileProperties = _properties(profileSchema);
     expect(_map(profileProperties['tier'])['type'], ['integer', 'null']);
+    for (final field in ['currentStreak', 'maxStreak']) {
+      final property = _map(profileProperties[field]);
+      expect(property['type'], 'integer');
+      expect(property.containsKey('minimum'), isFalse);
+    }
     expect(profileProperties.containsKey('overRating'), isFalse);
 
     final reputation = _get(contract, '/api/v4/users/{handle}/reputation');
@@ -120,8 +127,9 @@ void main() {
           .map((parameter) => parameter['name']),
       ['handle', 'from', 'to'],
     );
+    final activitySchema = _responseSchema(activity);
     expect(
-      _required(_responseSchema(activity)),
+      _required(activitySchema),
       containsAll([
         'from',
         'to',
@@ -132,6 +140,12 @@ void main() {
         'firstActiveDay',
       ]),
     );
+    final activityProperties = _properties(activitySchema);
+    for (final field in ['currentStreak', 'maxStreak']) {
+      final property = _map(activityProperties[field]);
+      expect(property['type'], 'integer');
+      expect(property['minimum'], 0);
+    }
   });
 
   test('pins v4 problem and user search shapes', () {

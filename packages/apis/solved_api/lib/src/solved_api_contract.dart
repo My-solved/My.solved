@@ -207,6 +207,7 @@ UserProfile _decodeV3UserProfile(dynamic json) {
     reverseRivalCount: body['reverseRivalCount'],
     tier: body['tier'],
     rating: body['rating'],
+    maxStreak: body['maxStreak'] as int?,
   );
 }
 

@@ -654,7 +654,13 @@ void main() {
                 44,
               )
               .having((profile) => profile.tier, 'tier', 20)
-              .having((profile) => profile.rating, 'rating', 2126),
+              .having((profile) => profile.rating, 'rating', 2126)
+              .having(
+                (profile) => profile.currentStreak,
+                'currentStreak',
+                isNull,
+              )
+              .having((profile) => profile.maxStreak, 'maxStreak', 477),
         );
       });
     });
