@@ -40,7 +40,9 @@ void main() {
         Uri.parse('/solved/v4/'),
         Uri.parse('http://proxy.example/solved/v4/'),
         Uri.parse('https://solved.ac/solved/v4/'),
+        Uri.parse('https://solved.ac./solved/v4/'),
         Uri.parse('https://api.solved.ac/solved/v4/'),
+        Uri.parse('https://api.solved.ac./solved/v4/'),
         Uri.parse('https://proxy.example/api/v4/'),
         Uri.parse('https://proxy.example/solved/v4'),
         Uri.parse('https://user@proxy.example/solved/v4/'),
@@ -305,6 +307,29 @@ void main() {
       expect(error.kind, SolvedOAuthFailureKind.timeout);
       expect(error.isTimeout, isTrue);
       expect(error.statusCode, isNull);
+      expect(error.cause, isA<TimeoutException>());
+      expect(
+          (error.cause as TimeoutException).message, 'OAuth request timed out');
+      expect(
+        (error.cause as TimeoutException).duration,
+        const Duration(milliseconds: 1),
+      );
+      expect(transport.requests, hasLength(1));
+    });
+
+    test('preserves an injected timeout as the public failure cause', () async {
+      final injectedTimeout = TimeoutException('client timeout');
+      final injectedStack = StackTrace.current;
+      handler = (_) => Future<http.StreamedResponse>.error(
+            injectedTimeout,
+            injectedStack,
+          );
+
+      final error = await _captureUnknown(client.exchange(_refreshGrant));
+
+      expect(error.kind, SolvedOAuthFailureKind.timeout);
+      expect(error.cause, same(injectedTimeout));
+      expect(error.stackTrace, same(injectedStack));
       expect(transport.requests, hasLength(1));
     });
 
@@ -370,7 +395,13 @@ void main() {
         client.exchange(
           SolvedOAuthRefreshTokenGrant(refreshToken: oversizedToken),
         ),
-        throwsA(isA<ArgumentError>()),
+        throwsA(
+          isA<ArgumentError>().having(
+            (error) => error.message,
+            'message',
+            'Encoded OAuth request exceeds the 65536-byte limit',
+          ),
+        ),
       );
       expect(transport.requests, isEmpty);
 
@@ -386,7 +417,25 @@ void main() {
       final error = await _captureUnknown(client.exchange(_refreshGrant));
       expect(error.kind, SolvedOAuthFailureKind.responseTooLarge);
       expect(error.statusCode, 200);
+      expect(error.cause, isNull);
       expect(transport.requests, hasLength(1));
+
+      handler = (_) async => _bytesResponse(
+            List<int>.filled(
+              SolvedOAuthClient.maximumPayloadBytes + 1,
+              0x20,
+            ),
+            statusCode: 302,
+          );
+      final oversizedRedirect =
+          await _captureUnknown(client.exchange(_refreshGrant));
+      expect(
+        oversizedRedirect.kind,
+        SolvedOAuthFailureKind.responseTooLarge,
+      );
+      expect(oversizedRedirect.statusCode, 302);
+      expect(oversizedRedirect.cause, isNull);
+      expect(transport.requests, hasLength(2));
     });
 
     test('does not close an injected client and rejects use after close',
@@ -397,7 +446,13 @@ void main() {
       expect(transport.wasClosed, isFalse);
       await expectLater(
         client.exchange(_refreshGrant),
-        throwsStateError,
+        throwsA(
+          isA<StateError>().having(
+            (error) => error.message,
+            'message',
+            'SolvedOAuthClient is closed',
+          ),
+        ),
       );
       expect(transport.requests, isEmpty);
     });
