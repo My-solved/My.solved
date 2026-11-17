@@ -281,6 +281,43 @@ void main() {
       expect(response.expiresIn, 3600.5);
     });
 
+    test('accepts only proxy-compatible opaque access tokens', () {
+      final tokens = <String>[
+        'a',
+        'abc-._~+/=',
+        'header.payload.signature',
+        'padded==',
+        List<String>.filled(4089, 'a').join(),
+      ];
+
+      for (final token in tokens) {
+        final response = SolvedOAuthTokenResponse.fromJson(<String, Object?>{
+          'access_token': token,
+          'token_type': 'Bearer',
+          'expires_in': 3600,
+          'scope': 'profile',
+        });
+        expect(response.accessToken, token);
+      }
+    });
+
+    test('keeps refresh tokens opaque and redacts token responses', () {
+      const accessToken = 'do-not-log-access';
+      const refreshToken = '회전 refresh +/~!=';
+      final response = SolvedOAuthTokenResponse.fromJson(<String, Object?>{
+        'access_token': accessToken,
+        'token_type': 'Bearer',
+        'expires_in': 3600,
+        'refresh_token': refreshToken,
+        'scope': 'profile offline.access',
+      });
+
+      expect(response.refreshToken, refreshToken);
+      expect(response.toString(), 'SolvedOAuthTokenResponse(<redacted>)');
+      expect(response.toString(), isNot(contains(accessToken)));
+      expect(response.toString(), isNot(contains(refreshToken)));
+    });
+
     test('rejects malformed required fields and scope syntax', () {
       final valid = <String, Object?>{
         'access_token': 'access',
@@ -293,6 +330,20 @@ void main() {
         <Object?, Object?>{1: 'not a string key'},
         <String, Object?>{...valid}..remove('access_token'),
         <String, Object?>{...valid, 'access_token': ''},
+        <String, Object?>{
+          ...valid,
+          'access_token': List<String>.filled(4090, 'a').join(),
+        },
+        <String, Object?>{...valid, 'access_token': ' access'},
+        <String, Object?>{...valid, 'access_token': 'access '},
+        <String, Object?>{...valid, 'access_token': 'ac cess'},
+        <String, Object?>{...valid, 'access_token': 'access\r\nheader'},
+        <String, Object?>{...valid, 'access_token': 'access,other'},
+        <String, Object?>{...valid, 'access_token': '토큰'},
+        <String, Object?>{...valid, 'access_token': '=access'},
+        <String, Object?>{...valid, 'access_token': 'access=middle=x'},
+        <String, Object?>{...valid, 'access_token': '='},
+        <String, Object?>{...valid, 'access_token': 'access\u0000'},
         <String, Object?>{...valid, 'token_type': 'bearer'},
         <String, Object?>{...valid, 'expires_in': 0},
         <String, Object?>{...valid, 'expires_in': double.nan},

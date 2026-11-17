@@ -1,3 +1,5 @@
+import 'solved_bearer_authorization.dart';
+
 /// Public OAuth scopes documented by solved.ac.
 ///
 /// Undocumented scopes are intentionally not representable in requests.
@@ -145,9 +147,7 @@ final class SolvedOAuthTokenResponse {
   factory SolvedOAuthTokenResponse.fromJson(Object? json) {
     final body = _jsonObject(json, 'OAuth token response');
     final accessToken = _requiredString(body, 'access_token');
-    if (accessToken.isEmpty) {
-      throw const FormatException('access_token must not be empty');
-    }
+    SolvedBearerAuthorization.validateAccessToken(accessToken);
 
     final tokenType = _requiredString(body, 'token_type');
     if (tokenType != 'Bearer') {
@@ -195,6 +195,9 @@ final class SolvedOAuthTokenResponse {
   List<String> get unknownScopes => List<String>.unmodifiable(
         scopeValues.where((value) => SolvedOAuthScope.tryParse(value) == null),
       );
+
+  @override
+  String toString() => 'SolvedOAuthTokenResponse(<redacted>)';
 }
 
 /// A standards-shaped OAuth error response from token or revocation.
