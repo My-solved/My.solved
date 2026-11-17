@@ -118,6 +118,7 @@ class _HomeViewState extends State<HomeView> {
       },
       builder: (context, state) {
         if (state.status.isSuccess && state.user != null) {
+          final ratingBreakdown = state.user!.ratingBreakdown;
           final slideItem = <List<String>>[
             [
               "문제 해결",
@@ -144,9 +145,20 @@ class _HomeViewState extends State<HomeView> {
             GridItem(
               title: "레이팅",
               value: "${_tierText(state.user!.tier)} ${state.user!.rating}",
-              onPressed: () {},
+              onPressed: ratingBreakdown == null
+                  ? null
+                  : () {
+                      _showRatingBreakdownDialog(ratingBreakdown);
+                    },
               backgroundColor: _ratingColor(state.user!.rating),
               foregroundColor: MySolvedColor.background,
+              icon: ratingBreakdown == null
+                  ? null
+                  : Icon(
+                      Icons.info_outline,
+                      color: MySolvedColor.background,
+                      size: 20,
+                    ),
             ),
             GridItem(
                 title: "스트릭",
@@ -287,6 +299,44 @@ class _HomeViewState extends State<HomeView> {
           );
         }
       },
+    );
+  }
+
+  Future<void> _showRatingBreakdownDialog(
+    ProfileRatingBreakdown breakdown,
+  ) {
+    return showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        semanticLabel: '레이팅 상세',
+        title: const Text('레이팅 상세'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _RatingDetailRow(label: '현재 레이팅', value: breakdown.rating),
+              _RatingDetailRow(
+                label: '문제 레이팅 합',
+                value: breakdown.ratingByProblemsSum,
+              ),
+              _RatingDetailRow(
+                label: 'CLASS 레이팅',
+                value: breakdown.ratingByClass,
+              ),
+              _RatingDetailRow(
+                label: '해결 수 레이팅',
+                value: breakdown.ratingBySolvedCount,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('닫기'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -490,6 +540,40 @@ class _HomeViewState extends State<HomeView> {
   }
 }
 
+class _RatingDetailRow extends StatelessWidget {
+  const _RatingDetailRow({required this.label, required this.value});
+
+  final String label;
+  final int value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Flexible(
+            child: Text(
+              value.toString(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.end,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class GridItem {
   String title;
   String value;
@@ -558,6 +642,8 @@ Widget _gridItem({required GridItem item}) {
   return OutlinedButton(
       style: OutlinedButton.styleFrom(
         backgroundColor: item.backgroundColor,
+        disabledBackgroundColor: item.backgroundColor,
+        disabledForegroundColor: item.foregroundColor,
         padding: EdgeInsets.only(top: 20, left: 16, right: 16, bottom: 20),
         side: BorderSide(
           color: MySolvedColor.background,

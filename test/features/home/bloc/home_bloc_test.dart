@@ -156,6 +156,119 @@ void main() {
     expect(find.text('난이도 분포'), findsNothing);
   });
 
+  testWidgets('shows the existing v4 rating breakdown without another call', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    const breakdown = ProfileRatingBreakdown(
+      rating: 2417,
+      ratingByProblemsSum: 2010,
+      ratingByClass: 0,
+      ratingBySolvedCount: -207,
+      ratingProblemsCutoff: 100,
+      ratingProblemsHistogram: [2, 7, 15],
+    );
+    final repository = _FakeUserRepository(
+      supportsV4: true,
+      user: _profile(
+        rating: 2417,
+        ratingBreakdown: breakdown,
+        tagRatings: const [ProfileTagRating(key: 'dp', rating: 1700)],
+      ),
+    );
+    final bloc = _createBloc(repository, today);
+    addTearDown(bloc.close);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BlocProvider<HomeBloc>.value(
+          value: bloc,
+          child: const HomeView(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    final userRequests = repository.userRequestCount;
+    final auxiliaryRequests = repository.auxiliaryRequestCount;
+
+    expect(find.byIcon(Icons.info_outline), findsOneWidget);
+    await tester.tap(find.text('레이팅'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.text('레이팅 상세'), findsOneWidget);
+    expect(find.text('현재 레이팅'), findsOneWidget);
+    expect(find.text('2417'), findsOneWidget);
+    expect(find.text('문제 레이팅 합'), findsOneWidget);
+    expect(find.text('2010'), findsOneWidget);
+    expect(find.text('CLASS 레이팅'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(AlertDialog),
+        matching: find.text('0'),
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('해결 수 레이팅'), findsOneWidget);
+    expect(find.text('-207'), findsOneWidget);
+    expect(find.textContaining('cutoff'), findsNothing);
+    expect(find.textContaining('histogram'), findsNothing);
+    expect(find.textContaining('Over'), findsNothing);
+    expect(repository.userRequestCount, userRequests);
+    expect(repository.auxiliaryRequestCount, auxiliaryRequests);
+
+    await tester.tap(find.text('닫기'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('레이팅 상세'), findsNothing);
+  });
+
+  testWidgets('keeps the legacy rating card without a fake breakdown', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repository = _FakeUserRepository(
+      user: _profile(
+        rating: 1234,
+        tagRatings: const [ProfileTagRating(key: 'dp', rating: 1700)],
+      ),
+      problemStats: const [ProfileTierStat(tier: 1, solvedCount: 1)],
+    );
+    final bloc = _createBloc(repository, today);
+    addTearDown(bloc.close);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BlocProvider<HomeBloc>.value(
+          value: bloc,
+          child: const HomeView(),
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.text('Bronze V 1234'), findsOneWidget);
+    final ratingButton = tester.widget<OutlinedButton>(
+      find.ancestor(
+        of: find.text('레이팅'),
+        matching: find.byType(OutlinedButton),
+      ),
+    );
+    expect(ratingButton.onPressed, isNull);
+    expect(find.byIcon(Icons.info_outline), findsNothing);
+    expect(find.text('레이팅 상세'), findsNothing);
+  });
+
   test('emits failure when the core user request fails', () async {
     final repository = _FakeUserRepository(failUser: true);
     final bloc = _createBloc(repository, today);
@@ -318,6 +431,7 @@ class _FakeUserRepository implements UserRepository {
     this.failingAuxiliaryRequests = const {},
     this.userDelay = Duration.zero,
     this.auxiliaryDelay = Duration.zero,
+    this.problemStats = const [],
     UserProfile? user,
     ProfileStreak? streak,
   })  : user = user ?? _user,
@@ -329,6 +443,7 @@ class _FakeUserRepository implements UserRepository {
   final Set<String> failingAuxiliaryRequests;
   final Duration userDelay;
   final Duration auxiliaryDelay;
+  final List<ProfileTierStat> problemStats;
   final UserProfile user;
   final ProfileStreak streak;
 
@@ -391,11 +506,11 @@ class _FakeUserRepository implements UserRepository {
 
   @override
   Future<List<ProfileTagRating>> getTagRatings(String handle) =>
-      _auxiliary('tagRatings', const []);
+      _auxiliary('tagRatings', user.tagRatings);
 
   @override
   Future<List<ProfileTierStat>> getProblemStats(String handle) =>
-      _auxiliary('problemStats', const []);
+      _auxiliary('problemStats', problemStats);
 }
 
 class _FakeSharedPreferencesRepository extends SharedPreferencesRepository {
@@ -416,7 +531,9 @@ ProfileStreak _streak({
 UserProfile _profile({
   String? backgroundId = 'default',
   String? badgeId,
+  int rating = 1,
   int? reputation,
+  ProfileRatingBreakdown? ratingBreakdown,
   ProfileBackgroundAsset? background,
   ProfileBadgeAsset? badge,
   List<ProfileTagRating> tagRatings = const [],
@@ -431,8 +548,9 @@ UserProfile _profile({
       userClass: 1,
       reverseRivalCount: 0,
       tier: 1,
-      rating: 1,
+      rating: rating,
       reputation: reputation,
+      ratingBreakdown: ratingBreakdown,
       background: background,
       badge: badge,
       tagRatings: tagRatings,
