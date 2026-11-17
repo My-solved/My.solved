@@ -22,7 +22,7 @@ class AlternateUserContract extends SolvedApiV3Contract {
   const AlternateUserContract();
 
   @override
-  SolvedApiEndpoint<User> userShow(String handle) => SolvedApiEndpoint(
+  SolvedApiEndpoint<UserProfile> userShow(String handle) => SolvedApiEndpoint(
         direct: SolvedApiTarget(
           baseUri: Uri.https('contract.example.com', '/direct/'),
           path: 'profile/show',
@@ -33,11 +33,18 @@ class AlternateUserContract extends SolvedApiV3Contract {
           path: 'profile/lookup',
           queryParameters: {'proxyUser': handle},
         ),
-        decode: (json) {
-          final decoded = Map<String, dynamic>.from(json);
-          decoded['handle'] = 'contract-decoded';
-          return User.fromJson(decoded);
-        },
+        decode: (json) => UserProfile(
+          handle: Map<String, dynamic>.from(json)['opaque'],
+          badgeId: null,
+          backgroundId: null,
+          profileImageUrl: null,
+          solvedCount: 0,
+          legacyContributionCount: null,
+          userClass: 0,
+          reverseRivalCount: null,
+          tier: 0,
+          rating: 0,
+        ),
       );
 }
 
@@ -174,7 +181,7 @@ void main() {
 
       test('uses contract-specific direct and proxy targets', () async {
         when(() => httpClient.get(any())).thenAnswer(
-          (_) async => http.Response(fixture('v3/user_show.json'), 200),
+          (_) async => http.Response('{"opaque":"contract-decoded"}', 200),
         );
 
         final directClient = SolvedApiClient(
@@ -262,7 +269,7 @@ void main() {
         'custom base overrides only the selected contract target base',
         () async {
           when(() => httpClient.get(any())).thenAnswer(
-            (_) async => http.Response(fixture('v3/user_show.json'), 200),
+            (_) async => http.Response('{"opaque":"contract-decoded"}', 200),
           );
           apiClient = SolvedApiClient(
             httpClient: httpClient,
@@ -335,15 +342,8 @@ void main() {
       test('decodes successful response bodies as UTF-8', () async {
         final payload = jsonEncode({
           'backgroundId': 'test',
-          'backgroundImageUrl': 'https://example.com/background.png',
+          'backgroundImageUrl': 'https://example.com/한글-배경.png',
           'fallbackBackgroundImageUrl': null,
-          'backgroundVideoUrl': null,
-          'unlockedUserCount': 1,
-          'displayName': '한글 배경',
-          'displayDescription': '설명',
-          'conditions': null,
-          'hiddenConditions': false,
-          'isIllust': false,
         });
         when(() => httpClient.get(any())).thenAnswer(
           (_) async => http.Response.bytes(
@@ -355,8 +355,7 @@ void main() {
 
         final background = await apiClient.backgroundShow('test');
 
-        expect(background.displayName, '한글 배경');
-        expect(background.displayDescription, '설명');
+        expect(background.imageUrl, 'https://example.com/한글-배경.png');
       });
 
       test('preserves rate-limit metadata on non-success responses', () async {
@@ -369,13 +368,17 @@ void main() {
         );
 
         await expectLater(
-          apiClient.siteStats(),
+          apiClient.userShow('w8385'),
           throwsA(
-            isA<SiteRequestFailed>()
+            isA<UserRequestFailed>()
                 .having(
                   (error) => error.uri,
                   'uri',
-                  Uri.https('solved.ac', '/api/v3/site/stats'),
+                  Uri.https(
+                    'solved.ac',
+                    '/api/v3/user/show',
+                    {'handle': 'w8385'},
+                  ),
                 )
                 .having((error) => error.statusCode, 'statusCode', 429)
                 .having(
@@ -403,9 +406,9 @@ void main() {
         );
 
         await expectLater(
-          apiClient.siteStats(),
+          apiClient.userShow('w8385'),
           throwsA(
-            isA<SiteRequestFailed>().having(
+            isA<UserRequestFailed>().having(
               (error) => error.retryAfter,
               'retryAfter',
               Duration.zero,
@@ -529,6 +532,101 @@ void main() {
       });
     });
 
+    group('v4 profile transport', () {
+      test('requires an explicit v4 contract', () {
+        expect(
+          () => apiClient.v4UserProfile('index'),
+          throwsStateError,
+        );
+      });
+
+      test('forces the credential-holding proxy on native clients', () async {
+        apiClient = SolvedApiClient(
+          httpClient: httpClient,
+          useProxy: false,
+          apiBaseUri: Uri.parse('https://direct-override.example/api/v4/'),
+          v4Contract: SolvedApiV4Contract(
+            proxyBaseUri: Uri.parse(
+              'https://gateway.example/solved/v4/',
+            ),
+          ),
+        );
+        when(() => httpClient.get(any())).thenAnswer(
+          (_) async => http.Response(fixture('v4/user_profile.json'), 200),
+        );
+
+        final actual = await apiClient.v4UserProfile('index');
+
+        expect(actual.handle, 'index');
+        verify(
+          () => httpClient.get(
+            Uri.https('gateway.example', '/solved/v4/users/index', {
+              'lang': 'ko',
+            }),
+          ),
+        ).called(1);
+        verifyNever(
+          () => httpClient.get(
+            Uri.https('direct-override.example', '/api/v4/users/index', {
+              'lang': 'ko',
+            }),
+          ),
+        );
+      });
+    });
+
+    group('v4 search transport', () {
+      test('forces every search request through the credential proxy', () async {
+        apiClient = SolvedApiClient(
+          httpClient: httpClient,
+          useProxy: false,
+          apiBaseUri: Uri.parse('https://direct-override.example/api/v4/'),
+          v4Contract: SolvedApiV4Contract(
+            proxyBaseUri: Uri.parse('https://gateway.example/solved/v4/'),
+          ),
+        );
+        when(() => httpClient.get(any())).thenAnswer((invocation) async {
+          final uri = invocation.positionalArguments.single as Uri;
+          final body = switch (uri.path) {
+            '/solved/v4/problems' => fixture('v4/search_problems.json'),
+            '/solved/v4/rankings/users/search' =>
+              fixture('v4/search_users.json'),
+            '/solved/v4/tags' => fixture('v4/tags.json'),
+            _ => throw StateError('Unexpected v4 search URI: $uri'),
+          };
+          return http.Response.bytes(utf8.encode(body), 200);
+        });
+
+        final problems = await apiClient.v4SearchProblems('number');
+        final users = await apiClient.v4SearchUsers('index');
+        final tags = await apiClient.v4SearchTags('NUMBER');
+
+        expect(problems.count, 4);
+        expect(users.exact?.handle, 'index');
+        expect(tags.items.single.key, 'number_theory');
+        final requestedUris = verify(
+          () => httpClient.get(captureAny()),
+        ).captured.cast<Uri>().toList(growable: false);
+        expect(requestedUris, [
+          Uri.https('gateway.example', '/solved/v4/problems', {
+            'q': 'number',
+            'page': '1',
+            'sort': 'id',
+            'direction': 'asc',
+          }),
+          Uri.https('gateway.example', '/solved/v4/rankings/users/search', {
+            'q': 'index',
+            'sort': 'rating',
+          }),
+          Uri.https('gateway.example', '/solved/v4/tags'),
+        ]);
+        expect(
+          requestedUris.every((uri) => uri.host == 'gateway.example'),
+          isTrue,
+        );
+      });
+    });
+
     group('userShow', () {
       const handle = 'w8385';
       test('makes correct http request', () async {
@@ -546,81 +644,48 @@ void main() {
         ).called(1);
       });
 
-      test('returns User on valid response', () async {
+      test('returns a normalized UserProfile on valid v3 response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(() => response.body).thenReturn(fixture('v3/user_show.json'));
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
 
         final actual = await apiClient.userShow(handle);
-        expect(actual, isA<User>().having((l) => l.handle, 'handle', 'w8385'));
-      });
-    });
-
-    group('userOrganizations', () {
-      const handle = 'w8385';
-      test('makes correct http request', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn('{}');
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-        try {
-          await apiClient.userOrganizations(handle);
-        } catch (_) {}
-        verify(
-          () => httpClient.get(
-            Uri.https('solved.ac', '/api/v3/user/organizations', {
-              'handle': handle,
-            }),
-          ),
-        ).called(1);
-      });
-
-      test('returns List<Organization> on valid response', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(
-          () => response.body,
-        ).thenReturn(fixture('v3/user_organizations.json'));
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-
-        final actual = await apiClient.userOrganizations(handle);
         expect(
           actual,
-          isA<List<Organization>>().having((l) => l.length, 'length', 3),
+          isA<UserProfile>()
+              .having((profile) => profile.handle, 'handle', 'w8385')
+              .having((profile) => profile.badgeId, 'badgeId', 'boardgame')
+              .having(
+                (profile) => profile.backgroundId,
+                'backgroundId',
+                'boardgame_5',
+              )
+              .having(
+                (profile) => profile.profileImageUrl,
+                'profileImageUrl',
+                'https://static.solved.ac/uploads/profile/'
+                    'w8385-picture-1661145114047.png',
+              )
+              .having(
+                (profile) => profile.solvedCount,
+                'solvedCount',
+                2766,
+              )
+              .having(
+                (profile) => profile.legacyContributionCount,
+                'legacyContributionCount',
+                1442,
+              )
+              .having((profile) => profile.userClass, 'userClass', 6)
+              .having(
+                (profile) => profile.reverseRivalCount,
+                'reverseRivalCount',
+                44,
+              )
+              .having((profile) => profile.tier, 'tier', 20)
+              .having((profile) => profile.rating, 'rating', 2126),
         );
-      });
-    });
-
-    group('userAvailableBadges', () {
-      const handle = 'w8385';
-      test('makes correct http request', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn('{}');
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-        try {
-          await apiClient.userAvailableBadges(handle);
-        } catch (_) {}
-        verify(
-          () => httpClient.get(
-            Uri.https('solved.ac', '/api/v3/user/available_badges', {
-              'handle': handle,
-            }),
-          ),
-        ).called(1);
-      });
-
-      test('returns List<Badge> on valid response', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(
-          () => response.body,
-        ).thenReturn(fixture('v3/user_available_badges.json'));
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-
-        final actual = await apiClient.userAvailableBadges(handle);
-        expect(actual, isA<List<Badge>>().having((l) => l.length, 'length', 3));
       });
     });
 
@@ -645,7 +710,7 @@ void main() {
         ).called(1);
       });
 
-      test('returns Streak on valid response', () async {
+      test('returns normalized profile streak on valid response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(() => response.body).thenReturn(fixture('v3/user_grass.json'));
@@ -654,44 +719,18 @@ void main() {
         final actual = await apiClient.userGrass(handle, topic);
         expect(
           actual,
-          isA<Streak>().having(
-            (streak) => streak.grass,
-            'grass',
-            isA<List<Grass>>(),
-          ),
+          isA<ProfileStreak>()
+              .having(
+                (streak) => streak.currentStreak,
+                'currentStreak',
+                478,
+              )
+              .having((streak) => streak.days, 'days', hasLength(3)),
         );
-      });
-    });
-
-    group('userTop100', () {
-      const handle = 'w8385';
-      test('makes correct http request', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn('{}');
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-        try {
-          await apiClient.userTop100(handle);
-        } catch (_) {}
-        verify(
-          () => httpClient.get(
-            Uri.https('solved.ac', '/api/v3/user/top_100', {'handle': handle}),
-          ),
-        ).called(1);
-      });
-
-      test('returns List<Problem> on valid response', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn(fixture('v3/user_top_100.json'));
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-
-        final actual = await apiClient.userTop100(handle);
-        expect(actual, isA<List<Problem>>());
-        for (final problem in actual) {
-          expect(problem, isA<Problem>());
-          expect(problem.tags, isA<List<Tag>>());
-        }
+        expect(actual.days.first.year, 2023);
+        expect(actual.days.first.month, 11);
+        expect(actual.days.first.day, 25);
+        expect(actual.days.first.solvedCount, 0);
       });
     });
 
@@ -714,7 +753,7 @@ void main() {
         ).called(1);
       });
 
-      test('returns List<ProblemStat> on valid response', () async {
+      test('returns normalized profile tier stats on valid response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(
@@ -723,10 +762,15 @@ void main() {
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
 
         final actual = await apiClient.userProblemStats(handle);
-        expect(actual, isA<List<ProblemStat>>());
-        for (final stat in actual) {
-          expect(stat, isA<ProblemStat>());
-        }
+        expect(
+            actual,
+            isA<List<ProfileTierStat>>().having(
+              (stats) => stats.length,
+              'length',
+              31,
+            ));
+        expect(actual.first.tier, 0);
+        expect(actual.first.solvedCount, 15);
       });
     });
 
@@ -749,7 +793,8 @@ void main() {
         ).called(1);
       });
 
-      test('returns List<TagRating> on valid response', () async {
+      test('returns normalized profile tag ratings on valid response',
+          () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(
@@ -758,10 +803,8 @@ void main() {
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
 
         final actual = await apiClient.userTagRatings(handle);
-        expect(actual, isA<List<TagRating>>());
-        for (final tagRating in actual) {
-          expect(tagRating.tag, isA<Tag>());
-        }
+        expect(actual, isA<List<ProfileTagRating>>());
+        expect(actual.first.rating, 1011);
       });
     });
 
@@ -784,7 +827,7 @@ void main() {
         ).called(1);
       });
 
-      test('returns Background on valid response', () async {
+      test('returns normalized background asset on valid response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(
@@ -795,11 +838,17 @@ void main() {
         final actual = await apiClient.backgroundShow(backgroundId);
         expect(
           actual,
-          isA<Background>().having(
-            (b) => b.backgroundId,
-            'backgroundId',
-            backgroundId,
-          ),
+          isA<ProfileBackgroundAsset>()
+              .having(
+                (background) => background.imageUrl,
+                'imageUrl',
+                'https://static.solved.ac/profile_bg/anniversary_1st/anniversary_1st.png',
+              )
+              .having(
+                (background) => background.fallbackImageUrl,
+                'fallbackImageUrl',
+                isNull,
+              ),
         );
       });
     });
@@ -821,7 +870,7 @@ void main() {
         ).called(1);
       });
 
-      test('returns Badge on valid response', () async {
+      test('returns normalized badge asset on valid response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(() => response.body).thenReturn(fixture('v3/badge_show.json'));
@@ -830,43 +879,12 @@ void main() {
         final actual = await apiClient.badgeShow(badgeId);
         expect(
           actual,
-          isA<Badge>().having((b) => b.badgeId, 'badgeId', badgeId),
-        );
-      });
-    });
-
-    group('searchSuggestions', () {
-      const query = 'rsa';
-      test('makes correct http request', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn('{}');
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-        try {
-          await apiClient.searchSuggestion(query);
-        } catch (_) {}
-        verify(
-          () => httpClient.get(
-            Uri.https('solved.ac', '/api/v3/search/suggestion', {
-              'query': query,
-            }),
+          isA<ProfileBadgeAsset>().having(
+            (badge) => badge.imageUrl,
+            'imageUrl',
+            'https://static.solved.ac/profile_badge/boardgame.png',
           ),
-        ).called(1);
-      });
-
-      test('returns SearchSuggestion on valid response', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(
-          () => response.body,
-        ).thenReturn(fixture('v3/search_suggestion.json'));
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-
-        final actual = await apiClient.searchSuggestion(query);
-        expect(actual, isA<SearchSuggestion>());
-        expect(actual.problems, isA<List<ProblemSuggestion>>());
-        expect(actual.tags, isA<List<TagSuggestion>>());
-        expect(actual.users, isA<List<UserSuggestion>>());
+        );
       });
     });
 
@@ -1015,57 +1033,6 @@ void main() {
         expect(actual.items, hasLength(1));
         expect(actual.items.single.key, 'number_theory');
         expect(actual.items.single.problemCount, 1314);
-      });
-    });
-
-    group('arenaContests', () {
-      test('makes correct http request', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn('{}');
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-        try {
-          await apiClient.arenaContests();
-        } catch (_) {}
-        verify(
-          () =>
-              httpClient.get(Uri.https('solved.ac', '/api/v3/arena/contests')),
-        ).called(1);
-      });
-
-      test('returns List<ArenaContest> on valid response', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn(fixture('v3/arena_contests.json'));
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-
-        final actual = await apiClient.arenaContests();
-        expect(actual, isA<List<ArenaContest>>());
-      });
-    });
-
-    group('siteStats', () {
-      test('makes correct http request', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn('{}');
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-        try {
-          await apiClient.siteStats();
-        } catch (_) {}
-        verify(
-          () => httpClient.get(Uri.https('solved.ac', '/api/v3/site/stats')),
-        ).called(1);
-      });
-
-      test('returns SiteStats on valid response', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn(fixture('v3/site_stats.json'));
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-
-        final actual = await apiClient.siteStats();
-        expect(actual, isA<SiteStats>());
       });
     });
   });

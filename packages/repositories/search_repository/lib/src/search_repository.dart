@@ -8,10 +8,6 @@ class SearchRepository {
 
   final SolvedApiClient _solvedApiClient;
 
-  Future<SearchSuggestion> getSuggestions(String query) async {
-    return await _solvedApiClient.searchSuggestion(query);
-  }
-
   Future<SearchObject<ProblemSearchItem>> getProblems(
     String query,
     int? page,
