@@ -589,6 +589,7 @@ UserSearchResult _decodeV4UserSearch(dynamic json) {
 
 UserSearchItem _decodeV4UserSearchItem(Map<String, dynamic> body) =>
     UserSearchItem(
+      id: _number(body['id'], 'user.id'),
       handle: _string(body['handle'], 'user.handle'),
       profileImageUrl:
           _nullableString(body['profileImageUrl'], 'user.profileImageUrl'),
@@ -598,7 +599,15 @@ UserSearchItem _decodeV4UserSearchItem(Map<String, dynamic> body) =>
       classPlus: _boolean(body['classPlus'], 'user.classPlus'),
       rating: _integer(body['rating'], 'user.rating'),
       solvedCount: _integer(body['solvedCount'], 'user.solvedCount'),
+      voteCount: _integer(body['voteCount'], 'user.voteCount'),
       reputation: _integer(body['reputation'], 'user.reputation'),
+      tagRating: _requiredNullableInteger(body, 'tagRating', 'user.tagRating'),
+      globalRank: _requiredNullableInteger(
+        body,
+        'globalRank',
+        'user.globalRank',
+      ),
+      page: _integer(body['page'], 'user.page'),
     );
 
 SearchObject<TagSearchItem> _decodeV4TagSearch(
@@ -950,6 +959,17 @@ int _wholeNumber(Object? value, String field) {
 
 int? _nullableInteger(Object? value, String field) =>
     value == null ? null : _integer(value, field);
+
+int? _requiredNullableInteger(
+  Map<String, dynamic> body,
+  String wireKey,
+  String field,
+) {
+  if (!body.containsKey(wireKey)) {
+    throw FormatException('Missing required field $field');
+  }
+  return _nullableInteger(body[wireKey], field);
+}
 
 bool _boolean(Object? value, String field) {
   if (value is! bool) throw FormatException('Expected boolean for $field');

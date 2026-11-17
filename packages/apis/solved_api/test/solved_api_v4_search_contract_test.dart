@@ -1896,6 +1896,14 @@ void main() {
   });
 
   group('user search', () {
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+      jsonDecode(fixture('v4/search_users.json')) as Map,
+    );
+    Map<String, dynamic> item(Map<String, dynamic> body, String location) =>
+        location == 'exact'
+            ? body['exact'] as Map<String, dynamic>
+            : (body['items'] as List).first as Map<String, dynamic>;
+
     test('uses q and sort without inventing a page parameter', () {
       final endpoint = contract.searchUsers(
         'index',
@@ -1919,56 +1927,110 @@ void main() {
       );
     });
 
-    test('preserves nullable tier and keeps exact separate from items', () {
-      final actual = contract
-          .searchUsers('index')
-          .decode(jsonDecode(fixture('v4/search_users.json')));
+    test(
+      'preserves full user metadata and keeps exact separate from items',
+      () {
+        final actual = contract
+            .searchUsers('index')
+            .decode(jsonDecode(fixture('v4/search_users.json')));
 
-      expect(actual.exact?.handle, 'index');
-      expect(actual.exact?.tier, isNull);
-      expect(actual.exact?.rank, 1);
-      expect(actual.exact?.userClass, 10);
-      expect(actual.exact?.classPlus, isTrue);
-      expect(actual.exact?.rating, 3000);
-      expect(actual.exact?.solvedCount, 5000);
-      expect(actual.exact?.reputation, 500);
-      expect(actual.items, hasLength(2));
-      expect(actual.items.first.handle, 'index');
-      expect(actual.items.first.tier, isNull);
-      expect(actual.items.first.rank, 1);
-      expect(actual.items.first.userClass, 10);
-      expect(actual.items.first.classPlus, isTrue);
-      expect(actual.items.first.rating, 3000);
-      expect(actual.items.first.solvedCount, 5000);
-      expect(actual.items.first.reputation, 500);
-      expect(actual.items.last.handle, 'index2');
-      expect(actual.items.last.tier, 20);
-      expect(actual.items.last.rank, 2);
-      expect(actual.items.last.userClass, 8);
-      expect(actual.items.last.classPlus, isFalse);
-      expect(actual.items.last.rating, 2500);
-      expect(actual.items.last.solvedCount, 2500);
-      expect(actual.items.last.reputation, 250);
+        expect(actual.exact?.id, 1);
+        expect(actual.exact?.id, isA<int>());
+        expect(actual.exact?.handle, 'index');
+        expect(actual.exact?.tier, isNull);
+        expect(actual.exact?.rank, 1);
+        expect(actual.exact?.userClass, 10);
+        expect(actual.exact?.classPlus, isTrue);
+        expect(actual.exact?.rating, 3000);
+        expect(actual.exact?.solvedCount, 5000);
+        expect(actual.exact?.voteCount, 100);
+        expect(actual.exact?.reputation, 500);
+        expect(actual.exact?.tagRating, isNull);
+        expect(actual.exact?.globalRank, isNull);
+        expect(actual.exact?.page, 1);
+        expect(actual.items, hasLength(2));
+        expect(actual.items.first.id, 1);
+        expect(actual.items.first.handle, 'index');
+        expect(actual.items.first.tier, isNull);
+        expect(actual.items.first.rank, 1);
+        expect(actual.items.first.userClass, 10);
+        expect(actual.items.first.classPlus, isTrue);
+        expect(actual.items.first.rating, 3000);
+        expect(actual.items.first.solvedCount, 5000);
+        expect(actual.items.first.voteCount, 100);
+        expect(actual.items.first.reputation, 500);
+        expect(actual.items.first.tagRating, isNull);
+        expect(actual.items.first.globalRank, isNull);
+        expect(actual.items.first.page, 1);
+        expect(actual.items.last.id, 2);
+        expect(actual.items.last.handle, 'index2');
+        expect(actual.items.last.tier, 20);
+        expect(actual.items.last.rank, 2);
+        expect(actual.items.last.userClass, 8);
+        expect(actual.items.last.classPlus, isFalse);
+        expect(actual.items.last.rating, 2500);
+        expect(actual.items.last.solvedCount, 2500);
+        expect(actual.items.last.voteCount, 50);
+        expect(actual.items.last.reputation, 250);
+        expect(actual.items.last.tagRating, 2400);
+        expect(actual.items.last.globalRank, 100);
+        expect(actual.items.last.page, 1);
+      },
+    );
+
+    test('requires a finite raw id in every v4 user item', () {
+      final endpoint = contract.searchUsers('index');
+
+      for (final location in ['exact', 'items']) {
+        final missing = source();
+        item(missing, location).remove('id');
+        expect(
+          () => endpoint.decode(missing),
+          throwsFormatException,
+          reason: '$location.id missing',
+        );
+
+        for (final invalid in <Object?>[
+          null,
+          '1',
+          true,
+          const <Object>[],
+          const <String, Object?>{},
+          double.nan,
+          double.infinity,
+          double.negativeInfinity,
+        ]) {
+          final malformed = source();
+          item(malformed, location)['id'] = invalid;
+          expect(
+            () => endpoint.decode(malformed),
+            throwsFormatException,
+            reason: '$location.id = $invalid',
+          );
+        }
+      }
+
+      final rawNumbers = source();
+      item(rawNumbers, 'exact')['id'] = 1.0;
+      item(rawNumbers, 'items')['id'] = -1.5;
+      final actual = endpoint.decode(rawNumbers);
+      expect(actual.exact?.id, 1.0);
+      expect(actual.exact?.id, isA<double>());
+      expect(actual.items.first.id, -1.5);
+      expect(actual.items.first.id, isA<double>());
     });
 
     test('requires integer summaries in every v4 user item', () {
       final endpoint = contract.searchUsers('index');
-      Map<String, dynamic> source() => Map<String, dynamic>.from(
-            jsonDecode(fixture('v4/search_users.json')) as Map,
-          );
-      Map<String, dynamic> item(
-        Map<String, dynamic> body,
-        String location,
-      ) => location == 'exact'
-          ? body['exact'] as Map<String, dynamic>
-          : (body['items'] as List).first as Map<String, dynamic>;
 
       for (final field in [
         'rank',
         'class',
         'rating',
         'solvedCount',
+        'voteCount',
         'reputation',
+        'page',
       ]) {
         for (final location in ['exact', 'items']) {
           final missing = source();
@@ -1979,7 +2041,15 @@ void main() {
             reason: '$location.$field missing',
           );
 
-          for (final invalid in <Object?>[null, '1', 1.5]) {
+          for (final invalid in <Object?>[
+            null,
+            '1',
+            true,
+            1.0,
+            1.5,
+            const <Object>[],
+            const <String, Object?>{},
+          ]) {
             final malformed = source();
             item(malformed, location)[field] = invalid;
             expect(
@@ -1996,27 +2066,75 @@ void main() {
       item(unbounded, 'items')['rank'] = 0;
       item(unbounded, 'exact')['class'] = -1;
       item(unbounded, 'items')['class'] = 0;
+      item(unbounded, 'exact')['voteCount'] = -2;
+      item(unbounded, 'items')['voteCount'] = 0;
       item(unbounded, 'exact')['reputation'] = -1;
+      item(unbounded, 'exact')['page'] = -3;
+      item(unbounded, 'items')['page'] = 0;
       final actual = endpoint.decode(unbounded);
       expect(actual.exact?.rank, -1);
       expect(actual.items.first.rank, 0);
       expect(actual.exact?.userClass, -1);
       expect(actual.items.first.userClass, 0);
+      expect(actual.exact?.voteCount, -2);
+      expect(actual.items.first.voteCount, 0);
       expect(actual.exact?.reputation, -1);
+      expect(actual.exact?.page, -3);
+      expect(actual.items.first.page, 0);
+    });
+
+    test('requires nullable ratings and ranks in every v4 user item', () {
+      final endpoint = contract.searchUsers('index');
+
+      for (final field in ['tagRating', 'globalRank']) {
+        for (final location in ['exact', 'items']) {
+          final missing = source();
+          item(missing, location).remove(field);
+          expect(
+            () => endpoint.decode(missing),
+            throwsFormatException,
+            reason: '$location.$field missing',
+          );
+
+          for (final invalid in <Object?>[
+            '1',
+            true,
+            1.0,
+            1.5,
+            const <Object>[],
+            const <String, Object?>{},
+          ]) {
+            final malformed = source();
+            item(malformed, location)[field] = invalid;
+            expect(
+              () => endpoint.decode(malformed),
+              throwsFormatException,
+              reason: '$location.$field = $invalid',
+            );
+          }
+        }
+      }
+
+      final nullable = endpoint.decode(source());
+      expect(nullable.exact?.tagRating, isNull);
+      expect(nullable.exact?.globalRank, isNull);
+      expect(nullable.items.first.tagRating, isNull);
+      expect(nullable.items.first.globalRank, isNull);
+
+      final unbounded = source();
+      item(unbounded, 'exact')['tagRating'] = -1;
+      item(unbounded, 'exact')['globalRank'] = 0;
+      item(unbounded, 'items')['tagRating'] = 0;
+      item(unbounded, 'items')['globalRank'] = -2;
+      final actual = endpoint.decode(unbounded);
+      expect(actual.exact?.tagRating, -1);
+      expect(actual.exact?.globalRank, 0);
+      expect(actual.items.first.tagRating, 0);
+      expect(actual.items.first.globalRank, -2);
     });
 
     test('requires the CLASS+ marker in every v4 user item', () {
       final endpoint = contract.searchUsers('index');
-      Map<String, dynamic> source() => Map<String, dynamic>.from(
-            jsonDecode(fixture('v4/search_users.json')) as Map,
-          );
-      Map<String, dynamic> item(
-        Map<String, dynamic> body,
-        String location,
-      ) =>
-          location == 'exact'
-              ? body['exact'] as Map<String, dynamic>
-              : (body['items'] as List).first as Map<String, dynamic>;
 
       for (final location in ['exact', 'items']) {
         final missing = source();
@@ -2042,6 +2160,7 @@ void main() {
     test('preserves zero public summaries', () {
       final actual = contract.searchUsers('zero').decode({
         'exact': {
+          'id': 0,
           'handle': 'zero',
           'tier': 0,
           'profileImageUrl': null,
@@ -2050,17 +2169,26 @@ void main() {
           'classPlus': false,
           'rating': 0,
           'solvedCount': 0,
+          'voteCount': 0,
           'reputation': 0,
+          'tagRating': 0,
+          'globalRank': 0,
+          'page': 0,
         },
         'items': <Object>[],
       });
 
+      expect(actual.exact?.id, 0);
       expect(actual.exact?.rank, 0);
       expect(actual.exact?.userClass, 0);
       expect(actual.exact?.classPlus, isFalse);
       expect(actual.exact?.rating, 0);
       expect(actual.exact?.solvedCount, 0);
+      expect(actual.exact?.voteCount, 0);
       expect(actual.exact?.reputation, 0);
+      expect(actual.exact?.tagRating, 0);
+      expect(actual.exact?.globalRank, 0);
+      expect(actual.exact?.page, 0);
     });
 
     test('requires the exact key while preserving an explicit null match', () {

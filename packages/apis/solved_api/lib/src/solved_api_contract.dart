@@ -318,6 +318,7 @@ UserSearchItem _decodeV3UserSearchItem(Map<String, dynamic> json) {
     userClass: json['class'] as int?,
     rating: json['rating'] as int?,
     solvedCount: json['solvedCount'] as int?,
+    voteCount: json['voteCount'] as int?,
   );
 }
 

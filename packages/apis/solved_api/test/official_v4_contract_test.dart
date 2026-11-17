@@ -488,32 +488,41 @@ void main() {
       _map(userSearchProperties['items'])['items'],
     );
     for (final userSchema in [exactUser, listedUser]) {
-      expect(
-        _required(userSchema),
-        containsAll([
-          'rank',
-          'globalRank',
-          'reputation',
-          'class',
-          'classPlus',
-        ]),
-      );
+      expect(_required(userSchema), [
+        'id',
+        'handle',
+        'tier',
+        'profileImageUrl',
+        'rank',
+        'rating',
+        'solvedCount',
+        'voteCount',
+        'reputation',
+        'class',
+        'classPlus',
+        'tagRating',
+        'globalRank',
+        'page',
+      ]);
       final properties = _properties(userSchema);
-      final rank = _map(properties['rank']);
-      expect(rank['type'], 'integer');
-      for (final constraint in ['minimum', 'maximum', 'description']) {
-        expect(rank.containsKey(constraint), isFalse);
+      expect(_map(properties['id']), {'type': 'number'});
+      for (final field in [
+        'rank',
+        'rating',
+        'solvedCount',
+        'voteCount',
+        'reputation',
+        'class',
+        'page',
+      ]) {
+        expect(_map(properties[field]), {'type': 'integer'});
       }
-      final globalRank = _map(properties['globalRank']);
-      expect(globalRank['type'], ['integer', 'null']);
-      final userClass = _map(properties['class']);
-      expect(userClass['type'], 'integer');
-      expect(userClass.containsKey('minimum'), isFalse);
-      expect(userClass.containsKey('maximum'), isFalse);
       expect(_map(properties['classPlus'])['type'], 'boolean');
-      final reputation = _map(properties['reputation']);
-      expect(reputation['type'], 'integer');
-      expect(reputation.containsKey('minimum'), isFalse);
+      for (final field in ['tagRating', 'globalRank']) {
+        expect(_map(properties[field]), {
+          'type': ['integer', 'null'],
+        });
+      }
     }
   });
 
