@@ -1782,6 +1782,19 @@ void main() {
   });
 
   group('tag search', () {
+    test('requires the documented catalog envelope', () {
+      final endpoint = contract.searchTags('tag');
+
+      expect(() => endpoint.decode(<String, dynamic>{}), throwsFormatException);
+      for (final invalid in <Object?>[null, 0, 'tags', const <Object>{}]) {
+        expect(
+          () => endpoint.decode({'tags': invalid}),
+          throwsFormatException,
+          reason: 'tags = $invalid',
+        );
+      }
+    });
+
     test('requests the parameterless catalog', () {
       final endpoint = contract.searchTags('graph', page: 2);
 
@@ -1805,56 +1818,112 @@ void main() {
       expect(aliasMatch.items.single.key, 'shortest_path');
       expect(aliasMatch.items.single.displayName, '최단 경로');
       expect(aliasMatch.items.single.problemCount, isNull);
+      expect(keyMatch.items.single.id, 1);
+      expect(keyMatch.items.single.isMeta, isFalse);
+      expect(keyMatch.items.single.parents, ['math']);
+      expect(keyMatch.items.single.names, {'ko': '정수론', 'en': 'Number Theory'});
+      expect(keyMatch.items.single.aliases, ['NT']);
+      expect(keyMatch.items.single.rated, isTrue);
     });
 
     test('selects Korean, English, deterministic fallback, then none', () {
       final actual = contract.searchTags('fallback').decode({
         'tags': [
-          {
-            'key': 'fallback_korean',
-            'names': {'ja': '日本語', 'en': 'English', 'ko': ' 한국어 '},
-            'aliases': <String>[],
-          },
-          {
-            'key': 'fallback_english',
-            'names': {'ja': '日本語', 'ko': '', 'en': 'English'},
-            'aliases': <String>[],
-          },
-          {
-            'key': 'fallback_first',
-            'names': {'zh': '中文', 'ja': '最初'},
-            'aliases': <String>[],
-          },
-          {
-            'key': 'fallback_key_only',
-            'names': {'ko': '', 'en': '   '},
-            'aliases': <String>[],
-          },
+          _v4CatalogTag(
+            id: 1,
+            key: 'fallback_korean',
+            names: {'ja': '日本語', 'en': 'English', 'ko': ' 한국어 '},
+          ),
+          _v4CatalogTag(
+            id: 2,
+            key: 'fallback_english',
+            names: {'ja': '日本語', 'ko': '', 'en': 'English'},
+          ),
+          _v4CatalogTag(
+            id: 3,
+            key: 'fallback_first',
+            names: {'zh': '中文', 'ja': '最初'},
+          ),
+          _v4CatalogTag(
+            id: 4,
+            key: 'fallback_key_only',
+            names: {'ko': '', 'en': '   '},
+          ),
         ],
       });
 
-      expect(
-        actual.items.map((item) => (item.key, item.displayName)),
-        [
-          ('fallback_korean', '한국어'),
-          ('fallback_english', 'English'),
-          ('fallback_first', '最初'),
-          ('fallback_key_only', null),
-        ],
-      );
+      expect(actual.items.map((item) => (item.key, item.displayName)), [
+        ('fallback_korean', '한국어'),
+        ('fallback_english', 'English'),
+        ('fallback_first', '最初'),
+        ('fallback_key_only', null),
+      ]);
       expect(actual.items.every((item) => item.problemCount == null), isTrue);
     });
 
-    test('keeps strict validation for every localized name value', () {
+    test('requires every documented catalog field and exact value shape', () {
       final endpoint = contract.searchTags('invalid');
+      Map<String, dynamic> valid() => _v4CatalogTag(
+        id: 1,
+        key: 'invalid',
+        parents: ['root'],
+        names: {'ko': '정상'},
+        aliases: ['alias'],
+      );
+
+      for (final field in [
+        'id',
+        'key',
+        'isMeta',
+        'parents',
+        'names',
+        'aliases',
+        'rated',
+      ]) {
+        final tag = valid()..remove(field);
+        expect(
+          () => endpoint.decode({
+            'tags': [tag],
+          }),
+          throwsFormatException,
+          reason: 'missing $field',
+        );
+      }
+
+      final invalidValues = <String, Object?>{
+        'id': '1',
+        'key': 1,
+        'isMeta': 0,
+        'parents': 'root',
+        'names': <String>[],
+        'aliases': {'alias': true},
+        'rated': 'true',
+      };
+      for (final entry in invalidValues.entries) {
+        final tag = valid()..[entry.key] = entry.value;
+        expect(
+          () => endpoint.decode({
+            'tags': [tag],
+          }),
+          throwsFormatException,
+          reason: '${entry.key} = ${entry.value}',
+        );
+      }
+
+      for (final id in [double.nan, double.infinity, double.negativeInfinity]) {
+        expect(
+          () => endpoint.decode({
+            'tags': [valid()..['id'] = id],
+          }),
+          throwsFormatException,
+          reason: 'id = $id',
+        );
+      }
 
       expect(
         () => endpoint.decode({
           'tags': [
-            {
-              'key': 'invalid_missing',
-              'aliases': <String>[],
-            },
+            valid()..['parents'] = [1],
           ],
         }),
         throwsFormatException,
@@ -1862,11 +1931,7 @@ void main() {
       expect(
         () => endpoint.decode({
           'tags': [
-            {
-              'key': 'invalid_shape',
-              'names': <String>[],
-              'aliases': <String>[],
-            },
+            valid()..['aliases'] = [1],
           ],
         }),
         throwsFormatException,
@@ -1874,26 +1939,98 @@ void main() {
       expect(
         () => endpoint.decode({
           'tags': [
-            {
-              'key': 'invalid_value',
-              'names': {'ko': '정상', 'later': 42},
-              'aliases': <String>[],
-            },
+            valid()..['names'] = {'ko': '정상', 'later': 42},
           ],
         }),
         throwsFormatException,
       );
     });
+
+    test(
+      'validates unmatched and trailing catalog entries before filtering',
+      () {
+        final validMatch = _v4CatalogTag(
+          id: 1,
+          key: 'wanted',
+          names: {'en': 'Wanted'},
+        );
+        final invalidUnmatched = _v4CatalogTag(
+          id: 2,
+          key: 'other',
+          names: {'en': 'Other'},
+        )..remove('rated');
+
+        expect(
+          () => contract.searchTags('wanted').decode({
+            'tags': [validMatch, invalidUnmatched],
+          }),
+          throwsFormatException,
+        );
+      },
+    );
+
+    test(
+      'preserves raw metadata and isolates immutable decoded collections',
+      () {
+        final parents = <String>[' parent ', '부모', ' parent '];
+        final names = <String, String>{'ko': ' 한국어 ', ' x-custom ': ''};
+        final aliases = <String>['', ' 별칭 ', ' 별칭 '];
+        final sourceTag = _v4CatalogTag(
+          id: -1.5,
+          key: ' 태그 ',
+          isMeta: true,
+          parents: parents,
+          names: names,
+          aliases: aliases,
+          rated: false,
+        )..['future'] = {'kept': 'out of the model'};
+        final duplicateTag = Map<String, dynamic>.from(sourceTag);
+        final actual = contract.searchTags('').decode({
+          'tags': [
+            _v4CatalogTag(id: 2, key: '먼저', names: const {}),
+            sourceTag,
+            duplicateTag,
+          ],
+        });
+        final item = actual.items[1];
+
+        parents[0] = 'changed';
+        names['ko'] = 'changed';
+        aliases[0] = 'changed';
+        sourceTag['parents'] = <String>[];
+        sourceTag['names'] = <String, String>{};
+        sourceTag['aliases'] = <String>[];
+
+        expect(actual.items.map((item) => item.id), [2, -1.5, -1.5]);
+        expect(actual.items.map((item) => item.key), ['먼저', ' 태그 ', ' 태그 ']);
+        expect(actual.items.first.parents, isEmpty);
+        expect(actual.items.first.names, isEmpty);
+        expect(actual.items.first.aliases, isEmpty);
+        expect(item.id, -1.5);
+        expect(item.key, ' 태그 ');
+        expect(item.isMeta, isTrue);
+        expect(item.parents, [' parent ', '부모', ' parent ']);
+        expect(item.names, {'ko': ' 한국어 ', ' x-custom ': ''});
+        expect(item.aliases, ['', ' 별칭 ', ' 별칭 ']);
+        expect(item.rated, isFalse);
+        expect(item.displayName, '한국어');
+        expect(() => item.parents!.add('blocked'), throwsUnsupportedError);
+        expect(() => item.parents![0] = 'blocked', throwsUnsupportedError);
+        expect(() => item.names!['ko'] = 'blocked', throwsUnsupportedError);
+        expect(() => item.aliases!.add('blocked'), throwsUnsupportedError);
+        expect(() => item.aliases![0] = 'blocked', throwsUnsupportedError);
+      },
+    );
 
     test('paginates filtered catalog results locally', () {
       final source = {
         'tags': List.generate(
           51,
-          (index) => {
-            'key': 'tag_$index',
-            'names': {'en': 'Tag $index'},
-            'aliases': <String>[],
-          },
+          (index) => _v4CatalogTag(
+            id: index,
+            key: 'tag_$index',
+            names: {'en': 'Tag $index'},
+          ),
         ),
       };
 
@@ -1911,3 +2048,21 @@ void main() {
     });
   });
 }
+
+Map<String, dynamic> _v4CatalogTag({
+  required num id,
+  required String key,
+  bool isMeta = false,
+  List<String> parents = const [],
+  required Map<String, String> names,
+  List<String> aliases = const [],
+  bool rated = true,
+}) => {
+  'id': id,
+  'key': key,
+  'isMeta': isMeta,
+  'parents': parents,
+  'names': names,
+  'aliases': aliases,
+  'rated': rated,
+};
