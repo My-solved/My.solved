@@ -559,6 +559,8 @@ Widget _userSearchCard(UserSearchItem user, {required Key key}) {
 String? _userSearchSummary(UserSearchItem user) {
   final parts = <String>[
     if (user.rank != null) '${user.rank}위',
+    if (user.userClass != null)
+      'CLASS ${user.userClass}${user.classPlus == true ? '+' : ''}',
     if (user.rating != null) '레이팅 ${user.rating}',
     if (user.solvedCount != null) '${user.solvedCount}문제',
     if (user.reputation != null) '평판 ${user.reputation}',

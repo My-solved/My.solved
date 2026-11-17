@@ -106,6 +106,8 @@ void main() {
         profileImageUrl: null,
         tier: null,
         rank: 1,
+        userClass: 10,
+        classPlus: true,
         rating: 3000,
         solvedCount: 5000,
         reputation: 500,
@@ -120,6 +122,8 @@ void main() {
               profileImageUrl: null,
               tier: 10,
               rank: 0,
+              userClass: 0,
+              classPlus: false,
               rating: 0,
               reputation: 0,
             ),
@@ -128,6 +132,7 @@ void main() {
               profileImageUrl: null,
               tier: 10,
               rank: -1,
+              userClass: -1,
               solvedCount: 0,
               reputation: -7,
             ),
@@ -172,11 +177,11 @@ void main() {
       expect(find.text('검색 결과'), findsOneWidget);
       expect(find.text('same-handle'), findsNWidgets(2));
       expect(
-        find.text('1위 · 레이팅 3000 · 5000문제 · 평판 500'),
+        find.text('1위 · CLASS 10+ · 레이팅 3000 · 5000문제 · 평판 500'),
         findsNWidgets(2),
       );
-      expect(find.text('0위 · 레이팅 0 · 평판 0'), findsOneWidget);
-      expect(find.text('-1위 · 0문제 · 평판 -7'), findsOneWidget);
+      expect(find.text('0위 · CLASS 0 · 레이팅 0 · 평판 0'), findsOneWidget);
+      expect(find.text('-1위 · CLASS -1 · 0문제 · 평판 -7'), findsOneWidget);
       expect(find.text('legacy-handle'), findsOneWidget);
       expect(find.textContaining('null'), findsNothing);
       expect(

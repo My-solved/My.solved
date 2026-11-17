@@ -82,6 +82,9 @@ void main() {
       expect(users.items.first.tier, 16);
       expect(users.items.first.rank, 5169);
       expect(users.items.last.rank, 17200);
+      expect(users.items.first.userClass, 4);
+      expect(users.items.last.userClass, 3);
+      expect(users.items.first.classPlus, isNull);
       expect(users.items.first.rating, 1675);
       expect(users.items.first.solvedCount, 489);
       expect(tags, isA<SearchObject<TagSearchItem>>());
@@ -166,10 +169,14 @@ void main() {
 
       expect(item.rating, isNull);
       expect(item.rank, isNull);
+      expect(item.userClass, isNull);
+      expect(item.classPlus, isNull);
       expect(item.solvedCount, isNull);
       expect(item.reputation, isNull);
       expect(decoded.items.single.rating, isNull);
       expect(decoded.items.single.rank, isNull);
+      expect(decoded.items.single.userClass, isNull);
+      expect(decoded.items.single.classPlus, isNull);
       expect(decoded.items.single.solvedCount, isNull);
       expect(decoded.items.single.reputation, isNull);
     });
