@@ -21,10 +21,6 @@ class AppScreen extends StatefulWidget {
 }
 
 class _AppScreenState extends State<AppScreen> {
-  static final Uri _solvedApiBaseUri = Uri.https('solved.ac', '/api/v3/');
-  static final Uri _solvedProxyBaseUri =
-      Uri.https('codepoker.w8385.dev', '/solved/');
-
   late final http.Client _httpClient;
   late final bool _ownsHttpClient;
   late final SolvedApiClient _solvedApiClient;
@@ -36,11 +32,7 @@ class _AppScreenState extends State<AppScreen> {
     super.initState();
     _ownsHttpClient = widget.httpClient == null;
     _httpClient = widget.httpClient ?? http.Client();
-    _solvedApiClient = SolvedApiClient(
-      httpClient: _httpClient,
-      apiBaseUri: _solvedApiBaseUri,
-      proxyBaseUri: _solvedProxyBaseUri,
-    );
+    _solvedApiClient = SolvedApiClient(httpClient: _httpClient);
     _userRepository = UserRepository(solvedApiClient: _solvedApiClient);
     _searchRepository = SearchRepository(solvedApiClient: _solvedApiClient);
   }
