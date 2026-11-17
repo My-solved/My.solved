@@ -130,13 +130,14 @@ void main() {
       );
     });
 
-    test('normalizes total, title fallbacks, levels, and tag keys', () {
+    test('preserves total, title fallbacks, levels, and tag keys', () {
       final actual = contract
           .searchProblems('sample')
           .decode(jsonDecode(fixture('v4/search_problems.json')));
 
       expect(actual, isA<ProblemSearchResult>());
       expect(actual.count, 4);
+      expect(actual.count, isA<int>());
       expect(actual.page, 1);
       expect(actual.pageSize, 50);
       expect(actual.diagnostics, isNull);
@@ -203,10 +204,10 @@ void main() {
       expect(actual.items[3].noRatingWarnings, isEmpty);
     });
 
-    test('requires finite pagination metadata without inventing bounds', () {
+    test('requires finite response metadata without inventing bounds', () {
       final endpoint = contract.searchProblems('sample');
 
-      for (final field in ['page', 'pageSize']) {
+      for (final field in ['total', 'page', 'pageSize']) {
         final missing = _problemSearchSource()..remove(field);
         expect(
           () => endpoint.decode(missing),
@@ -234,10 +235,13 @@ void main() {
 
       final unusual =
           _problemSearchSource()
+            ..['total'] = -0.5
             ..['page'] = -1.5
             ..['pageSize'] = 0;
       final actual = endpoint.decode(unusual);
 
+      expect(actual.count, -0.5);
+      expect(actual.count, isA<double>());
       expect(actual.page, -1.5);
       expect(actual.pageSize, 0);
     });
@@ -1822,7 +1826,7 @@ void main() {
     );
 
     test(
-      'accepts integral JSON numbers but rejects fractional model values',
+      'preserves numeric response totals without relaxing whole-number problem fields',
       () {
         final endpoint = contract.searchProblems('number');
         final actual = endpoint.decode({
@@ -1853,7 +1857,8 @@ void main() {
           'pageSize': 50,
         });
 
-        expect(actual.count, 1);
+        expect(actual.count, 1.0);
+        expect(actual.count, isA<double>());
         expect(actual.items.single.problemId, 1001);
         expect(actual.items.single.level, 12);
         expect(
@@ -2333,10 +2338,12 @@ void main() {
       final second = contract.searchTags('TAG', page: 2).decode(source);
 
       expect(first.count, 51);
+      expect(first.count, isA<int>());
       expect(first.items, hasLength(SolvedApiV4Contract.tagSearchPageSize));
       expect(first.items.first.key, 'tag_0');
       expect(first.items.last.key, 'tag_49');
       expect(second.count, 51);
+      expect(second.count, isA<int>());
       expect(second.items.single.key, 'tag_50');
       expect(second.items.single.displayName, 'Tag 50');
       expect(second.items.single.problemCount, isNull);

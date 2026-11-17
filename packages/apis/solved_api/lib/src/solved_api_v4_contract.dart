@@ -219,7 +219,7 @@ ProblemSearchResult _decodeV4ProblemSearch(dynamic json) {
     );
   }
   return ProblemSearchResult(
-    count: _wholeNumber(body['total'], 'total'),
+    count: _number(body['total'], 'total'),
     items: problems,
     page: _number(body['page'], 'page'),
     pageSize: _number(body['pageSize'], 'pageSize'),
