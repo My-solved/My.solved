@@ -228,6 +228,7 @@ ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
     problemId: _wholeNumber(body['problemId'], 'problems[].problemId'),
     title: _decodeV4ProblemTitle(body['titles']),
     level: _wholeNumber(body['level'], 'problems[].level'),
+    givesNoRating: _boolean(body['givesNoRating'], 'problems[].givesNoRating'),
     // The official v4 problem shape has tag keys but no localized names.
     tagNames: tagKeys,
   );

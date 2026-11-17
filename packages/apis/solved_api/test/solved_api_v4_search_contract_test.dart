@@ -82,10 +82,41 @@ void main() {
       expect(actual.items[0].problemId, 1001);
       expect(actual.items[0].title, '한국어 제목');
       expect(actual.items[0].level, 10);
+      expect(actual.items[0].givesNoRating, isFalse);
       expect(actual.items[0].tagNames, ['math', 'number_theory']);
       expect(actual.items[1].title, 'Original title');
       expect(actual.items[2].title, 'First fallback');
       expect(actual.items[3].title, isNull);
+      expect(actual.items[3].givesNoRating, isTrue);
+    });
+
+    test('requires a boolean no-rating marker in every v4 problem', () {
+      final endpoint = contract.searchProblems('sample');
+      Map<String, dynamic> source() =>
+          jsonDecode(fixture('v4/search_problems.json'))
+              as Map<String, dynamic>;
+      Map<String, dynamic> firstProblem(Map<String, dynamic> body) =>
+          (body['problems'] as List).first as Map<String, dynamic>;
+
+      final missing = source();
+      firstProblem(missing).remove('givesNoRating');
+      expect(() => endpoint.decode(missing), throwsFormatException);
+
+      for (final invalid in <Object?>[
+        null,
+        0,
+        1,
+        'false',
+        const <Object>[],
+      ]) {
+        final malformed = source();
+        firstProblem(malformed)['givesNoRating'] = invalid;
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'givesNoRating = $invalid',
+        );
+      }
     });
 
     test(
@@ -97,6 +128,7 @@ void main() {
             {
               'problemId': 1001.0,
               'level': 12.0,
+              'givesNoRating': false,
               'titles': <Object>[],
               'tags': <Object>[],
             },
@@ -113,6 +145,7 @@ void main() {
               {
                 'problemId': 1001.5,
                 'level': 12,
+                'givesNoRating': false,
                 'titles': <Object>[],
                 'tags': <Object>[],
               },

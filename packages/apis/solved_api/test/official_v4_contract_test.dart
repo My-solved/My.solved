@@ -170,12 +170,17 @@ void main() {
       'direction',
       'seed',
     ]);
-    expect(_required(_responseSchema(problems)), [
+    final problemSchema = _responseSchema(problems);
+    expect(_required(problemSchema), [
       'problems',
       'total',
       'page',
       'pageSize',
     ]);
+    final problemItem =
+        _map(_map(_properties(problemSchema)['problems'])['items']);
+    expect(_required(problemItem), contains('givesNoRating'));
+    expect(_map(_properties(problemItem)['givesNoRating'])['type'], 'boolean');
 
     final users = _get(contract, '/api/v4/rankings/users/search');
     expect(_parameterNames(users), ['q', 'sort']);

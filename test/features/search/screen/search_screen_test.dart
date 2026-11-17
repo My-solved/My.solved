@@ -9,6 +9,95 @@ import 'package:shared_preferences_repository/shared_preferences_repository.dart
 import 'package:solved_api/solved_api.dart';
 
 void main() {
+  testWidgets('shows the no-rating label only for an explicit true marker', (
+    tester,
+  ) async {
+    final repository = _SearchScreenRepository(
+      problems: const SearchObject(
+        count: 3,
+        items: [
+          ProblemSearchItem(
+            problemId: 1004,
+            title: 'No rating',
+            level: 0,
+            tagNames: [],
+            givesNoRating: true,
+          ),
+          ProblemSearchItem(
+            problemId: 1001,
+            title: 'Rated',
+            level: 1,
+            tagNames: [],
+            givesNoRating: false,
+          ),
+          ProblemSearchItem(
+            problemId: 1002,
+            title: 'Legacy unknown',
+            level: 2,
+            tagNames: [],
+          ),
+        ],
+      ),
+    );
+    final bloc = SearchBloc(
+      searchRepository: repository,
+      sharedPreferencesRepository: _SearchScreenPreferences(),
+    );
+    addTearDown(bloc.close);
+
+    bloc.add(SearchTextFieldOnSummited(text: 'rating'));
+    await _waitForState(bloc, (state) => state.status.isSuccess);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BlocProvider<SearchBloc>.value(
+          value: bloc,
+          child: const SearchScreen(),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.text('1004번'), findsOneWidget);
+    expect(find.text('1001번'), findsOneWidget);
+    expect(find.text('1002번'), findsOneWidget);
+    for (final problemId in [1004, 1001, 1002]) {
+      final card = find.ancestor(
+        of: find.text('$problemId번'),
+        matching: find.byType(ElevatedButton),
+      );
+      expect(card, findsOneWidget);
+      expect(
+        find.descendant(of: card, matching: find.text('레이팅 미반영')),
+        problemId == 1004 ? findsOneWidget : findsNothing,
+      );
+    }
+    expect(find.textContaining('null'), findsNothing);
+    expect(tester.takeException(), isNull);
+
+    final noRatingCard = tester.widget<ElevatedButton>(
+      find.ancestor(
+        of: find.text('1004번'),
+        matching: find.byType(ElevatedButton),
+      ),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 288,
+            child: MediaQuery(
+              data: const MediaQueryData(textScaler: TextScaler.linear(2)),
+              child: noRatingCard,
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets(
     'renders exact users and optional public summaries safely',
     (tester) async {
@@ -126,14 +215,17 @@ Future<void> _waitForState(
 }
 
 final class _SearchScreenRepository extends SearchRepository {
-  _SearchScreenRepository({required this.users})
-    : super(
-        solvedApiClient: SolvedApiClient(
-          httpClient: _NoopHttpClient(),
-          useProxy: false,
-        ),
-      );
+  _SearchScreenRepository({
+    this.problems = const SearchObject(count: 0, items: []),
+    this.users = const UserSearchResult(exact: null, items: []),
+  }) : super(
+         solvedApiClient: SolvedApiClient(
+           httpClient: _NoopHttpClient(),
+           useProxy: false,
+         ),
+       );
 
+  final SearchObject<ProblemSearchItem> problems;
   final UserSearchResult users;
 
   @override
@@ -142,7 +234,7 @@ final class _SearchScreenRepository extends SearchRepository {
     int page = 1,
     required SolvedApiV4ProblemSort sort,
     required SolvedApiV4SearchDirection direction,
-  }) async => const SearchObject(count: 0, items: []);
+  }) async => problems;
 
   @override
   Future<UserSearchResult> getUsers(String query, {int page = 1}) async =>

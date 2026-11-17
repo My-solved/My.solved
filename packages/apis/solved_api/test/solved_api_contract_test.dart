@@ -67,6 +67,7 @@ void main() {
       expect(problems.items.single.problemId, 3734);
       expect(problems.items.single.title, 'RSA 인수 분해');
       expect(problems.items.single.level, 16);
+      expect(problems.items.single.givesNoRating, isFalse);
       expect(problems.items.single.tagNames, [
         '애드 혹',
         '임의 정밀도 / 큰 수 연산',
@@ -88,6 +89,59 @@ void main() {
       expect(tags.items.single.key, 'number_theory');
       expect(tags.items.single.displayName, isNull);
       expect(tags.items.single.problemCount, 1314);
+    });
+
+    test('preserves an optional legacy no-rating marker as a boolean', () {
+      const item = ProblemSearchItem(
+        problemId: 1,
+        title: 'legacy',
+        level: 0,
+        tagNames: [],
+      );
+      final endpoint = const SolvedApiV3Contract().searchProblem(
+        'legacy',
+        1,
+        'id',
+        'asc',
+      );
+      Map<String, dynamic> source({
+        Object? givesNoRating,
+        bool includeMarker = true,
+      }) =>
+          {
+            'count': 1,
+            'items': [
+              {
+                'problemId': 1,
+                'titleKo': 'legacy',
+                'level': 0,
+                'tags': <Object>[],
+                if (includeMarker) 'givesNoRating': givesNoRating,
+              },
+            ],
+          };
+
+      expect(item.givesNoRating, isNull);
+      expect(
+        endpoint
+            .decode(source(includeMarker: false))
+            .items
+            .single
+            .givesNoRating,
+        isNull,
+      );
+      expect(endpoint.decode(source()).items.single.givesNoRating, isNull);
+      expect(
+        endpoint.decode(source(givesNoRating: true)).items.single.givesNoRating,
+        isTrue,
+      );
+      for (final invalid in <Object>[0, 'false', const <Object>[]]) {
+        expect(
+          () => endpoint.decode(source(givesNoRating: invalid)),
+          throwsA(isA<TypeError>()),
+          reason: 'givesNoRating = $invalid',
+        );
+      }
     });
 
     test('keeps legacy and public user-search shapes compatible', () {
