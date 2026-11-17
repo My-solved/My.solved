@@ -1,0 +1,31 @@
+{
+  "from": "2026-11-01",
+  "to": "2026-11-17",
+  "days": [
+    {
+      "day": "2026-11-15",
+      "solvedCount": 4,
+      "maxSolvedLevel": 18,
+      "ratingDelta": 12,
+      "freezeUsed": false,
+      "streakRepaired": false
+    },
+    {
+      "day": "2026-11-17",
+      "solvedCount": 1,
+      "maxSolvedLevel": 7,
+      "ratingDelta": 0,
+      "freezeUsed": true,
+      "streakRepaired": true
+    }
+  ],
+  "maxSolvedCount": 4,
+  "currentStreak": 12,
+  "maxStreak": 365,
+  "theme": null,
+  "firstActiveDay": "2020-01-02",
+  "vacation": null,
+  "vacations": [],
+  "countedToday": true,
+  "frozenYesterday": false
+}

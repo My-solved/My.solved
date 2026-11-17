@@ -7,21 +7,17 @@ class MockSolvedApiClient extends Mock implements solved_api.SolvedApiClient {}
 
 class MockUserProfile extends Mock implements solved_api.UserProfile {}
 
-class MockOrganization extends Mock implements solved_api.Organization {}
+class MockProfileStreak extends Mock implements solved_api.ProfileStreak {}
 
-class MockBadge extends Mock implements solved_api.Badge {}
+class MockProfileTierStat extends Mock implements solved_api.ProfileTierStat {}
 
-class MockStreak extends Mock implements solved_api.Streak {}
+class MockProfileTagRating extends Mock implements solved_api.ProfileTagRating {}
 
-class MockProblem extends Mock implements solved_api.Problem {}
+class MockProfileBackgroundAsset extends Mock
+    implements solved_api.ProfileBackgroundAsset {}
 
-class MockProblemStats extends Mock implements solved_api.ProblemStat {}
-
-class MockTagRating extends Mock implements solved_api.TagRating {}
-
-class MockBackground extends Mock implements solved_api.Background {}
-
-class MockSiteStats extends Mock implements solved_api.SiteStats {}
+class MockProfileBadgeAsset extends Mock
+    implements solved_api.ProfileBadgeAsset {}
 
 void main() {
   group('UserRepository', () {
@@ -52,44 +48,6 @@ void main() {
       });
     });
 
-    group('getOrganizations', () {
-      const handle = 'w8385';
-
-      test('calls userOrganizations with correct handle', () async {
-        try {
-          await userRepository.getOrganizations(handle);
-        } catch (_) {}
-        verify(() => solvedApiClient.userOrganizations(handle)).called(1);
-      });
-
-      test('returns correct organizations on success', () async {
-        final organizations = [MockOrganization()];
-        when(() => solvedApiClient.userOrganizations(handle))
-            .thenAnswer((_) async => organizations);
-
-        expect(await userRepository.getOrganizations(handle), organizations);
-      });
-    });
-
-    group('getBadges', () {
-      const handle = 'w8385';
-
-      test('calls userAvailableBadges with correct handle', () async {
-        try {
-          await userRepository.getBadges(handle);
-        } catch (_) {}
-        verify(() => solvedApiClient.userAvailableBadges(handle)).called(1);
-      });
-
-      test('returns correct badges on success', () async {
-        final badges = [MockBadge()];
-        when(() => solvedApiClient.userAvailableBadges(handle))
-            .thenAnswer((_) async => badges);
-
-        expect(await userRepository.getBadges(handle), badges);
-      });
-    });
-
     group('getStreak', () {
       const handle = 'w8385';
       const topic = 'today-solved';
@@ -102,7 +60,7 @@ void main() {
       });
 
       test('returns correct streak on success', () async {
-        final streak = MockStreak();
+        final streak = MockProfileStreak();
         when(() => solvedApiClient.userGrass(handle, topic))
             .thenAnswer((_) async => streak);
 
@@ -121,33 +79,11 @@ void main() {
       });
 
       test('returns correct problemStats on success', () async {
-        final problemStats = [MockProblemStats()];
+        final problemStats = [MockProfileTierStat()];
         when(() => solvedApiClient.userProblemStats(handle))
             .thenAnswer((_) async => problemStats);
 
         expect(await userRepository.getProblemStats(handle), problemStats);
-      });
-    });
-
-    group('getTopProblems', () {
-      const handle = 'w8385';
-
-      test('calls userTop100 with correct handle', () async {
-        final problems = [MockProblem()];
-        when(() => solvedApiClient.userTop100(handle))
-            .thenAnswer((_) async => problems);
-
-        await userRepository.getTopProblems(handle);
-
-        verify(() => solvedApiClient.userTop100(handle)).called(1);
-      });
-
-      test('returns correct problems on success', () async {
-        final problems = [MockProblem()];
-        when(() => solvedApiClient.userTop100(handle))
-            .thenAnswer((_) async => problems);
-
-        expect(await userRepository.getTopProblems(handle), problems);
       });
     });
 
@@ -162,7 +98,7 @@ void main() {
       });
 
       test('returns correct tagRatings on success', () async {
-        final tagRatings = [MockTagRating()];
+        final tagRatings = [MockProfileTagRating()];
         when(() => solvedApiClient.userTagRatings(handle))
             .thenAnswer((_) async => tagRatings);
 
@@ -181,7 +117,7 @@ void main() {
       });
 
       test('returns correct background on success', () async {
-        final background = MockBackground();
+        final background = MockProfileBackgroundAsset();
         when(() => solvedApiClient.backgroundShow(backgroundId))
             .thenAnswer((_) async => background);
 
@@ -200,28 +136,11 @@ void main() {
       });
 
       test('returns correct badge on success', () async {
-        final badge = MockBadge();
+        final badge = MockProfileBadgeAsset();
         when(() => solvedApiClient.badgeShow(badgeId))
             .thenAnswer((_) async => badge);
 
         expect(await userRepository.getBadge(badgeId), badge);
-      });
-    });
-
-    group('getSiteStats', () {
-      test('calls siteStats', () async {
-        try {
-          await userRepository.getSiteStats();
-        } catch (_) {}
-        verify(() => solvedApiClient.siteStats()).called(1);
-      });
-
-      test('returns correct siteStats on success', () async {
-        final siteStats = MockSiteStats();
-        when(() => solvedApiClient.siteStats())
-            .thenAnswer((_) async => siteStats);
-
-        expect(await userRepository.getSiteStats(), siteStats);
       });
     });
   });
