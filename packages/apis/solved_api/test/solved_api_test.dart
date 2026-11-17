@@ -358,6 +358,13 @@ void main() {
         );
       });
 
+      test('does not close an externally-owned HTTP client', () {
+        apiClient.close();
+        apiClient.close();
+
+        verifyNever(() => httpClient.close());
+      });
+
       test('maps invalid JSON to the endpoint failure type', () async {
         when(
           () => httpClient.get(any()),

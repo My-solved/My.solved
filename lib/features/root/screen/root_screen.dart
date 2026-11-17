@@ -31,14 +31,14 @@ class RootScreen extends StatelessWidget {
         BlocProvider.value(value: rootBloc),
         BlocProvider(
           create: (context) => HomeBloc(
-            userRepository: UserRepository(),
+            userRepository: context.read<UserRepository>(),
             sharedPreferencesRepository: SharedPreferencesRepository(),
             handle: handle,
           ),
         ),
         BlocProvider(
           create: (context) => SearchBloc(
-            searchRepository: SearchRepository(),
+            searchRepository: context.read<SearchRepository>(),
             sharedPreferencesRepository: SharedPreferencesRepository(),
           ),
         ),

@@ -124,6 +124,7 @@ class SolvedApiClient {
     SolvedApiContract contract = const SolvedApiV3Contract(),
     this.requestTimeout = const Duration(seconds: 10),
   })  : _httpClient = httpClient ?? http.Client(),
+        _ownsHttpClient = httpClient == null,
         _useProxy = useProxy ?? platform.isWeb,
         _apiBaseUri = apiBaseUri == null ? null : _normalizeBaseUri(apiBaseUri),
         _proxyBaseUri =
@@ -131,11 +132,24 @@ class SolvedApiClient {
         _contract = contract;
 
   final http.Client _httpClient;
+  final bool _ownsHttpClient;
   final bool _useProxy;
   final Uri? _apiBaseUri;
   final Uri? _proxyBaseUri;
   final SolvedApiContract _contract;
   final Duration requestTimeout;
+
+  bool _isClosed = false;
+
+  /// Releases the internally-created HTTP client.
+  ///
+  /// A client supplied through the constructor remains owned by the caller and
+  /// is never closed here.
+  void close() {
+    if (_isClosed) return;
+    _isClosed = true;
+    if (_ownsHttpClient) _httpClient.close();
+  }
 
   Future<User> userShow(String handle) =>
       _get(_contract.userShow(handle), requestType: _RequestType.user);
