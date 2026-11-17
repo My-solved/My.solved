@@ -8,6 +8,9 @@ on:
     branches:
       - dev
 
+permissions:
+  contents: read
+
 env:
   JAVA_VERSION: "21.x"
   FLUTTER_VERSION: "3.29.0"
@@ -143,8 +146,17 @@ jobs:
           cd packages/repositories/shared_preferences_repository
           flutter test
 
+      - name: Test My.solved  🛰️
+        run: |
+          if find test -type f -name '*_test.dart' -print -quit 2>/dev/null | grep -q .; then
+            flutter test
+          else
+            echo "No root tests found."
+          fi
+
   build:
     needs: [ test ]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
     name: Deploy Web 🌐
     runs-on: ubuntu-latest
     env:
