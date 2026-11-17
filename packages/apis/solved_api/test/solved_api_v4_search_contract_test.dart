@@ -131,6 +131,10 @@ void main() {
       expect(actual.items[0].givesNoRating, isFalse);
       expect(actual.items[0].noRatingReasons, isEmpty);
       expect(actual.items[0].noRatingWarnings, isEmpty);
+      expect(
+        actual.items.map((item) => item.contests!.length),
+        [0, 0, 0, 0],
+      );
       expect(actual.items.map((item) => item.tags!.length), [2, 0, 0, 0]);
       expect(actual.items[0].tags![0].id, 1);
       expect(actual.items[0].tags![0].key, 'math');
@@ -308,6 +312,172 @@ void main() {
         () => titles[0] = titles[1],
         throwsUnsupportedError,
       );
+    });
+
+    test('requires the documented contest array and fields', () {
+      final endpoint = contract.searchProblems('sample');
+      Map<String, dynamic> source() =>
+          jsonDecode(fixture('v4/search_problems.json'))
+              as Map<String, dynamic>;
+      Map<String, dynamic> firstProblem(Map<String, dynamic> body) =>
+          (body['problems'] as List).first as Map<String, dynamic>;
+      Map<String, dynamic> contest() => {
+        'id': 1,
+        'displayId': 'contest',
+        'name': 'Contest',
+        'abbreviation': null,
+      };
+
+      final missing = source();
+      firstProblem(missing).remove('contests');
+      expect(() => endpoint.decode(missing), throwsFormatException);
+
+      for (final invalid in <Object?>[
+        null,
+        0,
+        false,
+        'contest',
+        const <String, Object?>{},
+      ]) {
+        final malformed = source();
+        firstProblem(malformed)['contests'] = invalid;
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'contests = $invalid',
+        );
+      }
+
+      final invalidItem = source();
+      firstProblem(invalidItem)['contests'] = [0];
+      expect(() => endpoint.decode(invalidItem), throwsFormatException);
+
+      for (final field in ['id', 'displayId', 'name', 'abbreviation']) {
+        final malformed = source();
+        firstProblem(malformed)['contests'] = [contest()..remove(field)];
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'contest $field missing',
+        );
+      }
+
+      for (final invalid in <Object?>[
+        null,
+        '1',
+        false,
+        const <String, Object?>{},
+        const <Object>[],
+        double.nan,
+        double.infinity,
+        double.negativeInfinity,
+      ]) {
+        final malformed = source();
+        firstProblem(malformed)['contests'] = [contest()..['id'] = invalid];
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'contest id = $invalid',
+        );
+      }
+
+      for (final field in ['displayId', 'name']) {
+        for (final invalid in <Object?>[
+          null,
+          0,
+          false,
+          const <String, Object?>{},
+          const <Object>[],
+        ]) {
+          final malformed = source();
+          firstProblem(malformed)['contests'] = [contest()..[field] = invalid];
+          expect(
+            () => endpoint.decode(malformed),
+            throwsFormatException,
+            reason: 'contest $field = $invalid',
+          );
+        }
+      }
+
+      for (final invalid in <Object?>[
+        0,
+        false,
+        const <String, Object?>{},
+        const <Object>[],
+      ]) {
+        final malformed = source();
+        firstProblem(malformed)['contests'] = [
+          contest()..['abbreviation'] = invalid,
+        ];
+        expect(
+          () => endpoint.decode(malformed),
+          throwsFormatException,
+          reason: 'contest abbreviation = $invalid',
+        );
+      }
+
+      final malformedAfterValid = source();
+      firstProblem(malformedAfterValid)['contests'] = [
+        contest(),
+        contest()..['name'] = false,
+      ];
+      expect(() => endpoint.decode(malformedAfterValid), throwsFormatException);
+    });
+
+    test('preserves contest order, duplicates, nullable and raw values', () {
+      final body =
+          jsonDecode(fixture('v4/search_problems.json'))
+              as Map<String, dynamic>;
+      final firstProblem =
+          (body['problems'] as List).first as Map<String, dynamic>;
+      Map<String, dynamic> firstContest() => {
+        'id': -1.5,
+        'displayId': ' 대회-α ',
+        'name': ' 첫째 ',
+        'abbreviation': ' 약칭 ',
+        'futureContestField': true,
+      };
+      final sourceContests = <Map<String, dynamic>>[
+        firstContest(),
+        {'id': 0, 'displayId': '', 'name': '', 'abbreviation': null},
+        firstContest(),
+        {'id': 0.25, 'displayId': 'β', 'name': '마지막', 'abbreviation': ''},
+      ];
+      firstProblem['contests'] = sourceContests;
+
+      final item = contract.searchProblems('sample').decode(body).items.first;
+      final contests = item.contests!;
+      expect(contests.map((contest) => contest.id), [-1.5, 0, -1.5, 0.25]);
+      expect(contests.map((contest) => contest.displayId), [
+        ' 대회-α ',
+        '',
+        ' 대회-α ',
+        'β',
+      ]);
+      expect(contests.map((contest) => contest.name), [
+        ' 첫째 ',
+        '',
+        ' 첫째 ',
+        '마지막',
+      ]);
+      expect(contests.map((contest) => contest.abbreviation), [
+        ' 약칭 ',
+        null,
+        ' 약칭 ',
+        '',
+      ]);
+
+      sourceContests[0]['name'] = 'mutated';
+      sourceContests.add({
+        'id': 2,
+        'displayId': 'later',
+        'name': 'later',
+        'abbreviation': null,
+      });
+      expect(contests.first.name, ' 첫째 ');
+      expect(contests, hasLength(4));
+      expect(() => contests.add(contests.first), throwsUnsupportedError);
+      expect(() => contests[0] = contests[1], throwsUnsupportedError);
     });
 
     test('requires the documented full tag array and fields', () {
@@ -1211,6 +1381,7 @@ void main() {
               'noRatingReasons': <Object>[],
               'noRatingWarnings': <Object>[],
               'titles': <Object>[],
+              'contests': <Object>[],
               'tags': <Object>[],
             },
           ],
@@ -1239,6 +1410,7 @@ void main() {
                 'noRatingReasons': <Object>[],
                 'noRatingWarnings': <Object>[],
                 'titles': <Object>[],
+                'contests': <Object>[],
                 'tags': <Object>[],
               },
             ],
