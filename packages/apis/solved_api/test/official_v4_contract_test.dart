@@ -77,6 +77,7 @@ void main() {
       _required(profileSchema),
       containsAll([
         'tier',
+        'profileImageUrl',
         'bio',
         'rating',
         'solvedCount',
@@ -97,6 +98,10 @@ void main() {
     );
     final profileProperties = _properties(profileSchema);
     expect(_map(profileProperties['tier'])['type'], ['integer', 'null']);
+    expect(_map(profileProperties['profileImageUrl'])['type'], [
+      'string',
+      'null',
+    ]);
     final bio = _map(profileProperties['bio']);
     expect(bio['type'], ['string', 'null']);
     for (final constraint in ['format', 'minLength', 'maxLength', 'pattern']) {
@@ -506,6 +511,8 @@ void main() {
       ]);
       final properties = _properties(userSchema);
       expect(_map(properties['id']), {'type': 'number'});
+      expect(_map(properties['tier'])['type'], ['integer', 'null']);
+      expect(_map(properties['profileImageUrl'])['type'], ['string', 'null']);
       for (final field in [
         'rank',
         'rating',
