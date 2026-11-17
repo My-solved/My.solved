@@ -97,7 +97,11 @@ void main() {
       ]),
     );
     final profileProperties = _properties(profileSchema);
-    expect(_map(profileProperties['tier'])['type'], ['integer', 'null']);
+    expect(_map(profileProperties['tier']), {
+      'type': ['integer', 'null'],
+      'minimum': 0,
+      'maximum': 31,
+    });
     expect(_map(profileProperties['profileImageUrl'])['type'], [
       'string',
       'null',
@@ -511,7 +515,11 @@ void main() {
       ]);
       final properties = _properties(userSchema);
       expect(_map(properties['id']), {'type': 'number'});
-      expect(_map(properties['tier'])['type'], ['integer', 'null']);
+      expect(_map(properties['tier']), {
+        'type': ['integer', 'null'],
+        'minimum': 0,
+        'maximum': 31,
+      });
       expect(_map(properties['profileImageUrl'])['type'], ['string', 'null']);
       for (final field in [
         'rank',

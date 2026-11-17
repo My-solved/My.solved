@@ -2040,6 +2040,31 @@ void main() {
       );
     });
 
+    test('enforces documented tier bounds in every user', () {
+      final endpoint = contract.searchUsers('index');
+
+      for (final location in ['exact', 'items']) {
+        for (final value in <int?>[null, 0, 31]) {
+          final valid = source();
+          item(valid, location)['tier'] = value;
+          final actual = endpoint.decode(valid);
+          final decoded =
+              location == 'exact' ? actual.exact! : actual.items.first;
+          expect(decoded.tier, value, reason: '$location.tier = $value');
+        }
+
+        for (final value in [-1, 32]) {
+          final invalid = source();
+          item(invalid, location)['tier'] = value;
+          expect(
+            () => endpoint.decode(invalid),
+            throwsFormatException,
+            reason: '$location.tier = $value',
+          );
+        }
+      }
+    });
+
     test('requires a finite raw id in every v4 user item', () {
       final endpoint = contract.searchUsers('index');
 
