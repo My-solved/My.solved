@@ -151,6 +151,8 @@ void main() {
         ' https://gateway.example/solved/v4/',
         'https://user@gateway.example/solved/v4/',
         'https://@gateway.example/solved/v4/',
+        'https://solved.ac/solved/v4/',
+        'https://api.solved.ac/solved/v4/',
         'https://gateway.example/solved/v4/?region=kr',
         'https://gateway.example/solved/v4/#fragment',
         'https://gateway.example/solved/v4',

@@ -66,6 +66,11 @@ final class SolvedApiGatewayConfig {
         '$solvedApiV4ProxyBaseUriDefine must be an absolute URI',
       );
     }
+    if (_isSolvedAcHost(uri.host)) {
+      throw const FormatException(
+        '$solvedApiV4ProxyBaseUriDefine must point to solved-proxy, not solved.ac',
+      );
+    }
     if (uri.userInfo.isNotEmpty ||
         v4ProxyBaseUri.contains('@') ||
         uri.hasQuery ||
@@ -130,6 +135,9 @@ SolvedApiMode _parseMode(String value) {
 
 bool _isLoopbackHost(String host) =>
     host == 'localhost' || host == '127.0.0.1' || host == '::1';
+
+bool _isSolvedAcHost(String host) =>
+    host == 'solved.ac' || host.endsWith('.solved.ac');
 
 bool _hasCanonicalGatewayPath(String value) {
   final schemeSeparator = value.indexOf('://');
