@@ -107,6 +107,12 @@ final class SolvedApiGatewayConfig {
 
   bool get hasV4Gateway => mode == SolvedApiMode.officialV4;
 
+  /// Whether the validated v4 gateway itself uses an HTTP loopback boundary.
+  ///
+  /// The parser's broad debug permission is intentionally not retained. Only
+  /// an accepted HTTP loopback URI carries this effective capability forward.
+  bool get usesInsecureV4Loopback => v4ProxyBaseUri?.scheme == 'http';
+
   SolvedApiClient createClient({required http.Client httpClient}) {
     switch (mode) {
       case SolvedApiMode.legacyV3:
@@ -136,8 +142,14 @@ SolvedApiMode _parseMode(String value) {
 bool _isLoopbackHost(String host) =>
     host == 'localhost' || host == '127.0.0.1' || host == '::1';
 
-bool _isSolvedAcHost(String host) =>
-    host == 'solved.ac' || host.endsWith('.solved.ac');
+bool _isSolvedAcHost(String host) {
+  var canonicalHost = host.toLowerCase();
+  while (canonicalHost.endsWith('.')) {
+    canonicalHost = canonicalHost.substring(0, canonicalHost.length - 1);
+  }
+  return canonicalHost == 'solved.ac' ||
+      canonicalHost.endsWith('.solved.ac');
+}
 
 bool _hasCanonicalGatewayPath(String value) {
   final schemeSeparator = value.indexOf('://');

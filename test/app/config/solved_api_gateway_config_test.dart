@@ -13,6 +13,7 @@ void main() {
       expect(config.mode, SolvedApiMode.legacyV3);
       expect(config.hasV4Gateway, isFalse);
       expect(config.v4ProxyBaseUri, isNull);
+      expect(config.usesInsecureV4Loopback, isFalse);
     });
 
     test('keeps the explicit legacy mode on v3 transport', () {
@@ -28,6 +29,7 @@ void main() {
       expect(config.mode, SolvedApiMode.legacyV3);
       expect(config.hasV4Gateway, isFalse);
       expect(config.v4ProxyBaseUri, isNull);
+      expect(config.usesInsecureV4Loopback, isFalse);
       expect(() => client.v4SearchTags('dp'), throwsStateError);
     });
 
@@ -52,6 +54,7 @@ void main() {
 
       expect(config.mode, SolvedApiMode.officialV4);
       expect(config.hasV4Gateway, isTrue);
+      expect(config.usesInsecureV4Loopback, isFalse);
       expect(result.items, isEmpty);
       expect(requestedUri, Uri.parse('https://gateway.example/solved/v4/tags'));
     });
@@ -117,14 +120,13 @@ void main() {
     test('allows loopback HTTP only when explicitly enabled', () {
       for (final host in ['localhost', '127.0.0.1', '[::1]']) {
         final value = 'http://$host:3000/solved/v4/';
-        expect(
-          SolvedApiGatewayConfig.parse(
-            mode: solvedApiOfficialV4Mode,
-            v4ProxyBaseUri: value,
-            allowInsecureLoopback: true,
-          ).v4ProxyBaseUri,
-          Uri.parse(value),
+        final config = SolvedApiGatewayConfig.parse(
+          mode: solvedApiOfficialV4Mode,
+          v4ProxyBaseUri: value,
+          allowInsecureLoopback: true,
         );
+        expect(config.v4ProxyBaseUri, Uri.parse(value));
+        expect(config.usesInsecureV4Loopback, isTrue);
         expect(
           () => SolvedApiGatewayConfig.parse(
             mode: solvedApiOfficialV4Mode,
@@ -144,6 +146,16 @@ void main() {
       );
     });
 
+    test('does not retain broad loopback permission for HTTPS gateways', () {
+      final config = SolvedApiGatewayConfig.parse(
+        mode: solvedApiOfficialV4Mode,
+        v4ProxyBaseUri: 'https://gateway.example/solved/v4/',
+        allowInsecureLoopback: true,
+      );
+
+      expect(config.usesInsecureV4Loopback, isFalse);
+    });
+
     test('rejects non-loopback HTTP and malformed gateway boundaries', () {
       const invalidValues = <String>[
         'http://gateway.example/solved/v4/',
@@ -153,6 +165,9 @@ void main() {
         'https://@gateway.example/solved/v4/',
         'https://solved.ac/solved/v4/',
         'https://api.solved.ac/solved/v4/',
+        'https://solved.ac./solved/v4/',
+        'https://API.SOLVED.AC./solved/v4/',
+        'https://api.solved.ac../solved/v4/',
         'https://gateway.example/solved/v4/?region=kr',
         'https://gateway.example/solved/v4/#fragment',
         'https://gateway.example/solved/v4',
