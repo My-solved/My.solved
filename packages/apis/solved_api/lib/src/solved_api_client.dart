@@ -271,7 +271,7 @@ class SolvedApiClient {
     );
   }
 
-  Future<SearchObject<ProblemSearchItem>> v4SearchProblems(
+  Future<ProblemSearchResult> v4SearchProblems(
     String query, {
     int page = 1,
     SolvedApiV4ProblemSort sort = SolvedApiV4ProblemSort.id,

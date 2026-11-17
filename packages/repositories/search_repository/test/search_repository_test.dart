@@ -21,9 +21,18 @@ void main() {
       const page = 1;
       const sort = solved_api.SolvedApiV4ProblemSort.level;
       const direction = solved_api.SolvedApiV4SearchDirection.desc;
-      const result = solved_api.SearchObject<solved_api.ProblemSearchItem>(
+      const legacyResult =
+          solved_api.SearchObject<solved_api.ProblemSearchItem>(
+            count: 0,
+            items: [],
+          );
+      const v4Result = solved_api.ProblemSearchResult(
         count: 0,
         items: [],
+        page: 1,
+        pageSize: 50,
+        diagnostics: null,
+        seed: null,
       );
 
       test('maps typed options to the legacy v3 request', () async {
@@ -34,7 +43,7 @@ void main() {
             sort.value,
             direction.value,
           ),
-        ).thenAnswer((_) async => result);
+        ).thenAnswer((_) async => legacyResult);
 
         expect(
           await searchRepository.getProblems(
@@ -43,7 +52,7 @@ void main() {
             sort: sort,
             direction: direction,
           ),
-          same(result),
+          same(legacyResult),
         );
         verify(
           () => solvedApiClient.searchProblem(
@@ -72,7 +81,7 @@ void main() {
             sort: sort,
             direction: direction,
           ),
-        ).thenAnswer((_) async => result);
+        ).thenAnswer((_) async => v4Result);
 
         expect(
           await searchRepository.getProblems(
@@ -81,7 +90,7 @@ void main() {
             sort: sort,
             direction: direction,
           ),
-          same(result),
+          same(v4Result),
         );
         verify(
           () => solvedApiClient.v4SearchProblems(

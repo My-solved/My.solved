@@ -177,8 +177,67 @@ void main() {
       'page',
       'pageSize',
     ]);
-    final problemItem =
-        _map(_map(_properties(problemSchema)['problems'])['items']);
+    final problemResponseProperties = _properties(problemSchema);
+    for (final field in ['page', 'pageSize']) {
+      expect(_map(problemResponseProperties[field]), {'type': 'number'});
+    }
+    final diagnostics = _map(problemResponseProperties['diagnostics']);
+    expect(diagnostics['type'], 'array');
+    for (final constraint in [
+      'minItems',
+      'maxItems',
+      'uniqueItems',
+      'description',
+    ]) {
+      expect(diagnostics.containsKey(constraint), isFalse);
+    }
+    final diagnosticItem = _map(diagnostics['items']);
+    expect(diagnosticItem['type'], 'object');
+    expect(_required(diagnosticItem), [
+      'start',
+      'end',
+      'severity',
+      'code',
+      'messageKey',
+      'message',
+    ]);
+    expect(diagnosticItem.containsKey('additionalProperties'), isFalse);
+    final diagnosticProperties = _properties(diagnosticItem);
+    for (final field in ['start', 'end']) {
+      expect(_map(diagnosticProperties[field]), {'type': 'number'});
+    }
+    expect(_map(diagnosticProperties['severity']), {
+      'type': 'string',
+      'enum': ['error', 'warning'],
+    });
+    expect(_map(diagnosticProperties['code']), {
+      'type': 'string',
+      'enum': [
+        'unknown-filter',
+        'unimplemented-filter',
+        'empty-value',
+        'invalid-value',
+        'unknown-lang',
+        'invalid-boolean',
+        'unclosed-quote',
+        'unmatched-paren',
+        'dangling-operator',
+        'ignored-input',
+        'unknown-handle',
+        'unknown-tag',
+        'me-without-viewer',
+      ],
+    });
+    for (final field in ['messageKey', 'message']) {
+      expect(_map(diagnosticProperties[field]), {'type': 'string'});
+    }
+    final diagnosticData = _map(diagnosticProperties['data']);
+    expect(diagnosticData['type'], 'object');
+    expect(_map(diagnosticData['additionalProperties']), {'type': 'string'});
+    expect(_map(problemResponseProperties['seed']), {'type': 'string'});
+    final problemItem = _map(
+      _map(problemResponseProperties['problems'])['items'],
+    );
     expect(
       _required(problemItem),
       containsAll([

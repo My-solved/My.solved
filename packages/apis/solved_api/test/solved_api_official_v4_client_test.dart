@@ -81,7 +81,7 @@ void main() {
         );
         final background = await client.v4BackgroundShow('anniversary_1st');
         final badge = await client.v4BadgeShow('boardgame');
-        final problems = await client.v4SearchProblems(
+        final ProblemSearchResult problems = await client.v4SearchProblems(
           'number',
           page: 2,
           sort: SolvedApiV4ProblemSort.level,
@@ -102,6 +102,10 @@ void main() {
         expect(background?.key, 'anniversary_1st');
         expect(badge.key, 'boardgame');
         expect(problems.count, 4);
+        expect(problems.page, 1);
+        expect(problems.pageSize, 50);
+        expect(problems.diagnostics, isNull);
+        expect(problems.seed, isNull);
         expect(users.exact?.handle, 'index');
         expect(tags.items.single.key, 'number_theory');
 
