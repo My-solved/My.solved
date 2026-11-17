@@ -1,0 +1,3438 @@
+{
+  "source": "https://backstage.solved.ac/api/v4/openapi",
+  "openapi": "3.1.0",
+  "info": {
+    "title": "solved.ac API",
+    "version": "0.0.0",
+    "description": "Every request needs a client's `x-client-id` and `x-client-secret`.\n\nEach operation's `x-access` says who may call it. `public` answers any app; it sees the user behind a user token only when the token holds the operation's `scope`, and otherwise answers as to no user. `user` acts for a user and needs a user token holding the named `scope`: without one `401` with code `USER_TOKEN_REQUIRED`, and with one lacking the scope `403` with `INSUFFICIENT_SCOPE`.\n\nUser tokens come from OAuth 2.0's authorization code grant with PKCE (S256 only). Send the user to `https://solved.ac/oauth/authorize` with `response_type=code`, `client_id`, `redirect_uri` (exactly one registered in the console), `scope` (space-separated; `profile` is always included), `state`, `code_challenge` and `code_challenge_method=S256`. Exchange the code at `POST /api/v4/oauth/token`, authenticating as the app, and send the access token as `Authorization: Bearer` beside the app's own credentials. A token works only for the app it was issued to. Users see the apps they granted, and disconnect them, in their settings.\n\nRate limits are token buckets. Each caller (a signed-in user, or an address) has a budget of 300 units per client, refilled at 1 per second, and a third-party client also has one budget of the same size shared by all its callers; both scale with the client's multiplier. A request costs 1 unit; problem search costs 3 and vote listings 2. Sign-in, sign-up, recovery and other actions a person takes have their own small limits. Past a budget, requests get `429` with `Retry-After`; responses carry `X-RateLimit-Limit` and `X-RateLimit-Remaining`.\n\nProblem searches without a user, which today is every app's, are held to queries of 100 characters and 8 terms; past them they get `401` with code `SIGN_IN_REQUIRED` and `details.limit` naming the limit. Leaderboards page freely for apps."
+  },
+  "servers": [
+    {
+      "url": "https://solved.ac"
+    }
+  ],
+  "security": null,
+  "securitySchemes": null,
+  "allPaths": [
+    "/api/v4/account/backgrounds",
+    "/api/v4/account/bans",
+    "/api/v4/account/bookmark-favorites",
+    "/api/v4/account/bookmark-favorites/{handle}/{slug}",
+    "/api/v4/account/bookmarks",
+    "/api/v4/account/bookmarks/order",
+    "/api/v4/account/bookmarks/{slug}",
+    "/api/v4/account/bookmarks/{slug}/problems",
+    "/api/v4/account/bookmarks/{slug}/problems/remove",
+    "/api/v4/account/bookmarks/{slug}/problems/{problemId}",
+    "/api/v4/account/collection",
+    "/api/v4/account/consents",
+    "/api/v4/account/items",
+    "/api/v4/account/profile",
+    "/api/v4/account/settings",
+    "/api/v4/account/standing",
+    "/api/v4/account/wallet",
+    "/api/v4/account/wallet/history",
+    "/api/v4/achievements",
+    "/api/v4/achievements/for-problem/{problemId}",
+    "/api/v4/achievements/items/{kind}/{key}",
+    "/api/v4/achievements/items/{kind}/{key}/holders",
+    "/api/v4/affiliations/{id}",
+    "/api/v4/bookmarks",
+    "/api/v4/health",
+    "/api/v4/help/{slug}",
+    "/api/v4/me",
+    "/api/v4/me/emoticons",
+    "/api/v4/me/tag-progress",
+    "/api/v4/oauth/revoke",
+    "/api/v4/oauth/token",
+    "/api/v4/policies/{slug}",
+    "/api/v4/policies/{slug}/{ref}",
+    "/api/v4/posts/help",
+    "/api/v4/posts/help/page",
+    "/api/v4/posts/notice",
+    "/api/v4/posts/notice/{slug}",
+    "/api/v4/problems",
+    "/api/v4/problems/{problemId}",
+    "/api/v4/problems/{problemId}/reports",
+    "/api/v4/problems/{problemId}/votes",
+    "/api/v4/problems/{problemId}/votes/me",
+    "/api/v4/problems/{problemId}/votes/summary",
+    "/api/v4/rankings/affiliation-board",
+    "/api/v4/rankings/affiliations",
+    "/api/v4/rankings/affiliations/{affiliationId}",
+    "/api/v4/rankings/regions",
+    "/api/v4/rankings/regions/{countryCode}",
+    "/api/v4/rankings/reverse-rivals",
+    "/api/v4/rankings/rivals",
+    "/api/v4/rankings/tags",
+    "/api/v4/rankings/tags/{key}",
+    "/api/v4/rankings/users",
+    "/api/v4/rankings/users/search",
+    "/api/v4/search/analyze",
+    "/api/v4/search/random-problem",
+    "/api/v4/search/suggest",
+    "/api/v4/site/stats",
+    "/api/v4/sources",
+    "/api/v4/sources/contests/{id}",
+    "/api/v4/sources/groups/{id}",
+    "/api/v4/sources/oj/{ojId}/contests/{nativeId}",
+    "/api/v4/sources/oj/{ojId}/groups/{nativeId}",
+    "/api/v4/tags",
+    "/api/v4/tags/{key}",
+    "/api/v4/users/{handle}",
+    "/api/v4/users/{handle}/achievements",
+    "/api/v4/users/{handle}/achievements/summary",
+    "/api/v4/users/{handle}/activity/days",
+    "/api/v4/users/{handle}/activity/feed",
+    "/api/v4/users/{handle}/badge-stand",
+    "/api/v4/users/{handle}/bookmarks",
+    "/api/v4/users/{handle}/bookmarks/{slug}",
+    "/api/v4/users/{handle}/collection",
+    "/api/v4/users/{handle}/contributions",
+    "/api/v4/users/{handle}/rating/history",
+    "/api/v4/users/{handle}/reputation",
+    "/api/v4/users/{handle}/reputation/log",
+    "/api/v4/users/{handle}/tags/{key}/histogram"
+  ],
+  "paths": {
+    "/api/v4/health": {
+      "get": {
+        "x-access": {
+          "class": "open"
+        },
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "Service health status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "ok",
+                        "degraded",
+                        "down"
+                      ]
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "timestamp"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v4/oauth/token": {
+      "post": {
+        "x-access": {
+          "class": "app"
+        },
+        "summary": "Exchange an authorization code, or a refresh token, for tokens",
+        "description": "The app authenticates as itself: `x-client-id` and `x-client-secret`, or HTTP Basic with the same pair. The body is `application/x-www-form-urlencoded` (or JSON) with:\n\n- `grant_type=authorization_code`: `code`, `redirect_uri` (exactly the one the authorization request named) and `code_verifier` (PKCE, S256).\n- `grant_type=refresh_token`: `refresh_token`, and optionally `scope` to narrow what the new tokens carry.\n\nAn access token lasts an hour. A refresh token comes only with `offline.access`, lasts 90 days, and is spent when used: each refresh returns a new one. A refresh token presented a second time ends that sign-in, every token of it, on the assumption that it was copied.",
+        "responses": {
+          "200": {
+            "description": "The tokens. Send the access token as `Authorization: Bearer`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "access_token": {
+                      "type": "string"
+                    },
+                    "token_type": {
+                      "type": "string",
+                      "enum": [
+                        "Bearer"
+                      ]
+                    },
+                    "expires_in": {
+                      "type": "number"
+                    },
+                    "refresh_token": {
+                      "type": "string"
+                    },
+                    "scope": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "access_token",
+                    "token_type",
+                    "expires_in",
+                    "scope"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`invalid_request`, `invalid_grant`, `invalid_scope` or `unsupported_grant_type` (RFC 6749 §5.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "error_description": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`invalid_client`.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "error_description": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v4/problems": {
+      "get": {
+        "x-access": {
+          "class": "public"
+        },
+        "summary": "Paginated problem list (page size fixed at 50)",
+        "parameters": [
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "id",
+                "level",
+                "solved",
+                "average_try",
+                "random"
+              ],
+              "default": "id"
+            },
+            "required": false,
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "asc"
+            },
+            "required": false,
+            "name": "direction",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": false,
+            "name": "seed",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page of problems with localized titles.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "problems": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "number"
+                          },
+                          "problemId": {
+                            "type": "number"
+                          },
+                          "subId": {
+                            "type": "string"
+                          },
+                          "level": {
+                            "type": "number"
+                          },
+                          "levelAverage": {
+                            "type": "number"
+                          },
+                          "levelStdev": {
+                            "type": "number"
+                          },
+                          "isStandard": {
+                            "type": "boolean"
+                          },
+                          "votedUserCount": {
+                            "type": "number"
+                          },
+                          "effectiveVoteCount": {
+                            "type": "number"
+                          },
+                          "solvedUserCount": {
+                            "type": "number"
+                          },
+                          "givesNoRating": {
+                            "type": "boolean"
+                          },
+                          "noRatingReasons": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "unofficial",
+                                "legacy",
+                                "staff",
+                                "unsettled"
+                              ]
+                            }
+                          },
+                          "noRatingWarnings": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "same",
+                                    "searchable",
+                                    "wrong-inputs",
+                                    "insufficient-conditions",
+                                    "no-special-judge",
+                                    "wrong-conditions",
+                                    "wrong-statement"
+                                  ]
+                                },
+                                "problem": {
+                                  "type": [
+                                    "object",
+                                    "null"
+                                  ],
+                                  "properties": {
+                                    "problemId": {
+                                      "type": "number"
+                                    },
+                                    "subId": {
+                                      "type": "string"
+                                    },
+                                    "level": {
+                                      "type": "number"
+                                    },
+                                    "effectiveVoteCount": {
+                                      "type": "number"
+                                    },
+                                    "givesNoRating": {
+                                      "type": "boolean"
+                                    },
+                                    "isStandard": {
+                                      "type": "boolean"
+                                    },
+                                    "userStatus": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ],
+                                      "enum": [
+                                        "solved",
+                                        "partial",
+                                        "tried",
+                                        null
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "problemId",
+                                    "subId",
+                                    "level",
+                                    "effectiveVoteCount",
+                                    "givesNoRating",
+                                    "isStandard",
+                                    "userStatus"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "type",
+                                "problem"
+                              ]
+                            }
+                          },
+                          "titles": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "language": {
+                                  "type": "string"
+                                },
+                                "title": {
+                                  "type": "string"
+                                },
+                                "isOriginal": {
+                                  "type": "boolean"
+                                },
+                                "latex": {
+                                  "type": "boolean"
+                                },
+                                "html": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "language",
+                                "title",
+                                "isOriginal",
+                                "latex",
+                                "html"
+                              ]
+                            }
+                          },
+                          "userStatus": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "enum": [
+                              "solved",
+                              "partial",
+                              "tried",
+                              null
+                            ]
+                          },
+                          "contests": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "number"
+                                },
+                                "displayId": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                },
+                                "abbreviation": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "displayId",
+                                "name",
+                                "abbreviation"
+                              ]
+                            }
+                          },
+                          "tags": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "number"
+                                },
+                                "key": {
+                                  "type": "string"
+                                },
+                                "isMeta": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "key",
+                                "isMeta"
+                              ]
+                            }
+                          },
+                          "viewerFolders": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "slug": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                },
+                                "color": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ],
+                                  "enum": [
+                                    "red",
+                                    "violet",
+                                    "blue",
+                                    "teal",
+                                    "lime",
+                                    "yellow",
+                                    "orange",
+                                    null
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "slug",
+                                "name",
+                                "color"
+                              ]
+                            }
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "problemId",
+                          "subId",
+                          "level",
+                          "levelAverage",
+                          "levelStdev",
+                          "isStandard",
+                          "votedUserCount",
+                          "effectiveVoteCount",
+                          "solvedUserCount",
+                          "givesNoRating",
+                          "noRatingReasons",
+                          "noRatingWarnings",
+                          "titles",
+                          "userStatus",
+                          "contests",
+                          "tags",
+                          "viewerFolders"
+                        ]
+                      }
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "page": {
+                      "type": "number"
+                    },
+                    "pageSize": {
+                      "type": "number"
+                    },
+                    "diagnostics": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "start": {
+                            "type": "number"
+                          },
+                          "end": {
+                            "type": "number"
+                          },
+                          "severity": {
+                            "type": "string",
+                            "enum": [
+                              "error",
+                              "warning"
+                            ]
+                          },
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "unknown-filter",
+                              "unimplemented-filter",
+                              "empty-value",
+                              "invalid-value",
+                              "unknown-lang",
+                              "invalid-boolean",
+                              "unclosed-quote",
+                              "unmatched-paren",
+                              "dangling-operator",
+                              "ignored-input",
+                              "unknown-handle",
+                              "unknown-tag",
+                              "me-without-viewer"
+                            ]
+                          },
+                          "messageKey": {
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "data": {
+                            "type": "object",
+                            "additionalProperties": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": [
+                          "start",
+                          "end",
+                          "severity",
+                          "code",
+                          "messageKey",
+                          "message"
+                        ]
+                      }
+                    },
+                    "seed": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "problems",
+                    "total",
+                    "page",
+                    "pageSize"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v4/rankings/users/search": {
+      "get": {
+        "x-access": {
+          "class": "public"
+        },
+        "summary": "Users by handle prefix, with their rank on the overall board",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "q",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "rating",
+                "solved",
+                "contribution"
+              ],
+              "default": "rating"
+            },
+            "required": false,
+            "name": "sort",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Up to 10, highest on the board first; none under 2 characters.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "exact": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "number"
+                        },
+                        "handle": {
+                          "type": "string"
+                        },
+                        "tier": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 0,
+                          "maximum": 31
+                        },
+                        "profileImageUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "uri"
+                        },
+                        "rank": {
+                          "type": "integer"
+                        },
+                        "rating": {
+                          "type": "integer"
+                        },
+                        "solvedCount": {
+                          "type": "integer"
+                        },
+                        "voteCount": {
+                          "type": "integer"
+                        },
+                        "reputation": {
+                          "type": "integer"
+                        },
+                        "class": {
+                          "type": "integer"
+                        },
+                        "classPlus": {
+                          "type": "boolean"
+                        },
+                        "tagRating": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
+                        "globalRank": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
+                        "page": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "handle",
+                        "tier",
+                        "profileImageUrl",
+                        "rank",
+                        "rating",
+                        "solvedCount",
+                        "voteCount",
+                        "reputation",
+                        "class",
+                        "classPlus",
+                        "tagRating",
+                        "globalRank",
+                        "page"
+                      ]
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "number"
+                          },
+                          "handle": {
+                            "type": "string"
+                          },
+                          "tier": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ],
+                            "minimum": 0,
+                            "maximum": 31
+                          },
+                          "profileImageUrl": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "format": "uri"
+                          },
+                          "rank": {
+                            "type": "integer"
+                          },
+                          "rating": {
+                            "type": "integer"
+                          },
+                          "solvedCount": {
+                            "type": "integer"
+                          },
+                          "voteCount": {
+                            "type": "integer"
+                          },
+                          "reputation": {
+                            "type": "integer"
+                          },
+                          "class": {
+                            "type": "integer"
+                          },
+                          "classPlus": {
+                            "type": "boolean"
+                          },
+                          "tagRating": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "globalRank": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "page": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "handle",
+                          "tier",
+                          "profileImageUrl",
+                          "rank",
+                          "rating",
+                          "solvedCount",
+                          "voteCount",
+                          "reputation",
+                          "class",
+                          "classPlus",
+                          "tagRating",
+                          "globalRank",
+                          "page"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "exact",
+                    "items"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v4/search/suggest": {
+      "get": {
+        "x-access": {
+          "class": "public"
+        },
+        "summary": "Values the search box can offer for a filter",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "topic",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "default": ""
+            },
+            "required": false,
+            "name": "value",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Up to eight, best first; none for a filter this has no list for.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "suggestions": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "type": "string"
+                          },
+                          "detail": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "tier": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "value",
+                          "detail",
+                          "tier"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "suggestions"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v4/tags": {
+      "get": {
+        "x-access": {
+          "class": "public"
+        },
+        "summary": "All public (non-hidden) tags with their immediate parent keys",
+        "responses": {
+          "200": {
+            "description": "Every tag. It changes rarely, so cache it.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tags": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "number"
+                          },
+                          "key": {
+                            "type": "string"
+                          },
+                          "isMeta": {
+                            "type": "boolean"
+                          },
+                          "parents": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "names": {
+                            "type": "object",
+                            "additionalProperties": {
+                              "type": "string"
+                            }
+                          },
+                          "aliases": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "rated": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "key",
+                          "isMeta",
+                          "parents",
+                          "names",
+                          "aliases",
+                          "rated"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "tags"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v4/tags/{key}": {
+      "get": {
+        "x-access": {
+          "class": "public"
+        },
+        "summary": "One tag's page",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The tag.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "number"
+                    },
+                    "key": {
+                      "type": "string"
+                    },
+                    "names": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "aliases": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "parents": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string"
+                          },
+                          "names": {
+                            "type": "object",
+                            "additionalProperties": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "names"
+                        ]
+                      }
+                    },
+                    "children": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string"
+                          },
+                          "names": {
+                            "type": "object",
+                            "additionalProperties": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "names"
+                        ]
+                      }
+                    },
+                    "rated": {
+                      "type": "boolean"
+                    },
+                    "problemCount": {
+                      "type": "integer"
+                    },
+                    "solvedCount": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "levels": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "level": {
+                            "type": "integer"
+                          },
+                          "count": {
+                            "type": "integer"
+                          },
+                          "solved": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "level",
+                          "count",
+                          "solved"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "key",
+                    "names",
+                    "aliases",
+                    "parents",
+                    "children",
+                    "rated",
+                    "problemCount",
+                    "solvedCount",
+                    "levels"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such tag, or a meta or hidden one.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v4/users/{handle}": {
+      "get": {
+        "x-access": {
+          "class": "public"
+        },
+        "summary": "Public profile for a handle: stats and equipped background",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "handle",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "default": "ko"
+            },
+            "required": false,
+            "name": "lang",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Public profile.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "number"
+                    },
+                    "handle": {
+                      "type": "string"
+                    },
+                    "tier": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 31
+                    },
+                    "profileImageUrl": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uri"
+                    },
+                    "bio": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "rating": {
+                      "type": "integer"
+                    },
+                    "solvedCount": {
+                      "type": "integer"
+                    },
+                    "voteCount": {
+                      "type": "integer"
+                    },
+                    "reputation": {
+                      "type": "integer"
+                    },
+                    "maxStreak": {
+                      "type": "integer"
+                    },
+                    "currentStreak": {
+                      "type": "integer"
+                    },
+                    "streakVacation": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "fromDay": {
+                          "type": "string"
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "item",
+                            "launch"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "fromDay",
+                        "source"
+                      ]
+                    },
+                    "streakCountedToday": {
+                      "type": "boolean"
+                    },
+                    "streakFrozenYesterday": {
+                      "type": "boolean"
+                    },
+                    "noRatingSolvedCount": {
+                      "type": "integer"
+                    },
+                    "streakTheme": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "background": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "backgroundImageUrl": {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        "fallbackBackgroundImageUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "uri"
+                        },
+                        "backgroundVideoUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "uri"
+                        },
+                        "thumbnailPlaceholder": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "isIllust": {
+                          "type": "boolean"
+                        },
+                        "displayName": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "authors": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string"
+                              },
+                              "displayName": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "role": {
+                                "type": "string"
+                              },
+                              "authorUrl": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "handle": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "twitter": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "instagram": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "displayName",
+                              "role",
+                              "authorUrl",
+                              "handle",
+                              "twitter",
+                              "instagram"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "key",
+                        "backgroundImageUrl",
+                        "fallbackBackgroundImageUrl",
+                        "backgroundVideoUrl",
+                        "thumbnailPlaceholder",
+                        "isIllust",
+                        "displayName",
+                        "authors"
+                      ]
+                    },
+                    "isRival": {
+                      "type": "boolean"
+                    },
+                    "isReverseRival": {
+                      "type": "boolean"
+                    },
+                    "ojAccounts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "ojId": {
+                            "type": "string"
+                          },
+                          "ojName": {
+                            "type": "string"
+                          },
+                          "handle": {
+                            "type": "string"
+                          },
+                          "profileUrl": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "format": "uri"
+                          },
+                          "logoUrl": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "format": "uri"
+                          },
+                          "verified": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "ojId",
+                          "ojName",
+                          "handle",
+                          "profileUrl",
+                          "logoUrl",
+                          "verified"
+                        ]
+                      }
+                    },
+                    "linkedAccounts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "discord",
+                              "icpc"
+                            ]
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "url": {
+                            "type": "string",
+                            "format": "uri"
+                          }
+                        },
+                        "required": [
+                          "provider",
+                          "name",
+                          "url"
+                        ]
+                      }
+                    },
+                    "affiliations": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "number"
+                          },
+                          "affiliationId": {
+                            "type": "number"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "undefined",
+                              "university",
+                              "high_school",
+                              "middle_school",
+                              "elementary_school",
+                              "company",
+                              "community"
+                            ]
+                          },
+                          "logoThumbnailUrl": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "color": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "affiliationId",
+                          "name",
+                          "type",
+                          "logoThumbnailUrl",
+                          "color"
+                        ]
+                      }
+                    },
+                    "class": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 10
+                    },
+                    "classPlus": {
+                      "type": "boolean"
+                    },
+                    "badge": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "imageUrl": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "key",
+                        "name",
+                        "imageUrl"
+                      ]
+                    },
+                    "ratingByProblemsSum": {
+                      "type": "integer"
+                    },
+                    "ratingByClass": {
+                      "type": "integer"
+                    },
+                    "ratingBySolvedCount": {
+                      "type": "integer"
+                    },
+                    "ratingProblemsCutoff": {
+                      "type": "integer"
+                    },
+                    "ratingProblemsHistogram": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    },
+                    "bans": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "banType": {
+                            "type": "string",
+                            "enum": [
+                              "rating",
+                              "vote"
+                            ]
+                          },
+                          "banReason": {
+                            "type": [
+                              "string",
+                              "null"
+                            ],
+                            "enum": [
+                              "vote_troll_level",
+                              "vote_hate_speech",
+                              "vote_disparagement",
+                              "vote_profanity",
+                              "vote_multi_account",
+                              "vote_repeat_offence",
+                              "rating_copied_code",
+                              "other",
+                              "rating_auto_pace",
+                              "vote_automated",
+                              "vote_comment_strikes",
+                              "vote_mark_abuse",
+                              null
+                            ]
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "until": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "banType",
+                          "banReason",
+                          "reason",
+                          "until"
+                        ]
+                      }
+                    },
+                    "tagRatings": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string"
+                          },
+                          "rating": {
+                            "type": "integer"
+                          },
+                          "solvedCount": {
+                            "type": "integer"
+                          },
+                          "ratingByProblemsSum": {
+                            "type": "integer"
+                          },
+                          "ratingBySolvedCount": {
+                            "type": "integer"
+                          },
+                          "ratingProblemsCutoff": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "rating",
+                          "solvedCount",
+                          "ratingByProblemsSum",
+                          "ratingBySolvedCount",
+                          "ratingProblemsCutoff"
+                        ]
+                      }
+                    },
+                    "metadata": {
+                      "type": "object",
+                      "properties": {
+                        "countryCode": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "pronouns": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "name": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "nameNative": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "birthday": {
+                          "type": [
+                            "object",
+                            "null"
+                          ],
+                          "properties": {
+                            "year": {
+                              "type": [
+                                "integer",
+                                "null"
+                              ]
+                            },
+                            "month": {
+                              "type": [
+                                "integer",
+                                "null"
+                              ]
+                            },
+                            "day": {
+                              "type": [
+                                "integer",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "year",
+                            "month",
+                            "day"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "countryCode",
+                        "pronouns",
+                        "name",
+                        "nameNative",
+                        "birthday"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "handle",
+                    "tier",
+                    "profileImageUrl",
+                    "bio",
+                    "rating",
+                    "solvedCount",
+                    "voteCount",
+                    "reputation",
+                    "maxStreak",
+                    "currentStreak",
+                    "streakVacation",
+                    "streakCountedToday",
+                    "streakFrozenYesterday",
+                    "noRatingSolvedCount",
+                    "streakTheme",
+                    "background",
+                    "isRival",
+                    "isReverseRival",
+                    "ojAccounts",
+                    "linkedAccounts",
+                    "affiliations",
+                    "class",
+                    "classPlus",
+                    "badge",
+                    "ratingByProblemsSum",
+                    "ratingByClass",
+                    "ratingBySolvedCount",
+                    "ratingProblemsCutoff",
+                    "ratingProblemsHistogram",
+                    "bans",
+                    "tagRatings",
+                    "metadata"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v4/users/{handle}/activity/days": {
+      "get": {
+        "x-access": {
+          "class": "public"
+        },
+        "summary": "Per-day activity for the streak graph",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "handle",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "required": true,
+            "name": "from",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "required": true,
+            "name": "to",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Only days with something on them; the client fills gaps.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "from": {
+                      "type": "string"
+                    },
+                    "to": {
+                      "type": "string"
+                    },
+                    "days": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "day": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                          },
+                          "solvedCount": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "maxSolvedLevel": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 30
+                          },
+                          "ratingDelta": {
+                            "type": "integer"
+                          },
+                          "freezeUsed": {
+                            "type": "boolean"
+                          },
+                          "streakRepaired": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "day",
+                          "solvedCount",
+                          "maxSolvedLevel",
+                          "ratingDelta",
+                          "freezeUsed",
+                          "streakRepaired"
+                        ]
+                      }
+                    },
+                    "maxSolvedCount": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "currentStreak": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "maxStreak": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "theme": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "firstActiveDay": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "vacation": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "fromDay": {
+                          "type": "string"
+                        },
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "item",
+                            "launch"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "fromDay",
+                        "source"
+                      ]
+                    },
+                    "vacations": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "fromDay": {
+                            "type": "string"
+                          },
+                          "untilDay": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "fromDay",
+                          "untilDay"
+                        ]
+                      }
+                    },
+                    "countedToday": {
+                      "type": "boolean"
+                    },
+                    "frozenYesterday": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "from",
+                    "to",
+                    "days",
+                    "maxSolvedCount",
+                    "currentStreak",
+                    "maxStreak",
+                    "theme",
+                    "firstActiveDay",
+                    "vacation",
+                    "vacations",
+                    "countedToday",
+                    "frozenYesterday"
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Range inverted or longer than the limit.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v4/users/{handle}/contributions": {
+      "get": {
+        "x-access": {
+          "class": "public",
+          "scope": "votes"
+        },
+        "summary": "A user's contributions, with what each earns",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "handle",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10000
+            },
+            "required": false,
+            "name": "page",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "recent",
+                "helpful"
+              ]
+            },
+            "required": false,
+            "name": "sort",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "scoring",
+                "helpful",
+                "vouched"
+              ]
+            },
+            "required": false,
+            "name": "only",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            },
+            "required": false,
+            "name": "commented",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "One page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "voteId": {
+                            "type": "integer"
+                          },
+                          "problem": {
+                            "type": "object",
+                            "properties": {
+                              "problemId": {
+                                "type": "integer"
+                              },
+                              "subId": {
+                                "type": "string"
+                              },
+                              "level": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 30
+                              },
+                              "effectiveVoteCount": {
+                                "type": "integer",
+                                "minimum": 0
+                              },
+                              "givesNoRating": {
+                                "type": "boolean"
+                              },
+                              "isStandard": {
+                                "type": "boolean"
+                              },
+                              "titles": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "language": {
+                                      "type": "string"
+                                    },
+                                    "title": {
+                                      "type": "string"
+                                    },
+                                    "isOriginal": {
+                                      "type": "boolean"
+                                    },
+                                    "latex": {
+                                      "type": "boolean"
+                                    },
+                                    "html": {
+                                      "type": "boolean"
+                                    }
+                                  },
+                                  "required": [
+                                    "language",
+                                    "title",
+                                    "isOriginal",
+                                    "latex",
+                                    "html"
+                                  ]
+                                }
+                              },
+                              "userStatus": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ],
+                                "enum": [
+                                  "solved",
+                                  "partial",
+                                  "tried",
+                                  null
+                                ]
+                              }
+                            },
+                            "required": [
+                              "problemId",
+                              "subId",
+                              "level",
+                              "effectiveVoteCount",
+                              "givesNoRating",
+                              "isStandard",
+                              "titles",
+                              "userStatus"
+                            ]
+                          },
+                          "votedAt": {
+                            "type": "string"
+                          },
+                          "points": {
+                            "type": "integer"
+                          },
+                          "place": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "vote": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "number"
+                              },
+                              "user": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "id": {
+                                    "type": "number"
+                                  },
+                                  "handle": {
+                                    "type": "string"
+                                  },
+                                  "tier": {
+                                    "type": [
+                                      "integer",
+                                      "null"
+                                    ],
+                                    "minimum": 0,
+                                    "maximum": 31
+                                  },
+                                  "profileImageUrl": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
+                                    "format": "uri"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "handle",
+                                  "tier",
+                                  "profileImageUrl"
+                                ]
+                              },
+                              "votedAt": {
+                                "type": "string"
+                              },
+                              "level": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ]
+                              },
+                              "weight": {
+                                "type": "number"
+                              },
+                              "invalidated": {
+                                "type": "boolean"
+                              },
+                              "notInCalculation": {
+                                "type": "boolean"
+                              },
+                              "banned": {
+                                "type": "boolean"
+                              },
+                              "superseded": {
+                                "type": "boolean"
+                              },
+                              "cutoff": {
+                                "type": "boolean"
+                              },
+                              "comment": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "commentLanguage": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "emoticonId": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "emoticon": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "key": {
+                                    "type": "string"
+                                  },
+                                  "url": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "key",
+                                  "url"
+                                ]
+                              },
+                              "source": {
+                                "type": "string"
+                              },
+                              "tags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "tag": {
+                                      "type": [
+                                        "object",
+                                        "null"
+                                      ],
+                                      "properties": {
+                                        "id": {
+                                          "type": "number"
+                                        },
+                                        "key": {
+                                          "type": "string"
+                                        },
+                                        "isMeta": {
+                                          "type": "boolean"
+                                        }
+                                      },
+                                      "required": [
+                                        "id",
+                                        "key",
+                                        "isMeta"
+                                      ]
+                                    },
+                                    "legacyKey": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "tag",
+                                    "legacyKey"
+                                  ]
+                                }
+                              },
+                              "isStandard": {
+                                "type": "boolean"
+                              },
+                              "marks": {
+                                "type": [
+                                  "object",
+                                  "null"
+                                ],
+                                "properties": {
+                                  "score": {
+                                    "type": "integer"
+                                  },
+                                  "counts": {
+                                    "type": [
+                                      "object",
+                                      "null"
+                                    ],
+                                    "properties": {
+                                      "helpful": {
+                                        "type": "integer"
+                                      },
+                                      "unhelpful": {
+                                        "type": "integer"
+                                      }
+                                    },
+                                    "required": [
+                                      "helpful",
+                                      "unhelpful"
+                                    ]
+                                  },
+                                  "mine": {
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ],
+                                    "enum": [
+                                      "helpful",
+                                      "unhelpful",
+                                      null
+                                    ]
+                                  },
+                                  "own": {
+                                    "type": "boolean"
+                                  }
+                                },
+                                "required": [
+                                  "score",
+                                  "counts",
+                                  "mine",
+                                  "own"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "user",
+                              "votedAt",
+                              "level",
+                              "weight",
+                              "invalidated",
+                              "notInCalculation",
+                              "banned",
+                              "superseded",
+                              "cutoff",
+                              "comment",
+                              "commentLanguage",
+                              "emoticonId",
+                              "emoticon",
+                              "source",
+                              "tags",
+                              "isStandard",
+                              "marks"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "voteId",
+                          "problem",
+                          "votedAt",
+                          "points",
+                          "place",
+                          "vote"
+                        ]
+                      }
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "hiddenCount": {
+                      "type": "integer"
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "pageSize": {
+                      "type": "integer"
+                    },
+                    "sort": {
+                      "type": "string",
+                      "enum": [
+                        "recent",
+                        "helpful"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "total",
+                    "hiddenCount",
+                    "page",
+                    "pageSize",
+                    "sort"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v4/users/{handle}/reputation": {
+      "get": {
+        "x-access": {
+          "class": "public"
+        },
+        "summary": "A user's reputation: its history, and to them its breakdown",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "handle",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "90d",
+                "1y",
+                "all"
+              ]
+            },
+            "required": false,
+            "name": "range",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The summary.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "reputation": {
+                      "type": "integer"
+                    },
+                    "scoringCount": {
+                      "type": "integer"
+                    },
+                    "helpfulCount": {
+                      "type": "integer"
+                    },
+                    "vouchedCount": {
+                      "type": "integer"
+                    },
+                    "history": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "day": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                          },
+                          "value": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "day",
+                          "value"
+                        ]
+                      }
+                    },
+                    "today": {
+                      "type": "object",
+                      "properties": {
+                        "contributions": {
+                          "type": "object",
+                          "properties": {
+                            "count": {
+                              "type": "integer"
+                            },
+                            "max": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "count",
+                            "max"
+                          ]
+                        },
+                        "helpful": {
+                          "type": "object",
+                          "properties": {
+                            "earned": {
+                              "type": "integer"
+                            },
+                            "cap": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "earned",
+                            "cap"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "contributions",
+                        "helpful"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "reputation",
+                    "scoringCount",
+                    "helpfulCount",
+                    "vouchedCount",
+                    "history",
+                    "today"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v4/users/{handle}/rating/history": {
+      "get": {
+        "x-access": {
+          "class": "public"
+        },
+        "summary": "A user's rating at the close of each day it moved",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "handle",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "90d",
+                "1y",
+                "all"
+              ]
+            },
+            "required": false,
+            "name": "range",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The history, oldest first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "history": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "day": {
+                            "type": "string",
+                            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                          },
+                          "value": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "day",
+                          "value"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "history"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such user.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v4/users/{handle}/tags/{key}/histogram": {
+      "get": {
+        "x-access": {
+          "class": "public"
+        },
+        "summary": "Level histogram of a user's solved problems within one tag",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "handle",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "key",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "31 buckets, indexed by level.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "histogram": {
+                      "type": "array",
+                      "items": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "histogram"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such user, or the tag has no ranking.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v4/achievements/items/{kind}/{key}": {
+      "get": {
+        "x-access": {
+          "class": "public"
+        },
+        "summary": "A badge or background, and what grants it",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "badge",
+                "background"
+              ]
+            },
+            "required": true,
+            "name": "kind",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64
+            },
+            "required": true,
+            "name": "key",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "maxLength": 16,
+              "default": "ko"
+            },
+            "required": false,
+            "name": "lang",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The item.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "badge",
+                        "background"
+                      ]
+                    },
+                    "id": {
+                      "type": "integer"
+                    },
+                    "key": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "imageUrl": {
+                      "type": "string"
+                    },
+                    "category": {
+                      "type": "string"
+                    },
+                    "addedAt": {
+                      "type": "string"
+                    },
+                    "unlockedByDefault": {
+                      "type": "boolean"
+                    },
+                    "owned": {
+                      "type": [
+                        "boolean",
+                        "null"
+                      ]
+                    },
+                    "equipped": {
+                      "type": [
+                        "boolean",
+                        "null"
+                      ]
+                    },
+                    "background": {
+                      "type": [
+                        "object",
+                        "null"
+                      ],
+                      "properties": {
+                        "key": {
+                          "type": "string"
+                        },
+                        "backgroundImageUrl": {
+                          "type": "string",
+                          "format": "uri"
+                        },
+                        "fallbackBackgroundImageUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "uri"
+                        },
+                        "backgroundVideoUrl": {
+                          "type": [
+                            "string",
+                            "null"
+                          ],
+                          "format": "uri"
+                        },
+                        "thumbnailPlaceholder": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "isIllust": {
+                          "type": "boolean"
+                        },
+                        "displayName": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "authors": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "key": {
+                                "type": "string"
+                              },
+                              "displayName": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "role": {
+                                "type": "string"
+                              },
+                              "authorUrl": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "handle": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "twitter": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "instagram": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "displayName",
+                              "role",
+                              "authorUrl",
+                              "handle",
+                              "twitter",
+                              "instagram"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "key",
+                        "backgroundImageUrl",
+                        "fallbackBackgroundImageUrl",
+                        "backgroundVideoUrl",
+                        "thumbnailPlaceholder",
+                        "isIllust",
+                        "displayName",
+                        "authors"
+                      ]
+                    },
+                    "credits": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string"
+                          },
+                          "displayName": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "role": {
+                            "type": "string"
+                          },
+                          "authorUrl": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "handle": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "twitter": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "instagram": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "displayName",
+                          "role",
+                          "authorUrl",
+                          "handle",
+                          "twitter",
+                          "instagram"
+                        ]
+                      }
+                    },
+                    "userCount": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "achievements": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "condition": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "historic": {
+                            "type": "boolean"
+                          },
+                          "hidden": {
+                            "type": "boolean"
+                          },
+                          "holderCount": {
+                            "type": "integer"
+                          },
+                          "earnedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "problems": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "problemId": {
+                                  "type": "number"
+                                },
+                                "level": {
+                                  "type": "number"
+                                },
+                                "effectiveVoteCount": {
+                                  "type": "number"
+                                },
+                                "givesNoRating": {
+                                  "type": "boolean"
+                                },
+                                "isStandard": {
+                                  "type": "boolean"
+                                },
+                                "titles": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "language": {
+                                        "type": "string"
+                                      },
+                                      "title": {
+                                        "type": "string"
+                                      },
+                                      "isOriginal": {
+                                        "type": "boolean"
+                                      },
+                                      "latex": {
+                                        "type": "boolean"
+                                      },
+                                      "html": {
+                                        "type": "boolean"
+                                      }
+                                    },
+                                    "required": [
+                                      "language",
+                                      "title",
+                                      "isOriginal",
+                                      "latex",
+                                      "html"
+                                    ]
+                                  }
+                                },
+                                "userStatus": {
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ],
+                                  "enum": [
+                                    "solved",
+                                    "partial",
+                                    "tried",
+                                    null
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "problemId",
+                                "level",
+                                "effectiveVoteCount",
+                                "givesNoRating",
+                                "isStandard",
+                                "titles",
+                                "userStatus"
+                              ]
+                            }
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "name",
+                          "condition",
+                          "historic",
+                          "hidden",
+                          "holderCount",
+                          "earnedAt",
+                          "problems"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "id",
+                    "key",
+                    "name",
+                    "imageUrl",
+                    "category",
+                    "addedAt",
+                    "unlockedByDefault",
+                    "owned",
+                    "equipped",
+                    "background",
+                    "credits",
+                    "userCount",
+                    "achievements"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No such item.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "message": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "type": "object",
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

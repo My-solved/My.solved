@@ -48,6 +48,84 @@ class AlternateUserContract extends SolvedApiV3Contract {
       );
 }
 
+class AlternateSearchContract extends SolvedApiV3Contract {
+  const AlternateSearchContract();
+
+  @override
+  SolvedApiEndpoint<SearchObject<ProblemSearchItem>> searchProblem(
+    String query,
+    int? page,
+    String? sort,
+    String? direction,
+  ) =>
+      _endpoint(
+        path: 'find/problems',
+        queryParameters: {'text': query},
+        value: const SearchObject(
+          count: 1,
+          items: [
+            ProblemSearchItem(
+              problemId: 9000,
+              title: 'opaque problem',
+              level: 7,
+              tagNames: ['opaque'],
+            ),
+          ],
+        ),
+      );
+
+  @override
+  SolvedApiEndpoint<SearchObject<UserSearchItem>> searchUser(
+    String query,
+    int? page,
+  ) =>
+      _endpoint(
+        path: 'find/users',
+        queryParameters: {'text': query},
+        value: const SearchObject(
+          count: 1,
+          items: [
+            UserSearchItem(
+                handle: 'opaque-user', profileImageUrl: null, tier: 8),
+          ],
+        ),
+      );
+
+  @override
+  SolvedApiEndpoint<SearchObject<TagSearchItem>> searchTag(
+    String query,
+    int? page,
+  ) =>
+      _endpoint(
+        path: 'find/tags',
+        queryParameters: {'text': query},
+        value: const SearchObject(
+          count: 1,
+          items: [TagSearchItem(key: 'opaque-tag', problemCount: 9)],
+        ),
+      );
+
+  SolvedApiEndpoint<T> _endpoint<T>({
+    required String path,
+    required Map<String, String> queryParameters,
+    required T value,
+  }) {
+    return SolvedApiEndpoint(
+      direct: SolvedApiTarget(
+        baseUri: Uri.https('contract.example.com', '/direct/'),
+        path: path,
+        queryParameters: queryParameters,
+      ),
+      proxy: SolvedApiTarget(
+        baseUri: Uri.https('proxy.example.com', '/gateway/'),
+        path: path,
+        queryParameters: queryParameters,
+      ),
+      decode: (_) => value,
+    );
+  }
+}
+
 void main() {
   group('SolvedApiClient', () {
     late http.Client httpClient;
@@ -139,29 +217,79 @@ void main() {
         ).called(1);
       });
 
-      test('custom base overrides only the selected contract target base',
-          () async {
-        when(() => httpClient.get(any())).thenAnswer(
-          (_) async => http.Response('{"opaque":"contract-decoded"}', 200),
-        );
-        apiClient = SolvedApiClient(
-          httpClient: httpClient,
-          useProxy: false,
-          apiBaseUri: Uri.https('staging.example.com', '/api'),
-          contract: const AlternateUserContract(),
-        );
+      test(
+        'uses contract-specific search decoders without a v3 shape',
+        () async {
+          when(() => httpClient.get(any())).thenAnswer(
+            (_) async => http.Response('{"opaque":"contract-decoded"}', 200),
+          );
+          apiClient = SolvedApiClient(
+            httpClient: httpClient,
+            useProxy: false,
+            contract: const AlternateSearchContract(),
+          );
 
-        final user = await apiClient.userShow('w8385');
+          final problems = await apiClient.searchProblem(
+            'opaque',
+            null,
+            null,
+            null,
+          );
+          final users = await apiClient.searchUser('opaque', null);
+          final tags = await apiClient.searchTag('opaque', null);
 
-        expect(user.handle, 'contract-decoded');
-        verify(
-          () => httpClient.get(
-            Uri.https('staging.example.com', '/api/profile/show', {
-              'user': 'w8385',
-            }),
-          ),
-        ).called(1);
-      });
+          expect(problems.items.single.title, 'opaque problem');
+          expect(users.items.single.handle, 'opaque-user');
+          expect(tags.items.single.key, 'opaque-tag');
+          verify(
+            () => httpClient.get(
+              Uri.https('contract.example.com', '/direct/find/problems', {
+                'text': 'opaque',
+              }),
+            ),
+          ).called(1);
+          verify(
+            () => httpClient.get(
+              Uri.https('contract.example.com', '/direct/find/users', {
+                'text': 'opaque',
+              }),
+            ),
+          ).called(1);
+          verify(
+            () => httpClient.get(
+              Uri.https('contract.example.com', '/direct/find/tags', {
+                'text': 'opaque',
+              }),
+            ),
+          ).called(1);
+        },
+      );
+
+      test(
+        'custom base overrides only the selected contract target base',
+        () async {
+          when(() => httpClient.get(any())).thenAnswer(
+            (_) async => http.Response('{"opaque":"contract-decoded"}', 200),
+          );
+          apiClient = SolvedApiClient(
+            httpClient: httpClient,
+            useProxy: false,
+            apiBaseUri: Uri.https('staging.example.com', '/api'),
+            contract: const AlternateUserContract(),
+          );
+
+          final user = await apiClient.userShow('w8385');
+
+          expect(user.handle, 'contract-decoded');
+          verify(
+            () => httpClient.get(
+              Uri.https('staging.example.com', '/api/profile/show', {
+                'user': 'w8385',
+              }),
+            ),
+          ).called(1);
+        },
+      );
 
       test('normalizes and uses a custom direct API base URI', () async {
         apiClient = SolvedApiClient(
@@ -240,13 +368,17 @@ void main() {
         );
 
         await expectLater(
-          apiClient.siteStats(),
+          apiClient.userShow('w8385'),
           throwsA(
-            isA<SiteRequestFailed>()
+            isA<UserRequestFailed>()
                 .having(
                   (error) => error.uri,
                   'uri',
-                  Uri.https('solved.ac', '/api/v3/site/stats'),
+                  Uri.https(
+                    'solved.ac',
+                    '/api/v3/user/show',
+                    {'handle': 'w8385'},
+                  ),
                 )
                 .having((error) => error.statusCode, 'statusCode', 429)
                 .having(
@@ -274,9 +406,9 @@ void main() {
         );
 
         await expectLater(
-          apiClient.siteStats(),
+          apiClient.userShow('w8385'),
           throwsA(
-            isA<SiteRequestFailed>().having(
+            isA<UserRequestFailed>().having(
               (error) => error.retryAfter,
               'retryAfter',
               Duration.zero,
@@ -400,6 +532,101 @@ void main() {
       });
     });
 
+    group('v4 profile transport', () {
+      test('requires an explicit v4 contract', () {
+        expect(
+          () => apiClient.v4UserProfile('index'),
+          throwsStateError,
+        );
+      });
+
+      test('forces the credential-holding proxy on native clients', () async {
+        apiClient = SolvedApiClient(
+          httpClient: httpClient,
+          useProxy: false,
+          apiBaseUri: Uri.parse('https://direct-override.example/api/v4/'),
+          v4Contract: SolvedApiV4Contract(
+            proxyBaseUri: Uri.parse(
+              'https://gateway.example/solved/v4/',
+            ),
+          ),
+        );
+        when(() => httpClient.get(any())).thenAnswer(
+          (_) async => http.Response(fixture('v4/user_profile.json'), 200),
+        );
+
+        final actual = await apiClient.v4UserProfile('index');
+
+        expect(actual.handle, 'index');
+        verify(
+          () => httpClient.get(
+            Uri.https('gateway.example', '/solved/v4/users/index', {
+              'lang': 'ko',
+            }),
+          ),
+        ).called(1);
+        verifyNever(
+          () => httpClient.get(
+            Uri.https('direct-override.example', '/api/v4/users/index', {
+              'lang': 'ko',
+            }),
+          ),
+        );
+      });
+    });
+
+    group('v4 search transport', () {
+      test('forces every search request through the credential proxy', () async {
+        apiClient = SolvedApiClient(
+          httpClient: httpClient,
+          useProxy: false,
+          apiBaseUri: Uri.parse('https://direct-override.example/api/v4/'),
+          v4Contract: SolvedApiV4Contract(
+            proxyBaseUri: Uri.parse('https://gateway.example/solved/v4/'),
+          ),
+        );
+        when(() => httpClient.get(any())).thenAnswer((invocation) async {
+          final uri = invocation.positionalArguments.single as Uri;
+          final body = switch (uri.path) {
+            '/solved/v4/problems' => fixture('v4/search_problems.json'),
+            '/solved/v4/rankings/users/search' =>
+              fixture('v4/search_users.json'),
+            '/solved/v4/tags' => fixture('v4/tags.json'),
+            _ => throw StateError('Unexpected v4 search URI: $uri'),
+          };
+          return http.Response.bytes(utf8.encode(body), 200);
+        });
+
+        final problems = await apiClient.v4SearchProblems('number');
+        final users = await apiClient.v4SearchUsers('index');
+        final tags = await apiClient.v4SearchTags('NUMBER');
+
+        expect(problems.count, 4);
+        expect(users.exact?.handle, 'index');
+        expect(tags.items.single.key, 'number_theory');
+        final requestedUris = verify(
+          () => httpClient.get(captureAny()),
+        ).captured.cast<Uri>().toList(growable: false);
+        expect(requestedUris, [
+          Uri.https('gateway.example', '/solved/v4/problems', {
+            'q': 'number',
+            'page': '1',
+            'sort': 'id',
+            'direction': 'asc',
+          }),
+          Uri.https('gateway.example', '/solved/v4/rankings/users/search', {
+            'q': 'index',
+            'sort': 'rating',
+          }),
+          Uri.https('gateway.example', '/solved/v4/tags'),
+        ]);
+        expect(
+          requestedUris.every((uri) => uri.host == 'gateway.example'),
+          isTrue,
+        );
+      });
+    });
+
     group('userShow', () {
       const handle = 'w8385';
       test('makes correct http request', () async {
@@ -462,73 +689,6 @@ void main() {
       });
     });
 
-    group('userOrganizations', () {
-      const handle = 'w8385';
-      test('makes correct http request', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn('{}');
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-        try {
-          await apiClient.userOrganizations(handle);
-        } catch (_) {}
-        verify(
-          () => httpClient.get(
-            Uri.https('solved.ac', '/api/v3/user/organizations', {
-              'handle': handle,
-            }),
-          ),
-        ).called(1);
-      });
-
-      test('returns List<Organization> on valid response', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(
-          () => response.body,
-        ).thenReturn(fixture('v3/user_organizations.json'));
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-
-        final actual = await apiClient.userOrganizations(handle);
-        expect(
-          actual,
-          isA<List<Organization>>().having((l) => l.length, 'length', 3),
-        );
-      });
-    });
-
-    group('userAvailableBadges', () {
-      const handle = 'w8385';
-      test('makes correct http request', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn('{}');
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-        try {
-          await apiClient.userAvailableBadges(handle);
-        } catch (_) {}
-        verify(
-          () => httpClient.get(
-            Uri.https('solved.ac', '/api/v3/user/available_badges', {
-              'handle': handle,
-            }),
-          ),
-        ).called(1);
-      });
-
-      test('returns List<Badge> on valid response', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(
-          () => response.body,
-        ).thenReturn(fixture('v3/user_available_badges.json'));
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-
-        final actual = await apiClient.userAvailableBadges(handle);
-        expect(actual, isA<List<Badge>>().having((l) => l.length, 'length', 3));
-      });
-    });
-
     group('userGrass', () {
       const handle = 'w8385';
       const topic = 'default';
@@ -574,38 +734,6 @@ void main() {
       });
     });
 
-    group('userTop100', () {
-      const handle = 'w8385';
-      test('makes correct http request', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn('{}');
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-        try {
-          await apiClient.userTop100(handle);
-        } catch (_) {}
-        verify(
-          () => httpClient.get(
-            Uri.https('solved.ac', '/api/v3/user/top_100', {'handle': handle}),
-          ),
-        ).called(1);
-      });
-
-      test('returns List<Problem> on valid response', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn(fixture('v3/user_top_100.json'));
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-
-        final actual = await apiClient.userTop100(handle);
-        expect(actual, isA<List<Problem>>());
-        for (final problem in actual) {
-          expect(problem, isA<Problem>());
-          expect(problem.tags, isA<List<Tag>>());
-        }
-      });
-    });
-
     group('userProblemStats', () {
       const handle = 'w8385';
       test('makes correct http request', () async {
@@ -634,11 +762,13 @@ void main() {
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
 
         final actual = await apiClient.userProblemStats(handle);
-        expect(actual, isA<List<ProfileTierStat>>().having(
-          (stats) => stats.length,
-          'length',
-          31,
-        ));
+        expect(
+            actual,
+            isA<List<ProfileTierStat>>().having(
+              (stats) => stats.length,
+              'length',
+              31,
+            ));
         expect(actual.first.tier, 0);
         expect(actual.first.solvedCount, 15);
       });
@@ -758,41 +888,6 @@ void main() {
       });
     });
 
-    group('searchSuggestions', () {
-      const query = 'rsa';
-      test('makes correct http request', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn('{}');
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-        try {
-          await apiClient.searchSuggestion(query);
-        } catch (_) {}
-        verify(
-          () => httpClient.get(
-            Uri.https('solved.ac', '/api/v3/search/suggestion', {
-              'query': query,
-            }),
-          ),
-        ).called(1);
-      });
-
-      test('returns SearchSuggestion on valid response', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(
-          () => response.body,
-        ).thenReturn(fixture('v3/search_suggestion.json'));
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-
-        final actual = await apiClient.searchSuggestion(query);
-        expect(actual, isA<SearchSuggestion>());
-        expect(actual.problems, isA<List<ProblemSuggestion>>());
-        expect(actual.tags, isA<List<TagSuggestion>>());
-        expect(actual.users, isA<List<UserSuggestion>>());
-      });
-    });
-
     group('searchProblems', () {
       const query = 'rsa';
       const page = 1;
@@ -819,7 +914,7 @@ void main() {
         ).called(1);
       });
 
-      test('returns SearchObject on valid response', () async {
+      test('returns normalized problem results on valid response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(() => response.body).thenReturn(fixture('v3/search_problem.json'));
@@ -831,8 +926,38 @@ void main() {
           sort,
           direction,
         );
-        expect(actual, isA<SearchObject>());
-        expect(actual.items, isA<List<Problem>>());
+        expect(actual, isA<SearchObject<ProblemSearchItem>>());
+        expect(actual.count, 1);
+        expect(actual.items, hasLength(1));
+        expect(actual.items.single.problemId, 3734);
+        expect(actual.items.single.title, 'RSA 인수 분해');
+        expect(actual.items.single.level, 16);
+        expect(actual.items.single.tagNames, [
+          '애드 혹',
+          '임의 정밀도 / 큰 수 연산',
+          '브루트포스 알고리즘',
+          '수학',
+          '정수론',
+        ]);
+      });
+
+      test('decodes items without mutating the response JSON', () {
+        final json = jsonDecode(fixture('v3/search_problem.json'))
+            as Map<String, dynamic>;
+        final original = jsonDecode(jsonEncode(json));
+        final rawItems = json['items'] as List<dynamic>;
+        final rawFirstItem = rawItems.first;
+        final rawTags = (rawFirstItem as Map<String, dynamic>)['tags'];
+
+        final actual = const SolvedApiV3Contract()
+            .searchProblem(query, page, sort, direction)
+            .decode(json);
+
+        expect(actual.items.single, isA<ProblemSearchItem>());
+        expect(json, original);
+        expect(json['items'], same(rawItems));
+        expect(rawItems.first, same(rawFirstItem));
+        expect((rawItems.first as Map<String, dynamic>)['tags'], same(rawTags));
       });
     });
 
@@ -858,15 +983,19 @@ void main() {
         ).called(1);
       });
 
-      test('returns SearchObject on valid response', () async {
+      test('returns normalized user results on valid response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(() => response.body).thenReturn(fixture('v3/search_user.json'));
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
 
         final actual = await apiClient.searchUser(query, page);
-        expect(actual, isA<SearchObject>());
-        expect(actual.items, isA<List<User>>());
+        expect(actual, isA<SearchObject<UserSearchItem>>());
+        expect(actual.items, isA<List<UserSearchItem>>());
+        expect(actual.items, hasLength(2));
+        expect(actual.items.first.handle, 'fdsajklt2');
+        expect(actual.items.first.tier, 16);
+        expect(actual.items.first.profileImageUrl, isNull);
       });
     });
 
@@ -892,66 +1021,18 @@ void main() {
         ).called(1);
       });
 
-      test('returns SearchObject on valid response', () async {
+      test('returns normalized tag results on valid response', () async {
         final response = MockResponse();
         when(() => response.statusCode).thenReturn(200);
         when(() => response.body).thenReturn(fixture('v3/search_tag.json'));
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
 
         final actual = await apiClient.searchTag(query, page);
-        expect(actual, isA<SearchObject>());
-        expect(actual.items, isA<List<Tag>>());
-      });
-    });
-
-    group('arenaContests', () {
-      test('makes correct http request', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn('{}');
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-        try {
-          await apiClient.arenaContests();
-        } catch (_) {}
-        verify(
-          () =>
-              httpClient.get(Uri.https('solved.ac', '/api/v3/arena/contests')),
-        ).called(1);
-      });
-
-      test('returns List<ArenaContest> on valid response', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn(fixture('v3/arena_contests.json'));
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-
-        final actual = await apiClient.arenaContests();
-        expect(actual, isA<List<ArenaContest>>());
-      });
-    });
-
-    group('siteStats', () {
-      test('makes correct http request', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn('{}');
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-        try {
-          await apiClient.siteStats();
-        } catch (_) {}
-        verify(
-          () => httpClient.get(Uri.https('solved.ac', '/api/v3/site/stats')),
-        ).called(1);
-      });
-
-      test('returns SiteStats on valid response', () async {
-        final response = MockResponse();
-        when(() => response.statusCode).thenReturn(200);
-        when(() => response.body).thenReturn(fixture('v3/site_stats.json'));
-        when(() => httpClient.get(any())).thenAnswer((_) async => response);
-
-        final actual = await apiClient.siteStats();
-        expect(actual, isA<SiteStats>());
+        expect(actual, isA<SearchObject<TagSearchItem>>());
+        expect(actual.count, 1);
+        expect(actual.items, hasLength(1));
+        expect(actual.items.single.key, 'number_theory');
+        expect(actual.items.single.problemCount, 1314);
       });
     });
   });
