@@ -9,7 +9,7 @@ void main() {
 
   test('emits loading then success and limits auxiliary concurrency', () async {
     final repository = _FakeUserRepository(
-      streak: _streak(currentStreak: 3, grass: const []),
+      streak: _streak(currentStreak: 3, days: const []),
       userDelay: const Duration(milliseconds: 5),
       auxiliaryDelay: const Duration(milliseconds: 5),
     );
@@ -36,8 +36,39 @@ void main() {
     await states;
     await Future<void>.delayed(Duration.zero);
     expect(repository.userRequestCount, 1);
+    expect(repository.auxiliaryRequestCount, 4);
+    expect(
+      repository.requestedAuxiliaryNames,
+      isNot(contains('organizations')),
+    );
+    expect(repository.requestedAuxiliaryNames, isNot(contains('badges')));
     expect(repository.maxActiveAuxiliaryRequests, greaterThan(1));
     expect(repository.maxActiveAuxiliaryRequests, lessThanOrEqualTo(3));
+  });
+
+  test('loads the selected badge without loading unused collections',
+      () async {
+    final repository = _FakeUserRepository(
+      user: _profile(badgeId: 'badge'),
+    );
+    final bloc = _createBloc(repository, today);
+    addTearDown(bloc.close);
+
+    final success = bloc.stream.firstWhere((state) => state.status.isSuccess);
+    bloc.add(HomeInit());
+
+    final state = await success;
+    expect(state.badge, same(_badge));
+    expect(
+      repository.requestedAuxiliaryNames,
+      unorderedEquals([
+        'background',
+        'badge',
+        'streak',
+        'tagRatings',
+        'problemStats',
+      ]),
+    );
   });
 
   test('emits failure when the core user request fails', () async {
@@ -69,7 +100,7 @@ void main() {
 
   test('keeps a success state when auxiliary requests fail', () async {
     final repository = _FakeUserRepository(
-      streak: _streak(currentStreak: 10, grass: const []),
+      streak: _streak(currentStreak: 10, days: const []),
       failingAuxiliaryRequests: const {'background', 'streak', 'tagRatings'},
     );
     final bloc = _createBloc(repository, today);
@@ -107,15 +138,12 @@ void main() {
     final failures = <String>{};
     final cachedStreak = _streak(
       currentStreak: 1,
-      grass: const [
-        Grass(
+      days: const [
+        ProfileSolvedDay(
           day: 17,
           month: 11,
           year: 2026,
           solvedCount: 1,
-          isSolved: true,
-          isFrozen: false,
-          isRepaired: false,
         ),
       ],
     );
@@ -146,15 +174,12 @@ void main() {
     final repository = _FakeUserRepository(
       streak: _streak(
         currentStreak: 0,
-        grass: const [
-          Grass(
+        days: const [
+          ProfileSolvedDay(
             day: 17,
             month: 11,
             year: 2026,
             solvedCount: 1,
-            isSolved: true,
-            isFrozen: false,
-            isRepaired: false,
           ),
         ],
       ),
@@ -172,15 +197,12 @@ void main() {
     final repository = _FakeUserRepository(
       streak: _streak(
         currentStreak: 100,
-        grass: const [
-          Grass(
+        days: const [
+          ProfileSolvedDay(
             day: 16,
             month: 11,
             year: 2026,
             solvedCount: 5,
-            isSolved: true,
-            isFrozen: false,
-            isRepaired: false,
           ),
         ],
       ),
@@ -211,16 +233,16 @@ class _FakeUserRepository implements UserRepository {
     this.userDelay = Duration.zero,
     this.auxiliaryDelay = Duration.zero,
     UserProfile? user,
-    Streak? streak,
+    ProfileStreak? streak,
   })  : user = user ?? _user,
-        streak = streak ?? _streak(currentStreak: 0, grass: const []);
+        streak = streak ?? _streak(currentStreak: 0, days: const []);
 
   final bool failUser;
   final Set<String> failingAuxiliaryRequests;
   final Duration userDelay;
   final Duration auxiliaryDelay;
   final UserProfile user;
-  final Streak streak;
+  final ProfileStreak streak;
 
   int _activeAuxiliaryRequests = 0;
   int maxActiveAuxiliaryRequests = 0;
@@ -263,35 +285,20 @@ class _FakeUserRepository implements UserRepository {
       _auxiliary('background', _background);
 
   @override
-  Future<List<Organization>> getOrganizations(String handle) =>
-      _auxiliary('organizations', const []);
-
-  @override
   Future<ProfileBadgeAsset> getBadge(String badgeId) =>
       _auxiliary('badge', _badge);
 
   @override
-  Future<List<Badge>> getBadges(String handle) =>
-      _auxiliary('badges', const []);
-
-  @override
-  Future<Streak> getStreak(String handle, String? topic) =>
+  Future<ProfileStreak> getStreak(String handle, String? topic) =>
       _auxiliary('streak', streak);
 
   @override
-  Future<List<TagRating>> getTagRatings(String handle) =>
+  Future<List<ProfileTagRating>> getTagRatings(String handle) =>
       _auxiliary('tagRatings', const []);
 
   @override
-  Future<List<ProblemStat>> getProblemStats(String handle) =>
+  Future<List<ProfileTierStat>> getProblemStats(String handle) =>
       _auxiliary('problemStats', const []);
-
-  @override
-  Future<List<Problem>> getTopProblems(String handle) =>
-      throw UnimplementedError();
-
-  @override
-  Future<SiteStats> getSiteStats() => throw UnimplementedError();
 }
 
 class _FakeSharedPreferencesRepository extends SharedPreferencesRepository {
@@ -299,19 +306,23 @@ class _FakeSharedPreferencesRepository extends SharedPreferencesRepository {
   Future<bool> getIsOnIllustBackground() async => true;
 }
 
-Streak _streak({required int currentStreak, required List<Grass> grass}) {
-  return Streak(
-    grass: grass,
-    theme: null,
+ProfileStreak _streak({
+  required int currentStreak,
+  required List<ProfileSolvedDay> days,
+}) {
+  return ProfileStreak(
+    days: days,
     currentStreak: currentStreak,
-    longestStreak: currentStreak,
-    topic: 'default',
   );
 }
 
-UserProfile _profile({String? backgroundId = 'default'}) => UserProfile(
+UserProfile _profile({
+  String? backgroundId = 'default',
+  String? badgeId,
+}) =>
+    UserProfile(
       handle: 'w8385',
-      badgeId: null,
+      badgeId: badgeId,
       backgroundId: backgroundId,
       profileImageUrl: null,
       solvedCount: 1,

@@ -357,13 +357,12 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _pieChart({required List<ProblemStat> stats}) {
+  Widget _pieChart({required List<ProfileTierStat> stats}) {
     Map<String, double> dataMap = {};
     for (var stat in stats) {
-      dataMap[stat.level.toString()] = stat.solved.toDouble();
+      dataMap[stat.tier.toString()] = stat.solvedCount.toDouble();
     }
 
-    stats.fold(0, (sum, stat) => sum + stat.solved);
     List<Color> colorList = [];
     for (var i = 0; i <= 30; i++) {
       colorList.add(MySolvedColor.tier[i]!);
@@ -391,19 +390,22 @@ class _HomeViewState extends State<HomeView> {
         ));
   }
 
-  Widget _tagChart({required List<TagRating> tags, required int rating}) {
-    tags.sort((a, b) => b.rating.compareTo(a.rating));
+  Widget _tagChart({
+    required List<ProfileTagRating> tags,
+    required int rating,
+  }) {
+    final sortedTags = [...tags]
+      ..sort((a, b) => b.rating.compareTo(a.rating));
 
     List<int> ticks = [];
     List<String> features = [];
     List<List<num>> data = [[]];
 
-    int? length = min(8, tags.length);
+    int? length = min(8, sortedTags.length);
     int maxTick = 0;
     for (var i = 0; i < length; i++) {
-      // features.add(tags[i].tag.key);
       features.add("");
-      data[0].add(tags[i].rating);
+      data[0].add(sortedTags[i].rating);
       maxTick = max(maxTick, data[0][i].toInt());
     }
     maxTick = (maxTick + 500) ~/ 500 * 500;
@@ -446,7 +448,7 @@ class _HomeViewState extends State<HomeView> {
     return Color.fromARGB(255, 79, 82, 87);
   }
 
-  String _tierText(int tier) {
+  String _tierText(int? tier) {
     if (tier == 1) return 'Bronze V';
     if (tier == 2) return 'Bronze IV';
     if (tier == 3) return 'Bronze III';
