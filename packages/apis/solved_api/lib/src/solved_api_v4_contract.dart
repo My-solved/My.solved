@@ -369,6 +369,7 @@ UserProfile _decodeV4UserProfile(dynamic json) {
     backgroundId: background?.key,
     profileImageUrl:
         _nullableString(body['profileImageUrl'], 'profileImageUrl'),
+    bio: _requiredNullableString(body, 'bio'),
     solvedCount: _integer(body['solvedCount'], 'solvedCount'),
     legacyContributionCount: null,
     userClass: _integer(body['class'], 'class'),
@@ -561,6 +562,16 @@ String _string(Object? value, String field) {
 
 String? _nullableString(Object? value, String field) =>
     value == null ? null : _string(value, field);
+
+String? _requiredNullableString(
+  Map<String, dynamic> body,
+  String field,
+) {
+  if (!body.containsKey(field)) {
+    throw FormatException('Missing required field $field');
+  }
+  return _nullableString(body[field], field);
+}
 
 num _number(Object? value, String field) {
   if (value is! num || !value.isFinite) {

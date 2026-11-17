@@ -100,6 +100,7 @@ void main() {
     expect(actual.tier, isNull);
     expect(actual.rating, 2417);
     expect(actual.solvedCount, 2048);
+    expect(actual.bio, isNull);
     expect(actual.classPlus, isTrue);
     expect(actual.currentStreak, 12);
     expect(actual.maxStreak, 365);
@@ -158,6 +159,34 @@ void main() {
     final actual = endpoint.decode(unbounded);
     expect(actual.currentStreak, -1);
     expect(actual.maxStreak, -2);
+  });
+
+  test('requires and preserves the nullable public profile biography', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_profile.json')) as Map,
+        );
+
+    expect(
+      () => endpoint.decode(source()..remove('bio')),
+      throwsFormatException,
+    );
+    for (final invalid in <Object>[
+      0,
+      false,
+      const <String>[],
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(source()..['bio'] = invalid),
+        throwsFormatException,
+        reason: 'bio = $invalid',
+      );
+    }
+
+    for (final value in <String?>[null, '', '  ', 'public biography']) {
+      expect(endpoint.decode(source()..['bio'] = value).bio, value);
+    }
   });
 
   test('requires the public CLASS+ marker as a boolean', () {

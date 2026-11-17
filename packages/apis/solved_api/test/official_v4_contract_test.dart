@@ -77,6 +77,7 @@ void main() {
       _required(profileSchema),
       containsAll([
         'tier',
+        'bio',
         'rating',
         'solvedCount',
         'classPlus',
@@ -96,6 +97,11 @@ void main() {
     );
     final profileProperties = _properties(profileSchema);
     expect(_map(profileProperties['tier'])['type'], ['integer', 'null']);
+    final bio = _map(profileProperties['bio']);
+    expect(bio['type'], ['string', 'null']);
+    for (final constraint in ['format', 'minLength', 'maxLength', 'pattern']) {
+      expect(bio.containsKey(constraint), isFalse);
+    }
     expect(_map(profileProperties['classPlus'])['type'], 'boolean');
     for (final field in [
       'currentStreak',

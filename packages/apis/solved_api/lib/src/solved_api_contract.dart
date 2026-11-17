@@ -201,6 +201,7 @@ UserProfile _decodeV3UserProfile(dynamic json) {
     badgeId: body['badgeId'],
     backgroundId: body['backgroundId'],
     profileImageUrl: body['profileImageUrl'],
+    bio: body['bio'] as String?,
     solvedCount: body['solvedCount'],
     legacyContributionCount: body['voteCount'],
     userClass: body['class'],

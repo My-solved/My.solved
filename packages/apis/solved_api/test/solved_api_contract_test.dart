@@ -185,6 +185,13 @@ void main() {
       final actual = contract
           .userShow('w8385')
           .decode(jsonDecode(fixture('v3/user_show.json')));
+      final explicitNull = contract.userShow('null-bio').decode(
+            Map<String, dynamic>.from(
+              jsonDecode(fixture('v3/user_show.json')) as Map,
+            )
+              ..['handle'] = 'null-bio'
+              ..['bio'] = null,
+          );
       final minimal = contract.userShow('minimal').decode({
         'handle': 'minimal',
         'badgeId': null,
@@ -200,10 +207,13 @@ void main() {
 
       expect(actual.currentStreak, isNull);
       expect(actual.maxStreak, 477);
+      expect(actual.bio, 'https://github.com/w8385');
+      expect(explicitNull.bio, isNull);
       expect(actual.classPlus, isNull);
       expect(actual.ratingBreakdown, isNull);
       expect(minimal.currentStreak, isNull);
       expect(minimal.maxStreak, isNull);
+      expect(minimal.bio, isNull);
       expect(minimal.classPlus, isNull);
       expect(minimal.ratingBreakdown, isNull);
     });
