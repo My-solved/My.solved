@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
 import 'package:my_solved/app/bloc/app_bloc.dart';
+import 'package:my_solved/app/config/solved_api_gateway_config.dart';
 import 'package:my_solved/features/login/screen/login_screen.dart';
 import 'package:my_solved/features/root/screen/root_screen.dart';
 import 'package:my_solved/features/splash/screen/splash_screen.dart';
@@ -12,9 +13,10 @@ import 'package:upgrader/upgrader.dart';
 import 'package:user_repository/user_repository.dart';
 
 class AppScreen extends StatefulWidget {
-  const AppScreen({super.key, this.httpClient});
+  const AppScreen({super.key, this.httpClient, this.solvedApiGatewayConfig});
 
   final http.Client? httpClient;
+  final SolvedApiGatewayConfig? solvedApiGatewayConfig;
 
   @override
   State<AppScreen> createState() => _AppScreenState();
@@ -32,7 +34,10 @@ class _AppScreenState extends State<AppScreen> {
     super.initState();
     _ownsHttpClient = widget.httpClient == null;
     _httpClient = widget.httpClient ?? http.Client();
-    _solvedApiClient = SolvedApiClient(httpClient: _httpClient);
+    final gatewayConfig =
+        widget.solvedApiGatewayConfig ??
+        SolvedApiGatewayConfig.fromEnvironment();
+    _solvedApiClient = gatewayConfig.createClient(httpClient: _httpClient);
     _userRepository = UserRepository(solvedApiClient: _solvedApiClient);
     _searchRepository = SearchRepository(solvedApiClient: _solvedApiClient);
   }
@@ -53,8 +58,10 @@ class _AppScreenState extends State<AppScreen> {
         RepositoryProvider.value(value: _searchRepository),
       ],
       child: BlocProvider(
-        create: (context) =>
-            AppBloc(sharedPreferencesRepository: SharedPreferencesRepository()),
+        create:
+            (context) => AppBloc(
+              sharedPreferencesRepository: SharedPreferencesRepository(),
+            ),
         child: AppView(),
       ),
     );
@@ -72,19 +79,20 @@ class _AppViewState extends State<AppView> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        home: UpgradeAlert(
-      child: BlocBuilder<AppBloc, AppState>(
-        bloc: BlocProvider.of<AppBloc>(context),
-        builder: (context, state) {
-          if (state is AppInitial) {
-            return SplashScreen();
-          } else if (state is AppLoggedIn) {
-            return RootScreen(handle: state.handle);
-          } else {
-            return LoginScreen();
-          }
-        },
+      home: UpgradeAlert(
+        child: BlocBuilder<AppBloc, AppState>(
+          bloc: BlocProvider.of<AppBloc>(context),
+          builder: (context, state) {
+            if (state is AppInitial) {
+              return SplashScreen();
+            } else if (state is AppLoggedIn) {
+              return RootScreen(handle: state.handle);
+            } else {
+              return LoginScreen();
+            }
+          },
+        ),
       ),
-    ));
+    );
   }
 }
