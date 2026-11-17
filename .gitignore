@@ -127,6 +127,11 @@ unlinked_spec.ds
 # Coverage
 coverage/
 
+# Public API contract capture input may contain browser metadata.
+*.[hH][aA][rR]
+*.[hH][aA][rR].[gG][zZ]
+*.[hH][aA][rR].[zZ][iI][pP]
+
 # Symbols
 app.*.symbols
 
