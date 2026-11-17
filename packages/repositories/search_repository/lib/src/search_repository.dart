@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:solved_api/solved_api.dart';
 
 class SearchRepository {
-  SearchRepository({SolvedApiClient? solvedApiClient})
-      : _solvedApiClient = solvedApiClient ?? SolvedApiClient();
+  SearchRepository({required SolvedApiClient solvedApiClient})
+      : _solvedApiClient = solvedApiClient;
 
   final SolvedApiClient _solvedApiClient;
 
