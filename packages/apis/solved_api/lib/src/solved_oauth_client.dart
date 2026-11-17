@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart' show MediaType;
 
 import 'solved_oauth_contract.dart';
+import 'solved_proxy_transport.dart';
 
 enum SolvedOAuthOperation { token, revoke }
 
@@ -96,21 +96,21 @@ final class SolvedOAuthClient {
   SolvedOAuthClient({
     required Uri proxyBaseUri,
     http.Client? httpClient,
-    Duration requestTimeout = const Duration(seconds: 10),
+    this.requestTimeout = const Duration(seconds: 10),
     bool allowInsecureLoopback = false,
-  })  : _proxyBaseUri = _validateProxyBaseUri(
-          proxyBaseUri,
+  })  : _proxyBaseUri = proxyBaseUri,
+        _transport = SolvedProxyTransport(
+          proxyBaseUri: proxyBaseUri,
+          httpClient: httpClient,
+          requestTimeout: requestTimeout,
           allowInsecureLoopback: allowInsecureLoopback,
-        ),
-        requestTimeout = _validateRequestTimeout(requestTimeout),
-        _httpClient = httpClient ?? http.Client(),
-        _ownsHttpClient = httpClient == null;
+        );
 
-  static const int maximumPayloadBytes = 64 * 1024;
+  static const int maximumPayloadBytes =
+      SolvedProxyTransport.maximumPayloadBytes;
 
   final Uri _proxyBaseUri;
-  final http.Client _httpClient;
-  final bool _ownsHttpClient;
+  final SolvedProxyTransport _transport;
   final Duration requestTimeout;
 
   bool _isClosed = false;
@@ -162,7 +162,7 @@ final class SolvedOAuthClient {
   void close() {
     if (_isClosed) return;
     _isClosed = true;
-    if (_ownsHttpClient) _httpClient.close();
+    _transport.close();
   }
 
   Future<Object?> _post({
@@ -174,30 +174,31 @@ final class SolvedOAuthClient {
       throw StateError('SolvedOAuthClient is closed');
     }
 
-    final abortTrigger = Completer<void>();
-    final request = http.AbortableRequest(
-      'POST',
-      uri,
-      abortTrigger: abortTrigger.future,
-    )
-      ..followRedirects = false
-      ..maxRedirects = 0
-      ..headers['accept'] = 'application/json'
-      ..bodyFields = formFields;
-    if (request.bodyBytes.length > maximumPayloadBytes) {
+    late Future<SolvedProxyResponse> responseFuture;
+    try {
+      responseFuture = _transport.postForm(
+        relativePath: switch (operation) {
+          SolvedOAuthOperation.token => 'oauth/token',
+          SolvedOAuthOperation.revoke => 'oauth/revoke',
+        },
+        fields: formFields,
+      );
+    } on SolvedProxyRequestTooLarge {
       throw ArgumentError(
         'Encoded OAuth request exceeds the $maximumPayloadBytes-byte limit',
       );
     }
 
-    late _OAuthHttpResponse response;
+    late SolvedProxyResponse response;
     try {
-      response = await _sendAndRead(request).timeout(
-        requestTimeout,
-        onTimeout: () {
-          abortTrigger.complete();
-          throw TimeoutException('OAuth request timed out', requestTimeout);
-        },
+      response = await responseFuture;
+    } on SolvedProxyDeadlineExceeded catch (_, stackTrace) {
+      throw SolvedOAuthOutcomeUnknown(
+        operation: operation,
+        uri: uri,
+        kind: SolvedOAuthFailureKind.timeout,
+        cause: TimeoutException('OAuth request timed out', requestTimeout),
+        stackTrace: stackTrace,
       );
     } on TimeoutException catch (error, stackTrace) {
       throw SolvedOAuthOutcomeUnknown(
@@ -207,7 +208,7 @@ final class SolvedOAuthClient {
         cause: error,
         stackTrace: stackTrace,
       );
-    } on _OAuthResponseTooLarge catch (error, stackTrace) {
+    } on SolvedProxyResponseTooLarge catch (error, stackTrace) {
       throw SolvedOAuthOutcomeUnknown(
         operation: operation,
         uri: uri,
@@ -294,75 +295,6 @@ final class SolvedOAuthClient {
       error: oauthError,
     );
   }
-
-  Future<_OAuthHttpResponse> _sendAndRead(http.Request request) async {
-    final response = await _httpClient.send(request);
-    final builder = BytesBuilder(copy: false);
-    await for (final chunk in response.stream) {
-      if (builder.length + chunk.length > maximumPayloadBytes) {
-        throw _OAuthResponseTooLarge(response.statusCode);
-      }
-      builder.add(chunk);
-    }
-    return _OAuthHttpResponse(
-      statusCode: response.statusCode,
-      headers: response.headers,
-      bodyBytes: builder.takeBytes(),
-    );
-  }
-}
-
-final class _OAuthHttpResponse {
-  const _OAuthHttpResponse({
-    required this.statusCode,
-    required this.headers,
-    required this.bodyBytes,
-  });
-
-  final int statusCode;
-  final Map<String, String> headers;
-  final Uint8List bodyBytes;
-}
-
-final class _OAuthResponseTooLarge implements Exception {
-  const _OAuthResponseTooLarge(this.statusCode);
-
-  final int statusCode;
-}
-
-Uri _validateProxyBaseUri(
-  Uri uri, {
-  required bool allowInsecureLoopback,
-}) {
-  final isSecure = uri.scheme == 'https';
-  final isLoopbackHttp = allowInsecureLoopback &&
-      uri.scheme == 'http' &&
-      (uri.host == 'localhost' || uri.host == '127.0.0.1' || uri.host == '::1');
-  final isSolvedAcHost =
-      uri.host == 'solved.ac' || uri.host.endsWith('.solved.ac');
-  if (!uri.isAbsolute ||
-      uri.host.isEmpty ||
-      uri.userInfo.isNotEmpty ||
-      uri.hasQuery ||
-      uri.hasFragment ||
-      uri.path != '/solved/v4/' ||
-      (!isSecure && !isLoopbackHttp) ||
-      isSolvedAcHost) {
-    throw ArgumentError.value(
-      uri,
-      'proxyBaseUri',
-      'Must be an HTTPS solved-proxy /solved/v4/ base URI '
-          'or an explicitly allowed HTTP loopback equivalent',
-    );
-  }
-  return uri;
-}
-
-Duration _validateRequestTimeout(Duration timeout) {
-  if (timeout <= Duration.zero) {
-    throw ArgumentError.value(timeout, 'requestTimeout', 'Must be positive');
-  }
-  return timeout;
 }
 
 void _requireJsonContentType(Map<String, String> headers) {
