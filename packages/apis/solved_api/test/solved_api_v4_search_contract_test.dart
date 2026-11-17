@@ -156,17 +156,20 @@ void main() {
 
       expect(actual.exact?.handle, 'index');
       expect(actual.exact?.tier, isNull);
+      expect(actual.exact?.rank, 1);
       expect(actual.exact?.rating, 3000);
       expect(actual.exact?.solvedCount, 5000);
       expect(actual.exact?.reputation, 500);
       expect(actual.items, hasLength(2));
       expect(actual.items.first.handle, 'index');
       expect(actual.items.first.tier, isNull);
+      expect(actual.items.first.rank, 1);
       expect(actual.items.first.rating, 3000);
       expect(actual.items.first.solvedCount, 5000);
       expect(actual.items.first.reputation, 500);
       expect(actual.items.last.handle, 'index2');
       expect(actual.items.last.tier, 20);
+      expect(actual.items.last.rank, 2);
       expect(actual.items.last.rating, 2500);
       expect(actual.items.last.solvedCount, 2500);
       expect(actual.items.last.reputation, 250);
@@ -184,7 +187,7 @@ void main() {
           ? body['exact'] as Map<String, dynamic>
           : (body['items'] as List).first as Map<String, dynamic>;
 
-      for (final field in ['rating', 'solvedCount', 'reputation']) {
+      for (final field in ['rank', 'rating', 'solvedCount', 'reputation']) {
         for (final location in ['exact', 'items']) {
           final missing = source();
           item(missing, location).remove(field);
@@ -207,8 +210,13 @@ void main() {
       }
 
       final unbounded = source();
+      item(unbounded, 'exact')['rank'] = -1;
+      item(unbounded, 'items')['rank'] = 0;
       item(unbounded, 'exact')['reputation'] = -1;
-      expect(endpoint.decode(unbounded).exact?.reputation, -1);
+      final actual = endpoint.decode(unbounded);
+      expect(actual.exact?.rank, -1);
+      expect(actual.items.first.rank, 0);
+      expect(actual.exact?.reputation, -1);
     });
 
     test('preserves zero public summaries', () {
@@ -217,6 +225,7 @@ void main() {
           'handle': 'zero',
           'tier': 0,
           'profileImageUrl': null,
+          'rank': 0,
           'rating': 0,
           'solvedCount': 0,
           'reputation': 0,
@@ -224,12 +233,20 @@ void main() {
         'items': <Object>[],
       });
 
+      expect(actual.exact?.rank, 0);
       expect(actual.exact?.rating, 0);
       expect(actual.exact?.solvedCount, 0);
       expect(actual.exact?.reputation, 0);
     });
 
-    test('preserves an absent exact match', () {
+    test('requires the exact key while preserving an explicit null match', () {
+      expect(
+        () => contract.searchUsers('missing').decode({
+          'items': <Object>[],
+        }),
+        throwsFormatException,
+      );
+
       final actual = contract.searchUsers('missing').decode({
         'exact': null,
         'items': <Object>[],
