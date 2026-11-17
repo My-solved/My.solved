@@ -69,8 +69,12 @@ It never emits response values, query values, local paths, or timestamps.
 Response locations use JSON Pointer escaping (`~0` for `~` and `~1` for `/`)
 with `*` as an array-item wildcard. A literal `*` object key is escaped as
 `~2`. `required` and `optional` describe only the supplied capture samples;
-they do not claim an upstream schema guarantee. Array item counts and changes
-to scalar values are intentionally ignored.
+they do not claim an upstream schema guarantee. An array with no observed
+items has an explicit wildcard with `types: []` and `presence: "unobserved"`.
+When either capture has that wildcard state, the diff reports the wildcard
+transition but suppresses descendant changes that the empty sample cannot
+prove. Array item counts and changes to scalar values are intentionally
+ignored.
 
 The diff accepts only directories produced by the capture workflow. It rejects
 unknown files, symlinks, unredacted query values, malformed manifests, and

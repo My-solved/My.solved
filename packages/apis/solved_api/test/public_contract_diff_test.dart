@@ -288,6 +288,147 @@ void main() {
         isNot(contains('private-')));
   });
 
+  test('reports nonempty and empty array transitions at the wildcard only', () {
+    final nonempty = _writeCapture(
+      temporaryRoot,
+      'nonempty',
+      [
+        _exchange(
+          response: {
+            'items': [
+              {
+                'id': 1,
+                'nested': {'value': true},
+              },
+            ],
+          },
+        ),
+      ],
+    );
+    final empty = _writeCapture(
+      temporaryRoot,
+      'empty',
+      [
+        _exchange(response: {'items': <Object?>[]}),
+      ],
+    );
+
+    final removedObservation = _responseChanges(nonempty, empty);
+    final addedObservation = _responseChanges(empty, nonempty);
+
+    for (final changes in [removedObservation, addedObservation]) {
+      expect(changes, hasLength(1));
+      expect(changes.single.pointer, '/items/*');
+      expect(changes.single.change, 'modified');
+    }
+    expect(removedObservation.single.before!.types, ['object']);
+    expect(removedObservation.single.before!.presence, 'required');
+    expect(removedObservation.single.after!.types, isEmpty);
+    expect(removedObservation.single.after!.presence, 'unobserved');
+    expect(addedObservation.single.before!.types, isEmpty);
+    expect(addedObservation.single.before!.presence, 'unobserved');
+    expect(addedObservation.single.after!.types, ['object']);
+    expect(addedObservation.single.after!.presence, 'required');
+  });
+
+  test('treats two empty array samples as the same observation', () {
+    final before = _writeCapture(
+      temporaryRoot,
+      'before',
+      [
+        _exchange(response: {'items': <Object?>[]}),
+      ],
+    );
+    final after = _writeCapture(
+      temporaryRoot,
+      'after',
+      [
+        _exchange(response: {'items': <Object?>[]}),
+      ],
+    );
+    final beforeSnapshot = readPublicContractCapture(before);
+    final emptyWildcard =
+        beforeSnapshot.exchanges['scenario']!.responseSchema['/items/*']!;
+
+    expect(emptyWildcard.types, isEmpty);
+    expect(emptyWildcard.presence, 'unobserved');
+    expect(
+      diffPublicContractCaptures(
+        beforeSnapshot,
+        readPublicContractCapture(after),
+      ).operations,
+      isEmpty,
+    );
+  });
+
+  test('uses the nearest unobserved wildcard for nested arrays', () {
+    final allEmpty = _writeCapture(
+      temporaryRoot,
+      'all-empty',
+      [
+        _exchange(
+          response: {
+            'groups': [<Object?>[], <Object?>[]],
+          },
+        ),
+      ],
+    );
+    final nestedItems = _writeCapture(
+      temporaryRoot,
+      'nested-items',
+      [
+        _exchange(
+          response: {
+            'groups': [
+              [
+                {
+                  'id': 1,
+                  'meta': {'score': 100},
+                },
+              ],
+              <Object?>[],
+            ],
+          },
+        ),
+      ],
+    );
+
+    final changes = _responseChanges(allEmpty, nestedItems);
+
+    expect(changes, hasLength(1));
+    expect(changes.single.pointer, '/groups/*/*');
+    expect(changes.single.before!.presence, 'unobserved');
+    expect(changes.single.after!.types, ['object']);
+  });
+
+  test('suppresses every nested descendant below an empty root array', () {
+    final emptyRoot = _writeCapture(
+      temporaryRoot,
+      'empty-root',
+      [_exchange(response: <Object?>[])],
+    );
+    final nestedItems = _writeCapture(
+      temporaryRoot,
+      'nested-root-items',
+      [
+        _exchange(
+          response: [
+            [
+              {'id': 1},
+            ],
+          ],
+        ),
+      ],
+    );
+
+    final changes = _responseChanges(emptyRoot, nestedItems);
+
+    expect(changes, hasLength(1));
+    expect(changes.single.pointer, '/*');
+    expect(changes.single.before!.presence, 'unobserved');
+    expect(changes.single.after!.types, ['array']);
+  });
+
   test('CLI emits JSON without response values or local paths', () async {
     final before = _writeCapture(
       temporaryRoot,
@@ -666,3 +807,12 @@ Future<ProcessResult> _runCli({
       ],
       workingDirectory: Directory.current.path,
     );
+
+List<PublicContractResponsePathDiff> _responseChanges(
+  Directory before,
+  Directory after,
+) =>
+    diffPublicContractCaptures(
+      readPublicContractCapture(before),
+      readPublicContractCapture(after),
+    ).operations.single.responseChanges;

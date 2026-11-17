@@ -521,6 +521,9 @@ Map<String, PublicContractSchemaNode> _inventoryResponseSchema(Object? value) {
         (count) => count + current.length,
         ifAbsent: () => current.length,
       );
+      if (current.isEmpty) {
+        nodes.putIfAbsent('$pointer/*', _MutableSchemaNode.new);
+      }
       for (final item in current) {
         visit(item, '$pointer/*');
       }
@@ -541,7 +544,11 @@ Map<String, PublicContractSchemaNode> _inventoryResponseSchema(Object? value) {
       types: mutable.types.toList()
         ..sort((left, right) =>
             _jsonTypeOrder[left]!.compareTo(_jsonTypeOrder[right]!)),
-      presence: mutable.observed == opportunities ? 'required' : 'optional',
+      presence: mutable.observed == 0
+          ? 'unobserved'
+          : mutable.observed == opportunities
+              ? 'required'
+              : 'optional',
     );
   }
   return Map<String, PublicContractSchemaNode>.unmodifiable(result);
@@ -552,8 +559,21 @@ List<PublicContractResponsePathDiff> _diffResponseSchemas(
   Map<String, PublicContractSchemaNode>? after,
 ) {
   final pointers = {...?before?.keys, ...?after?.keys}.toList()..sort();
+  final unobservedWildcards = <String>[];
+  for (final pointer in pointers) {
+    if ((before?[pointer]?.presence == 'unobserved' ||
+            after?[pointer]?.presence == 'unobserved') &&
+        pointer.endsWith('/*')) {
+      unobservedWildcards.add(pointer);
+    }
+  }
   final changes = <PublicContractResponsePathDiff>[];
   for (final pointer in pointers) {
+    if (unobservedWildcards.any(
+      (wildcard) => pointer.startsWith('$wildcard/'),
+    )) {
+      continue;
+    }
     final beforeNode = before?[pointer];
     final afterNode = after?[pointer];
     if (beforeNode != null &&
