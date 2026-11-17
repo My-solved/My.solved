@@ -1,0 +1,32 @@
+[
+  {
+    "organizationId": 323,
+    "name": "숭실대학교",
+    "type": "university",
+    "rating": 3132,
+    "userCount": 816,
+    "voteCount": 15899,
+    "solvedCount": 14493,
+    "color": "#000000"
+  },
+  {
+    "organizationId": 1609,
+    "name": "SW마에스트로",
+    "type": "community",
+    "rating": 2904,
+    "userCount": 185,
+    "voteCount": 13428,
+    "solvedCount": 10730,
+    "color": "#000000"
+  },
+  {
+    "organizationId": 1932,
+    "name": "Best of the Best",
+    "type": "community",
+    "rating": 2243,
+    "userCount": 2,
+    "voteCount": 1590,
+    "solvedCount": 3354,
+    "color": "#000000"
+  }
+]

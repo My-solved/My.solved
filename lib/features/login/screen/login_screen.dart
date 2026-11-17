@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:my_solved/app/bloc/app_bloc.dart';
 import 'package:my_solved/components/atoms/button/button.dart';
 import 'package:my_solved/components/atoms/text_field/text_field.dart';
 import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
 import 'package:my_solved/features/login/bloc/login_bloc.dart';
+import 'package:user_repository/user_repository.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -13,8 +15,16 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => LoginBloc(),
-      child: LoginView(),
+      create: (context) => LoginBloc(
+        userRepository: context.read<UserRepository>(),
+      ),
+      child: BlocListener<LoginBloc, LoginState>(
+        listenWhen: (previous, current) => current is LoginSuccess,
+        listener: (context, state) {
+          context.read<AppBloc>().add(Login(handle: state.handle));
+        },
+        child: LoginView(),
+      ),
     );
   }
 }
@@ -83,7 +93,6 @@ class _LoginViewState extends State<LoginView> {
                               : () => context
                                   .read<LoginBloc>()
                                   .add(LoginButtonTapped(
-                                    context: context,
                                     handle: state.handle,
                                   )),
                           text: "로그인",
