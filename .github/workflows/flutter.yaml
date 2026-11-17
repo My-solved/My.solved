@@ -139,6 +139,11 @@ jobs:
           cd packages/repositories/contest_repository
           flutter test
 
+      - name: Test Contest Notification Repository  🛰️
+        run: |
+          cd packages/repositories/contest_notification_repository
+          flutter test
+
       - name: Test Shared Preferences Repository  🛰️
         run: |
           cd packages/repositories/shared_preferences_repository
