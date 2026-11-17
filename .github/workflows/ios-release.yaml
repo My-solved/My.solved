@@ -7,7 +7,7 @@ on:
 
 env:
   JAVA_VERSION: "21.x"
-  FLUTTER_VERSION: "3.29.x"
+  FLUTTER_VERSION: "3.29.0"
   MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
 
 jobs:
