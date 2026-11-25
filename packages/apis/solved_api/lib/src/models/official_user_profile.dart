@@ -214,6 +214,39 @@ final class OfficialUserProfileBan {
   final String until;
 }
 
+/// A birthday embedded in official v4 public-profile metadata.
+///
+/// Components are raw nullable integers; the schema declares no bounds or
+/// calendar rules.
+final class OfficialUserProfileBirthday {
+  const OfficialUserProfileBirthday({
+    required this.year,
+    required this.month,
+    required this.day,
+  });
+
+  final int? year;
+  final int? month;
+  final int? day;
+}
+
+/// Metadata embedded in an official v4 public profile.
+final class OfficialUserProfileMetadata {
+  const OfficialUserProfileMetadata({
+    required this.countryCode,
+    required this.pronouns,
+    required this.name,
+    required this.nameNative,
+    required this.birthday,
+  });
+
+  final String? countryCode;
+  final String? pronouns;
+  final String? name;
+  final String? nameNative;
+  final OfficialUserProfileBirthday? birthday;
+}
+
 /// The official v4 public profile with its wire metadata preserved.
 final class OfficialUserProfile extends UserProfile {
   const OfficialUserProfile({
@@ -229,6 +262,7 @@ final class OfficialUserProfile extends UserProfile {
     required this.linkedAccounts,
     required this.affiliations,
     required this.bans,
+    required this.metadata,
     required super.handle,
     required super.profileImageUrl,
     super.bio,
@@ -294,6 +328,9 @@ final class OfficialUserProfile extends UserProfile {
   ///
   /// Decoder-produced lists are unmodifiable. An empty list is authoritative.
   final List<OfficialUserProfileBan> bans;
+
+  /// Required official profile metadata. Its individual values may be null.
+  final OfficialUserProfileMetadata metadata;
 
   @override
   OfficialUserProfileBackground? get background =>

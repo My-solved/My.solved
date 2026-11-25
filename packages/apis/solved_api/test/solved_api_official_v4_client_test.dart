@@ -153,6 +153,13 @@ void main() {
         expect(profile.bans.last.banType, OfficialUserProfileBanType.vote);
         expect(profile.bans.last.banReason, isNull);
         expect(profile.bans.last.until, '2027-12-31');
+        expect(profile.metadata.countryCode, 'KR');
+        expect(profile.metadata.pronouns, 'they/them');
+        expect(profile.metadata.name, 'Index');
+        expect(profile.metadata.nameNative, '인덱스');
+        expect(profile.metadata.birthday?.year, 1999);
+        expect(profile.metadata.birthday?.month, 12);
+        expect(profile.metadata.birthday?.day, 31);
         expect(profile.backgroundId, 'anniversary_1st');
         expect(profile.background, isA<OfficialUserProfileBackground>());
         expect(profile.background?.backgroundVideoUrl, isNull);

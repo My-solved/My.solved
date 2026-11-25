@@ -179,6 +179,13 @@ void main() {
     expect(actual.bans.last.banReason, isNull);
     expect(actual.bans.last.reason, 'Manual review');
     expect(actual.bans.last.until, '2027-12-31');
+    expect(actual.metadata.countryCode, 'KR');
+    expect(actual.metadata.pronouns, 'they/them');
+    expect(actual.metadata.name, 'Index');
+    expect(actual.metadata.nameNative, '인덱스');
+    expect(actual.metadata.birthday?.year, 1999);
+    expect(actual.metadata.birthday?.month, 12);
+    expect(actual.metadata.birthday?.day, 31);
     expect(actual.voteCount, 37);
     expect(actual.legacyContributionCount, isNull);
     expect(actual.reverseRivalCount, isNull);
@@ -979,6 +986,217 @@ void main() {
     expect(actual.bans[1].reason, '  ');
     expect(actual.bans.first.until, '');
     expect(() => actual.bans.removeAt(0), throwsUnsupportedError);
+  });
+
+  test('requires the exact public profile metadata shape', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_profile.json')) as Map,
+        );
+    Map<String, Object?> metadata() => <String, Object?>{
+          'countryCode': 'KR',
+          'pronouns': 'they/them',
+          'name': 'Index',
+          'nameNative': '인덱스',
+          'birthday': <String, Object?>{
+            'year': 1999,
+            'month': 12,
+            'day': 31,
+          },
+        };
+
+    expect(
+      () => endpoint.decode(source()..remove('metadata')),
+      throwsFormatException,
+      reason: 'metadata missing',
+    );
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      'metadata',
+      const <Object?>[],
+    ]) {
+      expect(
+        () => endpoint.decode(source()..['metadata'] = invalid),
+        throwsFormatException,
+        reason: 'metadata = $invalid',
+      );
+    }
+
+    final invalidStringValues = <Object?>[
+      0,
+      false,
+      const <Object?>[],
+      const <String, Object?>{},
+    ];
+    for (final field in ['countryCode', 'pronouns', 'name', 'nameNative']) {
+      expect(
+        () => endpoint.decode(
+          source()..['metadata'] = (metadata()..remove(field)),
+        ),
+        throwsFormatException,
+        reason: 'missing metadata.$field',
+      );
+      for (final invalid in invalidStringValues) {
+        expect(
+          () => endpoint.decode(
+            source()..['metadata'] = (metadata()..[field] = invalid),
+          ),
+          throwsFormatException,
+          reason: 'metadata.$field = $invalid',
+        );
+      }
+    }
+
+    expect(
+      () => endpoint.decode(
+        source()..['metadata'] = (metadata()..remove('birthday')),
+      ),
+      throwsFormatException,
+      reason: 'metadata.birthday missing',
+    );
+    for (final invalid in <Object>[
+      0,
+      false,
+      'birthday',
+      const <Object>[],
+    ]) {
+      expect(
+        () => endpoint.decode(
+          source()..['metadata'] = (metadata()..['birthday'] = invalid),
+        ),
+        throwsFormatException,
+        reason: 'metadata.birthday = $invalid',
+      );
+    }
+
+    Map<String, Object?> birthday() => <String, Object?>{
+          'year': 1999,
+          'month': 12,
+          'day': 31,
+        };
+    for (final field in ['year', 'month', 'day']) {
+      expect(
+        () => endpoint.decode(
+          source()
+            ..['metadata'] =
+                (metadata()..['birthday'] = (birthday()..remove(field))),
+        ),
+        throwsFormatException,
+        reason: 'missing metadata.birthday.$field',
+      );
+      for (final invalid in <Object>[
+        1.0,
+        '1',
+        false,
+        const <Object>[],
+        const <String, Object?>{},
+      ]) {
+        expect(
+          () => endpoint.decode(
+            source()
+              ..['metadata'] =
+                  (metadata()..['birthday'] = (birthday()..[field] = invalid)),
+          ),
+          throwsFormatException,
+          reason: 'metadata.birthday.$field = $invalid',
+        );
+      }
+
+      final nullableField = endpoint.decode(
+        source()
+          ..['metadata'] =
+              (metadata()..['birthday'] = (birthday()..[field] = null)),
+      );
+      expect(
+        <String, int?>{
+          'year': nullableField.metadata.birthday?.year,
+          'month': nullableField.metadata.birthday?.month,
+          'day': nullableField.metadata.birthday?.day,
+        }[field],
+        isNull,
+        reason: 'metadata.birthday.$field accepts explicit null',
+      );
+    }
+
+    final nullable = endpoint.decode(
+      source()
+        ..['metadata'] = <String, Object?>{
+          'countryCode': null,
+          'pronouns': null,
+          'name': null,
+          'nameNative': null,
+          'birthday': null,
+        },
+    );
+    expect(nullable.metadata.countryCode, isNull);
+    expect(nullable.metadata.pronouns, isNull);
+    expect(nullable.metadata.name, isNull);
+    expect(nullable.metadata.nameNative, isNull);
+    expect(nullable.metadata.birthday, isNull);
+  });
+
+  test('preserves raw public profile metadata without inference', () {
+    final endpoint = contract.userProfile('index');
+    final birthday = <String, Object?>{
+      'year': -1,
+      'month': 13,
+      'day': 0,
+      'futureBirthdayField': 'allowed',
+    };
+    final metadata = <String, Object?>{
+      'countryCode': 'not-iso',
+      'pronouns': '  ',
+      'name': '',
+      'nameNative': ' 이름 ',
+      'birthday': birthday,
+      'futureMetadataField': 'allowed',
+    };
+    final source = Map<String, dynamic>.from(
+      jsonDecode(fixture('v4/user_profile.json')) as Map,
+    )
+      ..['metadata'] = metadata
+      ..['futureProfileField'] = 'allowed';
+
+    final actual = endpoint.decode(source);
+
+    expect(actual.metadata.countryCode, 'not-iso');
+    expect(actual.metadata.pronouns, '  ');
+    expect(actual.metadata.name, '');
+    expect(actual.metadata.nameNative, ' 이름 ');
+    expect(actual.metadata.birthday?.year, -1);
+    expect(actual.metadata.birthday?.month, 13);
+    expect(actual.metadata.birthday?.day, 0);
+
+    birthday['year'] = 2000;
+    metadata['countryCode'] = 'KR';
+    metadata['birthday'] = null;
+    expect(actual.metadata.countryCode, 'not-iso');
+    expect(actual.metadata.birthday?.year, -1);
+
+    final incomplete = endpoint.decode(
+      Map<String, dynamic>.from(
+        jsonDecode(fixture('v4/user_profile.json')) as Map,
+      )..['metadata'] = <String, Object?>{
+          'countryCode': null,
+          'pronouns': '',
+          'name': null,
+          'nameNative': '  ',
+          'birthday': <String, Object?>{
+            'year': null,
+            'month': 99,
+            'day': null,
+          },
+        },
+    );
+    expect(incomplete.metadata.countryCode, isNull);
+    expect(incomplete.metadata.pronouns, '');
+    expect(incomplete.metadata.name, isNull);
+    expect(incomplete.metadata.nameNative, '  ');
+    expect(incomplete.metadata.birthday?.year, isNull);
+    expect(incomplete.metadata.birthday?.month, 99);
+    expect(incomplete.metadata.birthday?.day, isNull);
   });
 
   test('requires exact public profile streak state types', () {

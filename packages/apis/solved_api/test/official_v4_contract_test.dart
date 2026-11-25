@@ -95,6 +95,7 @@ void main() {
         'linkedAccounts',
         'affiliations',
         'bans',
+        'metadata',
         'voteCount',
         'reputation',
         'noRatingSolvedCount',
@@ -275,6 +276,33 @@ void main() {
     });
     for (final field in ['reason', 'until']) {
       expect(_map(banProperties[field]), {'type': 'string'});
+    }
+
+    final metadata = _map(profileProperties['metadata']);
+    expect(metadata['type'], 'object');
+    expect(_required(metadata), [
+      'countryCode',
+      'pronouns',
+      'name',
+      'nameNative',
+      'birthday',
+    ]);
+    expect(metadata.containsKey('additionalProperties'), isFalse);
+    final metadataProperties = _properties(metadata);
+    for (final field in ['countryCode', 'pronouns', 'name', 'nameNative']) {
+      expect(_map(metadataProperties[field]), {
+        'type': ['string', 'null'],
+      });
+    }
+    final birthday = _map(metadataProperties['birthday']);
+    expect(birthday['type'], ['object', 'null']);
+    expect(_required(birthday), ['year', 'month', 'day']);
+    expect(birthday.containsKey('additionalProperties'), isFalse);
+    final birthdayProperties = _properties(birthday);
+    for (final field in ['year', 'month', 'day']) {
+      expect(_map(birthdayProperties[field]), {
+        'type': ['integer', 'null'],
+      });
     }
 
     final background = _map(profileProperties['background']);

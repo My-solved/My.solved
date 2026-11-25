@@ -120,10 +120,14 @@
     }
   ],
   "metadata": {
-    "countryCode": null,
-    "pronouns": null,
-    "name": null,
-    "nameNative": null,
-    "birthday": null
+    "countryCode": "KR",
+    "pronouns": "they/them",
+    "name": "Index",
+    "nameNative": "인덱스",
+    "birthday": {
+      "year": 1999,
+      "month": 12,
+      "day": 31
+    }
   }
 }
