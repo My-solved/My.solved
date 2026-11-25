@@ -145,6 +145,82 @@ void main() {
     expect(_map(profileProperties['streakTheme']), {
       'type': ['string', 'null'],
     });
+
+    final background = _map(profileProperties['background']);
+    expect(background['type'], ['object', 'null']);
+    expect(_required(background), [
+      'key',
+      'backgroundImageUrl',
+      'fallbackBackgroundImageUrl',
+      'backgroundVideoUrl',
+      'thumbnailPlaceholder',
+      'isIllust',
+      'displayName',
+      'authors',
+    ]);
+    expect(background.containsKey('additionalProperties'), isFalse);
+    final backgroundProperties = _properties(background);
+    expect(_map(backgroundProperties['key']), {'type': 'string'});
+    expect(_map(backgroundProperties['backgroundImageUrl']), {
+      'type': 'string',
+      'format': 'uri',
+    });
+    for (final field in [
+      'fallbackBackgroundImageUrl',
+      'backgroundVideoUrl',
+    ]) {
+      expect(_map(backgroundProperties[field]), {
+        'type': ['string', 'null'],
+        'format': 'uri',
+      });
+    }
+    for (final field in ['thumbnailPlaceholder', 'displayName']) {
+      expect(_map(backgroundProperties[field]), {
+        'type': ['string', 'null'],
+      });
+    }
+    expect(_map(backgroundProperties['isIllust']), {'type': 'boolean'});
+    final authors = _map(backgroundProperties['authors']);
+    expect(authors['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(authors.containsKey(constraint), isFalse);
+    }
+    final author = _map(authors['items']);
+    expect(author['type'], 'object');
+    expect(_required(author), [
+      'key',
+      'displayName',
+      'role',
+      'authorUrl',
+      'handle',
+      'twitter',
+      'instagram',
+    ]);
+    expect(author.containsKey('additionalProperties'), isFalse);
+    final authorProperties = _properties(author);
+    for (final field in ['key', 'role']) {
+      expect(_map(authorProperties[field]), {'type': 'string'});
+    }
+    for (final field in [
+      'displayName',
+      'authorUrl',
+      'handle',
+      'twitter',
+      'instagram',
+    ]) {
+      expect(_map(authorProperties[field]), {
+        'type': ['string', 'null'],
+      });
+    }
+
+    final badge = _map(profileProperties['badge']);
+    expect(badge['type'], ['object', 'null']);
+    expect(_required(badge), ['key', 'name', 'imageUrl']);
+    expect(badge.containsKey('additionalProperties'), isFalse);
+    final badgeProperties = _properties(badge);
+    for (final field in ['key', 'name', 'imageUrl']) {
+      expect(_map(badgeProperties[field]), {'type': 'string'});
+    }
     expect(profileProperties.containsKey('overRating'), isFalse);
 
     final reputation = _get(contract, '/api/v4/users/{handle}/reputation');

@@ -754,17 +754,15 @@ OfficialUserProfile _officialProfile({
   streakFrozenYesterday: false,
   streakTheme: null,
   handle: 'w8385',
-  badgeId: null,
-  backgroundId: null,
   profileImageUrl: null,
   solvedCount: 1,
-  legacyContributionCount: null,
   userClass: 1,
-  reverseRivalCount: null,
   tier: 1,
   rating: 1,
   currentStreak: currentStreak,
   maxStreak: maxStreak,
+  background: null,
+  badge: null,
 );
 
 final _user = _profile();

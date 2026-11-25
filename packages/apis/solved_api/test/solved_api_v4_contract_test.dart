@@ -115,13 +115,31 @@ void main() {
     expect(actual.reverseRivalCount, isNull);
     expect(actual.reputation, 314);
     expect(actual.backgroundId, 'anniversary_1st');
+    expect(actual.background, isA<OfficialUserProfileBackground>());
     expect(actual.background?.key, 'anniversary_1st');
     expect(
       actual.background?.imageUrl,
       'https://example.com/background.png',
     );
+    expect(
+      actual.background?.fallbackImageUrl,
+      'https://example.com/background-fallback.png',
+    );
+    expect(actual.background?.backgroundVideoUrl, isNull);
+    expect(actual.background?.thumbnailPlaceholder, isNull);
+    expect(actual.background?.isIllust, isTrue);
+    expect(actual.background?.displayName, 'First Anniversary');
+    expect(actual.background?.authors, isEmpty);
     expect(actual.badgeId, 'boardgame');
+    expect(actual.badge, isA<OfficialUserProfileBadge>());
+    expect(actual.badge?.key, 'boardgame');
     expect(actual.badge?.name, 'Board Game');
+    expect(actual.badge?.imageUrl, 'https://example.com/badge.png');
+    final UserProfile base = actual;
+    expect(base.backgroundId, 'anniversary_1st');
+    expect(base.background, same(actual.background));
+    expect(base.badgeId, 'boardgame');
+    expect(base.badge, same(actual.badge));
     expect(actual.ratingBreakdown?.ratingByProblemsSum, 2010);
     expect(actual.ratingBreakdown?.ratingByClass, 200);
     expect(actual.ratingBreakdown?.ratingBySolvedCount, 207);
@@ -379,6 +397,342 @@ void main() {
     expect(actual.streakFrozenYesterday, isTrue);
     expect(actual.streakTheme, '  ');
     expect(endpoint.decode(source..['streakTheme'] = '').streakTheme, '');
+  });
+
+  test('requires nullable embedded profile asset keys and exact shapes', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_profile.json')) as Map,
+        );
+
+    for (final field in ['background', 'badge']) {
+      expect(
+        () => endpoint.decode(source()..remove(field)),
+        throwsFormatException,
+        reason: '$field missing',
+      );
+      for (final invalid in <Object>[
+        0,
+        false,
+        'asset',
+        const <Object>[],
+      ]) {
+        expect(
+          () => endpoint.decode(source()..[field] = invalid),
+          throwsFormatException,
+          reason: '$field = $invalid',
+        );
+      }
+    }
+
+    final actual = endpoint.decode(
+      source()
+        ..['background'] = null
+        ..['badge'] = null,
+    );
+    expect(actual.background, isNull);
+    expect(actual.backgroundId, isNull);
+    expect(actual.badge, isNull);
+    expect(actual.badgeId, isNull);
+  });
+
+  test('strictly preserves the complete embedded profile background', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_profile.json')) as Map,
+        );
+    Map<String, dynamic> background() => Map<String, dynamic>.from(
+          source()['background'] as Map,
+        );
+    final invalidValues = <String, List<Object?>>{
+      'key': [null, 0, false, const <Object>[], const <String, Object?>{}],
+      'backgroundImageUrl': [
+        null,
+        0,
+        false,
+        const <Object>[],
+        const <String, Object?>{},
+      ],
+      'fallbackBackgroundImageUrl': [
+        0,
+        false,
+        const <Object>[],
+        const <String, Object?>{},
+      ],
+      'backgroundVideoUrl': [
+        0,
+        false,
+        const <Object>[],
+        const <String, Object?>{},
+      ],
+      'thumbnailPlaceholder': [
+        0,
+        false,
+        const <Object>[],
+        const <String, Object?>{},
+      ],
+      'isIllust': [
+        null,
+        0,
+        'true',
+        const <Object>[],
+        const <String, Object?>{},
+      ],
+      'displayName': [
+        0,
+        false,
+        const <Object>[],
+        const <String, Object?>{},
+      ],
+      'authors': [null, 0, false, 'authors', const <String, Object?>{}],
+    };
+
+    for (final entry in invalidValues.entries) {
+      final missing = background()..remove(entry.key);
+      expect(
+        () => endpoint.decode(source()..['background'] = missing),
+        throwsFormatException,
+        reason: 'missing background.${entry.key}',
+      );
+      for (final invalid in entry.value) {
+        final malformed = background()..[entry.key] = invalid;
+        expect(
+          () => endpoint.decode(source()..['background'] = malformed),
+          throwsFormatException,
+          reason: 'background.${entry.key} = $invalid',
+        );
+      }
+    }
+
+    final rawBackground = background()
+      ..['key'] = ' raw-key '
+      ..['backgroundImageUrl'] = ''
+      ..['fallbackBackgroundImageUrl'] = 'not a uri'
+      ..['backgroundVideoUrl'] = '../relative-video'
+      ..['thumbnailPlaceholder'] = '  '
+      ..['isIllust'] = false
+      ..['displayName'] = ''
+      ..['authors'] = <Object>[]
+      ..['futureBackgroundField'] = 'allowed';
+    final actual = endpoint.decode(source()..['background'] = rawBackground);
+    expect(actual.backgroundId, ' raw-key ');
+    expect(actual.background?.key, ' raw-key ');
+    expect(actual.background?.imageUrl, '');
+    expect(actual.background?.fallbackImageUrl, 'not a uri');
+    expect(actual.background?.backgroundVideoUrl, '../relative-video');
+    expect(actual.background?.thumbnailPlaceholder, '  ');
+    expect(actual.background?.isIllust, isFalse);
+    expect(actual.background?.displayName, '');
+    expect(actual.background?.authors, isEmpty);
+
+    final nullableBackground = background()
+      ..['fallbackBackgroundImageUrl'] = null
+      ..['backgroundVideoUrl'] = null
+      ..['thumbnailPlaceholder'] = null
+      ..['displayName'] = null;
+    final nullable = endpoint.decode(
+      source()..['background'] = nullableBackground,
+    );
+    expect(nullable.background?.fallbackImageUrl, isNull);
+    expect(nullable.background?.backgroundVideoUrl, isNull);
+    expect(nullable.background?.thumbnailPlaceholder, isNull);
+    expect(nullable.background?.displayName, isNull);
+  });
+
+  test('preserves immutable embedded background authors in wire order', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_profile.json')) as Map,
+        );
+    Map<String, dynamic> author() => <String, dynamic>{
+          'key': 'author-key',
+          'displayName': null,
+          'role': 'illustrator',
+          'authorUrl': null,
+          'handle': null,
+          'twitter': null,
+          'instagram': null,
+        };
+
+    for (final malformed in <Object?>[
+      null,
+      0,
+      false,
+      'author',
+      const <Object>[],
+    ]) {
+      final profile = source();
+      final embedded = Map<String, dynamic>.from(profile['background'] as Map)
+        ..['authors'] = <Object?>[malformed];
+      expect(
+        () => endpoint.decode(profile..['background'] = embedded),
+        throwsFormatException,
+        reason: 'background.authors[] = $malformed',
+      );
+    }
+
+    for (final field in [
+      'key',
+      'displayName',
+      'role',
+      'authorUrl',
+      'handle',
+      'twitter',
+      'instagram',
+    ]) {
+      final missing = author()..remove(field);
+      final profile = source();
+      final embedded = Map<String, dynamic>.from(profile['background'] as Map)
+        ..['authors'] = <Object>[missing];
+      expect(
+        () => endpoint.decode(profile..['background'] = embedded),
+        throwsFormatException,
+        reason: 'missing background.authors[].$field',
+      );
+    }
+
+    for (final field in ['key', 'role']) {
+      for (final invalid in <Object?>[
+        null,
+        0,
+        false,
+        const <Object>[],
+        const <String, Object?>{},
+      ]) {
+        final malformed = author()..[field] = invalid;
+        final profile = source();
+        final embedded = Map<String, dynamic>.from(profile['background'] as Map)
+          ..['authors'] = <Object>[malformed];
+        expect(
+          () => endpoint.decode(profile..['background'] = embedded),
+          throwsFormatException,
+          reason: 'background.authors[].$field = $invalid',
+        );
+      }
+    }
+    for (final field in [
+      'displayName',
+      'authorUrl',
+      'handle',
+      'twitter',
+      'instagram',
+    ]) {
+      for (final invalid in <Object>[
+        0,
+        false,
+        const <Object>[],
+        const <String, Object?>{},
+      ]) {
+        final malformed = author()..[field] = invalid;
+        final profile = source();
+        final embedded = Map<String, dynamic>.from(profile['background'] as Map)
+          ..['authors'] = <Object>[malformed];
+        expect(
+          () => endpoint.decode(profile..['background'] = embedded),
+          throwsFormatException,
+          reason: 'background.authors[].$field = $invalid',
+        );
+      }
+    }
+
+    final first = author()
+      ..['displayName'] = ''
+      ..['authorUrl'] = 'not a uri'
+      ..['futureAuthorField'] = 'allowed';
+    final second = author()
+      ..['displayName'] = '  '
+      ..['handle'] = ''
+      ..['twitter'] = ' twitter '
+      ..['instagram'] = '';
+    final sourceAuthors = <Object>[
+      first,
+      second,
+      Map<String, dynamic>.from(first)
+    ];
+    final profile = source();
+    final embedded = Map<String, dynamic>.from(profile['background'] as Map)
+      ..['authors'] = sourceAuthors;
+    final actual = endpoint.decode(profile..['background'] = embedded);
+
+    first['key'] = 'mutated';
+    (sourceAuthors[1] as Map<String, dynamic>)['displayName'] = 'mutated';
+    sourceAuthors.clear();
+    embedded['authors'] = <Object>[];
+
+    expect(actual.background?.authors, hasLength(3));
+    expect(
+      actual.background?.authors.map((value) => value.key),
+      ['author-key', 'author-key', 'author-key'],
+    );
+    expect(
+      actual.background?.authors.map((value) => value.displayName),
+      ['', '  ', ''],
+    );
+    expect(actual.background?.authors.first.authorUrl, 'not a uri');
+    expect(actual.background?.authors[1].handle, '');
+    expect(actual.background?.authors[1].twitter, ' twitter ');
+    expect(actual.background?.authors[1].instagram, '');
+    expect(
+      () => actual.background!.authors.add(actual.background!.authors.first),
+      throwsUnsupportedError,
+    );
+    expect(
+      () => actual.background!.authors[0] =
+          const OfficialUserProfileBackgroundAuthor(
+        key: 'replacement',
+        displayName: null,
+        role: 'replacement',
+        authorUrl: null,
+        handle: null,
+        twitter: null,
+        instagram: null,
+      ),
+      throwsUnsupportedError,
+    );
+  });
+
+  test('strictly preserves the embedded profile badge', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_profile.json')) as Map,
+        );
+    Map<String, dynamic> badge() => Map<String, dynamic>.from(
+          source()['badge'] as Map,
+        );
+
+    for (final field in ['key', 'name', 'imageUrl']) {
+      final missing = badge()..remove(field);
+      expect(
+        () => endpoint.decode(source()..['badge'] = missing),
+        throwsFormatException,
+        reason: 'missing badge.$field',
+      );
+      for (final invalid in <Object?>[
+        null,
+        0,
+        false,
+        const <Object>[],
+        const <String, Object?>{},
+      ]) {
+        final malformed = badge()..[field] = invalid;
+        expect(
+          () => endpoint.decode(source()..['badge'] = malformed),
+          throwsFormatException,
+          reason: 'badge.$field = $invalid',
+        );
+      }
+    }
+
+    final rawBadge = badge()
+      ..['key'] = ''
+      ..['name'] = '  '
+      ..['imageUrl'] = 'not a uri'
+      ..['futureBadgeField'] = 'allowed';
+    final actual = endpoint.decode(source()..['badge'] = rawBadge);
+    expect(actual.badgeId, '');
+    expect(actual.badge?.key, '');
+    expect(actual.badge?.name, '  ');
+    expect(actual.badge?.imageUrl, 'not a uri');
   });
 
   test('requires nullable tier and profile image keys in public profiles', () {
@@ -1182,9 +1536,11 @@ void main() {
       background?.fallbackImageUrl,
       'https://example.com/background-fallback.png',
     );
+    expect(background, isNot(isA<OfficialUserProfileBackground>()));
     expect(badge.key, 'boardgame');
     expect(badge.name, 'Board Game');
     expect(badge.imageUrl, 'https://example.com/badge.png');
+    expect(badge, isNot(isA<OfficialUserProfileBadge>()));
   });
 
   test('does not reinterpret one item kind as the other', () {

@@ -102,6 +102,15 @@ void main() {
         expect(profile.streakCountedToday, isTrue);
         expect(profile.streakFrozenYesterday, isFalse);
         expect(profile.streakTheme, isNull);
+        expect(profile.backgroundId, 'anniversary_1st');
+        expect(profile.background, isA<OfficialUserProfileBackground>());
+        expect(profile.background?.backgroundVideoUrl, isNull);
+        expect(profile.background?.isIllust, isTrue);
+        expect(profile.background?.displayName, 'First Anniversary');
+        expect(profile.background?.authors, isEmpty);
+        expect(profile.badgeId, 'boardgame');
+        expect(profile.badge, isA<OfficialUserProfileBadge>());
+        expect(profile.badge?.name, 'Board Game');
         expect(activity.from, '2026-11-01');
         expect(activity.to, '2026-11-17');
         expect(activity.maxSolvedCount, 4);
