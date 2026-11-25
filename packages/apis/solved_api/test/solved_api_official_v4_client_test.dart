@@ -123,6 +123,26 @@ void main() {
           OfficialUserProfileLinkedAccountProvider.icpc,
         );
         expect(profile.linkedAccounts.last.name, 'Index Team');
+        expect(profile.affiliations, hasLength(2));
+        expect(profile.affiliations.first.id, 901);
+        expect(profile.affiliations.first.affiliationId, 101);
+        expect(
+          profile.affiliations.first.type,
+          OfficialUserProfileAffiliationType.university,
+        );
+        expect(
+          profile.affiliations.first.logoThumbnailUrl,
+          'https://example.com/university.png',
+        );
+        expect(profile.affiliations.first.color, '#336699');
+        expect(profile.affiliations.last.id, 902);
+        expect(profile.affiliations.last.affiliationId, 202);
+        expect(
+          profile.affiliations.last.type,
+          OfficialUserProfileAffiliationType.community,
+        );
+        expect(profile.affiliations.last.logoThumbnailUrl, isNull);
+        expect(profile.affiliations.last.color, isNull);
         expect(profile.backgroundId, 'anniversary_1st');
         expect(profile.background, isA<OfficialUserProfileBackground>());
         expect(profile.background?.backgroundVideoUrl, isNull);

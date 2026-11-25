@@ -757,6 +757,7 @@ OfficialUserProfile _officialProfile({
   isReverseRival: false,
   ojAccounts: const [],
   linkedAccounts: const [],
+  affiliations: const [],
   handle: 'w8385',
   profileImageUrl: null,
   solvedCount: 1,

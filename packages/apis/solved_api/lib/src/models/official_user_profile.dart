@@ -129,6 +129,44 @@ final class OfficialUserProfileLinkedAccount {
   final String url;
 }
 
+/// Affiliation types exposed by official v4 public profiles.
+enum OfficialUserProfileAffiliationType {
+  undefined('undefined'),
+  university('university'),
+  highSchool('high_school'),
+  middleSchool('middle_school'),
+  elementarySchool('elementary_school'),
+  company('company'),
+  community('community');
+
+  const OfficialUserProfileAffiliationType(this.value);
+
+  final String value;
+}
+
+/// One affiliation embedded in an official v4 public profile.
+final class OfficialUserProfileAffiliation {
+  const OfficialUserProfileAffiliation({
+    required this.id,
+    required this.affiliationId,
+    required this.name,
+    required this.type,
+    required this.logoThumbnailUrl,
+    required this.color,
+  });
+
+  /// Raw finite response number. The schema declares no integer or bounds.
+  final num id;
+
+  /// Raw finite response number, independent from [id].
+  final num affiliationId;
+
+  final String name;
+  final OfficialUserProfileAffiliationType type;
+  final String? logoThumbnailUrl;
+  final String? color;
+}
+
 /// The official v4 public profile with its wire metadata preserved.
 final class OfficialUserProfile extends UserProfile {
   const OfficialUserProfile({
@@ -142,6 +180,7 @@ final class OfficialUserProfile extends UserProfile {
     required this.isReverseRival,
     required this.ojAccounts,
     required this.linkedAccounts,
+    required this.affiliations,
     required super.handle,
     required super.profileImageUrl,
     super.bio,
@@ -197,6 +236,11 @@ final class OfficialUserProfile extends UserProfile {
   ///
   /// Decoder-produced lists are unmodifiable. An empty list is authoritative.
   final List<OfficialUserProfileLinkedAccount> linkedAccounts;
+
+  /// Affiliations in wire order, including duplicates.
+  ///
+  /// Decoder-produced lists are unmodifiable. An empty list is authoritative.
+  final List<OfficialUserProfileAffiliation> affiliations;
 
   @override
   OfficialUserProfileBackground? get background =>

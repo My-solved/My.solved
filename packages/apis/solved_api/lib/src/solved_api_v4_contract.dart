@@ -756,6 +756,13 @@ OfficialUserProfile _decodeV4UserProfile(dynamic json) {
       ),
     ),
   );
+  final affiliations = List<OfficialUserProfileAffiliation>.unmodifiable(
+    _list(body['affiliations'], 'affiliations').map(
+      (item) => _decodeV4OfficialUserProfileAffiliation(
+        _object(item, 'affiliations[]'),
+      ),
+    ),
+  );
   if (!body.containsKey('streakVacation')) {
     throw const FormatException('Missing required field streakVacation');
   }
@@ -778,6 +785,7 @@ OfficialUserProfile _decodeV4UserProfile(dynamic json) {
     isReverseRival: _boolean(body['isReverseRival'], 'isReverseRival'),
     ojAccounts: ojAccounts,
     linkedAccounts: linkedAccounts,
+    affiliations: affiliations,
     handle: _string(body['handle'], 'handle'),
     profileImageUrl: _requiredNullableString(body, 'profileImageUrl'),
     bio: _requiredNullableString(body, 'bio'),
@@ -853,6 +861,52 @@ OfficialUserProfileLinkedAccountProvider
       return OfficialUserProfileLinkedAccountProvider.icpc;
     default:
       throw const FormatException('Unknown linkedAccounts[].provider');
+  }
+}
+
+OfficialUserProfileAffiliation _decodeV4OfficialUserProfileAffiliation(
+  Map<String, dynamic> body,
+) {
+  return OfficialUserProfileAffiliation(
+    id: _number(body['id'], 'affiliations[].id'),
+    affiliationId: _number(
+      body['affiliationId'],
+      'affiliations[].affiliationId',
+    ),
+    name: _string(body['name'], 'affiliations[].name'),
+    type: _decodeV4OfficialUserProfileAffiliationType(body['type']),
+    logoThumbnailUrl: _requiredNullableString(
+      body,
+      'logoThumbnailUrl',
+      'affiliations[].logoThumbnailUrl',
+    ),
+    color: _requiredNullableString(
+      body,
+      'color',
+      'affiliations[].color',
+    ),
+  );
+}
+
+OfficialUserProfileAffiliationType _decodeV4OfficialUserProfileAffiliationType(
+    Object? value) {
+  switch (_string(value, 'affiliations[].type')) {
+    case 'undefined':
+      return OfficialUserProfileAffiliationType.undefined;
+    case 'university':
+      return OfficialUserProfileAffiliationType.university;
+    case 'high_school':
+      return OfficialUserProfileAffiliationType.highSchool;
+    case 'middle_school':
+      return OfficialUserProfileAffiliationType.middleSchool;
+    case 'elementary_school':
+      return OfficialUserProfileAffiliationType.elementarySchool;
+    case 'company':
+      return OfficialUserProfileAffiliationType.company;
+    case 'community':
+      return OfficialUserProfileAffiliationType.community;
+    default:
+      throw const FormatException('Unknown affiliations[].type');
   }
 }
 

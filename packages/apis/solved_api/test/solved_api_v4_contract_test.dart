@@ -145,6 +145,28 @@ void main() {
     );
     expect(actual.linkedAccounts.last.name, 'Index Team');
     expect(actual.linkedAccounts.last.url, 'https://icpc.global/ICPCID/INDEX');
+    expect(actual.affiliations, hasLength(2));
+    expect(actual.affiliations.first.id, 901);
+    expect(actual.affiliations.first.affiliationId, 101);
+    expect(actual.affiliations.first.name, 'Example University');
+    expect(
+      actual.affiliations.first.type,
+      OfficialUserProfileAffiliationType.university,
+    );
+    expect(
+      actual.affiliations.first.logoThumbnailUrl,
+      'https://example.com/university.png',
+    );
+    expect(actual.affiliations.first.color, '#336699');
+    expect(actual.affiliations.last.id, 902);
+    expect(actual.affiliations.last.affiliationId, 202);
+    expect(actual.affiliations.last.name, 'Algorithm Community');
+    expect(
+      actual.affiliations.last.type,
+      OfficialUserProfileAffiliationType.community,
+    );
+    expect(actual.affiliations.last.logoThumbnailUrl, isNull);
+    expect(actual.affiliations.last.color, isNull);
     expect(actual.voteCount, 37);
     expect(actual.legacyContributionCount, isNull);
     expect(actual.reverseRivalCount, isNull);
@@ -537,6 +559,212 @@ void main() {
     expect(actual.linkedAccounts[1].url, 'not a uri');
     expect(() => actual.ojAccounts.removeAt(0), throwsUnsupportedError);
     expect(() => actual.linkedAccounts.removeAt(0), throwsUnsupportedError);
+  });
+
+  test('requires the exact public profile affiliation shape', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_profile.json')) as Map,
+        );
+    Map<String, Object?> affiliation() => <String, Object?>{
+          'id': 1,
+          'affiliationId': 2,
+          'name': 'Example University',
+          'type': 'university',
+          'logoThumbnailUrl': null,
+          'color': null,
+        };
+
+    expect(
+      () => endpoint.decode(source()..remove('affiliations')),
+      throwsFormatException,
+      reason: 'affiliations missing',
+    );
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      'affiliations',
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(source()..['affiliations'] = invalid),
+        throwsFormatException,
+        reason: 'affiliations = $invalid',
+      );
+    }
+    expect(
+      () => endpoint.decode(source()..['affiliations'] = <Object?>[0]),
+      throwsFormatException,
+      reason: 'affiliations item must be an object',
+    );
+    expect(
+      endpoint.decode(source()..['affiliations'] = <Object?>[]).affiliations,
+      isEmpty,
+    );
+
+    final invalidValues = <String, List<Object?>>{
+      'id': [
+        null,
+        '1',
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+        double.nan,
+        double.infinity,
+        double.negativeInfinity,
+      ],
+      'affiliationId': [
+        null,
+        '2',
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+        double.nan,
+        double.infinity,
+        double.negativeInfinity,
+      ],
+      'name': [null, 0, false, const <Object?>[], const <String, Object?>{}],
+      'type': [
+        null,
+        0,
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+        '',
+        'University',
+        'university ',
+        'unknown',
+      ],
+      'logoThumbnailUrl': [
+        0,
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+      ],
+      'color': [0, false, const <Object?>[], const <String, Object?>{}],
+    };
+    for (final entry in invalidValues.entries) {
+      expect(
+        () => endpoint.decode(
+          source()
+            ..['affiliations'] = <Object?>[
+              affiliation()..remove(entry.key),
+            ],
+        ),
+        throwsFormatException,
+        reason: 'missing affiliations[].${entry.key}',
+      );
+      for (final invalid in entry.value) {
+        expect(
+          () => endpoint.decode(
+            source()
+              ..['affiliations'] = <Object?>[
+                affiliation()..[entry.key] = invalid,
+              ],
+          ),
+          throwsFormatException,
+          reason: 'affiliations[].${entry.key} = $invalid',
+        );
+      }
+    }
+  });
+
+  test('preserves raw immutable public profile affiliations', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_profile.json')) as Map,
+        );
+    Map<String, Object?> affiliation({
+      required num id,
+      required num affiliationId,
+      required String name,
+      required String type,
+      required String? logoThumbnailUrl,
+      required String? color,
+    }) =>
+        <String, Object?>{
+          'id': id,
+          'affiliationId': affiliationId,
+          'name': name,
+          'type': type,
+          'logoThumbnailUrl': logoThumbnailUrl,
+          'color': color,
+        };
+    final wireTypes = [
+      'undefined',
+      'university',
+      'high_school',
+      'middle_school',
+      'elementary_school',
+      'company',
+      'community',
+    ];
+
+    expect(
+      OfficialUserProfileAffiliationType.values.map((type) => type.value),
+      wireTypes,
+    );
+    for (final wireType in wireTypes) {
+      final actual = endpoint.decode(
+        source()
+          ..['affiliations'] = <Object?>[
+            affiliation(
+              id: 1,
+              affiliationId: 2,
+              name: 'name',
+              type: wireType,
+              logoThumbnailUrl: null,
+              color: null,
+            ),
+          ],
+      );
+      expect(actual.affiliations.single.type.value, wireType);
+    }
+
+    final first = affiliation(
+      id: -2.5,
+      affiliationId: 0,
+      name: '  ',
+      type: 'undefined',
+      logoThumbnailUrl: 'not a uri',
+      color: '',
+    )..['futureAffiliationField'] = 'allowed';
+    final second = affiliation(
+      id: 42,
+      affiliationId: 42.5,
+      name: '',
+      type: 'community',
+      logoThumbnailUrl: null,
+      color: 'not a color',
+    );
+    final affiliations = <Object?>[second, first, second];
+    final actual = endpoint.decode(
+      source()
+        ..['affiliations'] = affiliations
+        ..['futureProfileField'] = 'allowed',
+    );
+
+    expect(actual.affiliations.map((value) => value.id), [42, -2.5, 42]);
+    expect(actual.affiliations[1].id.runtimeType, double);
+    expect(actual.affiliations[1].affiliationId, 0);
+    expect(actual.affiliations[1].affiliationId.runtimeType, int);
+    expect(actual.affiliations[1].name, '  ');
+    expect(actual.affiliations[1].logoThumbnailUrl, 'not a uri');
+    expect(actual.affiliations[1].color, '');
+    expect(actual.affiliations.first.affiliationId, 42.5);
+    expect(actual.affiliations.first.affiliationId.runtimeType, double);
+    expect(actual.affiliations.first.name, '');
+    expect(actual.affiliations.first.logoThumbnailUrl, isNull);
+    expect(actual.affiliations.first.color, 'not a color');
+
+    first['name'] = 'mutated';
+    second['affiliationId'] = 99;
+    affiliations.clear();
+    expect(actual.affiliations.map((value) => value.id), [42, -2.5, 42]);
+    expect(actual.affiliations[1].name, '  ');
+    expect(actual.affiliations.first.affiliationId, 42.5);
+    expect(() => actual.affiliations.removeAt(0), throwsUnsupportedError);
   });
 
   test('requires exact public profile streak state types', () {
