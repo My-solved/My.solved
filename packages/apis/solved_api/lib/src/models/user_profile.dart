@@ -51,6 +51,8 @@ class UserProfile {
 
   /// Whether the active contract marks the displayed CLASS as CLASS+.
   final bool? classPlus;
+
+  /// Legacy v3 reverse-rival count, unrelated to v4 rivalry booleans.
   final int? reverseRivalCount;
 
   /// The public tier, or `null` when the active contract explicitly withholds

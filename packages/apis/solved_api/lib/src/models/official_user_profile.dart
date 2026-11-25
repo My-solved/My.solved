@@ -96,6 +96,8 @@ final class OfficialUserProfile extends UserProfile {
     required this.streakCountedToday,
     required this.streakFrozenYesterday,
     required this.streakTheme,
+    required this.isRival,
+    required this.isReverseRival,
     required super.handle,
     required super.profileImageUrl,
     super.bio,
@@ -135,6 +137,12 @@ final class OfficialUserProfile extends UserProfile {
 
   /// Raw required nullable theme value from the profile response.
   final String? streakTheme;
+
+  /// Raw official v4 rivalry flags.
+  ///
+  /// Neither flag implies the other, nor a v3 reverse-rival count.
+  final bool isRival;
+  final bool isReverseRival;
 
   @override
   OfficialUserProfileBackground? get background =>

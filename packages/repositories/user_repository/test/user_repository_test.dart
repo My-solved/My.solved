@@ -301,6 +301,8 @@ solved_api.OfficialUserProfile _officialProfile({
       streakCountedToday: false,
       streakFrozenYesterday: false,
       streakTheme: null,
+      isRival: false,
+      isReverseRival: false,
       handle: 'w8385',
       profileImageUrl: null,
       solvedCount: 2048,

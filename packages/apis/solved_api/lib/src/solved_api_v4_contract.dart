@@ -760,6 +760,8 @@ OfficialUserProfile _decodeV4UserProfile(dynamic json) {
     streakFrozenYesterday:
         _boolean(body['streakFrozenYesterday'], 'streakFrozenYesterday'),
     streakTheme: _requiredNullableString(body, 'streakTheme'),
+    isRival: _boolean(body['isRival'], 'isRival'),
+    isReverseRival: _boolean(body['isReverseRival'], 'isReverseRival'),
     handle: _string(body['handle'], 'handle'),
     profileImageUrl: _requiredNullableString(body, 'profileImageUrl'),
     bio: _requiredNullableString(body, 'bio'),
