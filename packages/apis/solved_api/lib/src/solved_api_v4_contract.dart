@@ -203,6 +203,29 @@ final class SolvedApiV4Contract {
     );
   }
 
+  SolvedApiEndpoint<ProblemAchievementsResult> achievementsForProblem(
+    int problemId, {
+    String? language,
+  }) {
+    if (problemId < 1) {
+      throw ArgumentError.value(problemId, 'problemId', 'Must be at least 1');
+    }
+    if (language != null && language.runes.length > 16) {
+      throw ArgumentError.value(
+        language,
+        'language',
+        'Must not exceed 16 characters',
+      );
+    }
+    return _endpoint(
+      path: 'achievements/for-problem/$problemId',
+      queryParameters: {
+        if (language != null) 'lang': language,
+      },
+      decode: _decodeV4ProblemAchievements,
+    );
+  }
+
   SolvedApiEndpoint<OfficialAchievementItem> achievementItem(
     OfficialAchievementItemKind kind,
     String key,
@@ -2083,6 +2106,65 @@ AchievementReward _decodeV4AchievementReward(
       category: _string(body['category'], '$field.category'),
       addedAt: _string(body['addedAt'], '$field.addedAt'),
     );
+
+ProblemAchievementsResult _decodeV4ProblemAchievements(dynamic json) {
+  final body = _object(json, 'problem achievements');
+  return ProblemAchievementsResult(
+    items: List<ProblemAchievementItem>.unmodifiable(
+      _list(body['items'], 'items').map(
+        (value) => _decodeV4ProblemAchievementItem(
+          _object(value, 'items[]'),
+        ),
+      ),
+    ),
+  );
+}
+
+ProblemAchievementItem _decodeV4ProblemAchievementItem(
+  Map<String, dynamic> body,
+) {
+  final rewards = List<AchievementReward>.unmodifiable(
+    _list(body['rewards'], 'items[].rewards').map(
+      (value) => _decodeV4AchievementReward(
+        _object(value, 'items[].rewards[]'),
+        'items[].rewards[]',
+      ),
+    ),
+  );
+  return ProblemAchievementItem(
+    key: _string(body['key'], 'items[].key'),
+    name: _string(body['name'], 'items[].name'),
+    condition: _requiredNullableString(
+      body,
+      'condition',
+      'items[].condition',
+    ),
+    rewards: rewards,
+    holderCount: _integer(body['holderCount'], 'items[].holderCount'),
+    earnedAt: _requiredNullableString(
+      body,
+      'earnedAt',
+      'items[].earnedAt',
+    ),
+    relation: _decodeV4ProblemAchievementRelation(
+      body['relation'],
+      'items[].relation',
+    ),
+    byLevel: _boolean(body['byLevel'], 'items[].byLevel'),
+  );
+}
+
+ProblemAchievementRelation _decodeV4ProblemAchievementRelation(
+  dynamic value,
+  String field,
+) {
+  final relation = _string(value, field);
+  return switch (relation) {
+    'unlocks' => ProblemAchievementRelation.unlocks,
+    'counts' => ProblemAchievementRelation.counts,
+    _ => throw FormatException('Invalid $field'),
+  };
+}
 
 ProfileAchievementSummaryResult _decodeV4ProfileAchievementSummary(
   dynamic json,

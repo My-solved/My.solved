@@ -4932,6 +4932,143 @@
         }
       }
     },
+    "/api/v4/achievements/for-problem/{problemId}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "problemId",
+            "required": true,
+            "schema": {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "lang",
+            "required": false,
+            "schema": {
+              "default": "ko",
+              "maxLength": 16,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "properties": {
+                          "byLevel": {
+                            "type": "boolean"
+                          },
+                          "condition": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "earnedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "holderCount": {
+                            "type": "integer"
+                          },
+                          "key": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "relation": {
+                            "enum": [
+                              "unlocks",
+                              "counts"
+                            ],
+                            "type": "string"
+                          },
+                          "rewards": {
+                            "items": {
+                              "properties": {
+                                "addedAt": {
+                                  "type": "string"
+                                },
+                                "category": {
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "type": "integer"
+                                },
+                                "imageUrl": {
+                                  "type": "string"
+                                },
+                                "key": {
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "enum": [
+                                    "badge",
+                                    "background"
+                                  ],
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "id",
+                                "key",
+                                "name",
+                                "imageUrl",
+                                "category",
+                                "addedAt"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "name",
+                          "condition",
+                          "rewards",
+                          "holderCount",
+                          "earnedAt",
+                          "relation",
+                          "byLevel"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Open, unhidden achievements; what it earns first."
+          }
+        },
+        "summary": "What solving a problem earns or counts toward",
+        "x-access": {
+          "class": "public"
+        }
+      }
+    },
     "/api/v4/achievements/items/{kind}/{key}": {
       "get": {
         "x-access": {

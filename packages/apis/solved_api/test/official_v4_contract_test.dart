@@ -725,6 +725,127 @@ void main() {
     }
   });
 
+  test('pins problem achievements and their exact shared reward shape', () {
+    final operation =
+        _get(contract, '/api/v4/achievements/for-problem/{problemId}');
+
+    expect(_accessClass(operation), 'public');
+    expect(operation.containsKey('requestBody'), isFalse);
+    expect(
+      operation['summary'],
+      'What solving a problem earns or counts toward',
+    );
+    expect(_parameterNames(operation), ['problemId', 'lang']);
+    final parameters = _parameters(operation);
+    expect(parameters.first['in'], 'path');
+    expect(parameters.first['required'], isTrue);
+    expect(_map(parameters.first['schema']), {
+      'exclusiveMinimum': 0,
+      'type': 'integer',
+    });
+    expect(parameters.last['in'], 'query');
+    expect(parameters.last['required'], isFalse);
+    expect(_map(parameters.last['schema']), {
+      'default': 'ko',
+      'maxLength': 16,
+      'type': 'string',
+    });
+    expect(_map(operation['responses']).keys.toList(), ['200']);
+    expect(
+      _map(_map(operation['responses'])['200'])['description'],
+      'Open, unhidden achievements; what it earns first.',
+    );
+
+    final schema = _responseSchema(operation);
+    expect(schema['type'], 'object');
+    expect(_required(schema), ['items']);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    final properties = _properties(schema);
+    expect(properties.keys.toList(growable: false), ['items']);
+
+    final items = _map(properties['items']);
+    expect(items['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(items.containsKey(constraint), isFalse);
+    }
+    final item = _map(items['items']);
+    const itemFields = [
+      'key',
+      'name',
+      'condition',
+      'rewards',
+      'holderCount',
+      'earnedAt',
+      'relation',
+      'byLevel',
+    ];
+    expect(item['type'], 'object');
+    expect(_required(item), itemFields);
+    expect(item.containsKey('additionalProperties'), isFalse);
+    final itemProperties = _properties(item);
+    expect(itemProperties.keys.toList(growable: false), [
+      'byLevel',
+      'condition',
+      'earnedAt',
+      'holderCount',
+      'key',
+      'name',
+      'relation',
+      'rewards',
+    ]);
+    for (final field in ['key', 'name']) {
+      expect(_map(itemProperties[field]), {'type': 'string'});
+    }
+    for (final field in ['condition', 'earnedAt']) {
+      expect(_map(itemProperties[field]), {
+        'type': ['string', 'null'],
+      });
+    }
+    expect(_map(itemProperties['holderCount']), {'type': 'integer'});
+    expect(_map(itemProperties['byLevel']), {'type': 'boolean'});
+    expect(_map(itemProperties['relation']), {
+      'enum': ['unlocks', 'counts'],
+      'type': 'string',
+    });
+
+    final rewards = _map(itemProperties['rewards']);
+    expect(rewards['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(rewards.containsKey(constraint), isFalse);
+    }
+    final reward = _map(rewards['items']);
+    const rewardFields = [
+      'kind',
+      'id',
+      'key',
+      'name',
+      'imageUrl',
+      'category',
+      'addedAt',
+    ];
+    expect(reward['type'], 'object');
+    expect(_required(reward), rewardFields);
+    expect(reward.containsKey('additionalProperties'), isFalse);
+    final rewardProperties = _properties(reward);
+    expect(rewardProperties.keys.toList(growable: false), [
+      'addedAt',
+      'category',
+      'id',
+      'imageUrl',
+      'key',
+      'kind',
+      'name',
+    ]);
+    expect(_map(rewardProperties['kind']), {
+      'enum': ['badge', 'background'],
+      'type': 'string',
+    });
+    expect(_map(rewardProperties['id']), {'type': 'integer'});
+    for (final field in ['key', 'name', 'imageUrl', 'category', 'addedAt']) {
+      expect(_map(rewardProperties[field]), {'type': 'string'});
+    }
+  });
+
   test('pins the public achievement summary schema without inference', () {
     final summary =
         _get(contract, '/api/v4/users/{handle}/achievements/summary');
