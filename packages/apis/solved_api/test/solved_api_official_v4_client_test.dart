@@ -59,6 +59,8 @@ void main() {
             '/solved/v4/users/index/reputation' => 'v4/user_reputation.json',
             '/solved/v4/users/index/rating/history' =>
               'v4/user_rating_history.json',
+            '/solved/v4/users/index/tags/number_theory/histogram' =>
+              'v4/user_tag_level_histogram.json',
             '/solved/v4/users/index/achievements/summary' =>
               'v4/user_achievement_summary.json',
             '/solved/v4/users/index/badge-stand' => 'v4/user_badge_stand.json',
@@ -93,6 +95,8 @@ void main() {
           'index',
           range: SolvedApiV4RatingHistoryRange.days90,
         );
+        final ProfileTagLevelHistogramResult tagLevelHistogram =
+            await client.v4UserTagLevelHistogram('index', 'number_theory');
         final ProfileAchievementSummaryResult achievementSummary =
             await client.v4UserAchievementSummary('index');
         final ProfileBadgeStandResult badgeStand =
@@ -228,6 +232,8 @@ void main() {
           '2026-11-17',
         ]);
         expect(ratingHistory.history.map((entry) => entry.value), [2400, 2417]);
+        expect(tagLevelHistogram.key, 'response_key');
+        expect(tagLevelHistogram.histogram, [-3, 0, 0, 31, 7]);
         expect(achievementSummary.earned, 12);
         expect(achievementSummary.total, 34);
         expect(achievementSummary.past, 2);
@@ -302,6 +308,7 @@ void main() {
               'users/index/rating/history',
               <String, String>{'range': '90d'},
             ),
+            _uri('users/index/tags/number_theory/histogram'),
             _uri(
               'users/index/achievements/summary',
               <String, String>{'lang': 'ko'},
@@ -348,13 +355,13 @@ void main() {
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(16));
+        expect(httpClient.requests, hasLength(17));
         expect(
-          httpClient.requests[10].url.toString(),
+          httpClient.requests[11].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
         );
         expect(
-          httpClient.requests[13].url.toString(),
+          httpClient.requests[14].url.toString(),
           'https://proxy.example/solved/v4/search/suggest?'
           'topic=tag%26%ED%95%9C&value=',
         );
@@ -513,6 +520,12 @@ void main() {
         isA<UserRequestFailed>(),
       );
       expect(
+        await _captureFailure(
+          client.v4UserTagLevelHistogram('index', 'number_theory'),
+        ),
+        isA<UserRequestFailed>(),
+      );
+      expect(
         await _captureFailure(client.v4UserAchievementSummary('index')),
         isA<UserRequestFailed>(),
       );
@@ -562,7 +575,7 @@ void main() {
         await _captureFailure(client.v4SearchSuggestions('tag')),
         isA<SearchRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(12));
+      expect(httpClient.requests, hasLength(13));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -586,6 +599,90 @@ void main() {
         _uri('users/index/rating/history'),
       );
       expect(httpClient.requests, hasLength(1));
+    });
+
+    test('sends an encoded anonymous user-tag histogram request', () async {
+      handler = (_) async => _jsonResponse(
+            fixture('v4/user_tag_level_histogram.json'),
+          );
+
+      final actual = await client.v4UserTagLevelHistogram('한 글', 'tag key');
+
+      expect(actual.key, 'response_key');
+      expect(actual.histogram, [-3, 0, 0, 31, 7]);
+      final request = httpClient.requests.single;
+      expect(
+        request.url.toString(),
+        'https://proxy.example/solved/v4/users/'
+        '%ED%95%9C%20%EA%B8%80/tags/tag%20key/histogram',
+      );
+      expect(request.method, 'GET');
+      expect(request.headers, const <String, String>{
+        'accept': 'application/json',
+      });
+      expect(request.bodyBytes, isEmpty);
+    });
+
+    test('rejects unsafe user-tag histogram segments before transport', () {
+      expect(
+        () => client.v4UserTagLevelHistogram('', 'tag'),
+        throwsArgumentError,
+      );
+      expect(
+        () => client.v4UserTagLevelHistogram('index', 'a/b'),
+        throwsArgumentError,
+      );
+      expect(httpClient.requests, isEmpty);
+    });
+
+    test('wraps a malformed user-tag histogram as a user failure', () async {
+      handler = (_) async => _jsonResponse(
+            jsonEncode({
+              'key': 'tag',
+              'histogram': <Object?>[1, 2.0],
+            }),
+          );
+
+      final error = await _captureFailure(
+        client.v4UserTagLevelHistogram('index', 'number_theory'),
+      );
+
+      expect(error, isA<UserRequestFailed>());
+      expect(error.statusCode, 200);
+      expect(error.cause, isA<FormatException>());
+      expect(error.responseBody, isNull);
+      expect(
+        httpClient.requests.single.url,
+        _uri('users/index/tags/number_theory/histogram'),
+      );
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves user-tag histogram 404 and 429 failures', () async {
+      for (final status in [404, 429]) {
+        handler = (_) async => _bytesResponse(
+              const <int>[0xff],
+              statusCode: status,
+              headers: <String, String>{
+                'content-type': 'text/plain',
+                if (status == 429) 'retry-after': '9',
+              },
+            );
+
+        final error = await _captureFailure(
+          client.v4UserTagLevelHistogram('index', 'number_theory'),
+        );
+
+        expect(error, isA<UserRequestFailed>());
+        expect(error.statusCode, status);
+        expect(error.cause, isNull);
+        expect(error.responseBody, isNull);
+        expect(
+          error.retryAfter,
+          status == 429 ? const Duration(seconds: 9) : isNull,
+        );
+      }
+      expect(httpClient.requests, hasLength(2));
     });
 
     test('wraps malformed achievement summary as a user failure', () async {

@@ -266,6 +266,17 @@ class SolvedApiClient {
     );
   }
 
+  Future<ProfileTagLevelHistogramResult> v4UserTagLevelHistogram(
+    String handle,
+    String key,
+  ) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.userTagLevelHistogram(handle, key),
+      requestType: _RequestType.user,
+    );
+  }
+
   Future<ProfileAchievementSummaryResult> v4UserAchievementSummary(
     String handle,
   ) {

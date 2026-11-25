@@ -134,6 +134,16 @@ final class SolvedApiV4Contract {
         decode: _decodeV4ProfileRatingHistory,
       );
 
+  SolvedApiEndpoint<ProfileTagLevelHistogramResult> userTagLevelHistogram(
+    String handle,
+    String key,
+  ) =>
+      _endpoint(
+        path: 'users/${_pathSegment(handle, 'handle')}/tags/'
+            '${_pathSegment(key, 'key')}/histogram',
+        decode: _decodeV4ProfileTagLevelHistogram,
+      );
+
   SolvedApiEndpoint<ProfileAchievementSummaryResult> userAchievementSummary(
     String handle,
   ) =>
@@ -1569,6 +1579,19 @@ ProfileRatingHistoryEntry _decodeV4ProfileRatingHistoryEntry(
       day: _profileHistoryDay(body['day'], 'history[].day'),
       value: _integer(body['value'], 'history[].value'),
     );
+
+ProfileTagLevelHistogramResult _decodeV4ProfileTagLevelHistogram(dynamic json) {
+  final body = _object(json, 'tag level histogram');
+  final histogram = List<int>.unmodifiable(
+    _list(body['histogram'], 'histogram').map(
+      (value) => _integer(value, 'histogram[]'),
+    ),
+  );
+  return ProfileTagLevelHistogramResult(
+    key: _string(body['key'], 'key'),
+    histogram: histogram,
+  );
+}
 
 ProfileAchievementSummaryResult _decodeV4ProfileAchievementSummary(
   dynamic json,
