@@ -802,7 +802,7 @@ OfficialUserProfile _decodeV4UserProfile(dynamic json) {
     profileImageUrl: _requiredNullableString(body, 'profileImageUrl'),
     bio: _requiredNullableString(body, 'bio'),
     solvedCount: _integer(body['solvedCount'], 'solvedCount'),
-    userClass: _integer(body['class'], 'class'),
+    userClass: _officialUserProfileClass(body['class'], 'class'),
     classPlus: _boolean(body['classPlus'], 'classPlus'),
     tier: _requiredNullableTier(body, 'tier'),
     rating: rating,
@@ -1379,6 +1379,14 @@ num _number(Object? value, String field) {
 int _integer(Object? value, String field) {
   if (value is! int) throw FormatException('Expected integer for $field');
   return value;
+}
+
+int _officialUserProfileClass(Object? value, String field) {
+  final decoded = _integer(value, field);
+  if (decoded < 0 || decoded > 10) {
+    throw FormatException('Expected $field from 0 through 10');
+  }
+  return decoded;
 }
 
 int _nonNegativeInteger(Object? value, String field) {

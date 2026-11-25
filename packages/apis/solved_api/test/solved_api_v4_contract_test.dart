@@ -103,6 +103,7 @@ void main() {
     expect(actual.rating, 2417);
     expect(actual.solvedCount, 2048);
     expect(actual.bio, isNull);
+    expect(actual.userClass, 6);
     expect(actual.classPlus, isTrue);
     expect(actual.currentStreak, 12);
     expect(actual.maxStreak, 365);
@@ -1851,6 +1852,54 @@ void main() {
     }
 
     expect(endpoint.decode(source()..['classPlus'] = false).classPlus, isFalse);
+  });
+
+  test('enforces the official public profile class bounds without inference',
+      () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_profile.json')) as Map,
+        );
+
+    expect(
+      () => endpoint.decode(source()..remove('class')),
+      throwsFormatException,
+    );
+    for (final invalid in <Object?>[
+      null,
+      6.0,
+      '6',
+      false,
+      const <Object?>[],
+      const <String, Object?>{},
+      -1,
+      11,
+    ]) {
+      expect(
+        () => endpoint.decode(source()..['class'] = invalid),
+        throwsFormatException,
+        reason: 'class = $invalid',
+      );
+    }
+
+    final lower = endpoint.decode(
+      source()
+        ..['class'] = 0
+        ..['classPlus'] = true,
+    );
+    expect(lower.userClass, 0);
+    expect(lower.classPlus, isTrue);
+
+    final middle = endpoint.decode(source()..['class'] = 6);
+    expect(middle.userClass, 6);
+
+    final upper = endpoint.decode(
+      source()
+        ..['class'] = 10
+        ..['classPlus'] = false,
+    );
+    expect(upper.userClass, 10);
+    expect(upper.classPlus, isFalse);
   });
 
   test('requires the no-rating solved count without inventing bounds', () {
