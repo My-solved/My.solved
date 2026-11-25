@@ -87,6 +87,48 @@ final class OfficialUserProfileStreakVacation {
   final OfficialUserProfileStreakVacationSource source;
 }
 
+/// One external online-judge account embedded in an official v4 profile.
+final class OfficialUserProfileOjAccount {
+  const OfficialUserProfileOjAccount({
+    required this.ojId,
+    required this.ojName,
+    required this.handle,
+    required this.profileUrl,
+    required this.logoUrl,
+    required this.verified,
+  });
+
+  final String ojId;
+  final String ojName;
+  final String handle;
+  final String? profileUrl;
+  final String? logoUrl;
+  final bool verified;
+}
+
+/// Providers exposed by official v4 linked profile accounts.
+enum OfficialUserProfileLinkedAccountProvider {
+  discord('discord'),
+  icpc('icpc');
+
+  const OfficialUserProfileLinkedAccountProvider(this.value);
+
+  final String value;
+}
+
+/// One linked service account embedded in an official v4 profile.
+final class OfficialUserProfileLinkedAccount {
+  const OfficialUserProfileLinkedAccount({
+    required this.provider,
+    required this.name,
+    required this.url,
+  });
+
+  final OfficialUserProfileLinkedAccountProvider provider;
+  final String name;
+  final String url;
+}
+
 /// The official v4 public profile with its wire metadata preserved.
 final class OfficialUserProfile extends UserProfile {
   const OfficialUserProfile({
@@ -98,6 +140,8 @@ final class OfficialUserProfile extends UserProfile {
     required this.streakTheme,
     required this.isRival,
     required this.isReverseRival,
+    required this.ojAccounts,
+    required this.linkedAccounts,
     required super.handle,
     required super.profileImageUrl,
     super.bio,
@@ -143,6 +187,16 @@ final class OfficialUserProfile extends UserProfile {
   /// Neither flag implies the other, nor a v3 reverse-rival count.
   final bool isRival;
   final bool isReverseRival;
+
+  /// External online-judge accounts in wire order, including duplicates.
+  ///
+  /// Decoder-produced lists are unmodifiable. An empty list is authoritative.
+  final List<OfficialUserProfileOjAccount> ojAccounts;
+
+  /// Linked service accounts in wire order, including duplicates.
+  ///
+  /// Decoder-produced lists are unmodifiable. An empty list is authoritative.
+  final List<OfficialUserProfileLinkedAccount> linkedAccounts;
 
   @override
   OfficialUserProfileBackground? get background =>
