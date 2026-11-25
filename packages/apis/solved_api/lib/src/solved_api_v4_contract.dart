@@ -338,6 +338,28 @@ final class SolvedApiV4Contract {
         decode: _decodeV4SiteStats,
       );
 
+  SolvedApiEndpoint<SourceLookupResult> sourceContest(
+    String ojId,
+    String nativeId,
+  ) =>
+      _endpoint(
+        path: 'sources/oj/'
+            '${_pathSegment(ojId, 'ojId', maximumLength: 32)}/contests/'
+            '${_pathSegment(nativeId, 'nativeId')}',
+        decode: _decodeV4SourceLookup,
+      );
+
+  SolvedApiEndpoint<SourceLookupResult> sourceGroup(
+    String ojId,
+    String nativeId,
+  ) =>
+      _endpoint(
+        path: 'sources/oj/'
+            '${_pathSegment(ojId, 'ojId', maximumLength: 32)}/groups/'
+            '${_pathSegment(nativeId, 'nativeId')}',
+        decode: _decodeV4SourceLookup,
+      );
+
   /// Fetches the complete official tag catalog and filters it locally.
   ///
   /// The v4 `/tags` endpoint accepts no query or page parameters. Matching is
@@ -878,6 +900,13 @@ SiteStatsResult _decodeV4SiteStats(dynamic json) {
         (value) => _integer(value, '$field.usersByTier[]'),
       ),
     ),
+  );
+}
+
+SourceLookupResult _decodeV4SourceLookup(dynamic json) {
+  final body = _object(json, 'source lookup');
+  return SourceLookupResult(
+    id: _number(body['id'], 'source lookup.id'),
   );
 }
 
@@ -2406,12 +2435,16 @@ ProfileTagRating _decodeV4TagRating(Map<String, dynamic> body) =>
       ),
     );
 
-String _pathSegment(String value, String name) {
+String _pathSegment(
+  String value,
+  String name, {
+  int maximumLength = 64,
+}) {
   // Keep this aligned with the proxy's stricter path allowlist. OpenAPI only
   // specifies length, but decoded separators and controls are not safe route
   // parameters at the gateway boundary.
   if (value.isEmpty ||
-      value.runes.length > 64 ||
+      value.runes.length > maximumLength ||
       value == '.' ||
       value == '..' ||
       value.contains('/') ||

@@ -1194,6 +1194,53 @@ void main() {
     }
   });
 
+  test('pins public OJ source lookups and their exact shared response', () {
+    const operations = {
+      '/api/v4/sources/oj/{ojId}/contests/{nativeId}':
+          "solved.ac's contest for a judge's contest id",
+      '/api/v4/sources/oj/{ojId}/groups/{nativeId}':
+          "solved.ac's source group for a judge's group id",
+    };
+
+    for (final entry in operations.entries) {
+      final operation = _get(contract, entry.key);
+      expect(_accessClass(operation), 'public');
+      expect(operation['summary'], entry.value);
+      expect(operation.containsKey('requestBody'), isFalse);
+      expect(_parameterNames(operation), ['ojId', 'nativeId']);
+
+      final parameters = _parameters(operation);
+      expect(parameters.map((parameter) => parameter['in']), ['path', 'path']);
+      expect(
+        parameters.map((parameter) => parameter['required']),
+        [true, true],
+      );
+      expect(_map(parameters.first['schema']), {
+        'maxLength': 32,
+        'minLength': 1,
+        'type': 'string',
+      });
+      expect(_map(parameters.last['schema']), {
+        'maxLength': 64,
+        'minLength': 1,
+        'type': 'string',
+      });
+
+      final responses = _map(operation['responses']);
+      expect(responses.keys.toList(growable: false), ['200', '404']);
+      expect(_map(responses['200'])['description'], "solved.ac's id.");
+      expect(_map(responses['404'])['description'], 'No match.');
+
+      final schema = _responseSchema(operation);
+      expect(schema['type'], 'object');
+      expect(_required(schema), ['id']);
+      expect(schema.containsKey('additionalProperties'), isFalse);
+      final properties = _properties(schema);
+      expect(properties.keys.toList(growable: false), ['id']);
+      expect(_map(properties['id']), {'type': 'number'});
+    }
+  });
+
   test('pins the public problem-search analysis schema without inference', () {
     final analysis = _get(contract, '/api/v4/search/analyze');
 
