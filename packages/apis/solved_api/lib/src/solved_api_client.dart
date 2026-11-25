@@ -403,6 +403,19 @@ class SolvedApiClient {
     );
   }
 
+  Future<AchievementHoldersResult> v4AchievementHolders(
+    OfficialAchievementItemKind kind,
+    String key, {
+    SolvedApiV4AchievementHolderSort? sort,
+    int? page,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.achievementHolders(kind, key, sort: sort, page: page),
+      requestType: _RequestType.achievement,
+    );
+  }
+
   Future<ProfileBackgroundAsset?> v4BackgroundShow(String key) {
     final contract = _requireV4Contract();
     return _getV4(

@@ -1,0 +1,24 @@
+{
+  "unlockedByDefault": true,
+  "total": -7,
+  "items": [
+    {
+      "user": {
+        "id": -42.5,
+        "handle": "holder",
+        "tier": 0,
+        "profileImageUrl": "not necessarily a URI"
+      },
+      "acquiredAt": "not-a-date"
+    },
+    {
+      "user": {
+        "id": 0,
+        "handle": "holder",
+        "tier": 31,
+        "profileImageUrl": null
+      },
+      "acquiredAt": ""
+    }
+  ]
+}

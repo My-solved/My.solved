@@ -2654,6 +2654,136 @@ void main() {
       expect(_map(titleProperties[field]), {'type': 'boolean'});
     }
   });
+
+  test('pins public achievement holders and their official error shape', () {
+    final holders =
+        _get(contract, '/api/v4/achievements/items/{kind}/{key}/holders');
+
+    expect(_accessClass(holders), 'public');
+    expect(holders.containsKey('requestBody'), isFalse);
+    expect(holders['summary'], 'Who holds a badge or background');
+    expect(_parameterNames(holders), ['kind', 'key', 'sort', 'page']);
+    final parameters = _parameters(holders);
+    expect(parameters.first['in'], 'path');
+    expect(parameters.first['required'], isTrue);
+    expect(_map(parameters.first['schema']), {
+      'enum': ['badge', 'background'],
+      'type': 'string',
+    });
+    expect(parameters[1]['in'], 'path');
+    expect(parameters[1]['required'], isTrue);
+    expect(_map(parameters[1]['schema']), {
+      'maxLength': 64,
+      'minLength': 1,
+      'type': 'string',
+    });
+    expect(parameters[2]['in'], 'query');
+    expect(parameters[2]['required'], isFalse);
+    expect(_map(parameters[2]['schema']), {
+      'default': 'recent',
+      'enum': ['recent', 'first'],
+      'type': 'string',
+    });
+    expect(parameters.last['in'], 'query');
+    expect(parameters.last['required'], isFalse);
+    expect(_map(parameters.last['schema']), {
+      'default': 1,
+      'maximum': 200,
+      'minimum': 1,
+      'type': 'integer',
+    });
+
+    final responses = _map(holders['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '404']);
+    expect(_map(responses['200'])['description'], 'A page of holders.');
+    expect(_map(responses['404'])['description'], 'No such item.');
+
+    final schema = _responseSchema(holders);
+    expect(schema['type'], 'object');
+    expect(_required(schema), ['unlockedByDefault', 'total', 'items']);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    final properties = _properties(schema);
+    expect(properties.keys.toList(growable: false), [
+      'items',
+      'total',
+      'unlockedByDefault',
+    ]);
+    expect(_map(properties['unlockedByDefault']), {'type': 'boolean'});
+    expect(_map(properties['total']), {'type': 'integer'});
+
+    final items = _map(properties['items']);
+    expect(items['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(items.containsKey(constraint), isFalse);
+    }
+    final item = _map(items['items']);
+    expect(item['type'], 'object');
+    expect(_required(item), ['user', 'acquiredAt']);
+    expect(item.containsKey('additionalProperties'), isFalse);
+    final itemProperties = _properties(item);
+    expect(itemProperties.keys.toList(growable: false), [
+      'acquiredAt',
+      'user',
+    ]);
+    expect(_map(itemProperties['acquiredAt']), {'type': 'string'});
+
+    final user = _map(itemProperties['user']);
+    expect(user['type'], 'object');
+    expect(_required(user), ['id', 'handle', 'tier', 'profileImageUrl']);
+    expect(user.containsKey('additionalProperties'), isFalse);
+    final userProperties = _properties(user);
+    expect(userProperties.keys.toList(growable: false), [
+      'handle',
+      'id',
+      'profileImageUrl',
+      'tier',
+    ]);
+    expect(_map(userProperties['handle']), {'type': 'string'});
+    expect(_map(userProperties['id']), {'type': 'number'});
+    expect(_map(userProperties['profileImageUrl']), {
+      'format': 'uri',
+      'type': ['string', 'null'],
+    });
+    expect(_map(userProperties['tier']), {
+      'maximum': 31,
+      'minimum': 0,
+      'type': ['integer', 'null'],
+    });
+
+    final notFound = _map(responses['404']);
+    final notFoundContent = _map(notFound['content']);
+    expect(notFoundContent.keys.toList(growable: false), [
+      'application/json',
+    ]);
+    final notFoundSchema = _map(
+      _map(notFoundContent['application/json'])['schema'],
+    );
+    expect(notFoundSchema['type'], 'object');
+    expect(_required(notFoundSchema), ['error']);
+    expect(notFoundSchema.containsKey('additionalProperties'), isFalse);
+    final error = _map(_properties(notFoundSchema)['error']);
+    expect(error['type'], 'object');
+    expect(_required(error), ['code', 'message']);
+    expect(error.containsKey('additionalProperties'), isFalse);
+    final errorProperties = _properties(error);
+    expect(errorProperties.keys.toList(growable: false), [
+      'code',
+      'details',
+      'message',
+    ]);
+    expect(_map(errorProperties['code']), {'type': 'string'});
+    expect(_map(errorProperties['message']), {'type': 'string'});
+    final details = _map(errorProperties['details']);
+    expect(details['type'], 'object');
+    expect(details.containsKey('required'), isFalse);
+    expect(_map(details['additionalProperties']), {
+      'anyOf': [
+        {'type': 'string'},
+        {'type': 'number'},
+        {'type': 'boolean'},
+      ],
+    });
+  });
 }
 
 Map<String, dynamic> _get(Map<String, dynamic> contract, String path) {

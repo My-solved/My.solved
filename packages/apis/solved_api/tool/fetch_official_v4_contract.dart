@@ -36,6 +36,7 @@ const _relevantPaths = <String>[
   '/api/v4/achievements',
   '/api/v4/achievements/for-problem/{problemId}',
   '/api/v4/achievements/items/{kind}/{key}',
+  '/api/v4/achievements/items/{kind}/{key}/holders',
 ];
 
 Future<void> main(List<String> arguments) async {

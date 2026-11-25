@@ -86,6 +86,8 @@ void main() {
             '/solved/v4/achievements' => 'v4/achievement_catalog.json',
             '/solved/v4/achievements/for-problem/1000' =>
               'v4/problem_achievements.json',
+            '/solved/v4/achievements/items/badge/boardgame/holders' =>
+              'v4/achievement_holders.json',
             '/solved/v4/tags' => 'v4/tags.json',
             '/solved/v4/tags/number_theory' => 'v4/tag_detail.json',
             _ => throw StateError('Unexpected request: ${request.url}'),
@@ -168,6 +170,13 @@ void main() {
             await client.v4AchievementCatalog(language: '');
         final ProblemAchievementsResult problemAchievements =
             await client.v4AchievementsForProblem(1000, language: '');
+        final AchievementHoldersResult achievementHolders =
+            await client.v4AchievementHolders(
+          OfficialAchievementItemKind.badge,
+          'boardgame',
+          sort: SolvedApiV4AchievementHolderSort.first,
+          page: 200,
+        );
         final tags = await client.v4SearchTags('NUMBER');
         final TagDetailResult tagDetail =
             await client.v4TagDetail('number_theory');
@@ -385,6 +394,13 @@ void main() {
         );
         expect(problemAchievements.items.first.rewards, hasLength(2));
         expect(problemAchievements.items.last.condition, isNull);
+        expect(achievementHolders.unlockedByDefault, isTrue);
+        expect(achievementHolders.total, -7);
+        expect(achievementHolders.items, hasLength(2));
+        expect(achievementHolders.items.first.user.id, -42.5);
+        expect(achievementHolders.items.first.user.id, isA<double>());
+        expect(achievementHolders.items.last.user.tier, 31);
+        expect(achievementHolders.items.last.user.profileImageUrl, isNull);
         expect(tags.items.single.key, 'number_theory');
         expect(tagDetail.id, 42.5);
         expect(tagDetail.key, 'number_theory');
@@ -475,11 +491,15 @@ void main() {
               'https://proxy.example/solved/v4/'
               'achievements/for-problem/1000?lang=',
             ),
+            _uri(
+              'achievements/items/badge/boardgame/holders',
+              <String, String>{'sort': 'first', 'page': '200'},
+            ),
             _uri('tags'),
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(27));
+        expect(httpClient.requests, hasLength(28));
         expect(
           httpClient.requests[12].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
@@ -679,6 +699,15 @@ void main() {
         isA<AchievementRequestFailed>(),
       );
       expect(
+        await _captureFailure(
+          client.v4AchievementHolders(
+            OfficialAchievementItemKind.badge,
+            'boardgame',
+          ),
+        ),
+        isA<AchievementRequestFailed>(),
+      );
+      expect(
         await _captureFailure(client.v4BackgroundShow('anniversary_1st')),
         isA<BackgroundRequestFailed>(),
       );
@@ -748,7 +777,7 @@ void main() {
         await _captureFailure(client.v4SourceGroup('boj', 'group')),
         isA<SourceRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(23));
+      expect(httpClient.requests, hasLength(24));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -1154,6 +1183,142 @@ void main() {
         _uri('achievements/for-problem/1000'),
       );
       expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves holder kinds keys sorts and page queries', () async {
+      handler = (_) async => _jsonResponse(
+            fixture('v4/achievement_holders.json'),
+          );
+
+      final omitted = await client.v4AchievementHolders(
+        OfficialAchievementItemKind.background,
+        '한 글 & raw',
+      );
+      final explicitDefaults = await client.v4AchievementHolders(
+        OfficialAchievementItemKind.badge,
+        'boardgame',
+        sort: SolvedApiV4AchievementHolderSort.recent,
+        page: 1,
+      );
+      final boundaries = await client.v4AchievementHolders(
+        OfficialAchievementItemKind.background,
+        'anniversary_1st',
+        sort: SolvedApiV4AchievementHolderSort.first,
+        page: 200,
+      );
+
+      expect(omitted.total, -7);
+      expect(omitted.items.first.user.id, -42.5);
+      expect(explicitDefaults.items.last.user.tier, 31);
+      expect(boundaries.unlockedByDefault, isTrue);
+      expect(
+        httpClient.requests.map((request) => request.url.toString()),
+        [
+          'https://proxy.example/solved/v4/achievements/items/background/'
+              '%ED%95%9C%20%EA%B8%80%20%26%20raw/holders',
+          'https://proxy.example/solved/v4/'
+              'achievements/items/badge/boardgame/holders?sort=recent&page=1',
+          'https://proxy.example/solved/v4/achievements/items/background/'
+              'anniversary_1st/holders?sort=first&page=200',
+        ],
+      );
+      for (final request in httpClient.requests) {
+        expect(request.method, 'GET');
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+        });
+        expect(request.bodyBytes, isEmpty);
+      }
+      expect(httpClient.requests, hasLength(3));
+    });
+
+    test('rejects invalid achievement-holder requests before transport', () {
+      for (final key in ['', List<String>.filled(65, '🌏').join()]) {
+        expect(
+          () => client.v4AchievementHolders(
+            OfficialAchievementItemKind.badge,
+            key,
+          ),
+          throwsArgumentError,
+        );
+      }
+      for (final page in [0, 201]) {
+        expect(
+          () => client.v4AchievementHolders(
+            OfficialAchievementItemKind.badge,
+            'boardgame',
+            page: page,
+          ),
+          throwsA(
+            isA<ArgumentError>()
+                .having((error) => error.name, 'name', 'page')
+                .having((error) => error.invalidValue, 'invalidValue', page),
+          ),
+        );
+      }
+      expect(httpClient.requests, isEmpty);
+    });
+
+    test('wraps malformed achievement holders as achievement failure',
+        () async {
+      handler = (_) async => _jsonResponse(
+            jsonEncode({
+              'unlockedByDefault': true,
+              'total': 0,
+              'items': <Object?>[
+                <String, Object?>{'user': null, 'acquiredAt': ''},
+              ],
+            }),
+          );
+
+      final error = await _captureFailure(
+        client.v4AchievementHolders(
+          OfficialAchievementItemKind.badge,
+          'boardgame',
+        ),
+      );
+
+      expect(error, isA<AchievementRequestFailed>());
+      expect(error.statusCode, 200);
+      expect(error.cause, isA<FormatException>());
+      expect(error.responseBody, isNull);
+      expect(
+        httpClient.requests.single.url,
+        _uri('achievements/items/badge/boardgame/holders'),
+      );
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves achievement-holder 404 and 429 failure metadata',
+        () async {
+      for (final status in [404, 429]) {
+        handler = (_) async => _bytesResponse(
+              const <int>[0xff],
+              statusCode: status,
+              headers: <String, String>{
+                'content-type': 'text/plain',
+                if (status == 429) 'retry-after': '31',
+              },
+            );
+
+        final error = await _captureFailure(
+          client.v4AchievementHolders(
+            OfficialAchievementItemKind.badge,
+            'boardgame',
+          ),
+        );
+
+        expect(error, isA<AchievementRequestFailed>());
+        expect(error.statusCode, status);
+        expect(error.cause, isNull);
+        expect(error.responseBody, isNull);
+        expect(
+          error.retryAfter,
+          status == 429 ? const Duration(seconds: 31) : isNull,
+        );
+        expect(error.isRetryable, status == 429);
+      }
+      expect(httpClient.requests, hasLength(2));
     });
 
     test('wraps malformed achievement summary as a user failure', () async {
