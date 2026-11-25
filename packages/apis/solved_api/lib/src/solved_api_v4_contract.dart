@@ -57,6 +57,16 @@ enum SolvedApiV4UserSort {
   final String value;
 }
 
+/// Sort orders supported by the official v4 achievement-holder listing.
+enum SolvedApiV4AchievementHolderSort {
+  recent('recent'),
+  first('first');
+
+  const SolvedApiV4AchievementHolderSort(this.value);
+
+  final String value;
+}
+
 /// Official v4 endpoints and response normalization.
 ///
 /// Every ordinary v4 request needs an application secret. This contract keeps
@@ -235,6 +245,26 @@ final class SolvedApiV4Contract {
         queryParameters: const {'lang': 'ko'},
         decode: (json) => _decodeV4AchievementItem(json, kind),
       );
+
+  SolvedApiEndpoint<AchievementHoldersResult> achievementHolders(
+    OfficialAchievementItemKind kind,
+    String key, {
+    SolvedApiV4AchievementHolderSort? sort,
+    int? page,
+  }) {
+    if (page != null && (page < 1 || page > 200)) {
+      throw ArgumentError.value(page, 'page', 'Must be from 1 through 200');
+    }
+    return _endpoint(
+      path: 'achievements/items/${kind.value}/'
+          '${_pathSegment(key, 'key')}/holders',
+      queryParameters: {
+        if (sort != null) 'sort': sort.value,
+        if (page != null) 'page': '$page',
+      },
+      decode: _decodeV4AchievementHolders,
+    );
+  }
 
   SolvedApiEndpoint<ProfileBackgroundAsset?> backgroundShow(String key) =>
       _endpoint(
@@ -2165,6 +2195,48 @@ ProblemAchievementRelation _decodeV4ProblemAchievementRelation(
     _ => throw FormatException('Invalid $field'),
   };
 }
+
+AchievementHoldersResult _decodeV4AchievementHolders(dynamic json) {
+  final body = _object(json, 'achievement holders');
+  return AchievementHoldersResult(
+    unlockedByDefault: _boolean(
+      body['unlockedByDefault'],
+      'unlockedByDefault',
+    ),
+    total: _integer(body['total'], 'total'),
+    items: List<AchievementHolderItem>.unmodifiable(
+      _list(body['items'], 'items').map(
+        (value) => _decodeV4AchievementHolderItem(
+          _object(value, 'items[]'),
+        ),
+      ),
+    ),
+  );
+}
+
+AchievementHolderItem _decodeV4AchievementHolderItem(
+  Map<String, dynamic> body,
+) =>
+    AchievementHolderItem(
+      user: _decodeV4AchievementHolderUser(
+        _object(body['user'], 'items[].user'),
+      ),
+      acquiredAt: _string(body['acquiredAt'], 'items[].acquiredAt'),
+    );
+
+AchievementHolderUser _decodeV4AchievementHolderUser(
+  Map<String, dynamic> body,
+) =>
+    AchievementHolderUser(
+      id: _number(body['id'], 'items[].user.id'),
+      handle: _string(body['handle'], 'items[].user.handle'),
+      tier: _requiredNullableTier(body, 'items[].user.tier'),
+      profileImageUrl: _requiredNullableString(
+        body,
+        'profileImageUrl',
+        'items[].user.profileImageUrl',
+      ),
+    );
 
 ProfileAchievementSummaryResult _decodeV4ProfileAchievementSummary(
   dynamic json,
