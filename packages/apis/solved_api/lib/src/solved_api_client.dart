@@ -102,7 +102,18 @@ class SearchRequestFailed extends SolvedApiException {
   });
 }
 
-enum _RequestType { user, background, badge, search }
+class SiteRequestFailed extends SolvedApiException {
+  const SiteRequestFailed({
+    super.uri,
+    super.statusCode,
+    super.cause,
+    super.stackTrace,
+    super.responseBody,
+    super.retryAfter,
+  });
+}
+
+enum _RequestType { user, background, badge, search, site }
 
 class SolvedApiClient {
   /// Creates a legacy v3 client.
@@ -396,6 +407,14 @@ class SolvedApiClient {
     );
   }
 
+  Future<SiteStatsResult> v4SiteStats() {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.siteStats(),
+      requestType: _RequestType.site,
+    );
+  }
+
   Future<SearchObject<TagSearchItem>> v4SearchTags(
     String query, {
     int page = 1,
@@ -678,6 +697,14 @@ class SolvedApiClient {
           retryAfter: retryAfter,
         ),
       _RequestType.search => SearchRequestFailed(
+          uri: uri,
+          statusCode: statusCode,
+          cause: cause,
+          stackTrace: stackTrace,
+          responseBody: responseBody,
+          retryAfter: retryAfter,
+        ),
+      _RequestType.site => SiteRequestFailed(
           uri: uri,
           statusCode: statusCode,
           cause: cause,

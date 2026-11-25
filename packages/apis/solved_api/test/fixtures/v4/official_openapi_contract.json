@@ -1808,6 +1808,53 @@
         }
       }
     },
+    "/api/v4/site/stats": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "contributions": {
+                      "type": "integer"
+                    },
+                    "contributors": {
+                      "type": "integer"
+                    },
+                    "problemsWithLevel": {
+                      "type": "integer"
+                    },
+                    "users": {
+                      "type": "integer"
+                    },
+                    "usersByTier": {
+                      "items": {
+                        "type": "integer"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "problemsWithLevel",
+                    "users",
+                    "contributors",
+                    "contributions",
+                    "usersByTier"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The totals, up to ten minutes old."
+          }
+        },
+        "summary": "Site-wide totals for the home page",
+        "x-access": {
+          "class": "public"
+        }
+      }
+    },
     "/api/v4/tags": {
       "get": {
         "x-access": {

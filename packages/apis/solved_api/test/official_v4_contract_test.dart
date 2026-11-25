@@ -1074,6 +1074,47 @@ void main() {
     expect(schema, problemItem);
   });
 
+  test('pins the public site-wide totals without inferred constraints', () {
+    final siteStats = _get(contract, '/api/v4/site/stats');
+
+    expect(_map(siteStats['x-access']), {'class': 'public'});
+    expect(siteStats.containsKey('parameters'), isFalse);
+    expect(siteStats.containsKey('requestBody'), isFalse);
+    expect(_map(siteStats['responses']).keys.toList(), ['200']);
+    expect(
+      _map(_map(siteStats['responses'])['200'])['description'],
+      'The totals, up to ten minutes old.',
+    );
+
+    const fields = [
+      'problemsWithLevel',
+      'users',
+      'contributors',
+      'contributions',
+      'usersByTier',
+    ];
+    final schema = _responseSchema(siteStats);
+    expect(schema['type'], 'object');
+    expect(_required(schema), fields);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    final properties = _properties(schema);
+    expect(properties.keys, unorderedEquals(fields));
+    for (final field in fields.take(4)) {
+      final property = _map(properties[field]);
+      expect(property, {'type': 'integer'});
+      for (final constraint in ['minimum', 'maximum']) {
+        expect(property.containsKey(constraint), isFalse);
+      }
+    }
+
+    final usersByTier = _map(properties['usersByTier']);
+    expect(usersByTier['type'], 'array');
+    expect(_map(usersByTier['items']), {'type': 'integer'});
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(usersByTier.containsKey(constraint), isFalse);
+    }
+  });
+
   test('pins the public problem-search analysis schema without inference', () {
     final analysis = _get(contract, '/api/v4/search/analyze');
 
