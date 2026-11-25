@@ -79,6 +79,10 @@ void main() {
             '/solved/v4/search/random-problem' => 'v4/random_problem.json',
             '/solved/v4/search/suggest' => 'v4/search_suggestions.json',
             '/solved/v4/site/stats' => 'v4/site_stats.json',
+            '/solved/v4/sources/oj/boj/contests/round-1' =>
+              'v4/source_lookup.json',
+            '/solved/v4/sources/oj/boj/groups/team-1' =>
+              'v4/source_lookup.json',
             '/solved/v4/tags' => 'v4/tags.json',
             '/solved/v4/tags/number_theory' => 'v4/tag_detail.json',
             _ => throw StateError('Unexpected request: ${request.url}'),
@@ -153,6 +157,10 @@ void main() {
         final RandomProblemResult randomProblem =
             await client.v4RandomProblem(query: '');
         final SiteStatsResult siteStats = await client.v4SiteStats();
+        final SourceLookupResult sourceContest =
+            await client.v4SourceContest('boj', 'round-1');
+        final SourceLookupResult sourceGroup =
+            await client.v4SourceGroup('boj', 'team-1');
         final tags = await client.v4SearchTags('NUMBER');
         final TagDetailResult tagDetail =
             await client.v4TagDetail('number_theory');
@@ -354,6 +362,10 @@ void main() {
         expect(siteStats.contributors, -7);
         expect(siteStats.contributions, 345678);
         expect(siteStats.usersByTier, [-3, 0, 0, 31, 7]);
+        expect(sourceContest.id, -42.5);
+        expect(sourceContest.id, isA<double>());
+        expect(sourceGroup.id, -42.5);
+        expect(sourceGroup.id, isA<double>());
         expect(tags.items.single.key, 'number_theory');
         expect(tagDetail.id, 42.5);
         expect(tagDetail.key, 'number_theory');
@@ -435,11 +447,13 @@ void main() {
               'https://proxy.example/solved/v4/search/random-problem?q=',
             ),
             _uri('site/stats'),
+            _uri('sources/oj/boj/contests/round-1'),
+            _uri('sources/oj/boj/groups/team-1'),
             _uri('tags'),
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(23));
+        expect(httpClient.requests, hasLength(25));
         expect(
           httpClient.requests[12].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
@@ -692,7 +706,15 @@ void main() {
         await _captureFailure(client.v4SiteStats()),
         isA<SiteRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(19));
+      expect(
+        await _captureFailure(client.v4SourceContest('boj', 'contest')),
+        isA<SourceRequestFailed>(),
+      );
+      expect(
+        await _captureFailure(client.v4SourceGroup('boj', 'group')),
+        isA<SourceRequestFailed>(),
+      );
+      expect(httpClient.requests, hasLength(21));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -1358,6 +1380,105 @@ void main() {
       expect(error.isRetryable, isTrue);
       expect(httpClient.requests.single.url, _uri('site/stats'));
       expect(httpClient.requests, hasLength(1));
+    });
+
+    test('sends encoded anonymous contest and group source lookups', () async {
+      handler = (_) async => _jsonResponse(
+            fixture('v4/source_lookup.json'),
+          );
+
+      final contest = await client.v4SourceContest('한 글', 'round & #1');
+      final group = await client.v4SourceGroup('boj', 'team & #1');
+
+      expect(contest.id, -42.5);
+      expect(group.id, -42.5);
+      expect(
+        httpClient.requests.map((request) => request.url.toString()),
+        [
+          'https://proxy.example/solved/v4/sources/oj/'
+              '%ED%95%9C%20%EA%B8%80/contests/round%20%26%20%231',
+          'https://proxy.example/solved/v4/sources/oj/boj/'
+              'groups/team%20%26%20%231',
+        ],
+      );
+      for (final request in httpClient.requests) {
+        expect(request.method, 'GET');
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+        });
+        expect(request.bodyBytes, isEmpty);
+      }
+      expect(httpClient.requests, hasLength(2));
+    });
+
+    test('rejects invalid source lookup segments before transport', () {
+      final ojId33 = List<String>.filled(33, 'a').join();
+      final nativeId65 = List<String>.filled(65, 'b').join();
+
+      expect(
+        () => client.v4SourceContest(ojId33, 'contest'),
+        throwsArgumentError,
+      );
+      expect(
+        () => client.v4SourceGroup('boj', nativeId65),
+        throwsArgumentError,
+      );
+      expect(
+        () => client.v4SourceContest('boj', 'a/b'),
+        throwsArgumentError,
+      );
+      expect(httpClient.requests, isEmpty);
+    });
+
+    test('wraps a malformed source lookup as a source failure', () async {
+      handler = (_) async => _jsonResponse(jsonEncode({'id': 'not-number'}));
+
+      final error = await _captureFailure(
+        client.v4SourceContest('boj', 'contest'),
+      );
+
+      expect(error, isA<SourceRequestFailed>());
+      expect(error.statusCode, 200);
+      expect(error.cause, isA<FormatException>());
+      expect(error.responseBody, isNull);
+      expect(
+        httpClient.requests.single.url,
+        _uri('sources/oj/boj/contests/contest'),
+      );
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves source lookup 404 and 429 failure metadata', () async {
+      final lookups = <Future<SourceLookupResult> Function()>[
+        () => client.v4SourceContest('boj', 'contest'),
+        () => client.v4SourceGroup('boj', 'group'),
+      ];
+
+      for (final lookup in lookups) {
+        for (final status in [404, 429]) {
+          handler = (_) async => _bytesResponse(
+                const <int>[0xff],
+                statusCode: status,
+                headers: <String, String>{
+                  'content-type': 'text/plain',
+                  if (status == 429) 'retry-after': '19',
+                },
+              );
+
+          final error = await _captureFailure(lookup());
+
+          expect(error, isA<SourceRequestFailed>());
+          expect(error.statusCode, status);
+          expect(error.cause, isNull);
+          expect(error.responseBody, isNull);
+          expect(
+            error.retryAfter,
+            status == 429 ? const Duration(seconds: 19) : isNull,
+          );
+          expect(error.isRetryable, status == 429);
+        }
+      }
+      expect(httpClient.requests, hasLength(4));
     });
 
     test('preserves omitted, empty, and encoded suggestion queries', () async {

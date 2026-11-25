@@ -31,6 +31,7 @@ export 'search_object.dart';
 export 'search_suggestion_result.dart';
 export 'site_stats_result.dart';
 export 'solved_user_identity.dart';
+export 'source_lookup_result.dart';
 export 'tag_detail_result.dart';
 export 'tag_search_item.dart';
 export 'user_profile.dart';

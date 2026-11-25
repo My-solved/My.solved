@@ -124,7 +124,18 @@ class RankingRequestFailed extends SolvedApiException {
   });
 }
 
-enum _RequestType { user, background, badge, search, site, ranking }
+class SourceRequestFailed extends SolvedApiException {
+  const SourceRequestFailed({
+    super.uri,
+    super.statusCode,
+    super.cause,
+    super.stackTrace,
+    super.responseBody,
+    super.retryAfter,
+  });
+}
+
+enum _RequestType { user, background, badge, search, site, ranking, source }
 
 class SolvedApiClient {
   /// Creates a legacy v3 client.
@@ -462,6 +473,28 @@ class SolvedApiClient {
     );
   }
 
+  Future<SourceLookupResult> v4SourceContest(
+    String ojId,
+    String nativeId,
+  ) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.sourceContest(ojId, nativeId),
+      requestType: _RequestType.source,
+    );
+  }
+
+  Future<SourceLookupResult> v4SourceGroup(
+    String ojId,
+    String nativeId,
+  ) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.sourceGroup(ojId, nativeId),
+      requestType: _RequestType.source,
+    );
+  }
+
   Future<SearchObject<TagSearchItem>> v4SearchTags(
     String query, {
     int page = 1,
@@ -760,6 +793,14 @@ class SolvedApiClient {
           retryAfter: retryAfter,
         ),
       _RequestType.ranking => RankingRequestFailed(
+          uri: uri,
+          statusCode: statusCode,
+          cause: cause,
+          stackTrace: stackTrace,
+          responseBody: responseBody,
+          retryAfter: retryAfter,
+        ),
+      _RequestType.source => SourceRequestFailed(
           uri: uri,
           statusCode: statusCode,
           cause: cause,
