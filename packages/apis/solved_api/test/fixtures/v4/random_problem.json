@@ -1,0 +1,91 @@
+{
+  "id": 42.0,
+  "problemId": 1000.5,
+  "subId": "raw-sub",
+  "level": 12.5,
+  "levelAverage": -3,
+  "levelStdev": 0.0,
+  "isStandard": true,
+  "votedUserCount": -6.5,
+  "effectiveVoteCount": 7.0,
+  "solvedUserCount": 8,
+  "givesNoRating": false,
+  "noRatingReasons": [
+    "unofficial",
+    "staff"
+  ],
+  "noRatingWarnings": [
+    {
+      "type": "same",
+      "problem": {
+        "problemId": 1001.5,
+        "subId": "related",
+        "level": 13.0,
+        "effectiveVoteCount": -2,
+        "givesNoRating": true,
+        "isStandard": false,
+        "userStatus": "partial",
+        "futureProblem": true
+      },
+      "futureWarning": true
+    },
+    {
+      "type": "wrong-statement",
+      "problem": null
+    }
+  ],
+  "titles": [
+    {
+      "language": "ko",
+      "title": "무작위 문제",
+      "isOriginal": false,
+      "latex": false,
+      "html": false,
+      "futureTitle": true
+    },
+    {
+      "language": "en",
+      "title": "Raw <title>",
+      "isOriginal": true,
+      "latex": true,
+      "html": true
+    }
+  ],
+  "userStatus": null,
+  "contests": [
+    {
+      "id": 3.5,
+      "displayId": "contest/raw",
+      "name": "Raw contest",
+      "abbreviation": null,
+      "futureContest": true
+    }
+  ],
+  "tags": [
+    {
+      "id": 1.5,
+      "key": "math/raw",
+      "isMeta": false,
+      "futureTag": true
+    },
+    {
+      "id": 2,
+      "key": "duplicate-safe",
+      "isMeta": true
+    }
+  ],
+  "viewerFolders": [
+    {
+      "slug": "raw-folder",
+      "name": "Raw folder",
+      "color": null,
+      "futureFolder": true
+    },
+    {
+      "slug": "red-folder",
+      "name": "Red folder",
+      "color": "red"
+    }
+  ],
+  "futureEnvelope": true
+}

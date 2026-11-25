@@ -1825,6 +1825,120 @@ void main() {
       },
     );
 
+    test('preserves existing nested decoder diagnostic paths', () {
+      final endpoint = contract.searchProblems('sample');
+
+      Map<String, dynamic> firstProblem(Map<String, dynamic> body) =>
+          (body['problems'] as List).first as Map<String, dynamic>;
+      Map<String, dynamic> contest() {
+        return <String, dynamic>{
+          'id': 1,
+          'displayId': 'contest',
+          'name': 'Contest',
+          'abbreviation': null,
+        };
+      }
+
+      Map<String, dynamic> folder() {
+        return <String, dynamic>{
+          'slug': 'folder',
+          'name': 'Folder',
+          'color': 'red',
+        };
+      }
+
+      Map<String, dynamic> title() {
+        return <String, dynamic>{
+          'language': 'en',
+          'title': 'Title',
+          'isOriginal': true,
+          'latex': false,
+          'html': false,
+        };
+      }
+
+      Map<String, dynamic> tag() {
+        return <String, dynamic>{
+          'id': 1,
+          'key': 'tag',
+          'isMeta': false,
+        };
+      }
+
+      final invalidTitle = _problemSearchSource();
+      firstProblem(invalidTitle)['titles'] = <Object?>[
+        title()..['language'] = 1,
+      ];
+      expect(
+        () => endpoint.decode(invalidTitle),
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'message',
+            'Expected string for problems[].titles[].language',
+          ),
+        ),
+      );
+
+      final missingAbbreviation = _problemSearchSource();
+      firstProblem(missingAbbreviation)['contests'] = <Object?>[
+        contest()..remove('abbreviation'),
+      ];
+      expect(
+        () => endpoint.decode(missingAbbreviation),
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'message',
+            'Missing required field problems[].contests[].abbreviation',
+          ),
+        ),
+      );
+
+      final invalidTag = _problemSearchSource();
+      firstProblem(invalidTag)['tags'] = <Object?>[tag()..['key'] = 1];
+      expect(
+        () => endpoint.decode(invalidTag),
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'message',
+            'Expected string for problems[].tags[].key',
+          ),
+        ),
+      );
+
+      final missingColor = _problemSearchSource();
+      firstProblem(missingColor)['viewerFolders'] = <Object?>[
+        folder()..remove('color'),
+      ];
+      expect(
+        () => endpoint.decode(missingColor),
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'message',
+            'Missing required field problems[].viewerFolders[].color',
+          ),
+        ),
+      );
+
+      final unsupportedColor = _problemSearchSource();
+      firstProblem(unsupportedColor)['viewerFolders'] = <Object?>[
+        folder()..['color'] = 'future',
+      ];
+      expect(
+        () => endpoint.decode(unsupportedColor),
+        throwsA(
+          isA<FormatException>().having(
+            (error) => error.message,
+            'message',
+            'Unsupported problems[].viewerFolders[].color',
+          ),
+        ),
+      );
+    });
+
     test(
       'preserves numeric response totals without relaxing whole-number problem fields',
       () {
