@@ -94,6 +94,7 @@ void main() {
         'ojAccounts',
         'linkedAccounts',
         'affiliations',
+        'bans',
         'voteCount',
         'reputation',
         'noRatingSolvedCount',
@@ -238,6 +239,42 @@ void main() {
       expect(_map(affiliationProperties[field]), {
         'type': ['string', 'null'],
       });
+    }
+
+    final bans = _map(profileProperties['bans']);
+    expect(bans['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(bans.containsKey(constraint), isFalse);
+    }
+    final ban = _map(bans['items']);
+    expect(ban['type'], 'object');
+    expect(_required(ban), ['banType', 'banReason', 'reason', 'until']);
+    expect(ban.containsKey('additionalProperties'), isFalse);
+    final banProperties = _properties(ban);
+    expect(_map(banProperties['banType']), {
+      'type': 'string',
+      'enum': ['rating', 'vote'],
+    });
+    expect(_map(banProperties['banReason']), {
+      'type': ['string', 'null'],
+      'enum': [
+        'vote_troll_level',
+        'vote_hate_speech',
+        'vote_disparagement',
+        'vote_profanity',
+        'vote_multi_account',
+        'vote_repeat_offence',
+        'rating_copied_code',
+        'other',
+        'rating_auto_pace',
+        'vote_automated',
+        'vote_comment_strikes',
+        'vote_mark_abuse',
+        null,
+      ],
+    });
+    for (final field in ['reason', 'until']) {
+      expect(_map(banProperties[field]), {'type': 'string'});
     }
 
     final background = _map(profileProperties['background']);
