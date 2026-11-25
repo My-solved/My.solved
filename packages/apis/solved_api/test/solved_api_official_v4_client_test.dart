@@ -98,6 +98,10 @@ void main() {
         expect(profile.id, 1);
         expect(profile.voteCount, 37);
         expect(profile.solvedCount, 2048);
+        expect(profile.streakVacation, isNull);
+        expect(profile.streakCountedToday, isTrue);
+        expect(profile.streakFrozenYesterday, isFalse);
+        expect(profile.streakTheme, isNull);
         expect(activity.from, '2026-11-01');
         expect(activity.to, '2026-11-17');
         expect(activity.maxSolvedCount, 4);

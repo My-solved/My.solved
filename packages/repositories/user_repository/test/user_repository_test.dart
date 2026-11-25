@@ -297,6 +297,10 @@ solved_api.OfficialUserProfile _officialProfile({
     solved_api.OfficialUserProfile(
       id: 1,
       voteCount: 37,
+      streakVacation: null,
+      streakCountedToday: false,
+      streakFrozenYesterday: false,
+      streakTheme: null,
       handle: 'w8385',
       badgeId: null,
       backgroundId: null,

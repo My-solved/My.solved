@@ -137,7 +137,11 @@ void main() {
     () async {
       final repository = _FakeUserRepository(
         supportsV4: true,
-        user: _profile(currentStreak: 12, maxStreak: 365),
+        user: _officialProfile(
+          currentStreak: 12,
+          maxStreak: 365,
+          streakCountedToday: true,
+        ),
         failingAuxiliaryRequests: const {'streak'},
       );
       final bloc = _createBloc(repository, today);
@@ -737,6 +741,31 @@ UserProfile _profile({
       badge: badge,
       tagRatings: tagRatings,
     );
+
+OfficialUserProfile _officialProfile({
+  int? currentStreak,
+  int? maxStreak,
+  required bool streakCountedToday,
+}) => OfficialUserProfile(
+  id: 1,
+  voteCount: 0,
+  streakVacation: null,
+  streakCountedToday: streakCountedToday,
+  streakFrozenYesterday: false,
+  streakTheme: null,
+  handle: 'w8385',
+  badgeId: null,
+  backgroundId: null,
+  profileImageUrl: null,
+  solvedCount: 1,
+  legacyContributionCount: null,
+  userClass: 1,
+  reverseRivalCount: null,
+  tier: 1,
+  rating: 1,
+  currentStreak: currentStreak,
+  maxStreak: maxStreak,
+);
 
 final _user = _profile();
 

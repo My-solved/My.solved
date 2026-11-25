@@ -728,10 +728,24 @@ OfficialUserProfile _decodeV4UserProfile(dynamic json) {
   final tagRatings = _list(body['tagRatings'], 'tagRatings')
       .map((item) => _decodeV4TagRating(_object(item, 'tagRatings[]')))
       .toList(growable: false);
+  if (!body.containsKey('streakVacation')) {
+    throw const FormatException('Missing required field streakVacation');
+  }
+  final streakVacationValue = body['streakVacation'];
 
   return OfficialUserProfile(
     id: _number(body['id'], 'id'),
     voteCount: _integer(body['voteCount'], 'voteCount'),
+    streakVacation: streakVacationValue == null
+        ? null
+        : _decodeV4OfficialUserProfileStreakVacation(
+            _object(streakVacationValue, 'streakVacation'),
+          ),
+    streakCountedToday:
+        _boolean(body['streakCountedToday'], 'streakCountedToday'),
+    streakFrozenYesterday:
+        _boolean(body['streakFrozenYesterday'], 'streakFrozenYesterday'),
+    streakTheme: _requiredNullableString(body, 'streakTheme'),
     handle: _string(body['handle'], 'handle'),
     badgeId: badge?.key,
     backgroundId: background?.key,
@@ -767,6 +781,27 @@ OfficialUserProfile _decodeV4UserProfile(dynamic json) {
     badge: badge,
     tagRatings: tagRatings,
   );
+}
+
+OfficialUserProfileStreakVacation _decodeV4OfficialUserProfileStreakVacation(
+  Map<String, dynamic> body,
+) {
+  return OfficialUserProfileStreakVacation(
+    fromDay: _string(body['fromDay'], 'streakVacation.fromDay'),
+    source: _decodeV4OfficialUserProfileStreakVacationSource(body['source']),
+  );
+}
+
+OfficialUserProfileStreakVacationSource
+    _decodeV4OfficialUserProfileStreakVacationSource(Object? value) {
+  switch (_string(value, 'streakVacation.source')) {
+    case 'item':
+      return OfficialUserProfileStreakVacationSource.item;
+    case 'launch':
+      return OfficialUserProfileStreakVacationSource.launch;
+    default:
+      throw const FormatException('Unsupported streakVacation.source');
+  }
 }
 
 ProfileActivityResult _decodeV4ProfileActivity(dynamic json) {

@@ -106,6 +106,10 @@ void main() {
     expect(actual.classPlus, isTrue);
     expect(actual.currentStreak, 12);
     expect(actual.maxStreak, 365);
+    expect(actual.streakVacation, isNull);
+    expect(actual.streakCountedToday, isTrue);
+    expect(actual.streakFrozenYesterday, isFalse);
+    expect(actual.streakTheme, isNull);
     expect(actual.voteCount, 37);
     expect(actual.legacyContributionCount, isNull);
     expect(actual.reverseRivalCount, isNull);
@@ -200,6 +204,181 @@ void main() {
     expect(actual.reputation, 9001);
     expect(actual.handle, 'independent-handle');
     expect(actual.legacyContributionCount, isNull);
+  });
+
+  test('requires exact public profile streak state types', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_profile.json')) as Map,
+        );
+
+    for (final field in [
+      'streakVacation',
+      'streakCountedToday',
+      'streakFrozenYesterday',
+      'streakTheme',
+    ]) {
+      expect(
+        () => endpoint.decode(source()..remove(field)),
+        throwsFormatException,
+        reason: '$field missing',
+      );
+    }
+
+    for (final invalid in <Object>[
+      0,
+      false,
+      'vacation',
+      const <Object>[],
+    ]) {
+      expect(
+        () => endpoint.decode(source()..['streakVacation'] = invalid),
+        throwsFormatException,
+        reason: 'streakVacation = $invalid',
+      );
+    }
+    for (final invalid in <Object>[
+      0,
+      false,
+      const <Object>[],
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(source()..['streakTheme'] = invalid),
+        throwsFormatException,
+        reason: 'streakTheme = $invalid',
+      );
+    }
+    for (final field in ['streakCountedToday', 'streakFrozenYesterday']) {
+      for (final invalid in <Object?>[
+        null,
+        0,
+        'true',
+        const <Object>[],
+        const <String, Object?>{},
+      ]) {
+        expect(
+          () => endpoint.decode(source()..[field] = invalid),
+          throwsFormatException,
+          reason: '$field = $invalid',
+        );
+      }
+    }
+
+    final nullable = endpoint.decode(
+      source()
+        ..['streakVacation'] = null
+        ..['streakCountedToday'] = false
+        ..['streakFrozenYesterday'] = true
+        ..['streakTheme'] = null,
+    );
+    expect(nullable.streakVacation, isNull);
+    expect(nullable.streakCountedToday, isFalse);
+    expect(nullable.streakFrozenYesterday, isTrue);
+    expect(nullable.streakTheme, isNull);
+  });
+
+  test('strictly preserves the public profile streak vacation', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_profile.json')) as Map,
+        );
+    expect(
+      OfficialUserProfileStreakVacationSource.values
+          .map((value) => value.value),
+      ['item', 'launch'],
+    );
+
+    for (final sourceValue in ['item', 'launch']) {
+      final fromDay = sourceValue == 'item' ? '' : ' raw from day ';
+      final actual = endpoint.decode(
+        source()
+          ..['streakVacation'] = <String, Object?>{
+            'fromDay': fromDay,
+            'source': sourceValue,
+            'futureVacationField': 'allowed',
+          },
+      );
+      expect(actual.streakVacation?.fromDay, fromDay);
+      expect(actual.streakVacation?.source.value, sourceValue);
+    }
+
+    for (final field in ['fromDay', 'source']) {
+      final vacation = <String, Object?>{
+        'fromDay': '2026-11-01',
+        'source': 'item',
+      }..remove(field);
+      expect(
+        () => endpoint.decode(source()..['streakVacation'] = vacation),
+        throwsFormatException,
+        reason: 'missing streakVacation.$field',
+      );
+    }
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      const <Object>[],
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(
+          source()
+            ..['streakVacation'] = <String, Object?>{
+              'fromDay': invalid,
+              'source': 'item',
+            },
+        ),
+        throwsFormatException,
+        reason: 'streakVacation.fromDay = $invalid',
+      );
+    }
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      const <Object>[],
+      const <String, Object?>{},
+      '',
+      'Item',
+      'item ',
+      'unknown',
+    ]) {
+      expect(
+        () => endpoint.decode(
+          source()
+            ..['streakVacation'] = <String, Object?>{
+              'fromDay': '2026-11-01',
+              'source': invalid,
+            },
+        ),
+        throwsFormatException,
+        reason: 'streakVacation.source = $invalid',
+      );
+    }
+  });
+
+  test('preserves raw public profile streak state without inference', () {
+    final endpoint = contract.userProfile('index');
+    final source = Map<String, dynamic>.from(
+      jsonDecode(fixture('v4/user_profile.json')) as Map,
+    )
+      ..['currentStreak'] = -1
+      ..['maxStreak'] = -2
+      ..['streakVacation'] = null
+      ..['streakCountedToday'] = true
+      ..['streakFrozenYesterday'] = true
+      ..['streakTheme'] = '  '
+      ..['futureProfileField'] = 'allowed';
+    final actual = endpoint.decode(source);
+
+    expect(actual.currentStreak, -1);
+    expect(actual.maxStreak, -2);
+    expect(actual.streakVacation, isNull);
+    expect(actual.streakCountedToday, isTrue);
+    expect(actual.streakFrozenYesterday, isTrue);
+    expect(actual.streakTheme, '  ');
+    expect(endpoint.decode(source..['streakTheme'] = '').streakTheme, '');
   });
 
   test('requires nullable tier and profile image keys in public profiles', () {
