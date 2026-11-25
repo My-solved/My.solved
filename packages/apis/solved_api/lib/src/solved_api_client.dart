@@ -255,6 +255,20 @@ class SolvedApiClient {
     );
   }
 
+  Future<OfficialAchievementItem> v4AchievementItem(
+    OfficialAchievementItemKind kind,
+    String key,
+  ) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.achievementItem(kind, key),
+      requestType: switch (kind) {
+        OfficialAchievementItemKind.background => _RequestType.background,
+        OfficialAchievementItemKind.badge => _RequestType.badge,
+      },
+    );
+  }
+
   Future<ProfileBackgroundAsset?> v4BackgroundShow(String key) {
     final contract = _requireV4Contract();
     return _getV4(

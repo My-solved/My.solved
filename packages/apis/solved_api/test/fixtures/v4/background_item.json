@@ -41,5 +41,34 @@
     }
   ],
   "userCount": 1,
-  "achievements": []
+  "achievements": [
+    {
+      "key": "first_solve",
+      "name": "First Solve",
+      "condition": null,
+      "historic": false,
+      "hidden": false,
+      "holderCount": 1,
+      "earnedAt": "2026-11-25T00:00:00Z",
+      "problems": [
+        {
+          "problemId": 1000,
+          "level": 1,
+          "effectiveVoteCount": 3,
+          "givesNoRating": false,
+          "isStandard": true,
+          "titles": [
+            {
+              "language": "ko",
+              "title": "A+B",
+              "isOriginal": true,
+              "latex": false,
+              "html": false
+            }
+          ],
+          "userStatus": "solved"
+        }
+      ]
+    }
+  ]
 }
