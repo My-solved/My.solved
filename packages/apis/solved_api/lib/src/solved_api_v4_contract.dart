@@ -264,6 +264,15 @@ final class SolvedApiV4Contract {
         decode: _decodeV4RankingRegions,
       );
 
+  SolvedApiEndpoint<RankingTagsResult> rankingTags({String? language}) =>
+      _endpoint(
+        path: 'rankings/tags',
+        queryParameters: {
+          if (language != null) 'lang': language,
+        },
+        decode: _decodeV4RankingTags,
+      );
+
   SolvedApiEndpoint<SearchSuggestionResult> searchSuggestions(
     String topic, {
     String? value,
@@ -1071,6 +1080,30 @@ RankingRegionsResult _decodeV4RankingRegions(dynamic json) {
               'regions[].countryCode',
             ),
             userCount: _integer(region['userCount'], 'regions[].userCount'),
+          );
+        },
+      ),
+    ),
+  );
+}
+
+RankingTagsResult _decodeV4RankingTags(dynamic json) {
+  final body = _object(json, 'ranking tags');
+  return RankingTagsResult(
+    tags: List<RankingTag>.unmodifiable(
+      _list(body['tags'], 'tags').map(
+        (value) {
+          final tag = _object(value, 'tags[]');
+          return RankingTag(
+            key: _string(tag['key'], 'tags[].key'),
+            ratingTagIndex: _integer(
+              tag['ratingTagIndex'],
+              'tags[].ratingTagIndex',
+            ),
+            displayName: _string(
+              tag['displayName'],
+              'tags[].displayName',
+            ),
           );
         },
       ),

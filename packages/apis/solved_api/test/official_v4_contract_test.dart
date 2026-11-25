@@ -1109,6 +1109,50 @@ void main() {
     expect(_map(properties['userCount']), {'type': 'integer'});
   });
 
+  test('pins public ranking tags without inferred query or value bounds', () {
+    final rankingTags = _get(contract, '/api/v4/rankings/tags');
+
+    expect(_accessClass(rankingTags), 'public');
+    expect(_parameterNames(rankingTags), ['lang']);
+    final language = _parameters(rankingTags).single;
+    expect(language['in'], 'query');
+    expect(language['required'], isFalse);
+    expect(_map(language['schema']), {
+      'default': 'ko',
+      'type': 'string',
+    });
+    expect(rankingTags.containsKey('requestBody'), isFalse);
+    expect(_map(rankingTags['responses']).keys.toList(), ['200']);
+    expect(
+      _map(_map(rankingTags['responses'])['200'])['description'],
+      'Rated tag slots, named for the requested language.',
+    );
+
+    final schema = _responseSchema(rankingTags);
+    expect(schema['type'], 'object');
+    expect(_required(schema), ['tags']);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    final tags = _map(_properties(schema)['tags']);
+    expect(tags['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(tags.containsKey(constraint), isFalse);
+    }
+
+    final tag = _map(tags['items']);
+    expect(tag['type'], 'object');
+    expect(_required(tag), ['key', 'ratingTagIndex', 'displayName']);
+    expect(tag.containsKey('additionalProperties'), isFalse);
+    final properties = _properties(tag);
+    expect(properties.keys.toList(growable: false), [
+      'displayName',
+      'key',
+      'ratingTagIndex',
+    ]);
+    expect(_map(properties['key']), {'type': 'string'});
+    expect(_map(properties['ratingTagIndex']), {'type': 'integer'});
+    expect(_map(properties['displayName']), {'type': 'string'});
+  });
+
   test('pins the public site-wide totals without inferred constraints', () {
     final siteStats = _get(contract, '/api/v4/site/stats');
 

@@ -73,6 +73,7 @@ void main() {
             '/solved/v4/problems/1000' => 'v4/problem_detail.json',
             '/solved/v4/problems' => 'v4/search_problems.json',
             '/solved/v4/rankings/regions' => 'v4/ranking_regions.json',
+            '/solved/v4/rankings/tags' => 'v4/ranking_tags.json',
             '/solved/v4/rankings/users/search' => 'v4/search_users.json',
             '/solved/v4/search/analyze' => 'v4/search_analysis.json',
             '/solved/v4/search/random-problem' => 'v4/random_problem.json',
@@ -142,6 +143,8 @@ void main() {
         );
         final RankingRegionsResult rankingRegions =
             await client.v4RankingRegions();
+        final RankingTagsResult rankingTags =
+            await client.v4RankingTags(language: '');
         final suggestions = await client.v4SearchSuggestions(
           'tag&한',
           value: '',
@@ -321,6 +324,15 @@ void main() {
           rankingRegions.regions.map((region) => region.userCount),
           [0, -7, 100],
         );
+        expect(rankingTags.tags.map((tag) => tag.key), ['math', '', 'math']);
+        expect(
+          rankingTags.tags.map((tag) => tag.ratingTagIndex),
+          [0, -7, 42],
+        );
+        expect(
+          rankingTags.tags.map((tag) => tag.displayName),
+          ['수학', '', 'Mathematics'],
+        );
         expect(suggestions.suggestions, hasLength(3));
         expect(suggestions.suggestions.first.value, 'ko');
         expect(suggestions.suggestions.last.tier, -1);
@@ -409,6 +421,9 @@ void main() {
             }),
             _uri('rankings/regions'),
             Uri.parse(
+              'https://proxy.example/solved/v4/rankings/tags?lang=',
+            ),
+            Uri.parse(
               'https://proxy.example/solved/v4/search/suggest?'
               'topic=tag%26%ED%95%9C&value=',
             ),
@@ -424,23 +439,23 @@ void main() {
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(22));
+        expect(httpClient.requests, hasLength(23));
         expect(
           httpClient.requests[12].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
         );
         expect(
-          httpClient.requests[16].url.toString(),
+          httpClient.requests[17].url.toString(),
           'https://proxy.example/solved/v4/search/suggest?'
           'topic=tag%26%ED%95%9C&value=',
         );
         expect(
-          httpClient.requests[17].url.toString(),
+          httpClient.requests[18].url.toString(),
           'https://proxy.example/solved/v4/search/analyze?'
           'q=tag%26%ED%95%9C',
         );
         expect(
-          httpClient.requests[18].url.toString(),
+          httpClient.requests[19].url.toString(),
           'https://proxy.example/solved/v4/search/random-problem?q=',
         );
         for (final request in httpClient.requests) {
@@ -670,10 +685,14 @@ void main() {
         isA<RankingRequestFailed>(),
       );
       expect(
+        await _captureFailure(client.v4RankingTags()),
+        isA<RankingRequestFailed>(),
+      );
+      expect(
         await _captureFailure(client.v4SiteStats()),
         isA<SiteRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(18));
+      expect(httpClient.requests, hasLength(19));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -1226,6 +1245,76 @@ void main() {
       expect(error.retryAfter, const Duration(seconds: 15));
       expect(error.isRetryable, isTrue);
       expect(httpClient.requests.single.url, _uri('rankings/regions'));
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves omitted empty and raw ranking-tags language queries',
+        () async {
+      handler = (_) async => _jsonResponse(
+            fixture('v4/ranking_tags.json'),
+          );
+
+      final omitted = await client.v4RankingTags();
+      final empty = await client.v4RankingTags(language: '');
+      final raw = await client.v4RankingTags(language: '한 글 & raw');
+
+      expect(omitted.tags.first.key, 'math');
+      expect(empty.tags[1].ratingTagIndex, -7);
+      expect(raw.tags.last.displayName, 'Mathematics');
+      expect(httpClient.requests.map((request) => request.url), [
+        _uri('rankings/tags'),
+        Uri.parse(
+          'https://proxy.example/solved/v4/rankings/tags?lang=',
+        ),
+        _uri(
+          'rankings/tags',
+          const <String, String>{'lang': '한 글 & raw'},
+        ),
+      ]);
+      expect(httpClient.requests, hasLength(3));
+    });
+
+    test('wraps malformed ranking tags as a ranking failure', () async {
+      handler = (_) async => _jsonResponse(
+            jsonEncode({
+              'tags': <Object?>[
+                <String, Object?>{
+                  'key': 'math',
+                  'ratingTagIndex': 0,
+                },
+              ],
+            }),
+          );
+
+      final error = await _captureFailure(client.v4RankingTags());
+
+      expect(error, isA<RankingRequestFailed>());
+      expect(error.statusCode, 200);
+      expect(error.cause, isA<FormatException>());
+      expect(error.responseBody, isNull);
+      expect(httpClient.requests.single.url, _uri('rankings/tags'));
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves ranking-tags 429 failure metadata', () async {
+      handler = (_) async => _bytesResponse(
+            const <int>[0xff],
+            statusCode: 429,
+            headers: const <String, String>{
+              'content-type': 'text/plain',
+              'retry-after': '17',
+            },
+          );
+
+      final error = await _captureFailure(client.v4RankingTags());
+
+      expect(error, isA<RankingRequestFailed>());
+      expect(error.statusCode, 429);
+      expect(error.cause, isNull);
+      expect(error.responseBody, isNull);
+      expect(error.retryAfter, const Duration(seconds: 17));
+      expect(error.isRetryable, isTrue);
+      expect(httpClient.requests.single.url, _uri('rankings/tags'));
       expect(httpClient.requests, hasLength(1));
     });
 
