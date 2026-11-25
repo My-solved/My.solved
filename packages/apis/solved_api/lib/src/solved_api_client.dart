@@ -255,6 +255,17 @@ class SolvedApiClient {
     );
   }
 
+  Future<ProfileRatingHistoryResult> v4UserRatingHistory(
+    String handle, {
+    SolvedApiV4RatingHistoryRange? range,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.userRatingHistory(handle, range: range),
+      requestType: _RequestType.user,
+    );
+  }
+
   Future<OfficialAchievementItem> v4AchievementItem(
     OfficialAchievementItemKind kind,
     String key,
