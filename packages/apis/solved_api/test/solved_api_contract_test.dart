@@ -645,6 +645,7 @@ void main() {
       expect(actual.imageUrl, 'https://example.com/background.png');
       expect(actual.key, 'anniversary_1st');
       expect(actual.fallbackImageUrl, 'https://example.com/fallback.png');
+      expect(actual, isNot(isA<OfficialUserProfileBackground>()));
       expect(json['wireOnlyField'], isTrue);
     });
 
@@ -657,6 +658,7 @@ void main() {
 
       expect(actual.imageUrl, 'https://example.com/badge.png');
       expect(actual.key, 'boardgame');
+      expect(actual, isNot(isA<OfficialUserProfileBadge>()));
     });
   });
 

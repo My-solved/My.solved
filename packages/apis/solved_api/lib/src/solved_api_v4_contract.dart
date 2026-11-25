@@ -722,8 +722,22 @@ final class _V4CatalogTag {
 
 OfficialUserProfile _decodeV4UserProfile(dynamic json) {
   final body = _object(json, 'profile');
-  final background = _decodeInlineBackground(body['background']);
-  final badge = _decodeInlineBadge(body['badge']);
+  if (!body.containsKey('background')) {
+    throw const FormatException('Missing required field background');
+  }
+  if (!body.containsKey('badge')) {
+    throw const FormatException('Missing required field badge');
+  }
+  final backgroundValue = body['background'];
+  final badgeValue = body['badge'];
+  final background = backgroundValue == null
+      ? null
+      : _decodeOfficialUserProfileBackground(
+          _object(backgroundValue, 'background'),
+        );
+  final badge = badgeValue == null
+      ? null
+      : _decodeOfficialUserProfileBadge(_object(badgeValue, 'badge'));
   final rating = _integer(body['rating'], 'rating');
   final tagRatings = _list(body['tagRatings'], 'tagRatings')
       .map((item) => _decodeV4TagRating(_object(item, 'tagRatings[]')))
@@ -747,15 +761,11 @@ OfficialUserProfile _decodeV4UserProfile(dynamic json) {
         _boolean(body['streakFrozenYesterday'], 'streakFrozenYesterday'),
     streakTheme: _requiredNullableString(body, 'streakTheme'),
     handle: _string(body['handle'], 'handle'),
-    badgeId: badge?.key,
-    backgroundId: background?.key,
     profileImageUrl: _requiredNullableString(body, 'profileImageUrl'),
     bio: _requiredNullableString(body, 'bio'),
     solvedCount: _integer(body['solvedCount'], 'solvedCount'),
-    legacyContributionCount: null,
     userClass: _integer(body['class'], 'class'),
     classPlus: _boolean(body['classPlus'], 'classPlus'),
-    reverseRivalCount: null,
     tier: _requiredNullableTier(body, 'tier'),
     rating: rating,
     currentStreak: _integer(body['currentStreak'], 'currentStreak'),
@@ -943,23 +953,83 @@ ProfileBadgeAsset _decodeV4BadgeAsset(dynamic json) {
   );
 }
 
-ProfileBackgroundAsset? _decodeInlineBackground(Object? value) {
-  if (value == null) return null;
-  final background = _object(value, 'background');
-  return ProfileBackgroundAsset(
-    key: _string(background['key'], 'background.key'),
-    imageUrl: _string(background['backgroundImageUrl'], 'backgroundImageUrl'),
-    fallbackImageUrl: _nullableString(
-      background['fallbackBackgroundImageUrl'],
-      'fallbackBackgroundImageUrl',
+OfficialUserProfileBackground _decodeOfficialUserProfileBackground(
+  Map<String, dynamic> background,
+) {
+  final authors = List<OfficialUserProfileBackgroundAuthor>.unmodifiable(
+    _list(background['authors'], 'background.authors').map(
+      (value) => _decodeOfficialUserProfileBackgroundAuthor(
+        _object(value, 'background.authors[]'),
+      ),
     ),
+  );
+  return OfficialUserProfileBackground(
+    key: _string(background['key'], 'background.key'),
+    imageUrl: _string(
+      background['backgroundImageUrl'],
+      'background.backgroundImageUrl',
+    ),
+    fallbackImageUrl: _requiredNullableString(
+      background,
+      'fallbackBackgroundImageUrl',
+      'background.fallbackBackgroundImageUrl',
+    ),
+    backgroundVideoUrl: _requiredNullableString(
+      background,
+      'backgroundVideoUrl',
+      'background.backgroundVideoUrl',
+    ),
+    thumbnailPlaceholder: _requiredNullableString(
+      background,
+      'thumbnailPlaceholder',
+      'background.thumbnailPlaceholder',
+    ),
+    isIllust: _boolean(background['isIllust'], 'background.isIllust'),
+    displayName: _requiredNullableString(
+      background,
+      'displayName',
+      'background.displayName',
+    ),
+    authors: authors,
   );
 }
 
-ProfileBadgeAsset? _decodeInlineBadge(Object? value) {
-  if (value == null) return null;
-  final badge = _object(value, 'badge');
-  return ProfileBadgeAsset(
+OfficialUserProfileBackgroundAuthor _decodeOfficialUserProfileBackgroundAuthor(
+        Map<String, dynamic> author) =>
+    OfficialUserProfileBackgroundAuthor(
+      key: _string(author['key'], 'background.authors[].key'),
+      displayName: _requiredNullableString(
+        author,
+        'displayName',
+        'background.authors[].displayName',
+      ),
+      role: _string(author['role'], 'background.authors[].role'),
+      authorUrl: _requiredNullableString(
+        author,
+        'authorUrl',
+        'background.authors[].authorUrl',
+      ),
+      handle: _requiredNullableString(
+        author,
+        'handle',
+        'background.authors[].handle',
+      ),
+      twitter: _requiredNullableString(
+        author,
+        'twitter',
+        'background.authors[].twitter',
+      ),
+      instagram: _requiredNullableString(
+        author,
+        'instagram',
+        'background.authors[].instagram',
+      ),
+    );
+
+OfficialUserProfileBadge _decodeOfficialUserProfileBadge(
+  Map<String, dynamic> badge,
+) {
+  return OfficialUserProfileBadge(
     key: _string(badge['key'], 'badge.key'),
     name: _string(badge['name'], 'badge.name'),
     imageUrl: _string(badge['imageUrl'], 'badge.imageUrl'),
