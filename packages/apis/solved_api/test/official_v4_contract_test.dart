@@ -434,17 +434,71 @@ void main() {
     final reputation = _get(contract, '/api/v4/users/{handle}/reputation');
     expect(_accessClass(reputation), 'public');
     expect(_parameterNames(reputation), ['handle', 'range']);
-    expect(
-      _required(_responseSchema(reputation)),
-      containsAll([
-        'reputation',
-        'scoringCount',
-        'helpfulCount',
-        'vouchedCount',
-        'history',
-        'today',
-      ]),
+    final range = _parameters(reputation).singleWhere(
+      (parameter) => parameter['name'] == 'range',
     );
+    expect(range['in'], 'query');
+    expect(range['required'], isFalse);
+    expect(_map(range['schema']), {
+      'type': 'string',
+      'enum': ['90d', '1y', 'all'],
+    });
+
+    final reputationSchema = _responseSchema(reputation);
+    expect(_required(reputationSchema), [
+      'reputation',
+      'scoringCount',
+      'helpfulCount',
+      'vouchedCount',
+      'history',
+      'today',
+    ]);
+    expect(reputationSchema.containsKey('additionalProperties'), isFalse);
+    final reputationProperties = _properties(reputationSchema);
+    for (final field in [
+      'reputation',
+      'scoringCount',
+      'helpfulCount',
+      'vouchedCount',
+    ]) {
+      expect(_map(reputationProperties[field]), {'type': 'integer'});
+    }
+
+    final history = _map(reputationProperties['history']);
+    expect(history['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(history.containsKey(constraint), isFalse);
+    }
+    final historyItem = _map(history['items']);
+    expect(historyItem['type'], 'object');
+    expect(_required(historyItem), ['day', 'value']);
+    expect(historyItem.containsKey('additionalProperties'), isFalse);
+    final historyProperties = _properties(historyItem);
+    expect(_map(historyProperties['day']), {
+      'type': 'string',
+      'pattern': r'^\d{4}-\d{2}-\d{2}$',
+    });
+    expect(_map(historyProperties['value']), {'type': 'integer'});
+
+    final today = _map(reputationProperties['today']);
+    expect(today['type'], 'object');
+    expect(_required(today), ['contributions', 'helpful']);
+    expect(today.containsKey('additionalProperties'), isFalse);
+    final todayProperties = _properties(today);
+    final contributions = _map(todayProperties['contributions']);
+    expect(contributions['type'], 'object');
+    expect(_required(contributions), ['count', 'max']);
+    expect(contributions.containsKey('additionalProperties'), isFalse);
+    final contributionProperties = _properties(contributions);
+    expect(_map(contributionProperties['count']), {'type': 'integer'});
+    expect(_map(contributionProperties['max']), {'type': 'integer'});
+    final helpful = _map(todayProperties['helpful']);
+    expect(helpful['type'], 'object');
+    expect(_required(helpful), ['earned', 'cap']);
+    expect(helpful.containsKey('additionalProperties'), isFalse);
+    final helpfulProperties = _properties(helpful);
+    expect(_map(helpfulProperties['earned']), {'type': 'integer'});
+    expect(_map(helpfulProperties['cap']), {'type': 'integer'});
   });
 
   test('pins the required activity range and sparse-day response', () {

@@ -99,7 +99,7 @@ final class SolvedApiV4Contract {
     );
   }
 
-  SolvedApiEndpoint<ProfileContributionStats> userReputation(
+  SolvedApiEndpoint<ProfileReputationResult> userReputation(
     String handle, {
     SolvedApiV4ReputationRange? range,
   }) =>
@@ -108,7 +108,7 @@ final class SolvedApiV4Contract {
         queryParameters: {
           if (range != null) 'range': range.value,
         },
-        decode: _decodeV4ContributionStats,
+        decode: _decodeV4ProfileReputation,
       );
 
   SolvedApiEndpoint<ProfileBackgroundAsset?> backgroundShow(String key) =>
@@ -1162,15 +1162,61 @@ ProfileActivityVacationSource _decodeV4ProfileActivityVacationSource(
   }
 }
 
-ProfileContributionStats _decodeV4ContributionStats(dynamic json) {
+ProfileReputationResult _decodeV4ProfileReputation(dynamic json) {
   final body = _object(json, 'reputation');
-  return ProfileContributionStats(
+  final history = List<ProfileReputationHistoryEntry>.unmodifiable(
+    _list(body['history'], 'history').map(
+      (item) => _decodeV4ProfileReputationHistoryEntry(
+        _object(item, 'history[]'),
+      ),
+    ),
+  );
+  return ProfileReputationResult(
     reputation: _integer(body['reputation'], 'reputation'),
     scoringCount: _integer(body['scoringCount'], 'scoringCount'),
     helpfulCount: _integer(body['helpfulCount'], 'helpfulCount'),
     vouchedCount: _integer(body['vouchedCount'], 'vouchedCount'),
+    history: history,
+    today: _decodeV4ProfileReputationToday(_object(body['today'], 'today')),
   );
 }
+
+ProfileReputationHistoryEntry _decodeV4ProfileReputationHistoryEntry(
+  Map<String, dynamic> body,
+) =>
+    ProfileReputationHistoryEntry(
+      day: _profileReputationDay(body['day'], 'history[].day'),
+      value: _integer(body['value'], 'history[].value'),
+    );
+
+ProfileReputationToday _decodeV4ProfileReputationToday(
+  Map<String, dynamic> body,
+) =>
+    ProfileReputationToday(
+      contributions: _decodeV4ProfileReputationTodayContributions(
+        _object(body['contributions'], 'today.contributions'),
+      ),
+      helpful: _decodeV4ProfileReputationTodayHelpful(
+        _object(body['helpful'], 'today.helpful'),
+      ),
+    );
+
+ProfileReputationTodayContributions
+    _decodeV4ProfileReputationTodayContributions(
+  Map<String, dynamic> body,
+) =>
+        ProfileReputationTodayContributions(
+          count: _integer(body['count'], 'today.contributions.count'),
+          max: _integer(body['max'], 'today.contributions.max'),
+        );
+
+ProfileReputationTodayHelpful _decodeV4ProfileReputationTodayHelpful(
+  Map<String, dynamic> body,
+) =>
+    ProfileReputationTodayHelpful(
+      earned: _integer(body['earned'], 'today.helpful.earned'),
+      cap: _integer(body['cap'], 'today.helpful.cap'),
+    );
 
 ProfileBackgroundAsset? _decodeV4BackgroundAsset(dynamic json) {
   final body = _object(json, 'background item');
@@ -1328,6 +1374,14 @@ void _positivePage(int page) {
 String _formatDay(DateTime day) => '${day.year.toString().padLeft(4, '0')}-'
     '${day.month.toString().padLeft(2, '0')}-'
     '${day.day.toString().padLeft(2, '0')}';
+
+String _profileReputationDay(Object? value, String field) {
+  final day = _string(value, field);
+  if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(day)) {
+    throw FormatException('Invalid $field');
+  }
+  return day;
+}
 
 ({int year, int month, int day}) _profileActivityDay(
   String value,

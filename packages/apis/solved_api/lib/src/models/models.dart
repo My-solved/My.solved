@@ -12,6 +12,7 @@ export 'profile_background_asset.dart';
 export 'profile_badge_asset.dart';
 export 'profile_contribution_stats.dart';
 export 'profile_rating_breakdown.dart';
+export 'profile_reputation_result.dart';
 export 'profile_streak.dart';
 export 'profile_tag_rating.dart';
 export 'profile_tier_stat.dart';
