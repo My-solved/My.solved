@@ -40,6 +40,7 @@ void main() {
     expect(allPaths, hasLength(79));
     expect(allPaths, contains('/api/v4/me'));
     expect(allPaths, contains('/api/v4/users/{handle}'));
+    expect(allPaths, contains('/api/v4/users/{handle}/badge-stand'));
     expect(allPaths, contains('/api/v4/problems'));
     expect(allPaths, isNot(contains('/api/v4/user/show')));
     expect(allPaths, isNot(contains('/api/v4/user/grass')));
@@ -638,6 +639,85 @@ void main() {
       'category',
       'addedAt',
       'acquiredAt',
+    ]) {
+      expect(_map(itemProperties[field]), {'type': 'string'});
+    }
+  });
+
+  test('pins the public badge stand schema without inference', () {
+    final badgeStand = _get(contract, '/api/v4/users/{handle}/badge-stand');
+
+    expect(_accessClass(badgeStand), 'public');
+    expect(_parameterNames(badgeStand), ['handle', 'lang']);
+    final parameters = _parameters(badgeStand);
+    expect(parameters.first['in'], 'path');
+    expect(parameters.first['required'], isTrue);
+    expect(_map(parameters.first['schema']), {
+      'maxLength': 64,
+      'minLength': 1,
+      'type': 'string',
+    });
+    expect(parameters.last['in'], 'query');
+    expect(parameters.last['required'], isFalse);
+    expect(_map(parameters.last['schema']), {
+      'default': 'ko',
+      'maxLength': 16,
+      'type': 'string',
+    });
+    expect(_map(badgeStand['responses']).keys, containsAll(['200', '404']));
+
+    final schema = _responseSchema(badgeStand);
+    expect(_required(schema), ['chosen', 'badges']);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    final properties = _properties(schema);
+    expect(properties.keys, unorderedEquals(['badges', 'chosen']));
+    expect(_map(properties['chosen']), {'type': 'boolean'});
+
+    final badges = _map(properties['badges']);
+    expect(badges['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(badges.containsKey(constraint), isFalse);
+    }
+    final item = _map(badges['items']);
+    expect(item['type'], 'object');
+    expect(_required(item), [
+      'kind',
+      'id',
+      'key',
+      'name',
+      'imageUrl',
+      'category',
+      'addedAt',
+      'holderCount',
+    ]);
+    expect(item.containsKey('additionalProperties'), isFalse);
+    final itemProperties = _properties(item);
+    expect(
+      itemProperties.keys,
+      unorderedEquals([
+        'addedAt',
+        'category',
+        'holderCount',
+        'id',
+        'imageUrl',
+        'key',
+        'kind',
+        'name',
+      ]),
+    );
+    expect(_map(itemProperties['kind']), {
+      'enum': ['badge', 'background'],
+      'type': 'string',
+    });
+    for (final field in ['id', 'holderCount']) {
+      expect(_map(itemProperties[field]), {'type': 'integer'});
+    }
+    for (final field in [
+      'key',
+      'name',
+      'imageUrl',
+      'category',
+      'addedAt',
     ]) {
       expect(_map(itemProperties[field]), {'type': 'string'});
     }

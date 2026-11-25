@@ -10,6 +10,7 @@ export 'problem_search_title.dart';
 export 'problem_search_viewer_folder.dart';
 export 'profile_activity_result.dart';
 export 'profile_achievement_summary_result.dart';
+export 'profile_badge_stand_result.dart';
 export 'profile_background_asset.dart';
 export 'profile_badge_asset.dart';
 export 'profile_contribution_stats.dart';

@@ -61,6 +61,7 @@ void main() {
               'v4/user_rating_history.json',
             '/solved/v4/users/index/achievements/summary' =>
               'v4/user_achievement_summary.json',
+            '/solved/v4/users/index/badge-stand' => 'v4/user_badge_stand.json',
             '/solved/v4/achievements/items/background/anniversary_1st' =>
               'v4/background_item.json',
             '/solved/v4/achievements/items/badge/boardgame' =>
@@ -91,6 +92,8 @@ void main() {
         );
         final ProfileAchievementSummaryResult achievementSummary =
             await client.v4UserAchievementSummary('index');
+        final ProfileBadgeStandResult badgeStand =
+            await client.v4UserBadgeStand('index');
         final OfficialAchievementItem achievementBackground =
             await client.v4AchievementItem(
           OfficialAchievementItemKind.background,
@@ -227,6 +230,17 @@ void main() {
             OfficialAchievementItemKind.background,
           ],
         );
+        expect(badgeStand.chosen, isTrue);
+        expect(badgeStand.badges, hasLength(2));
+        expect(
+          badgeStand.badges.map((item) => item.kind),
+          [
+            OfficialAchievementItemKind.badge,
+            OfficialAchievementItemKind.background,
+          ],
+        );
+        expect(badgeStand.badges.first.holderCount, 42);
+        expect(badgeStand.badges.last.holderCount, 7);
         expect(
           achievementBackground.kind,
           OfficialAchievementItemKind.background,
@@ -266,6 +280,10 @@ void main() {
               <String, String>{'lang': 'ko'},
             ),
             _uri(
+              'users/index/badge-stand',
+              <String, String>{'lang': 'ko'},
+            ),
+            _uri(
               'achievements/items/background/anniversary_1st',
               <String, String>{'lang': 'ko'},
             ),
@@ -295,7 +313,7 @@ void main() {
             _uri('tags'),
           ],
         );
-        expect(httpClient.requests, hasLength(12));
+        expect(httpClient.requests, hasLength(13));
         for (final request in httpClient.requests) {
           expect(request, isA<http.AbortableRequest>());
           expect(request.method, 'GET');
@@ -455,6 +473,10 @@ void main() {
         isA<UserRequestFailed>(),
       );
       expect(
+        await _captureFailure(client.v4UserBadgeStand('index')),
+        isA<UserRequestFailed>(),
+      );
+      expect(
         await _captureFailure(client.v4BackgroundShow('anniversary_1st')),
         isA<BackgroundRequestFailed>(),
       );
@@ -484,7 +506,7 @@ void main() {
         await _captureFailure(client.v4SearchTags('dp')),
         isA<SearchRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(8));
+      expect(httpClient.requests, hasLength(9));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -543,6 +565,41 @@ void main() {
         httpClient.requests.single.url,
         _uri(
           'users/index/achievements/summary',
+          const <String, String>{'lang': 'ko'},
+        ),
+      );
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('wraps a malformed badge stand as a user failure', () async {
+      handler = (_) async => _jsonResponse(
+            jsonEncode({
+              'chosen': true,
+              'badges': <Object?>[
+                <String, Object?>{
+                  'kind': 'badge',
+                  'id': 1,
+                  'key': 'key',
+                  'name': 'name',
+                  'imageUrl': 'image',
+                  'category': 'category',
+                  'addedAt': 'added',
+                },
+              ],
+            }),
+          );
+
+      final error = await _captureFailure(
+        client.v4UserBadgeStand('index'),
+      );
+
+      expect(error, isA<UserRequestFailed>());
+      expect(error.statusCode, 200);
+      expect(error.cause, isA<FormatException>());
+      expect(
+        httpClient.requests.single.url,
+        _uri(
+          'users/index/badge-stand',
           const <String, String>{'lang': 'ko'},
         ),
       );
