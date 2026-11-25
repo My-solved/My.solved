@@ -314,6 +314,17 @@ class SolvedApiClient {
     );
   }
 
+  Future<ProblemDetailResult> v4ProblemDetail(
+    int problemId, {
+    String? sub,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.problemDetail(problemId, sub: sub),
+      requestType: _RequestType.search,
+    );
+  }
+
   Future<ProblemSearchResult> v4SearchProblems(
     String query, {
     int page = 1,
@@ -396,10 +407,10 @@ class SolvedApiClient {
     }
     final transport = _requireV4Transport();
     final target = endpoint.proxy;
-    final uri = transport.proxyBaseUri.resolve(target.path).replace(
-          queryParameters:
-              target.queryParameters.isEmpty ? null : target.queryParameters,
-        );
+    final uri = _withQueryParameters(
+      transport.proxyBaseUri.resolve(target.path),
+      target.queryParameters,
+    );
 
     late SolvedProxyResponse response;
     try {
@@ -641,6 +652,17 @@ class SolvedApiClient {
     if (uri.path.endsWith('/')) return uri;
     return uri.replace(path: '${uri.path}/');
   }
+}
+
+Uri _withQueryParameters(Uri uri, Map<String, String> queryParameters) {
+  if (queryParameters.isEmpty) return uri;
+  final query = queryParameters.entries.map((entry) {
+    final encoded = Uri(
+      queryParameters: <String, String>{entry.key: entry.value},
+    ).query;
+    return entry.value.isEmpty ? '$encoded=' : encoded;
+  }).join('&');
+  return uri.replace(query: query);
 }
 
 void _requireJsonContentType(Map<String, String> headers) {

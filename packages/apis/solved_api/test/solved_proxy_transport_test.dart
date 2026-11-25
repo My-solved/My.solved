@@ -202,10 +202,11 @@ void main() {
       final request = httpClient.requests.single;
       expect(request.method, 'GET');
       expect(
-        request.url,
-        Uri.parse(
-          'https://proxy.example/solved/v4/problems',
-        ).replace(queryParameters: query),
+        request.url.toString(),
+        'https://proxy.example/solved/v4/problems?'
+        'q=a%2Bb+%26+%3D+%23+%2F+%25+%ED%95%9C%EA%B8%80&'
+        'next%26target=https%3A%2F%2Felsewhere.example%2Fpath%3Fx%3D1%23fragment&'
+        'empty=',
       );
       expect(request.url.host, 'proxy.example');
       expect(request.url.path, '/solved/v4/problems');
