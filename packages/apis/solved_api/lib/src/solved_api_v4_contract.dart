@@ -263,6 +263,23 @@ final class SolvedApiV4Contract {
     );
   }
 
+  SolvedApiEndpoint<ProblemSearchAnalysisResult> analyzeProblemSearch({
+    String? query,
+  }) {
+    if (query != null && query.runes.length > 1000) {
+      throw ArgumentError.value(
+        query,
+        'query',
+        'Must not exceed 1000 characters',
+      );
+    }
+    return _endpoint(
+      path: 'search/analyze',
+      queryParameters: {if (query != null) 'q': query},
+      decode: _decodeV4ProblemSearchAnalysis,
+    );
+  }
+
   /// Fetches the complete official tag catalog and filters it locally.
   ///
   /// The v4 `/tags` endpoint accepts no query or page parameters. Matching is
@@ -339,6 +356,17 @@ SearchSuggestionItem _decodeV4SearchSuggestionItem(
         'suggestions[].tier',
       ),
     );
+
+ProblemSearchAnalysisResult _decodeV4ProblemSearchAnalysis(dynamic json) {
+  final body = _object(json, 'problem search analysis');
+  final diagnostics = List<ProblemSearchDiagnostic>.unmodifiable(
+    _list(body['diagnostics'], 'diagnostics').map(
+      (value) =>
+          _decodeV4ProblemSearchDiagnostic(_object(value, 'diagnostics[]')),
+    ),
+  );
+  return ProblemSearchAnalysisResult(diagnostics: diagnostics);
+}
 
 ProblemDetailResult _decodeV4ProblemDetail(dynamic json) {
   const field = 'problem detail';

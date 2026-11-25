@@ -71,6 +71,7 @@ void main() {
             '/solved/v4/problems/1000' => 'v4/problem_detail.json',
             '/solved/v4/problems' => 'v4/search_problems.json',
             '/solved/v4/rankings/users/search' => 'v4/search_users.json',
+            '/solved/v4/search/analyze' => 'v4/search_analysis.json',
             '/solved/v4/search/suggest' => 'v4/search_suggestions.json',
             '/solved/v4/tags' => 'v4/tags.json',
             '/solved/v4/tags/number_theory' => 'v4/tag_detail.json',
@@ -130,6 +131,7 @@ void main() {
           'tag&한',
           value: '',
         );
+        final analysis = await client.v4AnalyzeProblemSearch(query: 'tag&한');
         final tags = await client.v4SearchTags('NUMBER');
         final TagDetailResult tagDetail =
             await client.v4TagDetail('number_theory');
@@ -286,6 +288,13 @@ void main() {
         expect(suggestions.suggestions, hasLength(3));
         expect(suggestions.suggestions.first.value, 'ko');
         expect(suggestions.suggestions.last.tier, -1);
+        expect(analysis.diagnostics, hasLength(3));
+        expect(
+          analysis.diagnostics.first.code,
+          ProblemSearchDiagnosticCode.unknownFilter,
+        );
+        expect(analysis.diagnostics[1].data, isNull);
+        expect(analysis.diagnostics.last.data, isEmpty);
         expect(tags.items.single.key, 'number_theory');
         expect(tagDetail.id, 42.5);
         expect(tagDetail.key, 'number_theory');
@@ -351,11 +360,15 @@ void main() {
               'https://proxy.example/solved/v4/search/suggest?'
               'topic=tag%26%ED%95%9C&value=',
             ),
+            Uri.parse(
+              'https://proxy.example/solved/v4/search/analyze?'
+              'q=tag%26%ED%95%9C',
+            ),
             _uri('tags'),
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(17));
+        expect(httpClient.requests, hasLength(18));
         expect(
           httpClient.requests[11].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
@@ -364,6 +377,11 @@ void main() {
           httpClient.requests[14].url.toString(),
           'https://proxy.example/solved/v4/search/suggest?'
           'topic=tag%26%ED%95%9C&value=',
+        );
+        expect(
+          httpClient.requests[15].url.toString(),
+          'https://proxy.example/solved/v4/search/analyze?'
+          'q=tag%26%ED%95%9C',
         );
         for (final request in httpClient.requests) {
           expect(request, isA<http.AbortableRequest>());
@@ -575,7 +593,11 @@ void main() {
         await _captureFailure(client.v4SearchSuggestions('tag')),
         isA<SearchRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(13));
+      expect(
+        await _captureFailure(client.v4AnalyzeProblemSearch()),
+        isA<SearchRequestFailed>(),
+      );
+      expect(httpClient.requests, hasLength(14));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -795,6 +817,95 @@ void main() {
     test('rejects an invalid problem ID before transport', () {
       expect(() => client.v4ProblemDetail(0), throwsArgumentError);
       expect(httpClient.requests, isEmpty);
+    });
+
+    test('preserves omitted, empty, and encoded analysis queries', () async {
+      handler = (_) async => _jsonResponse(
+            fixture('v4/search_analysis.json'),
+          );
+
+      await client.v4AnalyzeProblemSearch();
+      await client.v4AnalyzeProblemSearch(query: '');
+      await client.v4AnalyzeProblemSearch(query: '태그 & tier');
+
+      expect(
+        httpClient.requests.map((request) => request.url.toString()),
+        [
+          'https://proxy.example/solved/v4/search/analyze',
+          'https://proxy.example/solved/v4/search/analyze?q=',
+          'https://proxy.example/solved/v4/search/analyze?'
+              'q=%ED%83%9C%EA%B7%B8+%26+tier',
+        ],
+      );
+      for (final request in httpClient.requests) {
+        expect(request.method, 'GET');
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+        });
+        expect(request.bodyBytes, isEmpty);
+      }
+    });
+
+    test('rejects an oversized analysis query before transport', () {
+      final query1001 = List<String>.filled(1001, '😀').join();
+
+      expect(
+        () => client.v4AnalyzeProblemSearch(query: query1001),
+        throwsArgumentError,
+      );
+      expect(httpClient.requests, isEmpty);
+    });
+
+    test('wraps malformed search analysis as a search failure', () async {
+      handler = (_) async => _jsonResponse(
+            jsonEncode({
+              'diagnostics': <Object?>[
+                <String, Object?>{
+                  'start': 0,
+                  'end': 1,
+                  'severity': 'error',
+                  'code': 'unknown-filter',
+                  'messageKey': 'key',
+                },
+              ],
+            }),
+          );
+
+      final error = await _captureFailure(
+        client.v4AnalyzeProblemSearch(query: 'tag'),
+      );
+
+      expect(error, isA<SearchRequestFailed>());
+      expect(error.statusCode, 200);
+      expect(error.cause, isA<FormatException>());
+      expect(error.responseBody, isNull);
+      expect(
+        httpClient.requests.single.url,
+        _uri('search/analyze', const <String, String>{'q': 'tag'}),
+      );
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves search-analysis 429 failure metadata', () async {
+      handler = (_) async => _bytesResponse(
+            const <int>[0xff],
+            statusCode: 429,
+            headers: const <String, String>{
+              'content-type': 'text/plain',
+              'retry-after': '11',
+            },
+          );
+
+      final error = await _captureFailure(
+        client.v4AnalyzeProblemSearch(query: 'tag'),
+      );
+
+      expect(error, isA<SearchRequestFailed>());
+      expect(error.statusCode, 429);
+      expect(error.cause, isNull);
+      expect(error.responseBody, isNull);
+      expect(error.retryAfter, const Duration(seconds: 11));
+      expect(httpClient.requests, hasLength(1));
     });
 
     test('preserves omitted, empty, and encoded suggestion queries', () async {
