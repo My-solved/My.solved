@@ -83,6 +83,7 @@ void main() {
               'v4/source_lookup.json',
             '/solved/v4/sources/oj/boj/groups/team-1' =>
               'v4/source_lookup.json',
+            '/solved/v4/achievements' => 'v4/achievement_catalog.json',
             '/solved/v4/tags' => 'v4/tags.json',
             '/solved/v4/tags/number_theory' => 'v4/tag_detail.json',
             _ => throw StateError('Unexpected request: ${request.url}'),
@@ -161,6 +162,8 @@ void main() {
             await client.v4SourceContest('boj', 'round-1');
         final SourceLookupResult sourceGroup =
             await client.v4SourceGroup('boj', 'team-1');
+        final AchievementCatalogResult achievementCatalog =
+            await client.v4AchievementCatalog(language: '');
         final tags = await client.v4SearchTags('NUMBER');
         final TagDetailResult tagDetail =
             await client.v4TagDetail('number_theory');
@@ -366,6 +369,11 @@ void main() {
         expect(sourceContest.id, isA<double>());
         expect(sourceGroup.id, -42.5);
         expect(sourceGroup.id, isA<double>());
+        expect(achievementCatalog.userCount, 0);
+        expect(achievementCatalog.items, hasLength(2));
+        expect(achievementCatalog.items.first.id, -1);
+        expect(achievementCatalog.items.first.rewards, hasLength(2));
+        expect(achievementCatalog.items.last.progress, isNull);
         expect(tags.items.single.key, 'number_theory');
         expect(tagDetail.id, 42.5);
         expect(tagDetail.key, 'number_theory');
@@ -449,11 +457,14 @@ void main() {
             _uri('site/stats'),
             _uri('sources/oj/boj/contests/round-1'),
             _uri('sources/oj/boj/groups/team-1'),
+            Uri.parse(
+              'https://proxy.example/solved/v4/achievements?lang=',
+            ),
             _uri('tags'),
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(25));
+        expect(httpClient.requests, hasLength(26));
         expect(
           httpClient.requests[12].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
@@ -645,6 +656,10 @@ void main() {
         isA<UserRequestFailed>(),
       );
       expect(
+        await _captureFailure(client.v4AchievementCatalog()),
+        isA<AchievementRequestFailed>(),
+      );
+      expect(
         await _captureFailure(client.v4BackgroundShow('anniversary_1st')),
         isA<BackgroundRequestFailed>(),
       );
@@ -714,7 +729,7 @@ void main() {
         await _captureFailure(client.v4SourceGroup('boj', 'group')),
         isA<SourceRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(21));
+      expect(httpClient.requests, hasLength(22));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -927,6 +942,88 @@ void main() {
         );
       }
       expect(httpClient.requests, hasLength(2));
+    });
+
+    test('preserves omitted empty and encoded catalog language queries',
+        () async {
+      handler = (_) async => _jsonResponse(
+            fixture('v4/achievement_catalog.json'),
+          );
+
+      final omitted = await client.v4AchievementCatalog();
+      final empty = await client.v4AchievementCatalog(language: '');
+      final raw = await client.v4AchievementCatalog(language: '한 글 & raw');
+
+      expect(omitted.items.first.id, -1);
+      expect(empty.items.last.progress, isNull);
+      expect(raw.items.first.rewards, hasLength(2));
+      expect(
+        httpClient.requests.map((request) => request.url.toString()),
+        [
+          'https://proxy.example/solved/v4/achievements',
+          'https://proxy.example/solved/v4/achievements?lang=',
+          'https://proxy.example/solved/v4/achievements?'
+              'lang=%ED%95%9C+%EA%B8%80+%26+raw',
+        ],
+      );
+      for (final request in httpClient.requests) {
+        expect(request.method, 'GET');
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+        });
+        expect(request.bodyBytes, isEmpty);
+      }
+      expect(httpClient.requests, hasLength(3));
+    });
+
+    test('rejects an oversized catalog language before transport', () {
+      expect(
+        () => client.v4AchievementCatalog(
+          language: List<String>.filled(17, '🌏').join(),
+        ),
+        throwsArgumentError,
+      );
+      expect(httpClient.requests, isEmpty);
+    });
+
+    test('wraps a malformed achievement catalog as its own failure', () async {
+      handler = (_) async => _jsonResponse(
+            jsonEncode({
+              'items': <Object?>[],
+              'userCount': -1,
+            }),
+          );
+
+      final error = await _captureFailure(client.v4AchievementCatalog());
+
+      expect(error, isA<AchievementRequestFailed>());
+      expect(error.statusCode, 200);
+      expect(error.cause, isA<FormatException>());
+      expect(error.responseBody, isNull);
+      expect(httpClient.requests.single.url, _uri('achievements'));
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves achievement-catalog 429 failure metadata', () async {
+      handler = (_) async => _bytesResponse(
+            const <int>[0xff],
+            statusCode: 429,
+            headers: const <String, String>{
+              'content-type': 'text/plain',
+              'retry-after': '23',
+            },
+          );
+
+      final error = await _captureFailure(client.v4AchievementCatalog());
+
+      expect(error, isA<AchievementRequestFailed>());
+      expect(error.statusCode, 429);
+      expect(error.cause, isNull);
+      expect(error.responseBody, isNull);
+      expect(error.retryAfter, const Duration(seconds: 23));
+      expect(error.isRetryable, isTrue);
+      expect(httpClient.requests.single.url, _uri('achievements'));
+      expect(httpClient.requests, hasLength(1));
     });
 
     test('wraps malformed achievement summary as a user failure', () async {

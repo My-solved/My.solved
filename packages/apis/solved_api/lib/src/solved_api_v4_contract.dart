@@ -184,6 +184,25 @@ final class SolvedApiV4Contract {
         decode: _decodeV4ProfileBadgeStand,
       );
 
+  SolvedApiEndpoint<AchievementCatalogResult> achievementCatalog({
+    String? language,
+  }) {
+    if (language != null && language.runes.length > 16) {
+      throw ArgumentError.value(
+        language,
+        'language',
+        'Must not exceed 16 characters',
+      );
+    }
+    return _endpoint(
+      path: 'achievements',
+      queryParameters: {
+        if (language != null) 'lang': language,
+      },
+      decode: _decodeV4AchievementCatalog,
+    );
+  }
+
   SolvedApiEndpoint<OfficialAchievementItem> achievementItem(
     OfficialAchievementItemKind kind,
     String key,
@@ -1975,6 +1994,95 @@ ProfileTagLevelHistogramResult _decodeV4ProfileTagLevelHistogram(dynamic json) {
     histogram: histogram,
   );
 }
+
+AchievementCatalogResult _decodeV4AchievementCatalog(dynamic json) {
+  final body = _object(json, 'achievement catalog');
+  return AchievementCatalogResult(
+    items: List<AchievementCatalogItem>.unmodifiable(
+      _list(body['items'], 'items').map(
+        (value) => _decodeV4AchievementCatalogItem(
+          _object(value, 'items[]'),
+        ),
+      ),
+    ),
+    userCount: _nonNegativeInteger(body['userCount'], 'userCount'),
+  );
+}
+
+AchievementCatalogItem _decodeV4AchievementCatalogItem(
+  Map<String, dynamic> body,
+) {
+  if (!body.containsKey('progress')) {
+    throw const FormatException('Missing required field items[].progress');
+  }
+  final progressValue = body['progress'];
+  final rewards = List<AchievementReward>.unmodifiable(
+    _list(body['rewards'], 'items[].rewards').map(
+      (value) => _decodeV4AchievementReward(
+        _object(value, 'items[].rewards[]'),
+        'items[].rewards[]',
+      ),
+    ),
+  );
+  return AchievementCatalogItem(
+    id: _integer(body['id'], 'items[].id'),
+    key: _string(body['key'], 'items[].key'),
+    series: _string(body['series'], 'items[].series'),
+    seriesOrder: _integer(body['seriesOrder'], 'items[].seriesOrder'),
+    historic: _boolean(body['historic'], 'items[].historic'),
+    hidden: _boolean(body['hidden'], 'items[].hidden'),
+    name: _string(body['name'], 'items[].name'),
+    condition: _requiredNullableString(
+      body,
+      'condition',
+      'items[].condition',
+    ),
+    searchQuery: _requiredNullableString(
+      body,
+      'searchQuery',
+      'items[].searchQuery',
+    ),
+    shopKey: _requiredNullableString(
+      body,
+      'shopKey',
+      'items[].shopKey',
+    ),
+    rewards: rewards,
+    holderCount: _integer(body['holderCount'], 'items[].holderCount'),
+    earnedAt: _requiredNullableString(
+      body,
+      'earnedAt',
+      'items[].earnedAt',
+    ),
+    progress: progressValue == null
+        ? null
+        : _decodeV4AchievementProgress(
+            _object(progressValue, 'items[].progress'),
+          ),
+  );
+}
+
+AchievementProgress _decodeV4AchievementProgress(
+  Map<String, dynamic> body,
+) =>
+    AchievementProgress(
+      current: _integer(body['current'], 'items[].progress.current'),
+      target: _integer(body['target'], 'items[].progress.target'),
+    );
+
+AchievementReward _decodeV4AchievementReward(
+  Map<String, dynamic> body,
+  String field,
+) =>
+    AchievementReward(
+      kind: _decodeV4AchievementItemKind(body['kind'], '$field.kind'),
+      id: _integer(body['id'], '$field.id'),
+      key: _string(body['key'], '$field.key'),
+      name: _string(body['name'], '$field.name'),
+      imageUrl: _string(body['imageUrl'], '$field.imageUrl'),
+      category: _string(body['category'], '$field.category'),
+      addedAt: _string(body['addedAt'], '$field.addedAt'),
+    );
 
 ProfileAchievementSummaryResult _decodeV4ProfileAchievementSummary(
   dynamic json,

@@ -69,6 +69,17 @@ class UserRequestFailed extends SolvedApiException {
   });
 }
 
+class AchievementRequestFailed extends SolvedApiException {
+  const AchievementRequestFailed({
+    super.uri,
+    super.statusCode,
+    super.cause,
+    super.stackTrace,
+    super.responseBody,
+    super.retryAfter,
+  });
+}
+
 class BackgroundRequestFailed extends SolvedApiException {
   const BackgroundRequestFailed({
     super.uri,
@@ -135,7 +146,16 @@ class SourceRequestFailed extends SolvedApiException {
   });
 }
 
-enum _RequestType { user, background, badge, search, site, ranking, source }
+enum _RequestType {
+  user,
+  achievement,
+  background,
+  badge,
+  search,
+  site,
+  ranking,
+  source,
+}
 
 class SolvedApiClient {
   /// Creates a legacy v3 client.
@@ -345,6 +365,16 @@ class SolvedApiClient {
     return _getV4(
       contract.userBadgeStand(handle),
       requestType: _RequestType.user,
+    );
+  }
+
+  Future<AchievementCatalogResult> v4AchievementCatalog({
+    String? language,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.achievementCatalog(language: language),
+      requestType: _RequestType.achievement,
     );
   }
 
@@ -753,6 +783,14 @@ class SolvedApiClient {
   }) {
     return switch (requestType) {
       _RequestType.user => UserRequestFailed(
+          uri: uri,
+          statusCode: statusCode,
+          cause: cause,
+          stackTrace: stackTrace,
+          responseBody: responseBody,
+          retryAfter: retryAfter,
+        ),
+      _RequestType.achievement => AchievementRequestFailed(
           uri: uri,
           statusCode: statusCode,
           cause: cause,

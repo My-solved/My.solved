@@ -1,3 +1,4 @@
+export 'achievement_catalog_result.dart';
 export 'official_achievement_item.dart';
 export 'official_user_profile.dart';
 export 'problem_detail_result.dart';
