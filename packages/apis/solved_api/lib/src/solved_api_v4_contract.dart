@@ -1219,32 +1219,240 @@ ProfileReputationTodayHelpful _decodeV4ProfileReputationTodayHelpful(
     );
 
 ProfileBackgroundAsset? _decodeV4BackgroundAsset(dynamic json) {
-  final body = _object(json, 'background item');
-  if (body['kind'] != 'background') {
-    throw const FormatException('Expected a background item');
-  }
-  if (body['background'] == null) return null;
-  final background = _object(body['background'], 'background');
+  final item = _decodeV4AchievementItemEnvelope(
+    json,
+    _V4AchievementItemKind.background,
+  );
+  final background = item.background;
+  if (background == null) return null;
   return ProfileBackgroundAsset(
-    key: _string(body['key'], 'key'),
-    imageUrl: _string(background['backgroundImageUrl'], 'backgroundImageUrl'),
-    fallbackImageUrl: _nullableString(
-      background['fallbackBackgroundImageUrl'],
-      'fallbackBackgroundImageUrl',
-    ),
+    key: item.key,
+    imageUrl: background.imageUrl,
+    fallbackImageUrl: background.fallbackImageUrl,
   );
 }
 
 ProfileBadgeAsset _decodeV4BadgeAsset(dynamic json) {
-  final body = _object(json, 'badge item');
-  if (body['kind'] != 'badge') {
-    throw const FormatException('Expected a badge item');
-  }
+  final item = _decodeV4AchievementItemEnvelope(
+    json,
+    _V4AchievementItemKind.badge,
+  );
   return ProfileBadgeAsset(
+    key: item.key,
+    name: item.name,
+    imageUrl: item.imageUrl,
+  );
+}
+
+_V4AchievementItemEnvelope _decodeV4AchievementItemEnvelope(
+  dynamic json,
+  _V4AchievementItemKind expectedKind,
+) {
+  final body = _object(json, 'achievement item');
+  final kind = _decodeV4AchievementItemKind(body['kind']);
+  if (kind != expectedKind) {
+    throw FormatException('Expected a ${expectedKind.value} item');
+  }
+  if (!body.containsKey('background')) {
+    throw const FormatException('Missing required field background');
+  }
+  final backgroundValue = body['background'];
+  final credits = List<_V4AchievementItemCredit>.unmodifiable(
+    _list(body['credits'], 'credits').map(
+      (value) => _decodeV4AchievementItemCredit(
+        _object(value, 'credits[]'),
+        'credits[]',
+      ),
+    ),
+  );
+  final achievements = List<Object?>.unmodifiable(
+    _list(body['achievements'], 'achievements'),
+  );
+
+  return _V4AchievementItemEnvelope(
+    kind: kind,
+    id: _integer(body['id'], 'id'),
     key: _string(body['key'], 'key'),
     name: _string(body['name'], 'name'),
     imageUrl: _string(body['imageUrl'], 'imageUrl'),
+    category: _string(body['category'], 'category'),
+    addedAt: _string(body['addedAt'], 'addedAt'),
+    unlockedByDefault: _boolean(body['unlockedByDefault'], 'unlockedByDefault'),
+    owned: _requiredNullableBoolean(body, 'owned'),
+    equipped: _requiredNullableBoolean(body, 'equipped'),
+    background: backgroundValue == null
+        ? null
+        : _decodeV4AchievementItemBackground(
+            _object(backgroundValue, 'background'),
+          ),
+    credits: credits,
+    userCount: _nonNegativeInteger(body['userCount'], 'userCount'),
+    achievements: achievements,
   );
+}
+
+_V4AchievementItemKind _decodeV4AchievementItemKind(Object? value) {
+  switch (_string(value, 'kind')) {
+    case 'badge':
+      return _V4AchievementItemKind.badge;
+    case 'background':
+      return _V4AchievementItemKind.background;
+    default:
+      throw const FormatException('Unknown achievement item kind');
+  }
+}
+
+_V4AchievementItemBackground _decodeV4AchievementItemBackground(
+  Map<String, dynamic> body,
+) {
+  final authors = List<_V4AchievementItemCredit>.unmodifiable(
+    _list(body['authors'], 'background.authors').map(
+      (value) => _decodeV4AchievementItemCredit(
+        _object(value, 'background.authors[]'),
+        'background.authors[]',
+      ),
+    ),
+  );
+  return _V4AchievementItemBackground(
+    key: _string(body['key'], 'background.key'),
+    imageUrl: _string(
+      body['backgroundImageUrl'],
+      'background.backgroundImageUrl',
+    ),
+    fallbackImageUrl: _requiredNullableString(
+      body,
+      'fallbackBackgroundImageUrl',
+      'background.fallbackBackgroundImageUrl',
+    ),
+    videoUrl: _requiredNullableString(
+      body,
+      'backgroundVideoUrl',
+      'background.backgroundVideoUrl',
+    ),
+    thumbnailPlaceholder: _requiredNullableString(
+      body,
+      'thumbnailPlaceholder',
+      'background.thumbnailPlaceholder',
+    ),
+    isIllust: _boolean(body['isIllust'], 'background.isIllust'),
+    displayName: _requiredNullableString(
+      body,
+      'displayName',
+      'background.displayName',
+    ),
+    authors: authors,
+  );
+}
+
+_V4AchievementItemCredit _decodeV4AchievementItemCredit(
+  Map<String, dynamic> body,
+  String field,
+) =>
+    _V4AchievementItemCredit(
+      key: _string(body['key'], '$field.key'),
+      displayName: _requiredNullableString(
+        body,
+        'displayName',
+        '$field.displayName',
+      ),
+      role: _string(body['role'], '$field.role'),
+      authorUrl: _requiredNullableString(
+        body,
+        'authorUrl',
+        '$field.authorUrl',
+      ),
+      handle: _requiredNullableString(body, 'handle', '$field.handle'),
+      twitter: _requiredNullableString(body, 'twitter', '$field.twitter'),
+      instagram: _requiredNullableString(
+        body,
+        'instagram',
+        '$field.instagram',
+      ),
+    );
+
+enum _V4AchievementItemKind {
+  badge('badge'),
+  background('background');
+
+  const _V4AchievementItemKind(this.value);
+
+  final String value;
+}
+
+final class _V4AchievementItemEnvelope {
+  const _V4AchievementItemEnvelope({
+    required this.kind,
+    required this.id,
+    required this.key,
+    required this.name,
+    required this.imageUrl,
+    required this.category,
+    required this.addedAt,
+    required this.unlockedByDefault,
+    required this.owned,
+    required this.equipped,
+    required this.background,
+    required this.credits,
+    required this.userCount,
+    required this.achievements,
+  });
+
+  final _V4AchievementItemKind kind;
+  final int id;
+  final String key;
+  final String name;
+  final String imageUrl;
+  final String category;
+  final String addedAt;
+  final bool unlockedByDefault;
+  final bool? owned;
+  final bool? equipped;
+  final _V4AchievementItemBackground? background;
+  final List<_V4AchievementItemCredit> credits;
+  final int userCount;
+  final List<Object?> achievements;
+}
+
+final class _V4AchievementItemBackground {
+  const _V4AchievementItemBackground({
+    required this.key,
+    required this.imageUrl,
+    required this.fallbackImageUrl,
+    required this.videoUrl,
+    required this.thumbnailPlaceholder,
+    required this.isIllust,
+    required this.displayName,
+    required this.authors,
+  });
+
+  final String key;
+  final String imageUrl;
+  final String? fallbackImageUrl;
+  final String? videoUrl;
+  final String? thumbnailPlaceholder;
+  final bool isIllust;
+  final String? displayName;
+  final List<_V4AchievementItemCredit> authors;
+}
+
+final class _V4AchievementItemCredit {
+  const _V4AchievementItemCredit({
+    required this.key,
+    required this.displayName,
+    required this.role,
+    required this.authorUrl,
+    required this.handle,
+    required this.twitter,
+    required this.instagram,
+  });
+
+  final String key;
+  final String? displayName;
+  final String role;
+  final String? authorUrl;
+  final String? handle;
+  final String? twitter;
+  final String? instagram;
 }
 
 OfficialUserProfileBackground _decodeOfficialUserProfileBackground(
@@ -1508,4 +1716,15 @@ int? _requiredNullableTier(Map<String, dynamic> body, String field) {
 bool _boolean(Object? value, String field) {
   if (value is! bool) throw FormatException('Expected boolean for $field');
   return value;
+}
+
+bool? _requiredNullableBoolean(
+  Map<String, dynamic> body,
+  String field,
+) {
+  if (!body.containsKey(field)) {
+    throw FormatException('Missing required field $field');
+  }
+  final value = body[field];
+  return value == null ? null : _boolean(value, field);
 }

@@ -992,7 +992,7 @@ void main() {
     }
   });
 
-  test('pins the tag catalog and standalone asset lookup limitations', () {
+  test('pins the tag catalog and standalone asset item envelope', () {
     final tags = _get(contract, '/api/v4/tags');
     expect(_parameterNames(tags), isEmpty);
     final tagsSchema = _responseSchema(tags);
@@ -1037,12 +1037,143 @@ void main() {
 
     final item = _get(contract, '/api/v4/achievements/items/{kind}/{key}');
     expect(_parameterNames(item), ['kind', 'key', 'lang']);
-    final kind = _parameters(item).first;
-    expect(_map(kind['schema'])['enum'], ['badge', 'background']);
+    final itemParameters = _parameters(item);
+    expect(itemParameters.first['required'], isTrue);
+    expect(_map(itemParameters.first['schema']), {
+      'type': 'string',
+      'enum': ['badge', 'background'],
+    });
+    expect(itemParameters[1]['required'], isTrue);
+    expect(_map(itemParameters[1]['schema']), {
+      'type': 'string',
+      'minLength': 1,
+      'maxLength': 64,
+    });
+    expect(itemParameters.last['required'], isFalse);
+    expect(_map(itemParameters.last['schema']), {
+      'type': 'string',
+      'maxLength': 16,
+      'default': 'ko',
+    });
+
+    const itemFields = [
+      'kind',
+      'id',
+      'key',
+      'name',
+      'imageUrl',
+      'category',
+      'addedAt',
+      'unlockedByDefault',
+      'owned',
+      'equipped',
+      'background',
+      'credits',
+      'userCount',
+      'achievements',
+    ];
+    final itemSchema = _responseSchema(item);
+    expect(_required(itemSchema), itemFields);
+    expect(itemSchema.containsKey('additionalProperties'), isFalse);
+    final itemProperties = _properties(itemSchema);
+    expect(itemProperties.keys.toList(growable: false), itemFields);
+    expect(_map(itemProperties['kind']), {
+      'type': 'string',
+      'enum': ['badge', 'background'],
+    });
+    expect(_map(itemProperties['id']), {'type': 'integer'});
+    for (final field in ['key', 'name', 'imageUrl', 'category', 'addedAt']) {
+      expect(_map(itemProperties[field]), {'type': 'string'});
+    }
+    expect(_map(itemProperties['unlockedByDefault']), {'type': 'boolean'});
+    for (final field in ['owned', 'equipped']) {
+      expect(_map(itemProperties[field]), {
+        'type': ['boolean', 'null'],
+      });
+    }
+    expect(_map(itemProperties['userCount']), {
+      'type': 'integer',
+      'minimum': 0,
+    });
+
+    final background = _map(itemProperties['background']);
+    expect(background['type'], ['object', 'null']);
+    const backgroundFields = [
+      'key',
+      'backgroundImageUrl',
+      'fallbackBackgroundImageUrl',
+      'backgroundVideoUrl',
+      'thumbnailPlaceholder',
+      'isIllust',
+      'displayName',
+      'authors',
+    ];
+    expect(_required(background), backgroundFields);
+    expect(background.containsKey('additionalProperties'), isFalse);
+    final backgroundProperties = _properties(background);
     expect(
-      _required(_responseSchema(item)),
-      containsAll(['kind', 'key', 'imageUrl', 'background']),
+      backgroundProperties.keys.toList(growable: false),
+      backgroundFields,
     );
+    expect(_map(backgroundProperties['key']), {'type': 'string'});
+    expect(_map(backgroundProperties['backgroundImageUrl']), {
+      'type': 'string',
+      'format': 'uri',
+    });
+    for (final field in [
+      'fallbackBackgroundImageUrl',
+      'backgroundVideoUrl',
+    ]) {
+      expect(_map(backgroundProperties[field]), {
+        'type': ['string', 'null'],
+        'format': 'uri',
+      });
+    }
+    for (final field in ['thumbnailPlaceholder', 'displayName']) {
+      expect(_map(backgroundProperties[field]), {
+        'type': ['string', 'null'],
+      });
+    }
+    expect(_map(backgroundProperties['isIllust']), {'type': 'boolean'});
+
+    final authors = _map(backgroundProperties['authors']);
+    final credits = _map(itemProperties['credits']);
+    for (final listSchema in [authors, credits]) {
+      expect(listSchema['type'], 'array');
+      for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+        expect(listSchema.containsKey(constraint), isFalse);
+      }
+      final credit = _map(listSchema['items']);
+      const creditFields = [
+        'key',
+        'displayName',
+        'role',
+        'authorUrl',
+        'handle',
+        'twitter',
+        'instagram',
+      ];
+      expect(_required(credit), creditFields);
+      expect(credit.containsKey('additionalProperties'), isFalse);
+      final creditProperties = _properties(credit);
+      expect(creditProperties.keys.toList(growable: false), creditFields);
+      for (final field in ['key', 'role']) {
+        expect(_map(creditProperties[field]), {'type': 'string'});
+      }
+      for (final field in creditFields.skip(1).where(
+            (field) => field != 'role',
+          )) {
+        expect(_map(creditProperties[field]), {
+          'type': ['string', 'null'],
+        });
+      }
+    }
+
+    final achievements = _map(itemProperties['achievements']);
+    expect(achievements['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(achievements.containsKey(constraint), isFalse);
+    }
   });
 }
 
