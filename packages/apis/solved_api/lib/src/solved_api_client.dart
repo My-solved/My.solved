@@ -244,7 +244,7 @@ class SolvedApiClient {
     );
   }
 
-  Future<ProfileContributionStats> v4UserReputation(
+  Future<ProfileReputationResult> v4UserReputation(
     String handle, {
     SolvedApiV4ReputationRange? range,
   }) {

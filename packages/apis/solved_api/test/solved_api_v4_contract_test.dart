@@ -2813,12 +2813,12 @@ void main() {
     );
   });
 
-  test('normalizes Reputation, scoring, Helpful, and vouch counts', () {
+  test('normalizes the complete official reputation result', () {
     final endpoint = contract.userReputation(
       'index',
       range: SolvedApiV4ReputationRange.year,
     );
-    final actual = endpoint.decode(
+    final ProfileReputationResult actual = endpoint.decode(
       jsonDecode(fixture('v4/user_reputation.json')),
     );
 
@@ -2828,6 +2828,321 @@ void main() {
     expect(actual.scoringCount, 37);
     expect(actual.helpfulCount, 19);
     expect(actual.vouchedCount, 11);
+    expect(actual.history, hasLength(1));
+    expect(actual.history.single.day, '2026-11-17');
+    expect(actual.history.single.value, 314);
+    expect(actual.today.contributions.count, 2);
+    expect(actual.today.contributions.max, 10);
+    expect(actual.today.helpful.earned, 1);
+    expect(actual.today.helpful.cap, 5);
+    final ProfileContributionStats summary = actual;
+    expect(summary, same(actual));
+  });
+
+  test('encodes every optional reputation range and its omission', () {
+    expect(
+      SolvedApiV4ReputationRange.values.map((range) => range.value),
+      ['90d', '1y', 'all'],
+    );
+    for (final range in SolvedApiV4ReputationRange.values) {
+      final endpoint = contract.userReputation('index', range: range);
+      expect(endpoint.direct.queryParameters, {'range': range.value});
+      expect(endpoint.proxy.queryParameters, {'range': range.value});
+    }
+
+    final omitted = contract.userReputation('index');
+    expect(omitted.direct.queryParameters, isEmpty);
+    expect(omitted.proxy.queryParameters, isEmpty);
+  });
+
+  test('requires the exact complete reputation response shape', () {
+    final endpoint = contract.userReputation('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_reputation.json')) as Map,
+        );
+    Map<String, Object?> historyEntry() => <String, Object?>{
+          'day': '2026-11-17',
+          'value': 314,
+        };
+    Map<String, Object?> today() => <String, Object?>{
+          'contributions': <String, Object?>{'count': 2, 'max': 10},
+          'helpful': <String, Object?>{'earned': 1, 'cap': 5},
+        };
+
+    for (final field in [
+      'reputation',
+      'scoringCount',
+      'helpfulCount',
+      'vouchedCount',
+      'history',
+      'today',
+    ]) {
+      expect(
+        () => endpoint.decode(source()..remove(field)),
+        throwsFormatException,
+        reason: '$field missing',
+      );
+    }
+    for (final field in [
+      'reputation',
+      'scoringCount',
+      'helpfulCount',
+      'vouchedCount',
+    ]) {
+      for (final invalid in <Object?>[
+        null,
+        1.0,
+        '1',
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+      ]) {
+        expect(
+          () => endpoint.decode(source()..[field] = invalid),
+          throwsFormatException,
+          reason: '$field = $invalid',
+        );
+      }
+    }
+
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      'history',
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(source()..['history'] = invalid),
+        throwsFormatException,
+        reason: 'history = $invalid',
+      );
+    }
+    expect(
+      () => endpoint.decode(source()..['history'] = <Object?>[0]),
+      throwsFormatException,
+      reason: 'history[] must be an object',
+    );
+    for (final field in ['day', 'value']) {
+      expect(
+        () => endpoint.decode(
+          source()
+            ..['history'] = <Object?>[
+              historyEntry()..remove(field),
+            ],
+        ),
+        throwsFormatException,
+        reason: 'history[].$field missing',
+      );
+    }
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      const <Object?>[],
+      const <String, Object?>{},
+      '',
+      '2026-1-01',
+      '2026-01-1',
+      ' 2026-01-01',
+      '2026-01-01 ',
+    ]) {
+      expect(
+        () => endpoint.decode(
+          source()
+            ..['history'] = <Object?>[
+              historyEntry()..['day'] = invalid,
+            ],
+        ),
+        throwsFormatException,
+        reason: 'history[].day = $invalid',
+      );
+    }
+    for (final invalid in <Object?>[
+      null,
+      1.0,
+      '1',
+      false,
+      const <Object?>[],
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(
+          source()
+            ..['history'] = <Object?>[
+              historyEntry()..['value'] = invalid,
+            ],
+        ),
+        throwsFormatException,
+        reason: 'history[].value = $invalid',
+      );
+    }
+
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      'today',
+      const <Object?>[],
+    ]) {
+      expect(
+        () => endpoint.decode(source()..['today'] = invalid),
+        throwsFormatException,
+        reason: 'today = $invalid',
+      );
+    }
+    for (final section in ['contributions', 'helpful']) {
+      expect(
+        () => endpoint.decode(source()..['today'] = (today()..remove(section))),
+        throwsFormatException,
+        reason: 'today.$section missing',
+      );
+      for (final invalid in <Object?>[
+        null,
+        0,
+        false,
+        'section',
+        const <Object?>[],
+      ]) {
+        expect(
+          () => endpoint.decode(
+            source()..['today'] = (today()..[section] = invalid),
+          ),
+          throwsFormatException,
+          reason: 'today.$section = $invalid',
+        );
+      }
+    }
+
+    final nestedFields = <String, List<String>>{
+      'contributions': ['count', 'max'],
+      'helpful': ['earned', 'cap'],
+    };
+    for (final section in nestedFields.entries) {
+      for (final field in section.value) {
+        Map<String, Object?> nested() => Map<String, Object?>.from(
+              today()[section.key] as Map,
+            );
+        expect(
+          () => endpoint.decode(
+            source()
+              ..['today'] =
+                  (today()..[section.key] = (nested()..remove(field))),
+          ),
+          throwsFormatException,
+          reason: 'today.${section.key}.$field missing',
+        );
+        for (final invalid in <Object?>[
+          null,
+          1.0,
+          '1',
+          false,
+          const <Object?>[],
+          const <String, Object?>{},
+        ]) {
+          expect(
+            () => endpoint.decode(
+              source()
+                ..['today'] =
+                    (today()..[section.key] = (nested()..[field] = invalid)),
+            ),
+            throwsFormatException,
+            reason: 'today.${section.key}.$field = $invalid',
+          );
+        }
+      }
+    }
+  });
+
+  test('preserves raw immutable reputation details without inference', () {
+    final endpoint = contract.userReputation('index');
+    final first = <String, Object?>{
+      'day': '0000-00-00',
+      'value': -7,
+      'futureHistoryField': 'allowed',
+    };
+    final second = <String, Object?>{
+      'day': '9999-99-99',
+      'value': 0,
+    };
+    final history = <Object?>[second, first, second];
+    final contributions = <String, Object?>{
+      'count': 10,
+      'max': -1,
+      'futureContributionsField': 'allowed',
+    };
+    final helpful = <String, Object?>{
+      'earned': 8,
+      'cap': -2,
+      'futureHelpfulField': 'allowed',
+    };
+    final today = <String, Object?>{
+      'contributions': contributions,
+      'helpful': helpful,
+      'futureTodayField': 'allowed',
+    };
+    final source = <String, Object?>{
+      'reputation': -1,
+      'scoringCount': -2,
+      'helpfulCount': -3,
+      'vouchedCount': -4,
+      'history': history,
+      'today': today,
+      'futureReputationField': 'allowed',
+    };
+
+    final actual = endpoint.decode(source);
+    expect(actual.reputation, -1);
+    expect(actual.scoringCount, -2);
+    expect(actual.helpfulCount, -3);
+    expect(actual.vouchedCount, -4);
+    expect(actual.history.map((entry) => entry.day), [
+      '9999-99-99',
+      '0000-00-00',
+      '9999-99-99',
+    ]);
+    expect(actual.history.map((entry) => entry.value), [0, -7, 0]);
+    expect(actual.today.contributions.count, 10);
+    expect(actual.today.contributions.max, -1);
+    expect(actual.today.helpful.earned, 8);
+    expect(actual.today.helpful.cap, -2);
+
+    second['day'] = '2026-01-01';
+    first['value'] = 99;
+    history.clear();
+    contributions['count'] = 0;
+    helpful['cap'] = 0;
+    today.clear();
+    source.clear();
+    expect(actual.history.map((entry) => entry.day), [
+      '9999-99-99',
+      '0000-00-00',
+      '9999-99-99',
+    ]);
+    expect(actual.history[1].value, -7);
+    expect(actual.today.contributions.count, 10);
+    expect(actual.today.helpful.cap, -2);
+    expect(() => actual.history.removeAt(0), throwsUnsupportedError);
+    expect(
+      () => actual.history[0] = const ProfileReputationHistoryEntry(
+        day: '2026-01-01',
+        value: 0,
+      ),
+      throwsUnsupportedError,
+    );
+
+    final empty = endpoint.decode({
+      'reputation': 0,
+      'scoringCount': 0,
+      'helpfulCount': 0,
+      'vouchedCount': 0,
+      'history': <Object?>[],
+      'today': <String, Object?>{
+        'contributions': <String, Object?>{'count': 0, 'max': 0},
+        'helpful': <String, Object?>{'earned': 0, 'cap': 0},
+      },
+    });
+    expect(empty.history, isEmpty);
   });
 
   test('normalizes standalone v4 background and badge items', () {

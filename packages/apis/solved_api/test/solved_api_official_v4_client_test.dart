@@ -75,7 +75,8 @@ void main() {
           from: DateTime.utc(2026, 11),
           to: DateTime.utc(2026, 11, 17),
         );
-        final reputation = await client.v4UserReputation(
+        final ProfileReputationResult reputation =
+            await client.v4UserReputation(
           'index',
           range: SolvedApiV4ReputationRange.year,
         );
@@ -181,6 +182,12 @@ void main() {
         expect(activity.frozenYesterday, isFalse);
         expect(activity.days, hasLength(2));
         expect(reputation.reputation, 314);
+        expect(reputation.history.single.day, '2026-11-17');
+        expect(reputation.history.single.value, 314);
+        expect(reputation.today.contributions.count, 2);
+        expect(reputation.today.contributions.max, 10);
+        expect(reputation.today.helpful.earned, 1);
+        expect(reputation.today.helpful.cap, 5);
         expect(background?.key, 'anniversary_1st');
         expect(badge.key, 'boardgame');
         expect(problems.count, 4);
