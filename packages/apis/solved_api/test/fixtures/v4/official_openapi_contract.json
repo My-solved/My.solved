@@ -4758,6 +4758,180 @@
         }
       }
     },
+    "/api/v4/achievements": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "lang",
+            "required": false,
+            "schema": {
+              "default": "ko",
+              "maxLength": 16,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "properties": {
+                          "condition": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "earnedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "hidden": {
+                            "type": "boolean"
+                          },
+                          "historic": {
+                            "type": "boolean"
+                          },
+                          "holderCount": {
+                            "type": "integer"
+                          },
+                          "id": {
+                            "type": "integer"
+                          },
+                          "key": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "progress": {
+                            "properties": {
+                              "current": {
+                                "type": "integer"
+                              },
+                              "target": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "current",
+                              "target"
+                            ],
+                            "type": [
+                              "object",
+                              "null"
+                            ]
+                          },
+                          "rewards": {
+                            "items": {
+                              "properties": {
+                                "addedAt": {
+                                  "type": "string"
+                                },
+                                "category": {
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "type": "integer"
+                                },
+                                "imageUrl": {
+                                  "type": "string"
+                                },
+                                "key": {
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "enum": [
+                                    "badge",
+                                    "background"
+                                  ],
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "id",
+                                "key",
+                                "name",
+                                "imageUrl",
+                                "category",
+                                "addedAt"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "searchQuery": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "series": {
+                            "type": "string"
+                          },
+                          "seriesOrder": {
+                            "type": "integer"
+                          },
+                          "shopKey": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "key",
+                          "series",
+                          "seriesOrder",
+                          "historic",
+                          "hidden",
+                          "name",
+                          "condition",
+                          "searchQuery",
+                          "shopKey",
+                          "rewards",
+                          "holderCount",
+                          "earnedAt",
+                          "progress"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "userCount": {
+                      "minimum": 0,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "userCount"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The catalog."
+          }
+        },
+        "summary": "Every achievement, with the viewer's standing",
+        "x-access": {
+          "class": "public"
+        }
+      }
+    },
     "/api/v4/achievements/items/{kind}/{key}": {
       "get": {
         "x-access": {

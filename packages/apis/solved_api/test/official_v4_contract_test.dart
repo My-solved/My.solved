@@ -581,6 +581,150 @@ void main() {
     }
   });
 
+  test('pins the public achievement catalog and shared reward shape', () {
+    final catalog = _get(contract, '/api/v4/achievements');
+
+    expect(_accessClass(catalog), 'public');
+    expect(catalog.containsKey('requestBody'), isFalse);
+    expect(_parameterNames(catalog), ['lang']);
+    final language = _parameters(catalog).single;
+    expect(language['in'], 'query');
+    expect(language['required'], isFalse);
+    expect(_map(language['schema']), {
+      'default': 'ko',
+      'maxLength': 16,
+      'type': 'string',
+    });
+    expect(_map(catalog['responses']).keys.toList(), ['200']);
+    expect(
+      _map(_map(catalog['responses'])['200'])['description'],
+      'The catalog.',
+    );
+
+    final schema = _responseSchema(catalog);
+    expect(schema['type'], 'object');
+    expect(_required(schema), ['items', 'userCount']);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    final properties = _properties(schema);
+    expect(properties.keys.toList(growable: false), ['items', 'userCount']);
+    expect(_map(properties['userCount']), {
+      'minimum': 0,
+      'type': 'integer',
+    });
+
+    final items = _map(properties['items']);
+    expect(items['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(items.containsKey(constraint), isFalse);
+    }
+    final item = _map(items['items']);
+    const itemFields = [
+      'id',
+      'key',
+      'series',
+      'seriesOrder',
+      'historic',
+      'hidden',
+      'name',
+      'condition',
+      'searchQuery',
+      'shopKey',
+      'rewards',
+      'holderCount',
+      'earnedAt',
+      'progress',
+    ];
+    expect(item['type'], 'object');
+    expect(_required(item), itemFields);
+    expect(item.containsKey('additionalProperties'), isFalse);
+    final itemProperties = _properties(item);
+    expect(itemProperties.keys.toList(growable: false), [
+      'condition',
+      'earnedAt',
+      'hidden',
+      'historic',
+      'holderCount',
+      'id',
+      'key',
+      'name',
+      'progress',
+      'rewards',
+      'searchQuery',
+      'series',
+      'seriesOrder',
+      'shopKey',
+    ]);
+    for (final field in ['id', 'seriesOrder', 'holderCount']) {
+      expect(_map(itemProperties[field]), {'type': 'integer'});
+    }
+    for (final field in ['key', 'series', 'name']) {
+      expect(_map(itemProperties[field]), {'type': 'string'});
+    }
+    for (final field in ['historic', 'hidden']) {
+      expect(_map(itemProperties[field]), {'type': 'boolean'});
+    }
+    for (final field in [
+      'condition',
+      'searchQuery',
+      'shopKey',
+      'earnedAt',
+    ]) {
+      expect(_map(itemProperties[field]), {
+        'type': ['string', 'null'],
+      });
+    }
+
+    final progress = _map(itemProperties['progress']);
+    expect(progress['type'], ['object', 'null']);
+    expect(_required(progress), ['current', 'target']);
+    expect(progress.containsKey('additionalProperties'), isFalse);
+    final progressProperties = _properties(progress);
+    expect(progressProperties.keys.toList(growable: false), [
+      'current',
+      'target',
+    ]);
+    for (final field in ['current', 'target']) {
+      expect(_map(progressProperties[field]), {'type': 'integer'});
+    }
+
+    final rewards = _map(itemProperties['rewards']);
+    expect(rewards['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(rewards.containsKey(constraint), isFalse);
+    }
+    final reward = _map(rewards['items']);
+    const rewardFields = [
+      'kind',
+      'id',
+      'key',
+      'name',
+      'imageUrl',
+      'category',
+      'addedAt',
+    ];
+    expect(reward['type'], 'object');
+    expect(_required(reward), rewardFields);
+    expect(reward.containsKey('additionalProperties'), isFalse);
+    final rewardProperties = _properties(reward);
+    expect(rewardProperties.keys.toList(growable: false), [
+      'addedAt',
+      'category',
+      'id',
+      'imageUrl',
+      'key',
+      'kind',
+      'name',
+    ]);
+    expect(_map(rewardProperties['kind']), {
+      'enum': ['badge', 'background'],
+      'type': 'string',
+    });
+    expect(_map(rewardProperties['id']), {'type': 'integer'});
+    for (final field in ['key', 'name', 'imageUrl', 'category', 'addedAt']) {
+      expect(_map(rewardProperties[field]), {'type': 'string'});
+    }
+  });
+
   test('pins the public achievement summary schema without inference', () {
     final summary =
         _get(contract, '/api/v4/users/{handle}/achievements/summary');

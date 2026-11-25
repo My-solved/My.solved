@@ -33,6 +33,7 @@ const _relevantPaths = <String>[
   '/api/v4/users/{handle}/reputation',
   '/api/v4/users/{handle}/rating/history',
   '/api/v4/users/{handle}/tags/{key}/histogram',
+  '/api/v4/achievements',
   '/api/v4/achievements/items/{kind}/{key}',
 ];
 
