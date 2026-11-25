@@ -143,6 +143,13 @@ final class SolvedApiV4Contract {
         decode: _decodeV4ProfileAchievementSummary,
       );
 
+  SolvedApiEndpoint<ProfileBadgeStandResult> userBadgeStand(String handle) =>
+      _endpoint(
+        path: 'users/${_pathSegment(handle, 'handle')}/badge-stand',
+        queryParameters: const {'lang': 'ko'},
+        decode: _decodeV4ProfileBadgeStand,
+      );
+
   SolvedApiEndpoint<OfficialAchievementItem> achievementItem(
     OfficialAchievementItemKind kind,
     String key,
@@ -1315,6 +1322,35 @@ ProfileAchievementSummaryRecentItem
           addedAt: _string(body['addedAt'], 'recent[].addedAt'),
           acquiredAt: _string(body['acquiredAt'], 'recent[].acquiredAt'),
         );
+
+ProfileBadgeStandResult _decodeV4ProfileBadgeStand(dynamic json) {
+  final body = _object(json, 'badge stand');
+  final badges = List<ProfileBadgeStandItem>.unmodifiable(
+    _list(body['badges'], 'badges').map(
+      (item) => _decodeV4ProfileBadgeStandItem(
+        _object(item, 'badges[]'),
+      ),
+    ),
+  );
+  return ProfileBadgeStandResult(
+    chosen: _boolean(body['chosen'], 'chosen'),
+    badges: badges,
+  );
+}
+
+ProfileBadgeStandItem _decodeV4ProfileBadgeStandItem(
+  Map<String, dynamic> body,
+) =>
+    ProfileBadgeStandItem(
+      kind: _decodeV4AchievementItemKind(body['kind'], 'badges[].kind'),
+      id: _integer(body['id'], 'badges[].id'),
+      key: _string(body['key'], 'badges[].key'),
+      name: _string(body['name'], 'badges[].name'),
+      imageUrl: _string(body['imageUrl'], 'badges[].imageUrl'),
+      category: _string(body['category'], 'badges[].category'),
+      addedAt: _string(body['addedAt'], 'badges[].addedAt'),
+      holderCount: _integer(body['holderCount'], 'badges[].holderCount'),
+    );
 
 ProfileBackgroundAsset? _decodeV4BackgroundAsset(dynamic json) {
   final item = _decodeV4AchievementItem(

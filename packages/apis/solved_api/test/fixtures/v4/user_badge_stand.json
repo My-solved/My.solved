@@ -1,0 +1,25 @@
+{
+  "chosen": true,
+  "badges": [
+    {
+      "kind": "badge",
+      "id": 101,
+      "key": "boardgame",
+      "name": "Board Game",
+      "imageUrl": "https://example.com/badge.png",
+      "category": "event",
+      "addedAt": "2020-01-01T00:00:00Z",
+      "holderCount": 42
+    },
+    {
+      "kind": "background",
+      "id": 202,
+      "key": "anniversary_1st",
+      "name": "First Anniversary",
+      "imageUrl": "https://example.com/background-thumbnail.png",
+      "category": "event",
+      "addedAt": "2021-01-01T00:00:00Z",
+      "holderCount": 7
+    }
+  ]
+}

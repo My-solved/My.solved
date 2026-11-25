@@ -87,6 +87,10 @@ void main() {
       contract.userAchievementSummary('한 글').direct.path,
       'users/%ED%95%9C%20%EA%B8%80/achievements/summary',
     );
+    expect(
+      contract.userBadgeStand('\u{D55C} \u{AE00}').direct.path,
+      'users/%ED%95%9C%20%EA%B8%80/badge-stand',
+    );
     final achievement = contract.achievementItem(
       OfficialAchievementItemKind.badge,
       'event item',
@@ -107,9 +111,11 @@ void main() {
     );
 
     expect(() => contract.userProfile(''), throwsArgumentError);
+    expect(() => contract.userBadgeStand(''), throwsArgumentError);
     expect(() => contract.userProfile('..'), throwsArgumentError);
     expect(() => contract.userRatingHistory('..'), throwsArgumentError);
     expect(() => contract.userAchievementSummary('..'), throwsArgumentError);
+    expect(() => contract.userBadgeStand('..'), throwsArgumentError);
     expect(() => contract.badgeShow('.'), throwsArgumentError);
     expect(
       () => contract.achievementItem(OfficialAchievementItemKind.badge, '..'),
@@ -120,6 +126,10 @@ void main() {
     expect(() => contract.userProfile('line\nbreak'), throwsArgumentError);
     expect(
       () => contract.userProfile(List.filled(65, 'a').join()),
+      throwsArgumentError,
+    );
+    expect(
+      () => contract.userBadgeStand(List.filled(65, 'a').join()),
       throwsArgumentError,
     );
   });
@@ -3714,6 +3724,290 @@ void main() {
       }).recent,
       isEmpty,
     );
+  });
+
+  test('normalizes the official profile badge stand', () {
+    final endpoint = contract.userBadgeStand('index');
+    final ProfileBadgeStandResult actual = endpoint.decode(
+      jsonDecode(fixture('v4/user_badge_stand.json')),
+    );
+
+    expect(endpoint.direct.path, 'users/index/badge-stand');
+    expect(endpoint.direct.queryParameters, {'lang': 'ko'});
+    expect(endpoint.proxy.path, endpoint.direct.path);
+    expect(endpoint.proxy.queryParameters, endpoint.direct.queryParameters);
+    expect(actual.chosen, isTrue);
+    expect(actual.badges, hasLength(2));
+    expect(actual.badges.first.kind, OfficialAchievementItemKind.badge);
+    expect(actual.badges.first.id, 101);
+    expect(actual.badges.first.key, 'boardgame');
+    expect(actual.badges.first.name, 'Board Game');
+    expect(actual.badges.first.imageUrl, 'https://example.com/badge.png');
+    expect(actual.badges.first.category, 'event');
+    expect(actual.badges.first.addedAt, '2020-01-01T00:00:00Z');
+    expect(actual.badges.first.holderCount, 42);
+    expect(actual.badges.last.kind, OfficialAchievementItemKind.background);
+    expect(actual.badges.last.id, 202);
+    expect(actual.badges.last.key, 'anniversary_1st');
+    expect(actual.badges.last.name, 'First Anniversary');
+    expect(
+      actual.badges.last.imageUrl,
+      'https://example.com/background-thumbnail.png',
+    );
+    expect(actual.badges.last.category, 'event');
+    expect(actual.badges.last.addedAt, '2021-01-01T00:00:00Z');
+    expect(actual.badges.last.holderCount, 7);
+  });
+
+  test('requires the exact profile badge stand response shape', () {
+    final endpoint = contract.userBadgeStand('index');
+    Map<String, Object?> badgeItem() => <String, Object?>{
+          'kind': 'badge',
+          'id': 1,
+          'key': 'key',
+          'name': 'name',
+          'imageUrl': 'image',
+          'category': 'category',
+          'addedAt': 'added',
+          'holderCount': 2,
+        };
+    Map<String, Object?> source() => <String, Object?>{
+          'chosen': true,
+          'badges': <Object?>[badgeItem()],
+        };
+
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      const <Object?>[],
+    ]) {
+      expect(
+        () => endpoint.decode(invalid),
+        throwsFormatException,
+        reason: 'response = $invalid',
+      );
+    }
+    for (final field in ['chosen', 'badges']) {
+      expect(
+        () => endpoint.decode(source()..remove(field)),
+        throwsFormatException,
+        reason: '$field missing',
+      );
+    }
+    for (final invalid in <Object?>[
+      null,
+      0,
+      'true',
+      const <Object?>[],
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(source()..['chosen'] = invalid),
+        throwsFormatException,
+        reason: 'chosen = $invalid',
+      );
+    }
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      'badges',
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(source()..['badges'] = invalid),
+        throwsFormatException,
+        reason: 'badges = $invalid',
+      );
+    }
+    expect(
+      () => endpoint.decode(source()..['badges'] = <Object?>[0]),
+      throwsFormatException,
+      reason: 'badges[] must be an object',
+    );
+    expect(
+      () => endpoint.decode(
+        source()
+          ..['badges'] = <Object?>[
+            badgeItem(),
+            badgeItem()..remove('holderCount'),
+          ],
+      ),
+      throwsFormatException,
+      reason: 'every badge stand item must be decoded eagerly',
+    );
+    for (final field in [
+      'kind',
+      'id',
+      'key',
+      'name',
+      'imageUrl',
+      'category',
+      'addedAt',
+      'holderCount',
+    ]) {
+      expect(
+        () => endpoint.decode(
+          source()
+            ..['badges'] = <Object?>[
+              badgeItem()..remove(field),
+            ],
+        ),
+        throwsFormatException,
+        reason: 'badges[].$field missing',
+      );
+    }
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      const <Object?>[],
+      const <String, Object?>{},
+      'Badge',
+      ' badge',
+      'badge ',
+      'achievement',
+    ]) {
+      expect(
+        () => endpoint.decode(
+          source()
+            ..['badges'] = <Object?>[
+              badgeItem()..['kind'] = invalid,
+            ],
+        ),
+        throwsFormatException,
+        reason: 'badges[].kind = $invalid',
+      );
+    }
+    for (final field in ['id', 'holderCount']) {
+      for (final invalid in <Object?>[
+        null,
+        1.0,
+        '1',
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+      ]) {
+        expect(
+          () => endpoint.decode(
+            source()
+              ..['badges'] = <Object?>[
+                badgeItem()..[field] = invalid,
+              ],
+          ),
+          throwsFormatException,
+          reason: 'badges[].$field = $invalid',
+        );
+      }
+    }
+    for (final field in [
+      'key',
+      'name',
+      'imageUrl',
+      'category',
+      'addedAt',
+    ]) {
+      for (final invalid in <Object?>[
+        null,
+        0,
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+      ]) {
+        expect(
+          () => endpoint.decode(
+            source()
+              ..['badges'] = <Object?>[
+                badgeItem()..[field] = invalid,
+              ],
+          ),
+          throwsFormatException,
+          reason: 'badges[].$field = $invalid',
+        );
+      }
+    }
+  });
+
+  test('preserves a raw immutable badge stand without inference', () {
+    final endpoint = contract.userBadgeStand('index');
+    final first = <String, Object?>{
+      'kind': 'badge',
+      'id': -5,
+      'key': '',
+      'name': ' ',
+      'imageUrl': 'not a uri',
+      'category': '',
+      'addedAt': 'not a date',
+      'holderCount': -7,
+      'futureBadgeField': 'allowed',
+    };
+    final second = <String, Object?>{
+      'kind': 'background',
+      'id': 0,
+      'key': 'background',
+      'name': 'Background',
+      'imageUrl': 'image',
+      'category': 'category',
+      'addedAt': 'added',
+      'holderCount': 0,
+    };
+    final badges = <Object?>[second, first, second];
+    final source = <String, Object?>{
+      'chosen': false,
+      'badges': badges,
+      'futureBadgeStandField': 'allowed',
+    };
+
+    final actual = endpoint.decode(source);
+    expect(actual.chosen, isFalse);
+    expect(actual.badges.map((item) => item.kind), [
+      OfficialAchievementItemKind.background,
+      OfficialAchievementItemKind.badge,
+      OfficialAchievementItemKind.background,
+    ]);
+    expect(actual.badges.map((item) => item.id), [0, -5, 0]);
+    expect(actual.badges.map((item) => item.holderCount), [0, -7, 0]);
+    expect(actual.badges[1].key, '');
+    expect(actual.badges[1].name, ' ');
+    expect(actual.badges[1].imageUrl, 'not a uri');
+    expect(actual.badges[1].category, '');
+    expect(actual.badges[1].addedAt, 'not a date');
+
+    second['kind'] = 'badge';
+    first['id'] = 9;
+    first['holderCount'] = 99;
+    badges.clear();
+    source.clear();
+    expect(actual.chosen, isFalse);
+    expect(actual.badges.map((item) => item.kind), [
+      OfficialAchievementItemKind.background,
+      OfficialAchievementItemKind.badge,
+      OfficialAchievementItemKind.background,
+    ]);
+    expect(actual.badges[1].id, -5);
+    expect(actual.badges[1].holderCount, -7);
+    expect(() => actual.badges.removeAt(0), throwsUnsupportedError);
+    expect(
+      () => actual.badges[0] = const ProfileBadgeStandItem(
+        kind: OfficialAchievementItemKind.badge,
+        id: 1,
+        key: 'key',
+        name: 'name',
+        imageUrl: 'image',
+        category: 'category',
+        addedAt: 'added',
+        holderCount: 1,
+      ),
+      throwsUnsupportedError,
+    );
+
+    final empty = endpoint.decode({
+      'chosen': true,
+      'badges': <Object?>[],
+    });
+    expect(empty.chosen, isTrue);
+    expect(empty.badges, isEmpty);
   });
 
   test('normalizes standalone v4 background and badge items', () {
