@@ -85,6 +85,10 @@ void main() {
         'classPlus',
         'currentStreak',
         'maxStreak',
+        'streakVacation',
+        'streakCountedToday',
+        'streakFrozenYesterday',
+        'streakTheme',
         'voteCount',
         'reputation',
         'noRatingSolvedCount',
@@ -97,6 +101,7 @@ void main() {
         'tagRatings',
       ]),
     );
+    expect(profileSchema.containsKey('additionalProperties'), isFalse);
     final profileProperties = _properties(profileSchema);
     expect(_map(profileProperties['id']), {'type': 'number'});
     expect(_map(profileProperties['voteCount']), {'type': 'integer'});
@@ -124,6 +129,22 @@ void main() {
       expect(property['type'], 'integer');
       expect(property.containsKey('minimum'), isFalse);
     }
+    final streakVacation = _map(profileProperties['streakVacation']);
+    expect(streakVacation['type'], ['object', 'null']);
+    expect(_required(streakVacation), ['fromDay', 'source']);
+    expect(streakVacation.containsKey('additionalProperties'), isFalse);
+    final streakVacationProperties = _properties(streakVacation);
+    expect(_map(streakVacationProperties['fromDay']), {'type': 'string'});
+    expect(_map(streakVacationProperties['source']), {
+      'type': 'string',
+      'enum': ['item', 'launch'],
+    });
+    for (final field in ['streakCountedToday', 'streakFrozenYesterday']) {
+      expect(_map(profileProperties[field]), {'type': 'boolean'});
+    }
+    expect(_map(profileProperties['streakTheme']), {
+      'type': ['string', 'null'],
+    });
     expect(profileProperties.containsKey('overRating'), isFalse);
 
     final reputation = _get(contract, '/api/v4/users/{handle}/reputation');
