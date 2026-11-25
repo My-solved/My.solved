@@ -113,7 +113,18 @@ class SiteRequestFailed extends SolvedApiException {
   });
 }
 
-enum _RequestType { user, background, badge, search, site }
+class RankingRequestFailed extends SolvedApiException {
+  const RankingRequestFailed({
+    super.uri,
+    super.statusCode,
+    super.cause,
+    super.stackTrace,
+    super.responseBody,
+    super.retryAfter,
+  });
+}
+
+enum _RequestType { user, background, badge, search, site, ranking }
 
 class SolvedApiClient {
   /// Creates a legacy v3 client.
@@ -395,6 +406,14 @@ class SolvedApiClient {
     return _getV4(
       contract.searchUsers(query, sort: sort),
       requestType: _RequestType.search,
+    );
+  }
+
+  Future<RankingRegionsResult> v4RankingRegions() {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.rankingRegions(),
+      requestType: _RequestType.ranking,
     );
   }
 
@@ -725,6 +744,14 @@ class SolvedApiClient {
           retryAfter: retryAfter,
         ),
       _RequestType.site => SiteRequestFailed(
+          uri: uri,
+          statusCode: statusCode,
+          cause: cause,
+          stackTrace: stackTrace,
+          responseBody: responseBody,
+          retryAfter: retryAfter,
+        ),
+      _RequestType.ranking => RankingRequestFailed(
           uri: uri,
           statusCode: statusCode,
           cause: cause,

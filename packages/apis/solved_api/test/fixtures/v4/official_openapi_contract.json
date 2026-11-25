@@ -1083,6 +1083,49 @@
         }
       }
     },
+    "/api/v4/rankings/regions": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "regions": {
+                      "items": {
+                        "properties": {
+                          "countryCode": {
+                            "type": "string"
+                          },
+                          "userCount": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "countryCode",
+                          "userCount"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "regions"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Regions people have chosen to show, largest first."
+          }
+        },
+        "summary": "Regions with a ranking",
+        "x-access": {
+          "class": "public"
+        }
+      }
+    },
     "/api/v4/rankings/users/search": {
       "get": {
         "x-access": {
