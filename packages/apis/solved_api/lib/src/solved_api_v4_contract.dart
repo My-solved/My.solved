@@ -742,6 +742,20 @@ OfficialUserProfile _decodeV4UserProfile(dynamic json) {
   final tagRatings = _list(body['tagRatings'], 'tagRatings')
       .map((item) => _decodeV4TagRating(_object(item, 'tagRatings[]')))
       .toList(growable: false);
+  final ojAccounts = List<OfficialUserProfileOjAccount>.unmodifiable(
+    _list(body['ojAccounts'], 'ojAccounts').map(
+      (item) => _decodeV4OfficialUserProfileOjAccount(
+        _object(item, 'ojAccounts[]'),
+      ),
+    ),
+  );
+  final linkedAccounts = List<OfficialUserProfileLinkedAccount>.unmodifiable(
+    _list(body['linkedAccounts'], 'linkedAccounts').map(
+      (item) => _decodeV4OfficialUserProfileLinkedAccount(
+        _object(item, 'linkedAccounts[]'),
+      ),
+    ),
+  );
   if (!body.containsKey('streakVacation')) {
     throw const FormatException('Missing required field streakVacation');
   }
@@ -762,6 +776,8 @@ OfficialUserProfile _decodeV4UserProfile(dynamic json) {
     streakTheme: _requiredNullableString(body, 'streakTheme'),
     isRival: _boolean(body['isRival'], 'isRival'),
     isReverseRival: _boolean(body['isReverseRival'], 'isReverseRival'),
+    ojAccounts: ojAccounts,
+    linkedAccounts: linkedAccounts,
     handle: _string(body['handle'], 'handle'),
     profileImageUrl: _requiredNullableString(body, 'profileImageUrl'),
     bio: _requiredNullableString(body, 'bio'),
@@ -793,6 +809,51 @@ OfficialUserProfile _decodeV4UserProfile(dynamic json) {
     badge: badge,
     tagRatings: tagRatings,
   );
+}
+
+OfficialUserProfileOjAccount _decodeV4OfficialUserProfileOjAccount(
+  Map<String, dynamic> body,
+) {
+  return OfficialUserProfileOjAccount(
+    ojId: _string(body['ojId'], 'ojAccounts[].ojId'),
+    ojName: _string(body['ojName'], 'ojAccounts[].ojName'),
+    handle: _string(body['handle'], 'ojAccounts[].handle'),
+    profileUrl: _requiredNullableString(
+      body,
+      'profileUrl',
+      'ojAccounts[].profileUrl',
+    ),
+    logoUrl: _requiredNullableString(
+      body,
+      'logoUrl',
+      'ojAccounts[].logoUrl',
+    ),
+    verified: _boolean(body['verified'], 'ojAccounts[].verified'),
+  );
+}
+
+OfficialUserProfileLinkedAccount _decodeV4OfficialUserProfileLinkedAccount(
+  Map<String, dynamic> body,
+) {
+  return OfficialUserProfileLinkedAccount(
+    provider: _decodeV4OfficialUserProfileLinkedAccountProvider(
+      body['provider'],
+    ),
+    name: _string(body['name'], 'linkedAccounts[].name'),
+    url: _string(body['url'], 'linkedAccounts[].url'),
+  );
+}
+
+OfficialUserProfileLinkedAccountProvider
+    _decodeV4OfficialUserProfileLinkedAccountProvider(Object? value) {
+  switch (_string(value, 'linkedAccounts[].provider')) {
+    case 'discord':
+      return OfficialUserProfileLinkedAccountProvider.discord;
+    case 'icpc':
+      return OfficialUserProfileLinkedAccountProvider.icpc;
+    default:
+      throw const FormatException('Unknown linkedAccounts[].provider');
+  }
 }
 
 OfficialUserProfileStreakVacation _decodeV4OfficialUserProfileStreakVacation(

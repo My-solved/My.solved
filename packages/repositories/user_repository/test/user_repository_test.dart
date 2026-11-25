@@ -303,6 +303,8 @@ solved_api.OfficialUserProfile _officialProfile({
       streakTheme: null,
       isRival: false,
       isReverseRival: false,
+      ojAccounts: const [],
+      linkedAccounts: const [],
       handle: 'w8385',
       profileImageUrl: null,
       solvedCount: 2048,

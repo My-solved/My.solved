@@ -112,6 +112,39 @@ void main() {
     expect(actual.streakTheme, isNull);
     expect(actual.isRival, isFalse);
     expect(actual.isReverseRival, isFalse);
+    expect(actual.ojAccounts, hasLength(2));
+    expect(actual.ojAccounts.first.ojId, 'boj');
+    expect(actual.ojAccounts.first.ojName, 'Baekjoon Online Judge');
+    expect(actual.ojAccounts.first.handle, 'index');
+    expect(
+      actual.ojAccounts.first.profileUrl,
+      'https://www.acmicpc.net/user/index',
+    );
+    expect(actual.ojAccounts.first.logoUrl, isNull);
+    expect(actual.ojAccounts.first.verified, isTrue);
+    expect(actual.ojAccounts.last.ojId, 'codeforces');
+    expect(actual.ojAccounts.last.profileUrl, isNull);
+    expect(
+      actual.ojAccounts.last.logoUrl,
+      'https://example.com/codeforces.svg',
+    );
+    expect(actual.ojAccounts.last.verified, isFalse);
+    expect(actual.linkedAccounts, hasLength(2));
+    expect(
+      actual.linkedAccounts.first.provider,
+      OfficialUserProfileLinkedAccountProvider.discord,
+    );
+    expect(actual.linkedAccounts.first.name, 'index');
+    expect(
+      actual.linkedAccounts.first.url,
+      'https://discord.com/users/123456789',
+    );
+    expect(
+      actual.linkedAccounts.last.provider,
+      OfficialUserProfileLinkedAccountProvider.icpc,
+    );
+    expect(actual.linkedAccounts.last.name, 'Index Team');
+    expect(actual.linkedAccounts.last.url, 'https://icpc.global/ICPCID/INDEX');
     expect(actual.voteCount, 37);
     expect(actual.legacyContributionCount, isNull);
     expect(actual.reverseRivalCount, isNull);
@@ -277,6 +310,233 @@ void main() {
         );
       }
     }
+  });
+
+  test('requires exact public profile external account shapes', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_profile.json')) as Map,
+        );
+
+    for (final field in ['ojAccounts', 'linkedAccounts']) {
+      expect(
+        () => endpoint.decode(source()..remove(field)),
+        throwsFormatException,
+        reason: '$field missing',
+      );
+      for (final invalid in <Object?>[
+        null,
+        0,
+        false,
+        'accounts',
+        const <String, Object?>{},
+      ]) {
+        expect(
+          () => endpoint.decode(source()..[field] = invalid),
+          throwsFormatException,
+          reason: '$field = $invalid',
+        );
+      }
+      expect(
+        () => endpoint.decode(source()..[field] = <Object?>[0]),
+        throwsFormatException,
+        reason: '$field item must be an object',
+      );
+    }
+
+    final empty = endpoint.decode(
+      source()
+        ..['ojAccounts'] = <Object?>[]
+        ..['linkedAccounts'] = <Object?>[],
+    );
+    expect(empty.ojAccounts, isEmpty);
+    expect(empty.linkedAccounts, isEmpty);
+
+    Map<String, Object?> ojAccount() => <String, Object?>{
+          'ojId': 'boj',
+          'ojName': 'Baekjoon Online Judge',
+          'handle': 'index',
+          'profileUrl': null,
+          'logoUrl': null,
+          'verified': true,
+        };
+    final invalidOjValues = <String, List<Object?>>{
+      'ojId': [null, 0, false, const <Object?>[], const <String, Object?>{}],
+      'ojName': [null, 0, false, const <Object?>[], const <String, Object?>{}],
+      'handle': [null, 0, false, const <Object?>[], const <String, Object?>{}],
+      'profileUrl': [0, false, const <Object?>[], const <String, Object?>{}],
+      'logoUrl': [0, false, const <Object?>[], const <String, Object?>{}],
+      'verified': [
+        null,
+        0,
+        'true',
+        const <Object?>[],
+        const <String, Object?>{},
+      ],
+    };
+    for (final entry in invalidOjValues.entries) {
+      expect(
+        () => endpoint.decode(
+          source()..['ojAccounts'] = <Object?>[ojAccount()..remove(entry.key)],
+        ),
+        throwsFormatException,
+        reason: 'missing ojAccounts[].${entry.key}',
+      );
+      for (final invalid in entry.value) {
+        expect(
+          () => endpoint.decode(
+            source()
+              ..['ojAccounts'] = <Object?>[
+                ojAccount()..[entry.key] = invalid,
+              ],
+          ),
+          throwsFormatException,
+          reason: 'ojAccounts[].${entry.key} = $invalid',
+        );
+      }
+    }
+
+    Map<String, Object?> linkedAccount() => <String, Object?>{
+          'provider': 'discord',
+          'name': 'index',
+          'url': 'https://example.com/account',
+        };
+    final invalidLinkedValues = <String, List<Object?>>{
+      'provider': [
+        null,
+        0,
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+        '',
+        'Discord',
+        'discord ',
+        'unknown',
+      ],
+      'name': [null, 0, false, const <Object?>[], const <String, Object?>{}],
+      'url': [null, 0, false, const <Object?>[], const <String, Object?>{}],
+    };
+    for (final entry in invalidLinkedValues.entries) {
+      expect(
+        () => endpoint.decode(
+          source()
+            ..['linkedAccounts'] = <Object?>[
+              linkedAccount()..remove(entry.key),
+            ],
+        ),
+        throwsFormatException,
+        reason: 'missing linkedAccounts[].${entry.key}',
+      );
+      for (final invalid in entry.value) {
+        expect(
+          () => endpoint.decode(
+            source()
+              ..['linkedAccounts'] = <Object?>[
+                linkedAccount()..[entry.key] = invalid,
+              ],
+          ),
+          throwsFormatException,
+          reason: 'linkedAccounts[].${entry.key} = $invalid',
+        );
+      }
+    }
+  });
+
+  test('preserves raw immutable external account lists', () {
+    final endpoint = contract.userProfile('index');
+    final firstOjAccount = <String, Object?>{
+      'ojId': '',
+      'ojName': '  ',
+      'handle': ' raw handle ',
+      'profileUrl': 'not a uri',
+      'logoUrl': null,
+      'verified': false,
+      'futureOjField': 'allowed',
+    };
+    final secondOjAccount = <String, Object?>{
+      'ojId': 'other',
+      'ojName': 'Other Judge',
+      'handle': 'other',
+      'profileUrl': null,
+      'logoUrl': '',
+      'verified': true,
+    };
+    final ojAccounts = <Object?>[
+      secondOjAccount,
+      firstOjAccount,
+      secondOjAccount,
+    ];
+    final discordAccount = <String, Object?>{
+      'provider': 'discord',
+      'name': '',
+      'url': 'not a uri',
+      'futureLinkedField': 'allowed',
+    };
+    final icpcAccount = <String, Object?>{
+      'provider': 'icpc',
+      'name': '  ',
+      'url': '',
+    };
+    final linkedAccounts = <Object?>[
+      icpcAccount,
+      discordAccount,
+      icpcAccount,
+    ];
+    final source = Map<String, dynamic>.from(
+      jsonDecode(fixture('v4/user_profile.json')) as Map,
+    )
+      ..['ojAccounts'] = ojAccounts
+      ..['linkedAccounts'] = linkedAccounts
+      ..['futureProfileField'] = 'allowed';
+
+    final actual = endpoint.decode(source);
+
+    expect(
+      OfficialUserProfileLinkedAccountProvider.values
+          .map((provider) => provider.value),
+      ['discord', 'icpc'],
+    );
+    expect(actual.ojAccounts.map((account) => account.ojId), [
+      'other',
+      '',
+      'other',
+    ]);
+    expect(actual.ojAccounts[1].ojName, '  ');
+    expect(actual.ojAccounts[1].handle, ' raw handle ');
+    expect(actual.ojAccounts[1].profileUrl, 'not a uri');
+    expect(actual.ojAccounts[1].logoUrl, isNull);
+    expect(actual.ojAccounts[1].verified, isFalse);
+    expect(actual.ojAccounts.first.profileUrl, isNull);
+    expect(actual.ojAccounts.first.logoUrl, '');
+    expect(
+      actual.linkedAccounts.map((account) => account.provider),
+      [
+        OfficialUserProfileLinkedAccountProvider.icpc,
+        OfficialUserProfileLinkedAccountProvider.discord,
+        OfficialUserProfileLinkedAccountProvider.icpc,
+      ],
+    );
+    expect(actual.linkedAccounts[1].name, '');
+    expect(actual.linkedAccounts[1].url, 'not a uri');
+    expect(actual.linkedAccounts.first.name, '  ');
+    expect(actual.linkedAccounts.first.url, '');
+
+    secondOjAccount['ojId'] = 'mutated';
+    firstOjAccount['handle'] = 'mutated';
+    ojAccounts.clear();
+    icpcAccount['name'] = 'mutated';
+    discordAccount['url'] = 'mutated';
+    linkedAccounts.clear();
+    expect(actual.ojAccounts.map((account) => account.ojId), [
+      'other',
+      '',
+      'other',
+    ]);
+    expect(actual.ojAccounts[1].handle, ' raw handle ');
+    expect(actual.linkedAccounts.first.name, '  ');
+    expect(actual.linkedAccounts[1].url, 'not a uri');
+    expect(() => actual.ojAccounts.removeAt(0), throwsUnsupportedError);
+    expect(() => actual.linkedAccounts.removeAt(0), throwsUnsupportedError);
   });
 
   test('requires exact public profile streak state types', () {

@@ -27,8 +27,36 @@
   },
   "isRival": false,
   "isReverseRival": false,
-  "ojAccounts": [],
-  "linkedAccounts": [],
+  "ojAccounts": [
+    {
+      "ojId": "boj",
+      "ojName": "Baekjoon Online Judge",
+      "handle": "index",
+      "profileUrl": "https://www.acmicpc.net/user/index",
+      "logoUrl": null,
+      "verified": true
+    },
+    {
+      "ojId": "codeforces",
+      "ojName": "Codeforces",
+      "handle": "tourist",
+      "profileUrl": null,
+      "logoUrl": "https://example.com/codeforces.svg",
+      "verified": false
+    }
+  ],
+  "linkedAccounts": [
+    {
+      "provider": "discord",
+      "name": "index",
+      "url": "https://discord.com/users/123456789"
+    },
+    {
+      "provider": "icpc",
+      "name": "Index Team",
+      "url": "https://icpc.global/ICPCID/INDEX"
+    }
+  ],
   "affiliations": [],
   "class": 6,
   "classPlus": true,

@@ -104,6 +104,25 @@ void main() {
         expect(profile.streakTheme, isNull);
         expect(profile.isRival, isFalse);
         expect(profile.isReverseRival, isFalse);
+        expect(profile.ojAccounts, hasLength(2));
+        expect(profile.ojAccounts.first.ojId, 'boj');
+        expect(profile.ojAccounts.first.handle, 'index');
+        expect(profile.ojAccounts.first.logoUrl, isNull);
+        expect(profile.ojAccounts.first.verified, isTrue);
+        expect(profile.ojAccounts.last.ojId, 'codeforces');
+        expect(profile.ojAccounts.last.profileUrl, isNull);
+        expect(profile.ojAccounts.last.verified, isFalse);
+        expect(profile.linkedAccounts, hasLength(2));
+        expect(
+          profile.linkedAccounts.first.provider,
+          OfficialUserProfileLinkedAccountProvider.discord,
+        );
+        expect(profile.linkedAccounts.first.name, 'index');
+        expect(
+          profile.linkedAccounts.last.provider,
+          OfficialUserProfileLinkedAccountProvider.icpc,
+        );
+        expect(profile.linkedAccounts.last.name, 'Index Team');
         expect(profile.backgroundId, 'anniversary_1st');
         expect(profile.background, isA<OfficialUserProfileBackground>());
         expect(profile.background?.backgroundVideoUrl, isNull);

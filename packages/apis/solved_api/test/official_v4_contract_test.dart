@@ -91,6 +91,8 @@ void main() {
         'streakTheme',
         'isRival',
         'isReverseRival',
+        'ojAccounts',
+        'linkedAccounts',
         'voteCount',
         'reputation',
         'noRatingSolvedCount',
@@ -149,6 +151,54 @@ void main() {
     });
     expect(_map(profileProperties['isRival']), {'type': 'boolean'});
     expect(_map(profileProperties['isReverseRival']), {'type': 'boolean'});
+
+    final ojAccounts = _map(profileProperties['ojAccounts']);
+    expect(ojAccounts['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(ojAccounts.containsKey(constraint), isFalse);
+    }
+    final ojAccount = _map(ojAccounts['items']);
+    expect(ojAccount['type'], 'object');
+    expect(_required(ojAccount), [
+      'ojId',
+      'ojName',
+      'handle',
+      'profileUrl',
+      'logoUrl',
+      'verified',
+    ]);
+    expect(ojAccount.containsKey('additionalProperties'), isFalse);
+    final ojAccountProperties = _properties(ojAccount);
+    for (final field in ['ojId', 'ojName', 'handle']) {
+      expect(_map(ojAccountProperties[field]), {'type': 'string'});
+    }
+    for (final field in ['profileUrl', 'logoUrl']) {
+      expect(_map(ojAccountProperties[field]), {
+        'type': ['string', 'null'],
+        'format': 'uri',
+      });
+    }
+    expect(_map(ojAccountProperties['verified']), {'type': 'boolean'});
+
+    final linkedAccounts = _map(profileProperties['linkedAccounts']);
+    expect(linkedAccounts['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(linkedAccounts.containsKey(constraint), isFalse);
+    }
+    final linkedAccount = _map(linkedAccounts['items']);
+    expect(linkedAccount['type'], 'object');
+    expect(_required(linkedAccount), ['provider', 'name', 'url']);
+    expect(linkedAccount.containsKey('additionalProperties'), isFalse);
+    final linkedAccountProperties = _properties(linkedAccount);
+    expect(_map(linkedAccountProperties['provider']), {
+      'type': 'string',
+      'enum': ['discord', 'icpc'],
+    });
+    expect(_map(linkedAccountProperties['name']), {'type': 'string'});
+    expect(_map(linkedAccountProperties['url']), {
+      'type': 'string',
+      'format': 'uri',
+    });
 
     final background = _map(profileProperties['background']);
     expect(background['type'], ['object', 'null']);
