@@ -57,7 +57,24 @@
       "url": "https://icpc.global/ICPCID/INDEX"
     }
   ],
-  "affiliations": [],
+  "affiliations": [
+    {
+      "id": 901,
+      "affiliationId": 101,
+      "name": "Example University",
+      "type": "university",
+      "logoThumbnailUrl": "https://example.com/university.png",
+      "color": "#336699"
+    },
+    {
+      "id": 902,
+      "affiliationId": 202,
+      "name": "Algorithm Community",
+      "type": "community",
+      "logoThumbnailUrl": null,
+      "color": null
+    }
+  ],
   "class": 6,
   "classPlus": true,
   "badge": {

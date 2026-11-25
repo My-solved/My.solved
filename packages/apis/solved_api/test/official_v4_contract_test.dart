@@ -93,6 +93,7 @@ void main() {
         'isReverseRival',
         'ojAccounts',
         'linkedAccounts',
+        'affiliations',
         'voteCount',
         'reputation',
         'noRatingSolvedCount',
@@ -199,6 +200,45 @@ void main() {
       'type': 'string',
       'format': 'uri',
     });
+
+    final affiliations = _map(profileProperties['affiliations']);
+    expect(affiliations['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(affiliations.containsKey(constraint), isFalse);
+    }
+    final affiliation = _map(affiliations['items']);
+    expect(affiliation['type'], 'object');
+    expect(_required(affiliation), [
+      'id',
+      'affiliationId',
+      'name',
+      'type',
+      'logoThumbnailUrl',
+      'color',
+    ]);
+    expect(affiliation.containsKey('additionalProperties'), isFalse);
+    final affiliationProperties = _properties(affiliation);
+    for (final field in ['id', 'affiliationId']) {
+      expect(_map(affiliationProperties[field]), {'type': 'number'});
+    }
+    expect(_map(affiliationProperties['name']), {'type': 'string'});
+    expect(_map(affiliationProperties['type']), {
+      'type': 'string',
+      'enum': [
+        'undefined',
+        'university',
+        'high_school',
+        'middle_school',
+        'elementary_school',
+        'company',
+        'community',
+      ],
+    });
+    for (final field in ['logoThumbnailUrl', 'color']) {
+      expect(_map(affiliationProperties[field]), {
+        'type': ['string', 'null'],
+      });
+    }
 
     final background = _map(profileProperties['background']);
     expect(background['type'], ['object', 'null']);
