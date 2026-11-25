@@ -1126,6 +1126,64 @@
         }
       }
     },
+    "/api/v4/rankings/tags": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "lang",
+            "required": false,
+            "schema": {
+              "default": "ko",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "tags": {
+                      "items": {
+                        "properties": {
+                          "displayName": {
+                            "type": "string"
+                          },
+                          "key": {
+                            "type": "string"
+                          },
+                          "ratingTagIndex": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "ratingTagIndex",
+                          "displayName"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "tags"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Rated tag slots, named for the requested language."
+          }
+        },
+        "summary": "Tags with a ranking",
+        "x-access": {
+          "class": "public"
+        }
+      }
+    },
     "/api/v4/rankings/users/search": {
       "get": {
         "x-access": {
