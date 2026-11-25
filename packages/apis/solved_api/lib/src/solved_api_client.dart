@@ -356,6 +356,17 @@ class SolvedApiClient {
     );
   }
 
+  Future<SearchSuggestionResult> v4SearchSuggestions(
+    String topic, {
+    String? value,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.searchSuggestions(topic, value: value),
+      requestType: _RequestType.search,
+    );
+  }
+
   Future<SearchObject<TagSearchItem>> v4SearchTags(
     String query, {
     int page = 1,

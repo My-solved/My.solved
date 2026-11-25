@@ -915,6 +915,70 @@ void main() {
     }
   });
 
+  test('pins the public search-suggestion schema without inference', () {
+    final suggestions = _get(contract, '/api/v4/search/suggest');
+
+    expect(_map(suggestions['x-access']), {'class': 'public'});
+    expect(_parameterNames(suggestions), ['topic', 'value']);
+    final parameters = _parameters(suggestions);
+    expect(parameters.first['in'], 'query');
+    expect(parameters.first['required'], isTrue);
+    expect(_map(parameters.first['schema']), {
+      'type': 'string',
+      'maxLength': 64,
+    });
+    expect(parameters.last['in'], 'query');
+    expect(parameters.last['required'], isFalse);
+    expect(_map(parameters.last['schema']), {
+      'type': 'string',
+      'maxLength': 100,
+      'default': '',
+    });
+    expect(
+      _map(suggestions['responses']).keys,
+      unorderedEquals(['200']),
+    );
+
+    final schema = _responseSchema(suggestions);
+    expect(_required(schema), ['suggestions']);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    final properties = _properties(schema);
+    expect(properties.keys, unorderedEquals(['suggestions']));
+    final list = _map(properties['suggestions']);
+    expect(list['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(list.containsKey(constraint), isFalse);
+    }
+    final item = _map(list['items']);
+    expect(item['type'], 'object');
+    expect(_required(item), ['value', 'detail', 'tier']);
+    expect(item.containsKey('additionalProperties'), isFalse);
+    final itemProperties = _properties(item);
+    expect(itemProperties.keys, unorderedEquals(['value', 'detail', 'tier']));
+    expect(_map(itemProperties['value']), {'type': 'string'});
+    expect(_map(itemProperties['detail']), {
+      'type': ['string', 'null'],
+    });
+    expect(_map(itemProperties['tier']), {
+      'type': ['integer', 'null'],
+    });
+    for (final field in ['value', 'detail']) {
+      final value = _map(itemProperties[field]);
+      for (final constraint in [
+        'minLength',
+        'maxLength',
+        'pattern',
+        'format',
+      ]) {
+        expect(value.containsKey(constraint), isFalse);
+      }
+    }
+    final tier = _map(itemProperties['tier']);
+    for (final constraint in ['minimum', 'maximum', 'multipleOf']) {
+      expect(tier.containsKey(constraint), isFalse);
+    }
+  });
+
   test('pins the public tag detail schema without inference', () {
     final tagDetail = _get(contract, '/api/v4/tags/{key}');
 

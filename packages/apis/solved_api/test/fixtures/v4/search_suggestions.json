@@ -1,0 +1,23 @@
+{
+  "suggestions": [
+    {
+      "value": "ko",
+      "detail": "한국어",
+      "tier": 12
+    },
+    {
+      "value": "raw & empty-safe",
+      "detail": null,
+      "tier": null
+    },
+    {
+      "value": "future",
+      "detail": "",
+      "tier": -1,
+      "futureField": {
+        "preservedByCompatibility": true
+      }
+    }
+  ],
+  "futureEnvelopeField": true
+}

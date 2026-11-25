@@ -69,6 +69,7 @@ void main() {
             '/solved/v4/problems/1000' => 'v4/problem_detail.json',
             '/solved/v4/problems' => 'v4/search_problems.json',
             '/solved/v4/rankings/users/search' => 'v4/search_users.json',
+            '/solved/v4/search/suggest' => 'v4/search_suggestions.json',
             '/solved/v4/tags' => 'v4/tags.json',
             '/solved/v4/tags/number_theory' => 'v4/tag_detail.json',
             _ => throw StateError('Unexpected request: ${request.url}'),
@@ -120,6 +121,10 @@ void main() {
         final users = await client.v4SearchUsers(
           'index',
           sort: SolvedApiV4UserSort.contribution,
+        );
+        final suggestions = await client.v4SearchSuggestions(
+          'tag&한',
+          value: '',
         );
         final tags = await client.v4SearchTags('NUMBER');
         final TagDetailResult tagDetail =
@@ -272,6 +277,9 @@ void main() {
         expect(problems.diagnostics, isNull);
         expect(problems.seed, isNull);
         expect(users.exact?.handle, 'index');
+        expect(suggestions.suggestions, hasLength(3));
+        expect(suggestions.suggestions.first.value, 'ko');
+        expect(suggestions.suggestions.last.tier, -1);
         expect(tags.items.single.key, 'number_theory');
         expect(tagDetail.id, 42.5);
         expect(tagDetail.key, 'number_theory');
@@ -332,14 +340,23 @@ void main() {
               'q': 'index',
               'sort': 'contribution',
             }),
+            Uri.parse(
+              'https://proxy.example/solved/v4/search/suggest?'
+              'topic=tag%26%ED%95%9C&value=',
+            ),
             _uri('tags'),
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(15));
+        expect(httpClient.requests, hasLength(16));
         expect(
           httpClient.requests[10].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
+        );
+        expect(
+          httpClient.requests[13].url.toString(),
+          'https://proxy.example/solved/v4/search/suggest?'
+          'topic=tag%26%ED%95%9C&value=',
         );
         for (final request in httpClient.requests) {
           expect(request, isA<http.AbortableRequest>());
@@ -541,7 +558,11 @@ void main() {
         await _captureFailure(client.v4ProblemDetail(1000)),
         isA<SearchRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(11));
+      expect(
+        await _captureFailure(client.v4SearchSuggestions('tag')),
+        isA<SearchRequestFailed>(),
+      );
+      expect(httpClient.requests, hasLength(12));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -677,6 +698,98 @@ void main() {
     test('rejects an invalid problem ID before transport', () {
       expect(() => client.v4ProblemDetail(0), throwsArgumentError);
       expect(httpClient.requests, isEmpty);
+    });
+
+    test('preserves omitted, empty, and encoded suggestion queries', () async {
+      handler = (_) async => _jsonResponse(
+            fixture('v4/search_suggestions.json'),
+          );
+
+      await client.v4SearchSuggestions('');
+      await client.v4SearchSuggestions('tag', value: '');
+      await client.v4SearchSuggestions('태그 & tier', value: 'A B&한');
+
+      expect(
+        httpClient.requests.map((request) => request.url.toString()),
+        [
+          'https://proxy.example/solved/v4/search/suggest?topic=',
+          'https://proxy.example/solved/v4/search/suggest?topic=tag&value=',
+          'https://proxy.example/solved/v4/search/suggest?'
+              'topic=%ED%83%9C%EA%B7%B8+%26+tier&'
+              'value=A+B%26%ED%95%9C',
+        ],
+      );
+      for (final request in httpClient.requests) {
+        expect(request.method, 'GET');
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+        });
+        expect(request.bodyBytes, isEmpty);
+      }
+    });
+
+    test('rejects oversized suggestion queries before transport', () {
+      final topic65 = List<String>.filled(65, '😀').join();
+      final value101 = List<String>.filled(101, '🧩').join();
+
+      expect(
+        () => client.v4SearchSuggestions(topic65),
+        throwsArgumentError,
+      );
+      expect(
+        () => client.v4SearchSuggestions('tag', value: value101),
+        throwsArgumentError,
+      );
+      expect(httpClient.requests, isEmpty);
+    });
+
+    test('wraps malformed search suggestions as a search failure', () async {
+      handler = (_) async => _jsonResponse(
+            jsonEncode({
+              'suggestions': <Object?>[
+                <String, Object?>{
+                  'value': 'value',
+                  'detail': null,
+                },
+              ],
+            }),
+          );
+
+      final error = await _captureFailure(
+        client.v4SearchSuggestions('tag'),
+      );
+
+      expect(error, isA<SearchRequestFailed>());
+      expect(error.statusCode, 200);
+      expect(error.cause, isA<FormatException>());
+      expect(error.responseBody, isNull);
+      expect(
+        httpClient.requests.single.url,
+        _uri('search/suggest', const <String, String>{'topic': 'tag'}),
+      );
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves search-suggestion 429 failure metadata', () async {
+      handler = (_) async => _bytesResponse(
+            const <int>[0xff],
+            statusCode: 429,
+            headers: const <String, String>{
+              'content-type': 'text/plain',
+              'retry-after': '7',
+            },
+          );
+
+      final error = await _captureFailure(
+        client.v4SearchSuggestions('tag'),
+      );
+
+      expect(error, isA<SearchRequestFailed>());
+      expect(error.statusCode, 429);
+      expect(error.cause, isNull);
+      expect(error.responseBody, isNull);
+      expect(error.retryAfter, const Duration(seconds: 7));
+      expect(httpClient.requests, hasLength(1));
     });
 
     test('wraps a malformed problem detail as a search failure', () async {
