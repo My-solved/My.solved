@@ -72,55 +72,58 @@ void main() {
     expect(_accessClass(profile), 'public');
     expect(_parameterNames(profile), ['handle', 'lang']);
 
+    const profileFields = [
+      'id',
+      'handle',
+      'tier',
+      'profileImageUrl',
+      'bio',
+      'rating',
+      'solvedCount',
+      'voteCount',
+      'reputation',
+      'maxStreak',
+      'currentStreak',
+      'streakVacation',
+      'streakCountedToday',
+      'streakFrozenYesterday',
+      'noRatingSolvedCount',
+      'streakTheme',
+      'background',
+      'isRival',
+      'isReverseRival',
+      'ojAccounts',
+      'linkedAccounts',
+      'affiliations',
+      'class',
+      'classPlus',
+      'badge',
+      'ratingByProblemsSum',
+      'ratingByClass',
+      'ratingBySolvedCount',
+      'ratingProblemsCutoff',
+      'ratingProblemsHistogram',
+      'bans',
+      'tagRatings',
+      'metadata',
+    ];
+    expect(profileFields, hasLength(33));
     final profileSchema = _responseSchema(profile);
-    expect(
-      _required(profileSchema),
-      containsAll([
-        'id',
-        'tier',
-        'profileImageUrl',
-        'bio',
-        'rating',
-        'solvedCount',
-        'classPlus',
-        'currentStreak',
-        'maxStreak',
-        'streakVacation',
-        'streakCountedToday',
-        'streakFrozenYesterday',
-        'streakTheme',
-        'isRival',
-        'isReverseRival',
-        'ojAccounts',
-        'linkedAccounts',
-        'affiliations',
-        'bans',
-        'metadata',
-        'voteCount',
-        'reputation',
-        'noRatingSolvedCount',
-        'background',
-        'badge',
-        'ratingByProblemsSum',
-        'ratingByClass',
-        'ratingBySolvedCount',
-        'ratingProblemsHistogram',
-        'tagRatings',
-      ]),
-    );
+    expect(_required(profileSchema), profileFields);
     expect(profileSchema.containsKey('additionalProperties'), isFalse);
     final profileProperties = _properties(profileSchema);
+    expect(profileProperties.keys.toList(growable: false), profileFields);
     expect(_map(profileProperties['id']), {'type': 'number'});
-    expect(_map(profileProperties['voteCount']), {'type': 'integer'});
+    expect(_map(profileProperties['handle']), {'type': 'string'});
     expect(_map(profileProperties['tier']), {
       'type': ['integer', 'null'],
       'minimum': 0,
       'maximum': 31,
     });
-    expect(_map(profileProperties['profileImageUrl'])['type'], [
-      'string',
-      'null',
-    ]);
+    expect(_map(profileProperties['profileImageUrl']), {
+      'type': ['string', 'null'],
+      'format': 'uri',
+    });
     final bio = _map(profileProperties['bio']);
     expect(bio['type'], ['string', 'null']);
     for (final constraint in ['format', 'minLength', 'maxLength', 'pattern']) {
@@ -133,13 +136,19 @@ void main() {
       'maximum': 10,
     });
     for (final field in [
-      'currentStreak',
+      'rating',
+      'solvedCount',
+      'voteCount',
+      'reputation',
       'maxStreak',
+      'currentStreak',
       'noRatingSolvedCount',
+      'ratingByProblemsSum',
+      'ratingByClass',
+      'ratingBySolvedCount',
+      'ratingProblemsCutoff',
     ]) {
-      final property = _map(profileProperties[field]);
-      expect(property['type'], 'integer');
-      expect(property.containsKey('minimum'), isFalse);
+      expect(_map(profileProperties[field]), {'type': 'integer'});
     }
     final streakVacation = _map(profileProperties['streakVacation']);
     expect(streakVacation['type'], ['object', 'null']);
@@ -308,6 +317,41 @@ void main() {
       expect(_map(birthdayProperties[field]), {
         'type': ['integer', 'null'],
       });
+    }
+
+    final ratingProblemsHistogram =
+        _map(profileProperties['ratingProblemsHistogram']);
+    expect(ratingProblemsHistogram['type'], 'array');
+    expect(_map(ratingProblemsHistogram['items']), {'type': 'integer'});
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(ratingProblemsHistogram.containsKey(constraint), isFalse);
+    }
+
+    final tagRatings = _map(profileProperties['tagRatings']);
+    expect(tagRatings['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(tagRatings.containsKey(constraint), isFalse);
+    }
+    final tagRating = _map(tagRatings['items']);
+    expect(tagRating['type'], 'object');
+    const tagRatingFields = [
+      'key',
+      'rating',
+      'solvedCount',
+      'ratingByProblemsSum',
+      'ratingBySolvedCount',
+      'ratingProblemsCutoff',
+    ];
+    expect(_required(tagRating), tagRatingFields);
+    expect(tagRating.containsKey('additionalProperties'), isFalse);
+    final tagRatingProperties = _properties(tagRating);
+    expect(
+      tagRatingProperties.keys.toList(growable: false),
+      tagRatingFields,
+    );
+    expect(_map(tagRatingProperties['key']), {'type': 'string'});
+    for (final field in tagRatingFields.skip(1)) {
+      expect(_map(tagRatingProperties[field]), {'type': 'integer'});
     }
 
     final background = _map(profileProperties['background']);

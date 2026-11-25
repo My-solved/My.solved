@@ -231,6 +231,290 @@ void main() {
     expect(actual, isA<UserProfile>());
   });
 
+  test('requires every official public profile top-level field', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_profile.json')) as Map,
+        );
+    const profileFields = [
+      'id',
+      'handle',
+      'tier',
+      'profileImageUrl',
+      'bio',
+      'rating',
+      'solvedCount',
+      'voteCount',
+      'reputation',
+      'maxStreak',
+      'currentStreak',
+      'streakVacation',
+      'streakCountedToday',
+      'streakFrozenYesterday',
+      'noRatingSolvedCount',
+      'streakTheme',
+      'background',
+      'isRival',
+      'isReverseRival',
+      'ojAccounts',
+      'linkedAccounts',
+      'affiliations',
+      'class',
+      'classPlus',
+      'badge',
+      'ratingByProblemsSum',
+      'ratingByClass',
+      'ratingBySolvedCount',
+      'ratingProblemsCutoff',
+      'ratingProblemsHistogram',
+      'bans',
+      'tagRatings',
+      'metadata',
+    ];
+    expect(profileFields, hasLength(33));
+
+    for (final field in profileFields) {
+      expect(
+        () => endpoint.decode(source()..remove(field)),
+        throwsFormatException,
+        reason: '$field missing',
+      );
+    }
+
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      const <Object?>[],
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(source()..['handle'] = invalid),
+        throwsFormatException,
+        reason: 'handle = $invalid',
+      );
+    }
+
+    for (final field in [
+      'rating',
+      'solvedCount',
+      'voteCount',
+      'reputation',
+      'maxStreak',
+      'currentStreak',
+      'noRatingSolvedCount',
+      'ratingByProblemsSum',
+      'ratingByClass',
+      'ratingBySolvedCount',
+      'ratingProblemsCutoff',
+    ]) {
+      for (final invalid in <Object?>[
+        null,
+        1.0,
+        '1',
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+      ]) {
+        expect(
+          () => endpoint.decode(source()..[field] = invalid),
+          throwsFormatException,
+          reason: '$field = $invalid',
+        );
+      }
+    }
+
+    final rawProfileImage = endpoint.decode(
+      source()..['profileImageUrl'] = 'not a uri',
+    );
+    expect(rawProfileImage.profileImageUrl, 'not a uri');
+  });
+
+  test('requires exact public profile rating collection shapes', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_profile.json')) as Map,
+        );
+    Map<String, Object?> tagRating() => <String, Object?>{
+          'key': 'dp',
+          'rating': 1750,
+          'solvedCount': 120,
+          'ratingByProblemsSum': 1600,
+          'ratingBySolvedCount': 150,
+          'ratingProblemsCutoff': 50,
+        };
+
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      'histogram',
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(
+          source()..['ratingProblemsHistogram'] = invalid,
+        ),
+        throwsFormatException,
+        reason: 'ratingProblemsHistogram = $invalid',
+      );
+    }
+    for (final invalid in <Object?>[
+      null,
+      1.0,
+      '1',
+      false,
+      const <Object?>[],
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(
+          source()..['ratingProblemsHistogram'] = <Object?>[invalid],
+        ),
+        throwsFormatException,
+        reason: 'ratingProblemsHistogram[] = $invalid',
+      );
+    }
+
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      'ratings',
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(source()..['tagRatings'] = invalid),
+        throwsFormatException,
+        reason: 'tagRatings = $invalid',
+      );
+    }
+    expect(
+      () => endpoint.decode(source()..['tagRatings'] = <Object?>[0]),
+      throwsFormatException,
+      reason: 'tagRatings[] must be an object',
+    );
+
+    final invalidTagValues = <String, List<Object?>>{
+      'key': [null, 0, false, const <Object?>[], const <String, Object?>{}],
+      for (final field in [
+        'rating',
+        'solvedCount',
+        'ratingByProblemsSum',
+        'ratingBySolvedCount',
+        'ratingProblemsCutoff',
+      ])
+        field: [
+          null,
+          1.0,
+          '1',
+          false,
+          const <Object?>[],
+          const <String, Object?>{},
+        ],
+    };
+    for (final entry in invalidTagValues.entries) {
+      expect(
+        () => endpoint.decode(
+          source()
+            ..['tagRatings'] = <Object?>[
+              tagRating()..remove(entry.key),
+            ],
+        ),
+        throwsFormatException,
+        reason: 'missing tagRatings[].${entry.key}',
+      );
+      for (final invalid in entry.value) {
+        expect(
+          () => endpoint.decode(
+            source()
+              ..['tagRatings'] = <Object?>[
+                tagRating()..[entry.key] = invalid,
+              ],
+          ),
+          throwsFormatException,
+          reason: 'tagRatings[].${entry.key} = $invalid',
+        );
+      }
+    }
+
+    final empty = endpoint.decode(
+      source()
+        ..['ratingProblemsHistogram'] = <Object?>[]
+        ..['tagRatings'] = <Object?>[],
+    );
+    expect(empty.ratingBreakdown?.ratingProblemsHistogram, isEmpty);
+    expect(empty.tagRatings, isEmpty);
+  });
+
+  test('preserves immutable profile rating collections without inference', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_profile.json')) as Map,
+        );
+    Map<String, Object?> tagRating({
+      required String key,
+      required int rating,
+    }) =>
+        <String, Object?>{
+          'key': key,
+          'rating': rating,
+          'solvedCount': -1,
+          'ratingByProblemsSum': -2,
+          'ratingBySolvedCount': -3,
+          'ratingProblemsCutoff': -4,
+        };
+
+    final histogram = <Object?>[3, -1, 3];
+    final first = tagRating(key: ' raw tag ', rating: -5)
+      ..['ratingByClass'] = 999
+      ..['futureTagRatingField'] = 'allowed';
+    final second = tagRating(key: '', rating: 0);
+    final tagRatings = <Object?>[second, first, second];
+    final actual = endpoint.decode(
+      source()
+        ..['ratingProblemsHistogram'] = histogram
+        ..['tagRatings'] = tagRatings
+        ..['ratingByClass'] = 777
+        ..['futureProfileField'] = 'allowed',
+    );
+
+    expect(actual.ratingBreakdown?.ratingProblemsHistogram, [3, -1, 3]);
+    expect(actual.tagRatings.map((value) => value.key), [
+      '',
+      ' raw tag ',
+      '',
+    ]);
+    expect(actual.tagRatings[1].rating, -5);
+    expect(actual.tagRatings[1].solvedCount, -1);
+    expect(actual.tagRatings[1].ratingByProblemsSum, -2);
+    expect(actual.tagRatings[1].ratingBySolvedCount, -3);
+    expect(actual.tagRatings[1].ratingProblemsCutoff, -4);
+    expect(actual.ratingBreakdown?.ratingByClass, 777);
+    expect(actual.tagRatings[1].ratingByClass, isNull);
+
+    histogram[0] = 99;
+    histogram.clear();
+    first['key'] = 'mutated';
+    second['rating'] = 42;
+    tagRatings.clear();
+    expect(actual.ratingBreakdown?.ratingProblemsHistogram, [3, -1, 3]);
+    expect(actual.tagRatings.map((value) => value.key), [
+      '',
+      ' raw tag ',
+      '',
+    ]);
+    expect(actual.tagRatings.first.rating, 0);
+    expect(
+      () => actual.ratingBreakdown!.ratingProblemsHistogram[0] = 999,
+      throwsUnsupportedError,
+    );
+    expect(
+      () => actual.tagRatings[0] = const ProfileTagRating(rating: 0),
+      throwsUnsupportedError,
+    );
+  });
+
   test('requires raw public profile identity fields without inference', () {
     final endpoint = contract.userProfile('index');
     Map<String, dynamic> source() => Map<String, dynamic>.from(

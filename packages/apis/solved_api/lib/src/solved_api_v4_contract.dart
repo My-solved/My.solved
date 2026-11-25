@@ -739,9 +739,11 @@ OfficialUserProfile _decodeV4UserProfile(dynamic json) {
       ? null
       : _decodeOfficialUserProfileBadge(_object(badgeValue, 'badge'));
   final rating = _integer(body['rating'], 'rating');
-  final tagRatings = _list(body['tagRatings'], 'tagRatings')
-      .map((item) => _decodeV4TagRating(_object(item, 'tagRatings[]')))
-      .toList(growable: false);
+  final tagRatings = List<ProfileTagRating>.unmodifiable(
+    _list(body['tagRatings'], 'tagRatings').map(
+      (item) => _decodeV4TagRating(_object(item, 'tagRatings[]')),
+    ),
+  );
   final ojAccounts = List<OfficialUserProfileOjAccount>.unmodifiable(
     _list(body['ojAccounts'], 'ojAccounts').map(
       (item) => _decodeV4OfficialUserProfileOjAccount(
@@ -818,10 +820,11 @@ OfficialUserProfile _decodeV4UserProfile(dynamic json) {
           _integer(body['ratingBySolvedCount'], 'ratingBySolvedCount'),
       ratingProblemsCutoff:
           _integer(body['ratingProblemsCutoff'], 'ratingProblemsCutoff'),
-      ratingProblemsHistogram:
-          _list(body['ratingProblemsHistogram'], 'ratingProblemsHistogram')
-              .map((value) => _integer(value, 'ratingProblemsHistogram[]'))
-              .toList(growable: false),
+      ratingProblemsHistogram: List<int>.unmodifiable(
+        _list(body['ratingProblemsHistogram'], 'ratingProblemsHistogram').map(
+          (value) => _integer(value, 'ratingProblemsHistogram[]'),
+        ),
+      ),
       noRatingSolvedCount:
           _integer(body['noRatingSolvedCount'], 'noRatingSolvedCount'),
     ),
