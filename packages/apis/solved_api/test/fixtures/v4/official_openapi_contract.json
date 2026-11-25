@@ -3043,6 +3043,275 @@
         }
       }
     },
+    "/api/v4/users/{handle}/achievements": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "handle",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "lang",
+            "required": false,
+            "schema": {
+              "default": "ko",
+              "maxLength": 16,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "vs",
+            "required": false,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "handle": {
+                      "type": "string"
+                    },
+                    "items": {
+                      "items": {
+                        "properties": {
+                          "condition": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "earnedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "hidden": {
+                            "type": "boolean"
+                          },
+                          "historic": {
+                            "type": "boolean"
+                          },
+                          "holderCount": {
+                            "type": "integer"
+                          },
+                          "id": {
+                            "type": "integer"
+                          },
+                          "key": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "progress": {
+                            "properties": {
+                              "current": {
+                                "type": "integer"
+                              },
+                              "target": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "current",
+                              "target"
+                            ],
+                            "type": [
+                              "object",
+                              "null"
+                            ]
+                          },
+                          "rewards": {
+                            "items": {
+                              "properties": {
+                                "addedAt": {
+                                  "type": "string"
+                                },
+                                "category": {
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "type": "integer"
+                                },
+                                "imageUrl": {
+                                  "type": "string"
+                                },
+                                "key": {
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "enum": [
+                                    "badge",
+                                    "background"
+                                  ],
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "kind",
+                                "id",
+                                "key",
+                                "name",
+                                "imageUrl",
+                                "category",
+                                "addedAt"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "searchQuery": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "series": {
+                            "type": "string"
+                          },
+                          "seriesOrder": {
+                            "type": "integer"
+                          },
+                          "shopKey": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "vs": {
+                            "properties": {
+                              "earnedAt": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "earnedAt"
+                            ],
+                            "type": [
+                              "object",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "key",
+                          "series",
+                          "seriesOrder",
+                          "historic",
+                          "hidden",
+                          "name",
+                          "condition",
+                          "searchQuery",
+                          "shopKey",
+                          "rewards",
+                          "holderCount",
+                          "earnedAt",
+                          "progress",
+                          "vs"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "userCount": {
+                      "minimum": 0,
+                      "type": "integer"
+                    },
+                    "vsHandle": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "handle",
+                    "vsHandle",
+                    "items",
+                    "userCount"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The catalog, as the user (and `vs`) stand on it."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "No such user."
+          }
+        },
+        "summary": "Every achievement with a user's standing, or two users'",
+        "x-access": {
+          "class": "public"
+        }
+      }
+    },
     "/api/v4/users/{handle}/achievements/summary": {
       "get": {
         "parameters": [

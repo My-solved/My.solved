@@ -88,6 +88,8 @@ void main() {
               'v4/problem_achievements.json',
             '/solved/v4/achievements/items/badge/boardgame/holders' =>
               'v4/achievement_holders.json',
+            '/solved/v4/users/index/achievements' =>
+              'v4/user_achievements.json',
             '/solved/v4/tags' => 'v4/tags.json',
             '/solved/v4/tags/number_theory' => 'v4/tag_detail.json',
             _ => throw StateError('Unexpected request: ${request.url}'),
@@ -176,6 +178,12 @@ void main() {
           'boardgame',
           sort: SolvedApiV4AchievementHolderSort.first,
           page: 200,
+        );
+        final ProfileAchievementsResult profileAchievements =
+            await client.v4UserAchievements(
+          'index',
+          language: '',
+          versusHandle: 'rival & 한',
         );
         final tags = await client.v4SearchTags('NUMBER');
         final TagDetailResult tagDetail =
@@ -401,6 +409,12 @@ void main() {
         expect(achievementHolders.items.first.user.id, isA<double>());
         expect(achievementHolders.items.last.user.tier, 31);
         expect(achievementHolders.items.last.user.profileImageUrl, isNull);
+        expect(profileAchievements.handle, 'response handle');
+        expect(profileAchievements.vsHandle, 'different comparison');
+        expect(profileAchievements.userCount, 0);
+        expect(profileAchievements.items, hasLength(2));
+        expect(profileAchievements.items.first.vs?.earnedAt, 'not-a-date');
+        expect(profileAchievements.items.last.vs, isNull);
         expect(tags.items.single.key, 'number_theory');
         expect(tagDetail.id, 42.5);
         expect(tagDetail.key, 'number_theory');
@@ -495,11 +509,15 @@ void main() {
               'achievements/items/badge/boardgame/holders',
               <String, String>{'sort': 'first', 'page': '200'},
             ),
+            Uri.parse(
+              'https://proxy.example/solved/v4/users/index/achievements?'
+              'lang=&vs=rival+%26+%ED%95%9C',
+            ),
             _uri('tags'),
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(28));
+        expect(httpClient.requests, hasLength(29));
         expect(
           httpClient.requests[12].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
@@ -683,6 +701,10 @@ void main() {
         isA<UserRequestFailed>(),
       );
       expect(
+        await _captureFailure(client.v4UserAchievements('index')),
+        isA<UserRequestFailed>(),
+      );
+      expect(
         await _captureFailure(client.v4UserAchievementSummary('index')),
         isA<UserRequestFailed>(),
       );
@@ -777,7 +799,7 @@ void main() {
         await _captureFailure(client.v4SourceGroup('boj', 'group')),
         isA<SourceRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(24));
+      expect(httpClient.requests, hasLength(25));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -988,6 +1010,139 @@ void main() {
           error.retryAfter,
           status == 429 ? const Duration(seconds: 9) : isNull,
         );
+      }
+      expect(httpClient.requests, hasLength(2));
+    });
+
+    test('preserves profile-achievement language and versus queries',
+        () async {
+      handler = (_) async => _jsonResponse(
+            fixture('v4/user_achievements.json'),
+          );
+
+      final omitted = await client.v4UserAchievements('한 글');
+      final raw = await client.v4UserAchievements(
+        'index',
+        language: '',
+        versusHandle: 'a/b & 한',
+      );
+
+      expect(omitted.handle, 'response handle');
+      expect(omitted.vsHandle, 'different comparison');
+      expect(raw.items.first.vs?.earnedAt, 'not-a-date');
+      expect(raw.items.last.vs, isNull);
+      expect(
+        httpClient.requests.map((request) => request.url.toString()),
+        [
+          'https://proxy.example/solved/v4/users/'
+              '%ED%95%9C%20%EA%B8%80/achievements',
+          'https://proxy.example/solved/v4/users/index/achievements?'
+              'lang=&vs=a%2Fb+%26+%ED%95%9C',
+        ],
+      );
+      for (final request in httpClient.requests) {
+        expect(request.method, 'GET');
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+        });
+        expect(request.bodyBytes, isEmpty);
+      }
+      expect(httpClient.requests, hasLength(2));
+    });
+
+    test('rejects invalid profile-achievement requests before transport', () {
+      for (final handle in ['', List<String>.filled(65, '🌏').join()]) {
+        expect(
+          () => client.v4UserAchievements(handle),
+          throwsArgumentError,
+        );
+      }
+      expect(
+        () => client.v4UserAchievements(
+          'index',
+          language: List<String>.filled(17, '🌏').join(),
+        ),
+        throwsA(
+          isA<ArgumentError>().having(
+            (error) => error.name,
+            'name',
+            'language',
+          ),
+        ),
+      );
+      for (final versusHandle in [
+        '',
+        List<String>.filled(65, '🌏').join(),
+      ]) {
+        expect(
+          () => client.v4UserAchievements(
+            'index',
+            versusHandle: versusHandle,
+          ),
+          throwsA(
+            isA<ArgumentError>()
+                .having((error) => error.name, 'name', 'versusHandle')
+                .having(
+                  (error) => error.invalidValue,
+                  'invalidValue',
+                  versusHandle,
+                ),
+          ),
+        );
+      }
+      expect(httpClient.requests, isEmpty);
+    });
+
+    test('wraps malformed profile achievements as a user failure', () async {
+      handler = (_) async => _jsonResponse(
+            jsonEncode({
+              'handle': 'index',
+              'vsHandle': null,
+              'items': <Object?>[],
+              'userCount': -1,
+            }),
+          );
+
+      final error = await _captureFailure(
+        client.v4UserAchievements('index'),
+      );
+
+      expect(error, isA<UserRequestFailed>());
+      expect(error.statusCode, 200);
+      expect(error.cause, isA<FormatException>());
+      expect(error.responseBody, isNull);
+      expect(
+        httpClient.requests.single.url,
+        _uri('users/index/achievements'),
+      );
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves profile-achievement 404 and 429 failure metadata',
+        () async {
+      for (final status in [404, 429]) {
+        handler = (_) async => _bytesResponse(
+              const <int>[0xff],
+              statusCode: status,
+              headers: <String, String>{
+                'content-type': 'text/plain',
+                if (status == 429) 'retry-after': '37',
+              },
+            );
+
+        final error = await _captureFailure(
+          client.v4UserAchievements('index'),
+        );
+
+        expect(error, isA<UserRequestFailed>());
+        expect(error.statusCode, status);
+        expect(error.cause, isNull);
+        expect(error.responseBody, isNull);
+        expect(
+          error.retryAfter,
+          status == 429 ? const Duration(seconds: 37) : isNull,
+        );
+        expect(error.isRetryable, status == 429);
       }
       expect(httpClient.requests, hasLength(2));
     });

@@ -350,6 +350,22 @@ class SolvedApiClient {
     );
   }
 
+  Future<ProfileAchievementsResult> v4UserAchievements(
+    String handle, {
+    String? language,
+    String? versusHandle,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.userAchievements(
+        handle,
+        language: language,
+        versusHandle: versusHandle,
+      ),
+      requestType: _RequestType.user,
+    );
+  }
+
   Future<ProfileAchievementSummaryResult> v4UserAchievementSummary(
     String handle,
   ) {
