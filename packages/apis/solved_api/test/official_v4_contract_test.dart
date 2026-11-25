@@ -1074,6 +1074,41 @@ void main() {
     expect(schema, problemItem);
   });
 
+  test('pins public ranking regions without inferred sorting or bounds', () {
+    final rankingRegions = _get(contract, '/api/v4/rankings/regions');
+
+    expect(_accessClass(rankingRegions), 'public');
+    expect(rankingRegions.containsKey('parameters'), isFalse);
+    expect(rankingRegions.containsKey('requestBody'), isFalse);
+    expect(_map(rankingRegions['responses']).keys.toList(), ['200']);
+    expect(
+      _map(_map(rankingRegions['responses'])['200'])['description'],
+      'Regions people have chosen to show, largest first.',
+    );
+
+    final schema = _responseSchema(rankingRegions);
+    expect(schema['type'], 'object');
+    expect(_required(schema), ['regions']);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    final regions = _map(_properties(schema)['regions']);
+    expect(regions['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(regions.containsKey(constraint), isFalse);
+    }
+
+    final region = _map(regions['items']);
+    expect(region['type'], 'object');
+    expect(_required(region), ['countryCode', 'userCount']);
+    expect(region.containsKey('additionalProperties'), isFalse);
+    final properties = _properties(region);
+    expect(properties.keys.toList(growable: false), [
+      'countryCode',
+      'userCount',
+    ]);
+    expect(_map(properties['countryCode']), {'type': 'string'});
+    expect(_map(properties['userCount']), {'type': 'integer'});
+  });
+
   test('pins the public site-wide totals without inferred constraints', () {
     final siteStats = _get(contract, '/api/v4/site/stats');
 

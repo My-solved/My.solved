@@ -259,6 +259,11 @@ final class SolvedApiV4Contract {
     );
   }
 
+  SolvedApiEndpoint<RankingRegionsResult> rankingRegions() => _endpoint(
+        path: 'rankings/regions',
+        decode: _decodeV4RankingRegions,
+      );
+
   SolvedApiEndpoint<SearchSuggestionResult> searchSuggestions(
     String topic, {
     String? value,
@@ -1051,6 +1056,26 @@ String? _selectV4ProblemTitle(List<ProblemSearchTitle> titles) {
     if (title.isOriginal) original ??= title.title;
   }
   return original ?? first;
+}
+
+RankingRegionsResult _decodeV4RankingRegions(dynamic json) {
+  final body = _object(json, 'ranking regions');
+  return RankingRegionsResult(
+    regions: List<RankingRegion>.unmodifiable(
+      _list(body['regions'], 'regions').map(
+        (value) {
+          final region = _object(value, 'regions[]');
+          return RankingRegion(
+            countryCode: _string(
+              region['countryCode'],
+              'regions[].countryCode',
+            ),
+            userCount: _integer(region['userCount'], 'regions[].userCount'),
+          );
+        },
+      ),
+    ),
+  );
 }
 
 UserSearchResult _decodeV4UserSearch(dynamic json) {
