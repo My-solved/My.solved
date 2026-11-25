@@ -17,6 +17,7 @@ const _relevantPaths = <String>[
   '/api/v4/tags',
   '/api/v4/tags/{key}',
   '/api/v4/users/{handle}',
+  '/api/v4/users/{handle}/achievements/summary',
   '/api/v4/users/{handle}/activity/days',
   '/api/v4/users/{handle}/contributions',
   '/api/v4/users/{handle}/reputation',

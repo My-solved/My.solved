@@ -59,6 +59,8 @@ void main() {
             '/solved/v4/users/index/reputation' => 'v4/user_reputation.json',
             '/solved/v4/users/index/rating/history' =>
               'v4/user_rating_history.json',
+            '/solved/v4/users/index/achievements/summary' =>
+              'v4/user_achievement_summary.json',
             '/solved/v4/achievements/items/background/anniversary_1st' =>
               'v4/background_item.json',
             '/solved/v4/achievements/items/badge/boardgame' =>
@@ -87,6 +89,8 @@ void main() {
           'index',
           range: SolvedApiV4RatingHistoryRange.days90,
         );
+        final ProfileAchievementSummaryResult achievementSummary =
+            await client.v4UserAchievementSummary('index');
         final OfficialAchievementItem achievementBackground =
             await client.v4AchievementItem(
           OfficialAchievementItemKind.background,
@@ -210,6 +214,19 @@ void main() {
           '2026-11-17',
         ]);
         expect(ratingHistory.history.map((entry) => entry.value), [2400, 2417]);
+        expect(achievementSummary.earned, 12);
+        expect(achievementSummary.total, 34);
+        expect(achievementSummary.past, 2);
+        expect(achievementSummary.badges, 7);
+        expect(achievementSummary.backgrounds, 5);
+        expect(achievementSummary.recent, hasLength(2));
+        expect(
+          achievementSummary.recent.map((item) => item.kind),
+          [
+            OfficialAchievementItemKind.badge,
+            OfficialAchievementItemKind.background,
+          ],
+        );
         expect(
           achievementBackground.kind,
           OfficialAchievementItemKind.background,
@@ -245,6 +262,10 @@ void main() {
               <String, String>{'range': '90d'},
             ),
             _uri(
+              'users/index/achievements/summary',
+              <String, String>{'lang': 'ko'},
+            ),
+            _uri(
               'achievements/items/background/anniversary_1st',
               <String, String>{'lang': 'ko'},
             ),
@@ -274,7 +295,7 @@ void main() {
             _uri('tags'),
           ],
         );
-        expect(httpClient.requests, hasLength(11));
+        expect(httpClient.requests, hasLength(12));
         for (final request in httpClient.requests) {
           expect(request, isA<http.AbortableRequest>());
           expect(request.method, 'GET');
@@ -430,6 +451,10 @@ void main() {
         isA<UserRequestFailed>(),
       );
       expect(
+        await _captureFailure(client.v4UserAchievementSummary('index')),
+        isA<UserRequestFailed>(),
+      );
+      expect(
         await _captureFailure(client.v4BackgroundShow('anniversary_1st')),
         isA<BackgroundRequestFailed>(),
       );
@@ -459,7 +484,7 @@ void main() {
         await _captureFailure(client.v4SearchTags('dp')),
         isA<SearchRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(7));
+      expect(httpClient.requests, hasLength(8));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -481,6 +506,45 @@ void main() {
       expect(
         httpClient.requests.single.url,
         _uri('users/index/rating/history'),
+      );
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('wraps malformed achievement summary as a user failure', () async {
+      handler = (_) async => _jsonResponse(
+            jsonEncode({
+              'earned': 1,
+              'total': 1,
+              'past': 0,
+              'badges': 1,
+              'backgrounds': 0,
+              'recent': <Object?>[
+                <String, Object?>{
+                  'kind': 'badge',
+                  'id': 1,
+                  'key': 'key',
+                  'name': 'name',
+                  'imageUrl': 'image',
+                  'category': 'category',
+                  'addedAt': 'added',
+                },
+              ],
+            }),
+          );
+
+      final error = await _captureFailure(
+        client.v4UserAchievementSummary('index'),
+      );
+
+      expect(error, isA<UserRequestFailed>());
+      expect(error.statusCode, 200);
+      expect(error.cause, isA<FormatException>());
+      expect(
+        httpClient.requests.single.url,
+        _uri(
+          'users/index/achievements/summary',
+          const <String, String>{'lang': 'ko'},
+        ),
       );
       expect(httpClient.requests, hasLength(1));
     });

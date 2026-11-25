@@ -83,6 +83,10 @@ void main() {
       contract.userRatingHistory('한 글').direct.path,
       'users/%ED%95%9C%20%EA%B8%80/rating/history',
     );
+    expect(
+      contract.userAchievementSummary('한 글').direct.path,
+      'users/%ED%95%9C%20%EA%B8%80/achievements/summary',
+    );
     final achievement = contract.achievementItem(
       OfficialAchievementItemKind.badge,
       'event item',
@@ -105,6 +109,7 @@ void main() {
     expect(() => contract.userProfile(''), throwsArgumentError);
     expect(() => contract.userProfile('..'), throwsArgumentError);
     expect(() => contract.userRatingHistory('..'), throwsArgumentError);
+    expect(() => contract.userAchievementSummary('..'), throwsArgumentError);
     expect(() => contract.badgeShow('.'), throwsArgumentError);
     expect(
       () => contract.achievementItem(OfficialAchievementItemKind.badge, '..'),
@@ -3397,6 +3402,318 @@ void main() {
     );
 
     expect(endpoint.decode({'history': <Object?>[]}).history, isEmpty);
+  });
+
+  test('normalizes the official achievement summary result', () {
+    final endpoint = contract.userAchievementSummary('index');
+    final ProfileAchievementSummaryResult actual = endpoint.decode(
+      jsonDecode(fixture('v4/user_achievement_summary.json')),
+    );
+
+    expect(endpoint.direct.path, 'users/index/achievements/summary');
+    expect(endpoint.direct.queryParameters, {'lang': 'ko'});
+    expect(endpoint.proxy.path, endpoint.direct.path);
+    expect(endpoint.proxy.queryParameters, endpoint.direct.queryParameters);
+    expect(actual.earned, 12);
+    expect(actual.total, 34);
+    expect(actual.past, 2);
+    expect(actual.badges, 7);
+    expect(actual.backgrounds, 5);
+    expect(actual.recent, hasLength(2));
+    expect(actual.recent.first.kind, OfficialAchievementItemKind.badge);
+    expect(actual.recent.first.id, 101);
+    expect(actual.recent.first.key, 'boardgame');
+    expect(actual.recent.first.name, 'Board Game');
+    expect(actual.recent.first.imageUrl, 'https://example.com/badge.png');
+    expect(actual.recent.first.category, 'event');
+    expect(actual.recent.first.addedAt, '2020-01-01T00:00:00Z');
+    expect(actual.recent.first.acquiredAt, '2026-11-24T00:00:00Z');
+    expect(actual.recent.last.kind, OfficialAchievementItemKind.background);
+    expect(actual.recent.last.id, 202);
+    expect(actual.recent.last.key, 'anniversary_1st');
+    expect(actual.recent.last.name, 'First Anniversary');
+    expect(
+      actual.recent.last.imageUrl,
+      'https://example.com/background-thumbnail.png',
+    );
+    expect(actual.recent.last.category, 'event');
+    expect(actual.recent.last.addedAt, '2021-01-01T00:00:00Z');
+    expect(actual.recent.last.acquiredAt, '2026-11-25T00:00:00Z');
+  });
+
+  test('requires the exact achievement summary response shape', () {
+    final endpoint = contract.userAchievementSummary('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_achievement_summary.json')) as Map,
+        );
+    Map<String, Object?> recentItem() => <String, Object?>{
+          'kind': 'badge',
+          'id': 1,
+          'key': 'key',
+          'name': 'name',
+          'imageUrl': 'image',
+          'category': 'category',
+          'addedAt': 'added',
+          'acquiredAt': 'acquired',
+        };
+
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      const <Object?>[],
+    ]) {
+      expect(
+        () => endpoint.decode(invalid),
+        throwsFormatException,
+        reason: 'response = $invalid',
+      );
+    }
+    for (final field in [
+      'earned',
+      'total',
+      'past',
+      'badges',
+      'backgrounds',
+      'recent',
+    ]) {
+      expect(
+        () => endpoint.decode(source()..remove(field)),
+        throwsFormatException,
+        reason: '$field missing',
+      );
+    }
+    for (final field in [
+      'earned',
+      'total',
+      'past',
+      'badges',
+      'backgrounds',
+    ]) {
+      for (final invalid in <Object?>[
+        null,
+        1.0,
+        '1',
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+      ]) {
+        expect(
+          () => endpoint.decode(source()..[field] = invalid),
+          throwsFormatException,
+          reason: '$field = $invalid',
+        );
+      }
+    }
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      'recent',
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(source()..['recent'] = invalid),
+        throwsFormatException,
+        reason: 'recent = $invalid',
+      );
+    }
+    expect(
+      () => endpoint.decode(source()..['recent'] = <Object?>[0]),
+      throwsFormatException,
+      reason: 'recent[] must be an object',
+    );
+    expect(
+      () => endpoint.decode(
+        source()
+          ..['recent'] = <Object?>[
+            recentItem(),
+            recentItem()..remove('acquiredAt'),
+          ],
+      ),
+      throwsFormatException,
+      reason: 'every recent item must be decoded eagerly',
+    );
+    for (final field in [
+      'kind',
+      'id',
+      'key',
+      'name',
+      'imageUrl',
+      'category',
+      'addedAt',
+      'acquiredAt',
+    ]) {
+      expect(
+        () => endpoint.decode(
+          source()
+            ..['recent'] = <Object?>[
+              recentItem()..remove(field),
+            ],
+        ),
+        throwsFormatException,
+        reason: 'recent[].$field missing',
+      );
+    }
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      const <Object?>[],
+      const <String, Object?>{},
+      'Badge',
+      ' badge',
+      'badge ',
+      'achievement',
+    ]) {
+      expect(
+        () => endpoint.decode(
+          source()
+            ..['recent'] = <Object?>[
+              recentItem()..['kind'] = invalid,
+            ],
+        ),
+        throwsFormatException,
+        reason: 'recent[].kind = $invalid',
+      );
+    }
+    for (final invalid in <Object?>[
+      null,
+      1.0,
+      '1',
+      false,
+      const <Object?>[],
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(
+          source()
+            ..['recent'] = <Object?>[
+              recentItem()..['id'] = invalid,
+            ],
+        ),
+        throwsFormatException,
+        reason: 'recent[].id = $invalid',
+      );
+    }
+    for (final field in [
+      'key',
+      'name',
+      'imageUrl',
+      'category',
+      'addedAt',
+      'acquiredAt',
+    ]) {
+      for (final invalid in <Object?>[
+        null,
+        0,
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+      ]) {
+        expect(
+          () => endpoint.decode(
+            source()
+              ..['recent'] = <Object?>[
+                recentItem()..[field] = invalid,
+              ],
+          ),
+          throwsFormatException,
+          reason: 'recent[].$field = $invalid',
+        );
+      }
+    }
+  });
+
+  test('preserves raw immutable achievement summary without inference', () {
+    final endpoint = contract.userAchievementSummary('index');
+    final first = <String, Object?>{
+      'kind': 'badge',
+      'id': -5,
+      'key': '',
+      'name': ' ',
+      'imageUrl': 'not a uri',
+      'category': '',
+      'addedAt': 'not a date',
+      'acquiredAt': 'still not a date',
+      'futureRecentField': 'allowed',
+    };
+    final second = <String, Object?>{
+      'kind': 'background',
+      'id': 0,
+      'key': 'background',
+      'name': 'Background',
+      'imageUrl': 'image',
+      'category': 'category',
+      'addedAt': 'added',
+      'acquiredAt': 'acquired',
+    };
+    final recent = <Object?>[second, first, second];
+    final source = <String, Object?>{
+      'earned': -1,
+      'total': -2,
+      'past': -3,
+      'badges': 99,
+      'backgrounds': -4,
+      'recent': recent,
+      'futureSummaryField': 'allowed',
+    };
+
+    final actual = endpoint.decode(source);
+    expect(actual.earned, -1);
+    expect(actual.total, -2);
+    expect(actual.past, -3);
+    expect(actual.badges, 99);
+    expect(actual.backgrounds, -4);
+    expect(actual.recent.map((item) => item.kind), [
+      OfficialAchievementItemKind.background,
+      OfficialAchievementItemKind.badge,
+      OfficialAchievementItemKind.background,
+    ]);
+    expect(actual.recent.map((item) => item.id), [0, -5, 0]);
+    expect(actual.recent[1].key, '');
+    expect(actual.recent[1].name, ' ');
+    expect(actual.recent[1].imageUrl, 'not a uri');
+    expect(actual.recent[1].addedAt, 'not a date');
+    expect(actual.recent[1].acquiredAt, 'still not a date');
+
+    second['kind'] = 'badge';
+    first['id'] = 9;
+    recent.clear();
+    source.clear();
+    expect(actual.earned, -1);
+    expect(actual.recent.map((item) => item.kind), [
+      OfficialAchievementItemKind.background,
+      OfficialAchievementItemKind.badge,
+      OfficialAchievementItemKind.background,
+    ]);
+    expect(actual.recent[1].id, -5);
+    expect(() => actual.recent.removeAt(0), throwsUnsupportedError);
+    expect(
+      () => actual.recent[0] = const ProfileAchievementSummaryRecentItem(
+        kind: OfficialAchievementItemKind.badge,
+        id: 1,
+        key: 'key',
+        name: 'name',
+        imageUrl: 'image',
+        category: 'category',
+        addedAt: 'added',
+        acquiredAt: 'acquired',
+      ),
+      throwsUnsupportedError,
+    );
+
+    expect(
+      endpoint.decode({
+        'earned': 0,
+        'total': 0,
+        'past': 0,
+        'badges': 0,
+        'backgrounds': 0,
+        'recent': <Object?>[],
+      }).recent,
+      isEmpty,
+    );
   });
 
   test('normalizes standalone v4 background and badge items', () {
