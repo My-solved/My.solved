@@ -80,6 +80,16 @@ void main() {
           'index',
           range: SolvedApiV4ReputationRange.year,
         );
+        final OfficialAchievementItem achievementBackground =
+            await client.v4AchievementItem(
+          OfficialAchievementItemKind.background,
+          'anniversary_1st',
+        );
+        final OfficialAchievementItem achievementBadge =
+            await client.v4AchievementItem(
+          OfficialAchievementItemKind.badge,
+          'boardgame',
+        );
         final background = await client.v4BackgroundShow('anniversary_1st');
         final badge = await client.v4BadgeShow('boardgame');
         final ProblemSearchResult problems = await client.v4SearchProblems(
@@ -188,6 +198,17 @@ void main() {
         expect(reputation.today.contributions.max, 10);
         expect(reputation.today.helpful.earned, 1);
         expect(reputation.today.helpful.cap, 5);
+        expect(
+          achievementBackground.kind,
+          OfficialAchievementItemKind.background,
+        );
+        expect(achievementBackground.achievements.single.key, 'first_solve');
+        expect(
+          achievementBackground.achievements.single.problems.single.userStatus,
+          ProblemUserStatus.solved,
+        );
+        expect(achievementBadge.kind, OfficialAchievementItemKind.badge);
+        expect(achievementBadge.achievements, isEmpty);
         expect(background?.key, 'anniversary_1st');
         expect(badge.key, 'boardgame');
         expect(problems.count, 4);
@@ -215,6 +236,14 @@ void main() {
               'achievements/items/badge/boardgame',
               <String, String>{'lang': 'ko'},
             ),
+            _uri(
+              'achievements/items/background/anniversary_1st',
+              <String, String>{'lang': 'ko'},
+            ),
+            _uri(
+              'achievements/items/badge/boardgame',
+              <String, String>{'lang': 'ko'},
+            ),
             _uri('problems', <String, String>{
               'q': 'number',
               'page': '2',
@@ -229,7 +258,7 @@ void main() {
             _uri('tags'),
           ],
         );
-        expect(httpClient.requests, hasLength(8));
+        expect(httpClient.requests, hasLength(10));
         for (final request in httpClient.requests) {
           expect(request, isA<http.AbortableRequest>());
           expect(request.method, 'GET');
@@ -385,14 +414,82 @@ void main() {
         isA<BackgroundRequestFailed>(),
       );
       expect(
+        await _captureFailure(
+          client.v4AchievementItem(
+            OfficialAchievementItemKind.background,
+            'anniversary_1st',
+          ),
+        ),
+        isA<BackgroundRequestFailed>(),
+      );
+      expect(
         await _captureFailure(client.v4BadgeShow('boardgame')),
+        isA<BadgeRequestFailed>(),
+      );
+      expect(
+        await _captureFailure(
+          client.v4AchievementItem(
+            OfficialAchievementItemKind.badge,
+            'boardgame',
+          ),
+        ),
         isA<BadgeRequestFailed>(),
       );
       expect(
         await _captureFailure(client.v4SearchTags('dp')),
         isA<SearchRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(4));
+      expect(httpClient.requests, hasLength(6));
+    });
+
+    test('wraps malformed canonical items by requested asset family', () async {
+      handler = (request) async {
+        final isBackground = request.url.path.contains('/background/');
+        final source = Map<String, dynamic>.from(
+          jsonDecode(
+            fixture(
+              isBackground ? 'v4/background_item.json' : 'v4/badge_item.json',
+            ),
+          ) as Map,
+        )..['achievements'] = <Object?>[
+            <String, Object?>{'key': 'malformed'},
+          ];
+        return _jsonResponse(jsonEncode(source));
+      };
+
+      final backgroundError = await _captureFailure(
+        client.v4AchievementItem(
+          OfficialAchievementItemKind.background,
+          'item',
+        ),
+      );
+      final badgeError = await _captureFailure(
+        client.v4AchievementItem(
+          OfficialAchievementItemKind.badge,
+          'item',
+        ),
+      );
+
+      expect(backgroundError, isA<BackgroundRequestFailed>());
+      expect(backgroundError.statusCode, 200);
+      expect(backgroundError.cause, isA<FormatException>());
+      expect(badgeError, isA<BadgeRequestFailed>());
+      expect(badgeError.statusCode, 200);
+      expect(badgeError.cause, isA<FormatException>());
+      expect(
+        httpClient.requests.map((request) => request.url),
+        [
+          _uri(
+            'achievements/items/background/item',
+            const <String, String>{'lang': 'ko'},
+          ),
+          _uri(
+            'achievements/items/badge/item',
+            const <String, String>{'lang': 'ko'},
+          ),
+        ],
+      );
+      expect(httpClient.requests, hasLength(2));
     });
 
     test('wraps eagerly validated item envelopes by requested asset family',

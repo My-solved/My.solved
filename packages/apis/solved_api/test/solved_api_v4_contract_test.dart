@@ -79,10 +79,32 @@ void main() {
       contract.backgroundShow('event item').direct.path,
       'achievements/items/background/event%20item',
     );
+    final achievement = contract.achievementItem(
+      OfficialAchievementItemKind.badge,
+      'event item',
+    );
+    expect(
+      achievement.direct.path,
+      'achievements/items/badge/event%20item',
+    );
+    expect(achievement.direct.queryParameters, {'lang': 'ko'});
+    expect(achievement.proxy.path, achievement.direct.path);
+    expect(
+      achievement.proxy.queryParameters,
+      achievement.direct.queryParameters,
+    );
+    expect(
+      OfficialAchievementItemKind.values.map((kind) => kind.value),
+      ['badge', 'background'],
+    );
 
     expect(() => contract.userProfile(''), throwsArgumentError);
     expect(() => contract.userProfile('..'), throwsArgumentError);
     expect(() => contract.badgeShow('.'), throwsArgumentError);
+    expect(
+      () => contract.achievementItem(OfficialAchievementItemKind.badge, '..'),
+      throwsArgumentError,
+    );
     expect(() => contract.userProfile('name/with/slash'), throwsArgumentError);
     expect(() => contract.badgeShow(r'name\with\slash'), throwsArgumentError);
     expect(() => contract.userProfile('line\nbreak'), throwsArgumentError);
@@ -3189,6 +3211,15 @@ void main() {
   });
 
   test('normalizes standalone v4 background and badge items', () {
+    final OfficialAchievementItem item = contract
+        .achievementItem(
+          OfficialAchievementItemKind.background,
+          'anniversary_1st',
+        )
+        .decode(jsonDecode(fixture('v4/background_item.json')));
+    final emptyItem = contract
+        .achievementItem(OfficialAchievementItemKind.badge, 'boardgame')
+        .decode(jsonDecode(fixture('v4/badge_item.json')));
     final background = contract.backgroundShow('anniversary_1st').decode(
           jsonDecode(fixture('v4/background_item.json')),
         );
@@ -3196,6 +3227,45 @@ void main() {
           jsonDecode(fixture('v4/badge_item.json')),
         );
 
+    expect(item.kind, OfficialAchievementItemKind.background);
+    expect(item.id, 101);
+    expect(item.key, 'anniversary_1st');
+    expect(item.name, 'First Anniversary');
+    expect(item.imageUrl, 'https://example.com/background-thumbnail.png');
+    expect(item.category, 'event');
+    expect(item.addedAt, '2020-01-01T00:00:00Z');
+    expect(item.unlockedByDefault, isFalse);
+    expect(item.owned, isNull);
+    expect(item.equipped, isNull);
+    expect(item.userCount, 1);
+    expect(item.background?.key, 'anniversary_1st');
+    expect(item.background?.backgroundVideoUrl, isNull);
+    expect(item.background?.authors.single.key, 'illustrator');
+    expect(item.credits.single.key, 'designer');
+    expect(item.achievements.single.key, 'first_solve');
+    expect(item.achievements.single.condition, isNull);
+    expect(item.achievements.single.historic, isFalse);
+    expect(item.achievements.single.hidden, isFalse);
+    expect(item.achievements.single.holderCount, 1);
+    expect(
+      item.achievements.single.earnedAt,
+      '2026-11-25T00:00:00Z',
+    );
+    final problem = item.achievements.single.problems.single;
+    expect(problem.problemId, 1000);
+    expect(problem.level, 1);
+    expect(problem.effectiveVoteCount, 3);
+    expect(problem.givesNoRating, isFalse);
+    expect(problem.isStandard, isTrue);
+    expect(problem.userStatus, ProblemUserStatus.solved);
+    expect(problem.titles.single.language, 'ko');
+    expect(problem.titles.single.title, 'A+B');
+    expect(problem.titles.single.isOriginal, isTrue);
+    expect(problem.titles.single.latex, isFalse);
+    expect(problem.titles.single.html, isFalse);
+    expect(emptyItem.kind, OfficialAchievementItemKind.badge);
+    expect(emptyItem.background, isNull);
+    expect(emptyItem.achievements, isEmpty);
     expect(background?.key, 'anniversary_1st');
     expect(background?.imageUrl, 'https://example.com/background.png');
     expect(
@@ -3210,6 +3280,24 @@ void main() {
   });
 
   test('does not reinterpret one item kind as the other', () {
+    expect(
+      () => contract
+          .achievementItem(
+            OfficialAchievementItemKind.background,
+            'boardgame',
+          )
+          .decode(jsonDecode(fixture('v4/badge_item.json'))),
+      throwsFormatException,
+    );
+    expect(
+      () => contract
+          .achievementItem(
+            OfficialAchievementItemKind.badge,
+            'anniversary_1st',
+          )
+          .decode(jsonDecode(fixture('v4/background_item.json'))),
+      throwsFormatException,
+    );
     expect(
       () => contract.backgroundShow('boardgame').decode(
             jsonDecode(fixture('v4/badge_item.json')),
@@ -3348,16 +3436,540 @@ void main() {
         ..['owned'] = true
         ..['equipped'] = false
         ..['userCount'] = 0
-        ..['achievements'] = <Object?>[
-          null,
-          0,
-          <String, Object?>{'futureAchievementShape': 'deferred'},
-        ]
         ..['futureItemField'] = 'allowed',
     );
     expect(raw.key, '');
     expect(raw.name, '  ');
     expect(raw.imageUrl, 'not a uri');
+  });
+
+  test('requires every nested standalone achievement field', () {
+    final endpoint = contract.achievementItem(
+      OfficialAchievementItemKind.background,
+      'anniversary_1st',
+    );
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/background_item.json')) as Map,
+        );
+    Map<String, Object?> title() => <String, Object?>{
+          'language': 'ko',
+          'title': 'A+B',
+          'isOriginal': true,
+          'latex': false,
+          'html': false,
+        };
+    Map<String, Object?> problem() => <String, Object?>{
+          'problemId': 1000,
+          'level': 1,
+          'effectiveVoteCount': 3,
+          'givesNoRating': false,
+          'isStandard': true,
+          'titles': <Object?>[title()],
+          'userStatus': 'solved',
+        };
+    Map<String, Object?> achievement() => <String, Object?>{
+          'key': 'first_solve',
+          'name': 'First Solve',
+          'condition': null,
+          'historic': false,
+          'hidden': false,
+          'holderCount': 1,
+          'earnedAt': null,
+          'problems': <Object?>[problem()],
+        };
+
+    expect(
+      () => endpoint.decode(source()..['achievements'] = <Object?>[0]),
+      throwsFormatException,
+    );
+    final invalidAchievementValues = <String, List<Object?>>{
+      'key': [null, 0, false, const <Object?>[], const <String, Object?>{}],
+      'name': [null, 0, false, const <Object?>[], const <String, Object?>{}],
+      'condition': [0, false, const <Object?>[], const <String, Object?>{}],
+      'historic': [
+        null,
+        0,
+        'false',
+        const <Object?>[],
+        const <String, Object?>{},
+      ],
+      'hidden': [
+        null,
+        0,
+        'false',
+        const <Object?>[],
+        const <String, Object?>{},
+      ],
+      'holderCount': [
+        null,
+        1.0,
+        '1',
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+      ],
+      'earnedAt': [0, false, const <Object?>[], const <String, Object?>{}],
+      'problems': [
+        null,
+        0,
+        false,
+        'problems',
+        const <String, Object?>{},
+      ],
+    };
+    for (final entry in invalidAchievementValues.entries) {
+      expect(
+        () => endpoint.decode(
+          source()
+            ..['achievements'] = <Object?>[
+              achievement()..remove(entry.key),
+            ],
+        ),
+        throwsFormatException,
+        reason: 'achievements[].${entry.key} missing',
+      );
+      for (final invalid in entry.value) {
+        expect(
+          () => endpoint.decode(
+            source()
+              ..['achievements'] = <Object?>[
+                achievement()..[entry.key] = invalid,
+              ],
+          ),
+          throwsFormatException,
+          reason: 'achievements[].${entry.key} = $invalid',
+        );
+      }
+    }
+
+    expect(
+      () => endpoint.decode(
+        source()
+          ..['achievements'] = <Object?>[
+            achievement()..['problems'] = <Object?>[0],
+          ],
+      ),
+      throwsFormatException,
+    );
+    final invalidProblemValues = <String, List<Object?>>{
+      for (final field in ['problemId', 'level', 'effectiveVoteCount'])
+        field: [
+          null,
+          '1',
+          false,
+          const <Object?>[],
+          const <String, Object?>{},
+          double.nan,
+          double.infinity,
+          double.negativeInfinity,
+        ],
+      'givesNoRating': [
+        null,
+        0,
+        'false',
+        const <Object?>[],
+        const <String, Object?>{},
+      ],
+      'isStandard': [
+        null,
+        0,
+        'true',
+        const <Object?>[],
+        const <String, Object?>{},
+      ],
+      'titles': [
+        null,
+        0,
+        false,
+        'titles',
+        const <String, Object?>{},
+      ],
+      'userStatus': [
+        0,
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+        '',
+        'Solved',
+        'solved ',
+        'unknown',
+      ],
+    };
+    for (final entry in invalidProblemValues.entries) {
+      expect(
+        () => endpoint.decode(
+          source()
+            ..['achievements'] = <Object?>[
+              achievement()
+                ..['problems'] = <Object?>[
+                  problem()..remove(entry.key),
+                ],
+            ],
+        ),
+        throwsFormatException,
+        reason: 'achievements[].problems[].${entry.key} missing',
+      );
+      for (final invalid in entry.value) {
+        expect(
+          () => endpoint.decode(
+            source()
+              ..['achievements'] = <Object?>[
+                achievement()
+                  ..['problems'] = <Object?>[
+                    problem()..[entry.key] = invalid,
+                  ],
+              ],
+          ),
+          throwsFormatException,
+          reason: 'achievements[].problems[].${entry.key} = $invalid',
+        );
+      }
+    }
+
+    expect(
+      () => endpoint.decode(
+        source()
+          ..['achievements'] = <Object?>[
+            achievement()
+              ..['problems'] = <Object?>[
+                problem()..['titles'] = <Object?>[0],
+              ],
+          ],
+      ),
+      throwsFormatException,
+    );
+    final invalidTitleValues = <String, List<Object?>>{
+      'language': [
+        null,
+        0,
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+      ],
+      'title': [null, 0, false, const <Object?>[], const <String, Object?>{}],
+      for (final field in ['isOriginal', 'latex', 'html'])
+        field: [
+          null,
+          0,
+          'false',
+          const <Object?>[],
+          const <String, Object?>{},
+        ],
+    };
+    for (final entry in invalidTitleValues.entries) {
+      expect(
+        () => endpoint.decode(
+          source()
+            ..['achievements'] = <Object?>[
+              achievement()
+                ..['problems'] = <Object?>[
+                  problem()
+                    ..['titles'] = <Object?>[
+                      title()..remove(entry.key),
+                    ],
+                ],
+            ],
+        ),
+        throwsFormatException,
+        reason: 'achievements[].problems[].titles[].${entry.key} missing',
+      );
+      for (final invalid in entry.value) {
+        expect(
+          () => endpoint.decode(
+            source()
+              ..['achievements'] = <Object?>[
+                achievement()
+                  ..['problems'] = <Object?>[
+                    problem()
+                      ..['titles'] = <Object?>[
+                        title()..[entry.key] = invalid,
+                      ],
+                  ],
+              ],
+          ),
+          throwsFormatException,
+          reason: 'achievements[].problems[].titles[].${entry.key} = $invalid',
+        );
+      }
+    }
+
+    expect(
+      () => endpoint.decode(
+        source()
+          ..['achievements'] = <Object?>[
+            achievement(),
+            achievement()..remove('earnedAt'),
+          ],
+      ),
+      throwsFormatException,
+      reason: 'a malformed trailing achievement must not be ignored',
+    );
+    expect(
+      () => endpoint.decode(
+        source()
+          ..['achievements'] = <Object?>[
+            achievement()
+              ..['problems'] = <Object?>[
+                problem(),
+                problem()..remove('userStatus'),
+              ],
+          ],
+      ),
+      throwsFormatException,
+      reason: 'a malformed trailing problem must not be ignored',
+    );
+    expect(
+      () => endpoint.decode(
+        source()
+          ..['achievements'] = <Object?>[
+            achievement()
+              ..['problems'] = <Object?>[
+                problem()
+                  ..['titles'] = <Object?>[
+                    title(),
+                    title()..remove('html'),
+                  ],
+              ],
+          ],
+      ),
+      throwsFormatException,
+      reason: 'a malformed trailing title must not be ignored',
+    );
+
+    final nullable = endpoint.decode(
+      source()
+        ..['achievements'] = <Object?>[
+          achievement()
+            ..['condition'] = null
+            ..['earnedAt'] = null
+            ..['problems'] = <Object?>[
+              problem()..['userStatus'] = null,
+            ],
+        ],
+    );
+    expect(nullable.achievements.single.condition, isNull);
+    expect(nullable.achievements.single.earnedAt, isNull);
+    expect(nullable.achievements.single.problems.single.userStatus, isNull);
+  });
+
+  test('preserves immutable nested achievement values without inference', () {
+    final endpoint = contract.achievementItem(
+      OfficialAchievementItemKind.background,
+      'anniversary_1st',
+    );
+    Map<String, dynamic> fixtureSource() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/background_item.json')) as Map,
+        );
+    Map<String, Object?> title({
+      required String language,
+      required String value,
+      required bool isOriginal,
+    }) =>
+        <String, Object?>{
+          'language': language,
+          'title': value,
+          'isOriginal': isOriginal,
+          'latex': true,
+          'html': true,
+        };
+    Map<String, Object?> problem({
+      required Object? userStatus,
+      required List<Object?> titles,
+    }) =>
+        <String, Object?>{
+          'problemId': -2.5,
+          'level': 0,
+          'effectiveVoteCount': 42.0,
+          'givesNoRating': true,
+          'isStandard': false,
+          'titles': titles,
+          'userStatus': userStatus,
+        };
+    Map<String, Object?> achievement({
+      required String key,
+      required Object? condition,
+      required Object? earnedAt,
+      required List<Object?> problems,
+    }) =>
+        <String, Object?>{
+          'key': key,
+          'name': '  ',
+          'condition': condition,
+          'historic': true,
+          'hidden': true,
+          'holderCount': -7,
+          'earnedAt': earnedAt,
+          'problems': problems,
+        };
+
+    expect(
+      ProblemUserStatus.values.map((status) => status.value),
+      ['solved', 'partial', 'tried'],
+    );
+    final emptySource = fixtureSource();
+    final emptyBackground = Map<String, dynamic>.from(
+      emptySource['background'] as Map,
+    )..['authors'] = <Object?>[];
+    emptySource
+      ..['background'] = emptyBackground
+      ..['credits'] = <Object?>[];
+    final empty = endpoint.decode(emptySource);
+    expect(empty.credits, isEmpty);
+    expect(empty.background?.authors, isEmpty);
+
+    for (final status in ProblemUserStatus.values) {
+      final source = fixtureSource()
+        ..['achievements'] = <Object?>[
+          achievement(
+            key: status.value,
+            condition: null,
+            earnedAt: null,
+            problems: <Object?>[
+              problem(
+                userStatus: status.value,
+                titles: <Object?>[
+                  title(language: 'ko', value: 'title', isOriginal: true),
+                ],
+              ),
+            ],
+          ),
+        ];
+      expect(
+        endpoint.decode(source).achievements.single.problems.single.userStatus,
+        status,
+      );
+    }
+
+    final firstTitle = title(
+      language: '',
+      value: ' raw title ',
+      isOriginal: false,
+    )..['futureTitleField'] = 'allowed';
+    final secondTitle = title(
+      language: 'ko',
+      value: '',
+      isOriginal: true,
+    );
+    final titles = <Object?>[secondTitle, firstTitle, secondTitle];
+    final firstProblem = problem(userStatus: null, titles: titles)
+      ..['futureProblemField'] = 'allowed';
+    final secondProblem = problem(
+      userStatus: 'partial',
+      titles: <Object?>[],
+    );
+    final problems = <Object?>[secondProblem, firstProblem, secondProblem];
+    final firstAchievement = achievement(
+      key: '',
+      condition: '',
+      earnedAt: 'not a date',
+      problems: problems,
+    )..['futureAchievementField'] = 'allowed';
+    final secondAchievement = achievement(
+      key: 'second',
+      condition: null,
+      earnedAt: null,
+      problems: <Object?>[],
+    );
+    final achievements = <Object?>[
+      secondAchievement,
+      firstAchievement,
+      secondAchievement,
+    ];
+
+    final source = fixtureSource();
+    final background = Map<String, dynamic>.from(source['background'] as Map);
+    final author = Map<String, dynamic>.from(
+      (background['authors'] as List).first as Map,
+    )..['futureAuthorField'] = 'allowed';
+    final authors = <Object?>[author, author];
+    background['authors'] = authors;
+    final credit = Map<String, dynamic>.from(
+      (source['credits'] as List).first as Map,
+    )..['futureCreditField'] = 'allowed';
+    final credits = <Object?>[credit, credit];
+    source
+      ..['background'] = background
+      ..['credits'] = credits
+      ..['achievements'] = achievements
+      ..['futureItemField'] = 'allowed';
+
+    final actual = endpoint.decode(source);
+    expect(actual.credits.map((value) => value.key), ['designer', 'designer']);
+    expect(actual.background?.authors.map((value) => value.key), [
+      'illustrator',
+      'illustrator',
+    ]);
+    expect(actual.achievements.map((value) => value.key), [
+      'second',
+      '',
+      'second',
+    ]);
+    final decodedAchievement = actual.achievements[1];
+    expect(decodedAchievement.name, '  ');
+    expect(decodedAchievement.condition, '');
+    expect(decodedAchievement.historic, isTrue);
+    expect(decodedAchievement.hidden, isTrue);
+    expect(decodedAchievement.holderCount, -7);
+    expect(decodedAchievement.earnedAt, 'not a date');
+    expect(decodedAchievement.problems.map((value) => value.userStatus), [
+      ProblemUserStatus.partial,
+      null,
+      ProblemUserStatus.partial,
+    ]);
+    final decodedProblem = decodedAchievement.problems[1];
+    expect(decodedProblem.problemId, -2.5);
+    expect(decodedProblem.problemId.runtimeType, double);
+    expect(decodedProblem.level, 0);
+    expect(decodedProblem.level.runtimeType, int);
+    expect(decodedProblem.effectiveVoteCount, 42.0);
+    expect(decodedProblem.effectiveVoteCount.runtimeType, double);
+    expect(decodedProblem.givesNoRating, isTrue);
+    expect(decodedProblem.isStandard, isFalse);
+    expect(
+      decodedProblem.titles.map((value) => value.language),
+      ['ko', '', 'ko'],
+    );
+    expect(decodedProblem.titles[1].title, ' raw title ');
+    expect(decodedProblem.titles[1].isOriginal, isFalse);
+    expect(decodedProblem.titles[1].latex, isTrue);
+    expect(decodedProblem.titles[1].html, isTrue);
+
+    author['key'] = 'mutated';
+    authors.clear();
+    credit['key'] = 'mutated';
+    credits.clear();
+    firstTitle['title'] = 'mutated';
+    titles.clear();
+    firstProblem['problemId'] = 99;
+    problems.clear();
+    firstAchievement['key'] = 'mutated';
+    achievements.clear();
+    source.clear();
+    expect(actual.credits.first.key, 'designer');
+    expect(actual.background?.authors.first.key, 'illustrator');
+    expect(actual.achievements[1].key, '');
+    expect(actual.achievements[1].problems[1].problemId, -2.5);
+    expect(actual.achievements[1].problems[1].titles[1].title, ' raw title ');
+    expect(
+      () => actual.credits[0] = actual.credits[0],
+      throwsUnsupportedError,
+    );
+    expect(
+      () => actual.background!.authors[0] = actual.background!.authors[0],
+      throwsUnsupportedError,
+    );
+    expect(
+      () => actual.achievements[0] = actual.achievements[0],
+      throwsUnsupportedError,
+    );
+    expect(
+      () => decodedAchievement.problems[0] = decodedAchievement.problems[0],
+      throwsUnsupportedError,
+    );
+    expect(
+      () => decodedProblem.titles[0] = decodedProblem.titles[0],
+      throwsUnsupportedError,
+    );
   });
 
   test('strictly validates standalone background and author shapes', () {
@@ -3617,7 +4229,6 @@ void main() {
       ..['equipped'] = false
       ..['background'] = background
       ..['credits'] = <Object?>[credit, credit]
-      ..['achievements'] = <Object?>[0, null, const <String, Object?>{}]
       ..['futureItemField'] = 'allowed';
 
     final actual = contract.backgroundShow('outer-key').decode(

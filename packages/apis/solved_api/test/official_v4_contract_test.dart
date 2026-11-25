@@ -1174,6 +1174,87 @@ void main() {
     for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
       expect(achievements.containsKey(constraint), isFalse);
     }
+    final achievement = _map(achievements['items']);
+    const achievementFields = [
+      'key',
+      'name',
+      'condition',
+      'historic',
+      'hidden',
+      'holderCount',
+      'earnedAt',
+      'problems',
+    ];
+    expect(achievement['type'], 'object');
+    expect(_required(achievement), achievementFields);
+    expect(achievement.containsKey('additionalProperties'), isFalse);
+    final achievementProperties = _properties(achievement);
+    expect(
+      achievementProperties.keys.toList(growable: false),
+      achievementFields,
+    );
+    for (final field in ['key', 'name']) {
+      expect(_map(achievementProperties[field]), {'type': 'string'});
+    }
+    for (final field in ['condition', 'earnedAt']) {
+      expect(_map(achievementProperties[field]), {
+        'type': ['string', 'null'],
+      });
+    }
+    for (final field in ['historic', 'hidden']) {
+      expect(_map(achievementProperties[field]), {'type': 'boolean'});
+    }
+    expect(_map(achievementProperties['holderCount']), {'type': 'integer'});
+
+    final problems = _map(achievementProperties['problems']);
+    expect(problems['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(problems.containsKey(constraint), isFalse);
+    }
+    final problem = _map(problems['items']);
+    const problemFields = [
+      'problemId',
+      'level',
+      'effectiveVoteCount',
+      'givesNoRating',
+      'isStandard',
+      'titles',
+      'userStatus',
+    ];
+    expect(problem['type'], 'object');
+    expect(_required(problem), problemFields);
+    expect(problem.containsKey('additionalProperties'), isFalse);
+    final problemProperties = _properties(problem);
+    expect(problemProperties.keys.toList(growable: false), problemFields);
+    for (final field in ['problemId', 'level', 'effectiveVoteCount']) {
+      expect(_map(problemProperties[field]), {'type': 'number'});
+    }
+    for (final field in ['givesNoRating', 'isStandard']) {
+      expect(_map(problemProperties[field]), {'type': 'boolean'});
+    }
+    expect(_map(problemProperties['userStatus']), {
+      'type': ['string', 'null'],
+      'enum': ['solved', 'partial', 'tried', null],
+    });
+
+    final titles = _map(problemProperties['titles']);
+    expect(titles['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(titles.containsKey(constraint), isFalse);
+    }
+    final title = _map(titles['items']);
+    const titleFields = ['language', 'title', 'isOriginal', 'latex', 'html'];
+    expect(title['type'], 'object');
+    expect(_required(title), titleFields);
+    expect(title.containsKey('additionalProperties'), isFalse);
+    final titleProperties = _properties(title);
+    expect(titleProperties.keys.toList(growable: false), titleFields);
+    for (final field in ['language', 'title']) {
+      expect(_map(titleProperties[field]), {'type': 'string'});
+    }
+    for (final field in ['isOriginal', 'latex', 'html']) {
+      expect(_map(titleProperties[field]), {'type': 'boolean'});
+    }
   });
 }
 
