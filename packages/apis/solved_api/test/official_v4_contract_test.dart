@@ -127,6 +127,11 @@ void main() {
       expect(bio.containsKey(constraint), isFalse);
     }
     expect(_map(profileProperties['classPlus'])['type'], 'boolean');
+    expect(_map(profileProperties['class']), {
+      'type': 'integer',
+      'minimum': 0,
+      'maximum': 10,
+    });
     for (final field in [
       'currentStreak',
       'maxStreak',
