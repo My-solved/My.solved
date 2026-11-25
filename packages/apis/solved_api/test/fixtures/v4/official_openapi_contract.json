@@ -1914,6 +1914,165 @@
         }
       }
     },
+    "/api/v4/users/{handle}/achievements/summary": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "handle",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "lang",
+            "required": false,
+            "schema": {
+              "default": "ko",
+              "maxLength": 16,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "backgrounds": {
+                      "type": "integer"
+                    },
+                    "badges": {
+                      "type": "integer"
+                    },
+                    "earned": {
+                      "type": "integer"
+                    },
+                    "past": {
+                      "type": "integer"
+                    },
+                    "recent": {
+                      "items": {
+                        "properties": {
+                          "acquiredAt": {
+                            "type": "string"
+                          },
+                          "addedAt": {
+                            "type": "string"
+                          },
+                          "category": {
+                            "type": "string"
+                          },
+                          "id": {
+                            "type": "integer"
+                          },
+                          "imageUrl": {
+                            "type": "string"
+                          },
+                          "key": {
+                            "type": "string"
+                          },
+                          "kind": {
+                            "enum": [
+                              "badge",
+                              "background"
+                            ],
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "id",
+                          "key",
+                          "name",
+                          "imageUrl",
+                          "category",
+                          "addedAt",
+                          "acquiredAt"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "total": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "earned",
+                    "total",
+                    "past",
+                    "badges",
+                    "backgrounds",
+                    "recent"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Counts and the latest earned."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "No such user."
+          }
+        },
+        "summary": "A user's achievement counts and latest earned items",
+        "x-access": {
+          "class": "public"
+        }
+      }
+    },
     "/api/v4/users/{handle}/activity/days": {
       "get": {
         "x-access": {

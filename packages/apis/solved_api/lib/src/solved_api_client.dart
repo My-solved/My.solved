@@ -266,6 +266,16 @@ class SolvedApiClient {
     );
   }
 
+  Future<ProfileAchievementSummaryResult> v4UserAchievementSummary(
+    String handle,
+  ) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.userAchievementSummary(handle),
+      requestType: _RequestType.user,
+    );
+  }
+
   Future<OfficialAchievementItem> v4AchievementItem(
     OfficialAchievementItemKind kind,
     String key,

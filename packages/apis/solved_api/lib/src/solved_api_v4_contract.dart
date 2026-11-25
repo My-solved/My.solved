@@ -134,6 +134,15 @@ final class SolvedApiV4Contract {
         decode: _decodeV4ProfileRatingHistory,
       );
 
+  SolvedApiEndpoint<ProfileAchievementSummaryResult> userAchievementSummary(
+    String handle,
+  ) =>
+      _endpoint(
+        path: 'users/${_pathSegment(handle, 'handle')}/achievements/summary',
+        queryParameters: const {'lang': 'ko'},
+        decode: _decodeV4ProfileAchievementSummary,
+      );
+
   SolvedApiEndpoint<OfficialAchievementItem> achievementItem(
     OfficialAchievementItemKind kind,
     String key,
@@ -1271,6 +1280,42 @@ ProfileRatingHistoryEntry _decodeV4ProfileRatingHistoryEntry(
       value: _integer(body['value'], 'history[].value'),
     );
 
+ProfileAchievementSummaryResult _decodeV4ProfileAchievementSummary(
+  dynamic json,
+) {
+  final body = _object(json, 'achievement summary');
+  final recent = List<ProfileAchievementSummaryRecentItem>.unmodifiable(
+    _list(body['recent'], 'recent').map(
+      (item) => _decodeV4ProfileAchievementSummaryRecentItem(
+        _object(item, 'recent[]'),
+      ),
+    ),
+  );
+  return ProfileAchievementSummaryResult(
+    earned: _integer(body['earned'], 'earned'),
+    total: _integer(body['total'], 'total'),
+    past: _integer(body['past'], 'past'),
+    badges: _integer(body['badges'], 'badges'),
+    backgrounds: _integer(body['backgrounds'], 'backgrounds'),
+    recent: recent,
+  );
+}
+
+ProfileAchievementSummaryRecentItem
+    _decodeV4ProfileAchievementSummaryRecentItem(
+  Map<String, dynamic> body,
+) =>
+        ProfileAchievementSummaryRecentItem(
+          kind: _decodeV4AchievementItemKind(body['kind'], 'recent[].kind'),
+          id: _integer(body['id'], 'recent[].id'),
+          key: _string(body['key'], 'recent[].key'),
+          name: _string(body['name'], 'recent[].name'),
+          imageUrl: _string(body['imageUrl'], 'recent[].imageUrl'),
+          category: _string(body['category'], 'recent[].category'),
+          addedAt: _string(body['addedAt'], 'recent[].addedAt'),
+          acquiredAt: _string(body['acquiredAt'], 'recent[].acquiredAt'),
+        );
+
 ProfileBackgroundAsset? _decodeV4BackgroundAsset(dynamic json) {
   final item = _decodeV4AchievementItem(
     json,
@@ -1348,8 +1393,11 @@ OfficialAchievementItem _decodeV4AchievementItem(
   );
 }
 
-OfficialAchievementItemKind _decodeV4AchievementItemKind(Object? value) {
-  switch (_string(value, 'kind')) {
+OfficialAchievementItemKind _decodeV4AchievementItemKind(
+  Object? value, [
+  String field = 'kind',
+]) {
+  switch (_string(value, field)) {
     case 'badge':
       return OfficialAchievementItemKind.badge;
     case 'background':

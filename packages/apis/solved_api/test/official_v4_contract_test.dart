@@ -541,6 +541,108 @@ void main() {
     expect(_map(ratingHistoryItemProperties['value']), {'type': 'integer'});
   });
 
+  test('pins the public achievement summary schema without inference', () {
+    final summary =
+        _get(contract, '/api/v4/users/{handle}/achievements/summary');
+
+    expect(_accessClass(summary), 'public');
+    expect(_parameterNames(summary), ['handle', 'lang']);
+    final parameters = _parameters(summary);
+    expect(parameters.first['in'], 'path');
+    expect(parameters.first['required'], isTrue);
+    expect(_map(parameters.first['schema']), {
+      'maxLength': 64,
+      'minLength': 1,
+      'type': 'string',
+    });
+    expect(parameters.last['in'], 'query');
+    expect(parameters.last['required'], isFalse);
+    expect(_map(parameters.last['schema']), {
+      'default': 'ko',
+      'maxLength': 16,
+      'type': 'string',
+    });
+    expect(_map(summary['responses']).keys, containsAll(['200', '404']));
+
+    final schema = _responseSchema(summary);
+    expect(_required(schema), [
+      'earned',
+      'total',
+      'past',
+      'badges',
+      'backgrounds',
+      'recent',
+    ]);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    final properties = _properties(schema);
+    expect(
+        properties.keys,
+        unorderedEquals([
+          'backgrounds',
+          'badges',
+          'earned',
+          'past',
+          'recent',
+          'total',
+        ]));
+    for (final field in [
+      'earned',
+      'total',
+      'past',
+      'badges',
+      'backgrounds',
+    ]) {
+      expect(_map(properties[field]), {'type': 'integer'});
+    }
+
+    final recent = _map(properties['recent']);
+    expect(recent['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(recent.containsKey(constraint), isFalse);
+    }
+    final item = _map(recent['items']);
+    expect(item['type'], 'object');
+    expect(_required(item), [
+      'kind',
+      'id',
+      'key',
+      'name',
+      'imageUrl',
+      'category',
+      'addedAt',
+      'acquiredAt',
+    ]);
+    expect(item.containsKey('additionalProperties'), isFalse);
+    final itemProperties = _properties(item);
+    expect(
+        itemProperties.keys,
+        unorderedEquals([
+          'acquiredAt',
+          'addedAt',
+          'category',
+          'id',
+          'imageUrl',
+          'key',
+          'kind',
+          'name',
+        ]));
+    expect(_map(itemProperties['kind']), {
+      'enum': ['badge', 'background'],
+      'type': 'string',
+    });
+    expect(_map(itemProperties['id']), {'type': 'integer'});
+    for (final field in [
+      'key',
+      'name',
+      'imageUrl',
+      'category',
+      'addedAt',
+      'acquiredAt',
+    ]) {
+      expect(_map(itemProperties[field]), {'type': 'string'});
+    }
+  });
+
   test('pins the required activity range and sparse-day response', () {
     final activity = _get(contract, '/api/v4/users/{handle}/activity/days');
     expect(_accessClass(activity), 'public');

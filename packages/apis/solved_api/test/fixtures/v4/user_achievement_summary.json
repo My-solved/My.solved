@@ -1,0 +1,29 @@
+{
+  "earned": 12,
+  "total": 34,
+  "past": 2,
+  "badges": 7,
+  "backgrounds": 5,
+  "recent": [
+    {
+      "kind": "badge",
+      "id": 101,
+      "key": "boardgame",
+      "name": "Board Game",
+      "imageUrl": "https://example.com/badge.png",
+      "category": "event",
+      "addedAt": "2020-01-01T00:00:00Z",
+      "acquiredAt": "2026-11-24T00:00:00Z"
+    },
+    {
+      "kind": "background",
+      "id": 202,
+      "key": "anniversary_1st",
+      "name": "First Anniversary",
+      "imageUrl": "https://example.com/background-thumbnail.png",
+      "category": "event",
+      "addedAt": "2021-01-01T00:00:00Z",
+      "acquiredAt": "2026-11-25T00:00:00Z"
+    }
+  ]
+}
