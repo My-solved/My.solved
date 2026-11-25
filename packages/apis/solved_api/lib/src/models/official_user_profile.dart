@@ -167,6 +167,53 @@ final class OfficialUserProfileAffiliation {
   final String? color;
 }
 
+/// Ban scopes exposed by official v4 public profiles.
+enum OfficialUserProfileBanType {
+  rating('rating'),
+  vote('vote');
+
+  const OfficialUserProfileBanType(this.value);
+
+  final String value;
+}
+
+/// Ban reasons exposed by official v4 public profiles.
+enum OfficialUserProfileBanReason {
+  voteTrollLevel('vote_troll_level'),
+  voteHateSpeech('vote_hate_speech'),
+  voteDisparagement('vote_disparagement'),
+  voteProfanity('vote_profanity'),
+  voteMultiAccount('vote_multi_account'),
+  voteRepeatOffence('vote_repeat_offence'),
+  ratingCopiedCode('rating_copied_code'),
+  other('other'),
+  ratingAutoPace('rating_auto_pace'),
+  voteAutomated('vote_automated'),
+  voteCommentStrikes('vote_comment_strikes'),
+  voteMarkAbuse('vote_mark_abuse');
+
+  const OfficialUserProfileBanReason(this.value);
+
+  final String value;
+}
+
+/// One ban embedded in an official v4 public profile.
+final class OfficialUserProfileBan {
+  const OfficialUserProfileBan({
+    required this.banType,
+    required this.banReason,
+    required this.reason,
+    required this.until,
+  });
+
+  final OfficialUserProfileBanType banType;
+  final OfficialUserProfileBanReason? banReason;
+  final String reason;
+
+  /// Raw response value. The schema declares no date format or pattern.
+  final String until;
+}
+
 /// The official v4 public profile with its wire metadata preserved.
 final class OfficialUserProfile extends UserProfile {
   const OfficialUserProfile({
@@ -181,6 +228,7 @@ final class OfficialUserProfile extends UserProfile {
     required this.ojAccounts,
     required this.linkedAccounts,
     required this.affiliations,
+    required this.bans,
     required super.handle,
     required super.profileImageUrl,
     super.bio,
@@ -241,6 +289,11 @@ final class OfficialUserProfile extends UserProfile {
   ///
   /// Decoder-produced lists are unmodifiable. An empty list is authoritative.
   final List<OfficialUserProfileAffiliation> affiliations;
+
+  /// Bans in wire order, including duplicates.
+  ///
+  /// Decoder-produced lists are unmodifiable. An empty list is authoritative.
+  final List<OfficialUserProfileBan> bans;
 
   @override
   OfficialUserProfileBackground? get background =>

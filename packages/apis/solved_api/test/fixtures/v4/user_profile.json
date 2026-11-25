@@ -87,7 +87,20 @@
   "ratingBySolvedCount": 207,
   "ratingProblemsCutoff": 100,
   "ratingProblemsHistogram": [2, 7, 15],
-  "bans": [],
+  "bans": [
+    {
+      "banType": "rating",
+      "banReason": "rating_copied_code",
+      "reason": "Copied code",
+      "until": "2027-01-01"
+    },
+    {
+      "banType": "vote",
+      "banReason": null,
+      "reason": "Manual review",
+      "until": "2027-12-31"
+    }
+  ],
   "tagRatings": [
     {
       "key": "dp",

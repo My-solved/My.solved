@@ -143,6 +143,16 @@ void main() {
         );
         expect(profile.affiliations.last.logoThumbnailUrl, isNull);
         expect(profile.affiliations.last.color, isNull);
+        expect(profile.bans, hasLength(2));
+        expect(profile.bans.first.banType, OfficialUserProfileBanType.rating);
+        expect(
+          profile.bans.first.banReason,
+          OfficialUserProfileBanReason.ratingCopiedCode,
+        );
+        expect(profile.bans.first.until, '2027-01-01');
+        expect(profile.bans.last.banType, OfficialUserProfileBanType.vote);
+        expect(profile.bans.last.banReason, isNull);
+        expect(profile.bans.last.until, '2027-12-31');
         expect(profile.backgroundId, 'anniversary_1st');
         expect(profile.background, isA<OfficialUserProfileBackground>());
         expect(profile.background?.backgroundVideoUrl, isNull);

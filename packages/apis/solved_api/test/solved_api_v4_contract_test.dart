@@ -167,6 +167,18 @@ void main() {
     );
     expect(actual.affiliations.last.logoThumbnailUrl, isNull);
     expect(actual.affiliations.last.color, isNull);
+    expect(actual.bans, hasLength(2));
+    expect(actual.bans.first.banType, OfficialUserProfileBanType.rating);
+    expect(
+      actual.bans.first.banReason,
+      OfficialUserProfileBanReason.ratingCopiedCode,
+    );
+    expect(actual.bans.first.reason, 'Copied code');
+    expect(actual.bans.first.until, '2027-01-01');
+    expect(actual.bans.last.banType, OfficialUserProfileBanType.vote);
+    expect(actual.bans.last.banReason, isNull);
+    expect(actual.bans.last.reason, 'Manual review');
+    expect(actual.bans.last.until, '2027-12-31');
     expect(actual.voteCount, 37);
     expect(actual.legacyContributionCount, isNull);
     expect(actual.reverseRivalCount, isNull);
@@ -765,6 +777,208 @@ void main() {
     expect(actual.affiliations[1].name, '  ');
     expect(actual.affiliations.first.affiliationId, 42.5);
     expect(() => actual.affiliations.removeAt(0), throwsUnsupportedError);
+  });
+
+  test('requires the exact public profile ban shape', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_profile.json')) as Map,
+        );
+    Map<String, Object?> ban() => <String, Object?>{
+          'banType': 'rating',
+          'banReason': 'rating_copied_code',
+          'reason': 'Copied code',
+          'until': '2027-01-01',
+        };
+
+    expect(
+      () => endpoint.decode(source()..remove('bans')),
+      throwsFormatException,
+      reason: 'bans missing',
+    );
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      'bans',
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(source()..['bans'] = invalid),
+        throwsFormatException,
+        reason: 'bans = $invalid',
+      );
+    }
+    expect(
+      () => endpoint.decode(source()..['bans'] = <Object?>[0]),
+      throwsFormatException,
+      reason: 'bans item must be an object',
+    );
+    expect(
+      endpoint.decode(source()..['bans'] = <Object?>[]).bans,
+      isEmpty,
+    );
+
+    final invalidValues = <String, List<Object?>>{
+      'banType': [
+        null,
+        0,
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+        '',
+        'Rating',
+        'rating ',
+        'unknown',
+      ],
+      'banReason': [
+        0,
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+        '',
+        'Other',
+        'other ',
+        'unknown',
+      ],
+      'reason': [null, 0, false, const <Object?>[], const <String, Object?>{}],
+      'until': [null, 0, false, const <Object?>[], const <String, Object?>{}],
+    };
+    for (final entry in invalidValues.entries) {
+      expect(
+        () => endpoint.decode(
+          source()
+            ..['bans'] = <Object?>[
+              ban()..remove(entry.key),
+            ],
+        ),
+        throwsFormatException,
+        reason: 'missing bans[].${entry.key}',
+      );
+      for (final invalid in entry.value) {
+        expect(
+          () => endpoint.decode(
+            source()
+              ..['bans'] = <Object?>[
+                ban()..[entry.key] = invalid,
+              ],
+          ),
+          throwsFormatException,
+          reason: 'bans[].${entry.key} = $invalid',
+        );
+      }
+    }
+
+    final nullable = endpoint.decode(
+      source()
+        ..['bans'] = <Object?>[
+          ban()..['banReason'] = null,
+        ],
+    );
+    expect(nullable.bans.single.banReason, isNull);
+  });
+
+  test('preserves raw immutable public profile bans without inference', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_profile.json')) as Map,
+        );
+    Map<String, Object?> ban({
+      required String banType,
+      required Object? banReason,
+      required String reason,
+      required String until,
+    }) =>
+        <String, Object?>{
+          'banType': banType,
+          'banReason': banReason,
+          'reason': reason,
+          'until': until,
+        };
+    final wireReasons = [
+      'vote_troll_level',
+      'vote_hate_speech',
+      'vote_disparagement',
+      'vote_profanity',
+      'vote_multi_account',
+      'vote_repeat_offence',
+      'rating_copied_code',
+      'other',
+      'rating_auto_pace',
+      'vote_automated',
+      'vote_comment_strikes',
+      'vote_mark_abuse',
+    ];
+
+    expect(
+      OfficialUserProfileBanType.values.map((type) => type.value),
+      ['rating', 'vote'],
+    );
+    expect(
+      OfficialUserProfileBanReason.values.map((reason) => reason.value),
+      wireReasons,
+    );
+    for (final wireReason in wireReasons) {
+      final actual = endpoint.decode(
+        source()
+          ..['bans'] = <Object?>[
+            ban(
+              banType: 'rating',
+              banReason: wireReason,
+              reason: 'reason',
+              until: 'until',
+            ),
+          ],
+      );
+      expect(actual.bans.single.banReason?.value, wireReason);
+    }
+
+    final ratingBan = ban(
+      banType: 'rating',
+      banReason: 'vote_troll_level',
+      reason: '  ',
+      until: 'not a date',
+    )..['futureBanField'] = 'allowed';
+    final voteBan = ban(
+      banType: 'vote',
+      banReason: 'rating_copied_code',
+      reason: '',
+      until: '',
+    );
+    final bans = <Object?>[voteBan, ratingBan, voteBan];
+    final actual = endpoint.decode(
+      source()
+        ..['bans'] = bans
+        ..['futureProfileField'] = 'allowed',
+    );
+
+    expect(
+      actual.bans.map((value) => value.banType),
+      [
+        OfficialUserProfileBanType.vote,
+        OfficialUserProfileBanType.rating,
+        OfficialUserProfileBanType.vote,
+      ],
+    );
+    expect(
+      actual.bans.first.banReason,
+      OfficialUserProfileBanReason.ratingCopiedCode,
+    );
+    expect(actual.bans.first.reason, '');
+    expect(actual.bans.first.until, '');
+    expect(
+      actual.bans[1].banReason,
+      OfficialUserProfileBanReason.voteTrollLevel,
+    );
+    expect(actual.bans[1].reason, '  ');
+    expect(actual.bans[1].until, 'not a date');
+
+    ratingBan['reason'] = 'mutated';
+    voteBan['until'] = 'mutated';
+    bans.clear();
+    expect(actual.bans[1].reason, '  ');
+    expect(actual.bans.first.until, '');
+    expect(() => actual.bans.removeAt(0), throwsUnsupportedError);
   });
 
   test('requires exact public profile streak state types', () {

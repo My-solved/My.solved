@@ -758,6 +758,7 @@ OfficialUserProfile _officialProfile({
   ojAccounts: const [],
   linkedAccounts: const [],
   affiliations: const [],
+  bans: const [],
   handle: 'w8385',
   profileImageUrl: null,
   solvedCount: 1,

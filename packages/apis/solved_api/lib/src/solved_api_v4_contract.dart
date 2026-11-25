@@ -763,6 +763,13 @@ OfficialUserProfile _decodeV4UserProfile(dynamic json) {
       ),
     ),
   );
+  final bans = List<OfficialUserProfileBan>.unmodifiable(
+    _list(body['bans'], 'bans').map(
+      (item) => _decodeV4OfficialUserProfileBan(
+        _object(item, 'bans[]'),
+      ),
+    ),
+  );
   if (!body.containsKey('streakVacation')) {
     throw const FormatException('Missing required field streakVacation');
   }
@@ -786,6 +793,7 @@ OfficialUserProfile _decodeV4UserProfile(dynamic json) {
     ojAccounts: ojAccounts,
     linkedAccounts: linkedAccounts,
     affiliations: affiliations,
+    bans: bans,
     handle: _string(body['handle'], 'handle'),
     profileImageUrl: _requiredNullableString(body, 'profileImageUrl'),
     bio: _requiredNullableString(body, 'bio'),
@@ -907,6 +915,67 @@ OfficialUserProfileAffiliationType _decodeV4OfficialUserProfileAffiliationType(
       return OfficialUserProfileAffiliationType.community;
     default:
       throw const FormatException('Unknown affiliations[].type');
+  }
+}
+
+OfficialUserProfileBan _decodeV4OfficialUserProfileBan(
+  Map<String, dynamic> body,
+) {
+  return OfficialUserProfileBan(
+    banType: _decodeV4OfficialUserProfileBanType(body['banType']),
+    banReason: _decodeV4OfficialUserProfileBanReason(body),
+    reason: _string(body['reason'], 'bans[].reason'),
+    until: _string(body['until'], 'bans[].until'),
+  );
+}
+
+OfficialUserProfileBanType _decodeV4OfficialUserProfileBanType(Object? value) {
+  switch (_string(value, 'bans[].banType')) {
+    case 'rating':
+      return OfficialUserProfileBanType.rating;
+    case 'vote':
+      return OfficialUserProfileBanType.vote;
+    default:
+      throw const FormatException('Unknown bans[].banType');
+  }
+}
+
+OfficialUserProfileBanReason? _decodeV4OfficialUserProfileBanReason(
+  Map<String, dynamic> body,
+) {
+  if (!body.containsKey('banReason')) {
+    throw const FormatException('Missing required field bans[].banReason');
+  }
+  final value = body['banReason'];
+  if (value == null) return null;
+
+  switch (_string(value, 'bans[].banReason')) {
+    case 'vote_troll_level':
+      return OfficialUserProfileBanReason.voteTrollLevel;
+    case 'vote_hate_speech':
+      return OfficialUserProfileBanReason.voteHateSpeech;
+    case 'vote_disparagement':
+      return OfficialUserProfileBanReason.voteDisparagement;
+    case 'vote_profanity':
+      return OfficialUserProfileBanReason.voteProfanity;
+    case 'vote_multi_account':
+      return OfficialUserProfileBanReason.voteMultiAccount;
+    case 'vote_repeat_offence':
+      return OfficialUserProfileBanReason.voteRepeatOffence;
+    case 'rating_copied_code':
+      return OfficialUserProfileBanReason.ratingCopiedCode;
+    case 'other':
+      return OfficialUserProfileBanReason.other;
+    case 'rating_auto_pace':
+      return OfficialUserProfileBanReason.ratingAutoPace;
+    case 'vote_automated':
+      return OfficialUserProfileBanReason.voteAutomated;
+    case 'vote_comment_strikes':
+      return OfficialUserProfileBanReason.voteCommentStrikes;
+    case 'vote_mark_abuse':
+      return OfficialUserProfileBanReason.voteMarkAbuse;
+    default:
+      throw const FormatException('Unknown bans[].banReason');
   }
 }
 
