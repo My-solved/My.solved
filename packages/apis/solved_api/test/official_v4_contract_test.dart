@@ -723,6 +723,103 @@ void main() {
     }
   });
 
+  test('pins the public tag detail schema without inference', () {
+    final tagDetail = _get(contract, '/api/v4/tags/{key}');
+
+    expect(_accessClass(tagDetail), 'public');
+    expect(_parameterNames(tagDetail), ['key']);
+    final parameter = _parameters(tagDetail).single;
+    expect(parameter['in'], 'path');
+    expect(parameter['required'], isTrue);
+    expect(_map(parameter['schema']), {
+      'type': 'string',
+      'minLength': 1,
+      'maxLength': 64,
+    });
+    expect(_map(tagDetail['responses']).keys, containsAll(['200', '404']));
+
+    const fields = [
+      'id',
+      'key',
+      'names',
+      'aliases',
+      'parents',
+      'children',
+      'rated',
+      'problemCount',
+      'solvedCount',
+      'levels',
+    ];
+    final schema = _responseSchema(tagDetail);
+    expect(_required(schema), fields);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    final properties = _properties(schema);
+    expect(properties.keys.toList(growable: false), fields);
+    expect(_map(properties['id']), {'type': 'number'});
+    expect(_map(properties['key']), {'type': 'string'});
+    expect(_map(properties['rated']), {'type': 'boolean'});
+    expect(_map(properties['problemCount']), {'type': 'integer'});
+    expect(_map(properties['solvedCount']), {
+      'type': ['integer', 'null'],
+    });
+
+    void expectStringMap(Object? value) {
+      final map = _map(value);
+      expect(map['type'], 'object');
+      expect(_map(map['additionalProperties']), {'type': 'string'});
+      for (final constraint in [
+        'minProperties',
+        'maxProperties',
+        'propertyNames',
+      ]) {
+        expect(map.containsKey(constraint), isFalse);
+      }
+    }
+
+    expectStringMap(properties['names']);
+    final aliases = _map(properties['aliases']);
+    expect(aliases['type'], 'array');
+    expect(_map(aliases['items']), {'type': 'string'});
+
+    for (final field in ['aliases', 'parents', 'children', 'levels']) {
+      final list = _map(properties[field]);
+      expect(list['type'], 'array');
+      for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+        expect(list.containsKey(constraint), isFalse);
+      }
+    }
+
+    for (final field in ['parents', 'children']) {
+      final relation = _map(_map(properties[field])['items']);
+      expect(relation['type'], 'object');
+      expect(_required(relation), ['key', 'names']);
+      expect(relation.containsKey('additionalProperties'), isFalse);
+      final relationProperties = _properties(relation);
+      expect(relationProperties.keys.toList(growable: false), [
+        'key',
+        'names',
+      ]);
+      expect(_map(relationProperties['key']), {'type': 'string'});
+      expectStringMap(relationProperties['names']);
+    }
+
+    final level = _map(_map(properties['levels'])['items']);
+    expect(level['type'], 'object');
+    expect(_required(level), ['level', 'count', 'solved']);
+    expect(level.containsKey('additionalProperties'), isFalse);
+    final levelProperties = _properties(level);
+    expect(levelProperties.keys.toList(growable: false), [
+      'level',
+      'count',
+      'solved',
+    ]);
+    expect(_map(levelProperties['level']), {'type': 'integer'});
+    expect(_map(levelProperties['count']), {'type': 'integer'});
+    expect(_map(levelProperties['solved']), {
+      'type': ['integer', 'null'],
+    });
+  });
+
   test('pins the required activity range and sparse-day response', () {
     final activity = _get(contract, '/api/v4/users/{handle}/activity/days');
     expect(_accessClass(activity), 'public');

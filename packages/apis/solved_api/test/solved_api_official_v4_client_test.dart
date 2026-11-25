@@ -69,6 +69,7 @@ void main() {
             '/solved/v4/problems' => 'v4/search_problems.json',
             '/solved/v4/rankings/users/search' => 'v4/search_users.json',
             '/solved/v4/tags' => 'v4/tags.json',
+            '/solved/v4/tags/number_theory' => 'v4/tag_detail.json',
             _ => throw StateError('Unexpected request: ${request.url}'),
           };
           return _jsonResponse(_paddedFixture(fixturePath));
@@ -118,6 +119,8 @@ void main() {
           sort: SolvedApiV4UserSort.contribution,
         );
         final tags = await client.v4SearchTags('NUMBER');
+        final TagDetailResult tagDetail =
+            await client.v4TagDetail('number_theory');
 
         expect(profile.handle, 'index');
         expect(profile.id, 1);
@@ -261,6 +264,13 @@ void main() {
         expect(problems.seed, isNull);
         expect(users.exact?.handle, 'index');
         expect(tags.items.single.key, 'number_theory');
+        expect(tagDetail.id, 42.5);
+        expect(tagDetail.key, 'number_theory');
+        expect(tagDetail.names['ko'], '수학 > 정수론');
+        expect(tagDetail.parents.single.key, 'mathematics');
+        expect(tagDetail.children.single.key, 'prime_number');
+        expect(tagDetail.solvedCount, 123);
+        expect(tagDetail.levels.map((level) => level.solved), [null, 5]);
 
         expect(
           httpClient.requests.map((request) => request.url),
@@ -311,9 +321,10 @@ void main() {
               'sort': 'contribution',
             }),
             _uri('tags'),
+            _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(13));
+        expect(httpClient.requests, hasLength(14));
         for (final request in httpClient.requests) {
           expect(request, isA<http.AbortableRequest>());
           expect(request.method, 'GET');
@@ -506,7 +517,11 @@ void main() {
         await _captureFailure(client.v4SearchTags('dp')),
         isA<SearchRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(9));
+      expect(
+        await _captureFailure(client.v4TagDetail('number_theory')),
+        isA<SearchRequestFailed>(),
+      );
+      expect(httpClient.requests, hasLength(10));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -602,6 +617,39 @@ void main() {
           'users/index/badge-stand',
           const <String, String>{'lang': 'ko'},
         ),
+      );
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('wraps a malformed tag detail as a search failure', () async {
+      handler = (_) async => _jsonResponse(
+            jsonEncode({
+              'id': 1,
+              'key': 'number_theory',
+              'names': <String, String>{'en': 'Number Theory'},
+              'aliases': <String>[],
+              'parents': <Object?>[],
+              'children': <Object?>[],
+              'rated': true,
+              'problemCount': 1,
+              'solvedCount': null,
+              'levels': <Object?>[
+                <String, Object?>{'level': 1, 'count': 1},
+              ],
+            }),
+          );
+
+      final error = await _captureFailure(
+        client.v4TagDetail('number_theory'),
+      );
+
+      expect(error, isA<SearchRequestFailed>());
+      expect(error.statusCode, 200);
+      expect(error.cause, isA<FormatException>());
+      expect(error.responseBody, isNull);
+      expect(
+        httpClient.requests.single.url,
+        _uri('tags/number_theory'),
       );
       expect(httpClient.requests, hasLength(1));
     });

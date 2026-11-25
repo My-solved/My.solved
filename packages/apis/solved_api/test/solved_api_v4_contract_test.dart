@@ -4010,6 +4010,504 @@ void main() {
     expect(empty.badges, isEmpty);
   });
 
+  test('normalizes the official tag detail result', () {
+    final endpoint = contract.tagDetail('number theory');
+    final TagDetailResult actual = endpoint.decode(
+      jsonDecode(fixture('v4/tag_detail.json')),
+    );
+
+    expect(endpoint.direct.path, 'tags/number%20theory');
+    expect(endpoint.direct.queryParameters, isEmpty);
+    expect(endpoint.proxy.path, endpoint.direct.path);
+    expect(endpoint.proxy.queryParameters, isEmpty);
+    expect(actual.id, 42.5);
+    expect(actual.key, 'number_theory');
+    expect(actual.names, {
+      'ko': '수학 > 정수론',
+      'en': 'Mathematics > Number Theory',
+    });
+    expect(actual.aliases, ['정수론', 'number theory']);
+    expect(actual.parents.single.key, 'mathematics');
+    expect(actual.parents.single.names, {'ko': '수학', 'en': 'Mathematics'});
+    expect(actual.children.single.key, 'prime_number');
+    expect(actual.children.single.names, {'ko': '소수', 'en': 'Prime Number'});
+    expect(actual.rated, isTrue);
+    expect(actual.problemCount, 321);
+    expect(actual.solvedCount, 123);
+    expect(actual.levels.map((level) => level.level), [0, 12]);
+    expect(actual.levels.map((level) => level.count), [7, 19]);
+    expect(actual.levels.map((level) => level.solved), [null, 5]);
+
+    expect(contract.tagDetail('한 글').direct.path, 'tags/%ED%95%9C%20%EA%B8%80');
+    for (final invalid in [
+      '',
+      '.',
+      '..',
+      'a/b',
+      r'a\b',
+      'line\nbreak',
+      List.filled(65, 'a').join(),
+    ]) {
+      expect(
+        () => contract.tagDetail(invalid),
+        throwsArgumentError,
+        reason: invalid,
+      );
+    }
+  });
+
+  test('requires the exact tag detail response shape', () {
+    final endpoint = contract.tagDetail('number_theory');
+    Map<String, Object?> relation() => <String, Object?>{
+          'key': 'mathematics',
+          'names': <String, Object?>{'en': 'Mathematics'},
+        };
+    Map<String, Object?> level() => <String, Object?>{
+          'level': 1,
+          'count': 2,
+          'solved': null,
+        };
+    Map<String, Object?> source() => <String, Object?>{
+          'id': 1,
+          'key': 'number_theory',
+          'names': <String, Object?>{'en': 'Number Theory'},
+          'aliases': <Object?>['number theory'],
+          'parents': <Object?>[relation()],
+          'children': <Object?>[relation()],
+          'rated': true,
+          'problemCount': 3,
+          'solvedCount': null,
+          'levels': <Object?>[level()],
+        };
+
+    for (final invalid in <Object?>[null, 0, false, const <Object?>[]]) {
+      expect(
+        () => endpoint.decode(invalid),
+        throwsFormatException,
+        reason: 'response = $invalid',
+      );
+    }
+    for (final field in [
+      'id',
+      'key',
+      'names',
+      'aliases',
+      'parents',
+      'children',
+      'rated',
+      'problemCount',
+      'solvedCount',
+      'levels',
+    ]) {
+      expect(
+        () => endpoint.decode(source()..remove(field)),
+        throwsFormatException,
+        reason: '$field missing',
+      );
+    }
+
+    final invalidValues = <String, List<Object?>>{
+      'id': [
+        null,
+        '1',
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+        double.nan,
+        double.infinity,
+        double.negativeInfinity,
+      ],
+      'key': [null, 0, false, const <Object?>[], const <String, Object?>{}],
+      'names': [null, 0, false, 'names', const <Object?>[]],
+      'aliases': [null, 0, false, 'aliases', const <String, Object?>{}],
+      'parents': [null, 0, false, 'parents', const <String, Object?>{}],
+      'children': [null, 0, false, 'children', const <String, Object?>{}],
+      'rated': [null, 0, 'true', const <Object?>[], const <String, Object?>{}],
+      'problemCount': [
+        null,
+        1.0,
+        '1',
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+      ],
+      'solvedCount': [
+        1.0,
+        '1',
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+      ],
+      'levels': [null, 0, false, 'levels', const <String, Object?>{}],
+    };
+    for (final entry in invalidValues.entries) {
+      for (final invalid in entry.value) {
+        expect(
+          () => endpoint.decode(source()..[entry.key] = invalid),
+          throwsFormatException,
+          reason: '${entry.key} = $invalid',
+        );
+      }
+    }
+
+    for (final field in ['names']) {
+      expect(
+        () => endpoint.decode(source()..[field] = <String, Object?>{'en': 1}),
+        throwsFormatException,
+      );
+      expect(
+        () => endpoint.decode(
+          source()..[field] = <Object?, Object?>{1: 'Number Theory'},
+        ),
+        throwsFormatException,
+      );
+    }
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      const <Object?>[],
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(source()..['aliases'] = <Object?>[invalid]),
+        throwsFormatException,
+        reason: 'aliases[] = $invalid',
+      );
+    }
+
+    expect(
+      () => endpoint.decode(source()..['parents'] = <Object?>[0]),
+      throwsFormatException,
+    );
+    expect(
+      () => endpoint.decode(source()..['children'] = <Object?>[0]),
+      throwsFormatException,
+    );
+    for (final field in ['key', 'names']) {
+      expect(
+        () => endpoint.decode(
+          source()..['parents'] = <Object?>[relation()..remove(field)],
+        ),
+        throwsFormatException,
+        reason: 'parents[].$field missing',
+      );
+      expect(
+        () => endpoint.decode(
+          source()..['children'] = <Object?>[relation()..remove(field)],
+        ),
+        throwsFormatException,
+        reason: 'children[].$field missing',
+      );
+    }
+    for (final field in ['parents', 'children']) {
+      for (final invalid in <Object?>[
+        null,
+        0,
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+      ]) {
+        expect(
+          () => endpoint.decode(
+            source()..[field] = <Object?>[relation()..['key'] = invalid],
+          ),
+          throwsFormatException,
+          reason: '$field[].key = $invalid',
+        );
+      }
+      for (final invalid in <Object?>[
+        null,
+        0,
+        false,
+        'names',
+        const <Object?>[],
+      ]) {
+        expect(
+          () => endpoint.decode(
+            source()..[field] = <Object?>[relation()..['names'] = invalid],
+          ),
+          throwsFormatException,
+          reason: '$field[].names = $invalid',
+        );
+      }
+      expect(
+        () => endpoint.decode(
+          source()
+            ..[field] = <Object?>[
+              relation()..['names'] = <String, Object?>{'en': 1},
+            ],
+        ),
+        throwsFormatException,
+      );
+      expect(
+        () => endpoint.decode(
+          source()
+            ..[field] = <Object?>[
+              relation()..['names'] = <Object?, Object?>{1: 'Mathematics'},
+            ],
+        ),
+        throwsFormatException,
+      );
+    }
+
+    expect(
+      () => endpoint.decode(source()..['levels'] = <Object?>[0]),
+      throwsFormatException,
+    );
+    for (final field in ['level', 'count', 'solved']) {
+      expect(
+        () => endpoint.decode(
+          source()..['levels'] = <Object?>[level()..remove(field)],
+        ),
+        throwsFormatException,
+        reason: 'levels[].$field missing',
+      );
+    }
+    for (final field in ['level', 'count']) {
+      for (final invalid in <Object?>[
+        null,
+        1.0,
+        '1',
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+      ]) {
+        expect(
+          () => endpoint.decode(
+            source()..['levels'] = <Object?>[level()..[field] = invalid],
+          ),
+          throwsFormatException,
+          reason: 'levels[].$field = $invalid',
+        );
+      }
+    }
+    for (final invalid in <Object?>[
+      1.0,
+      '1',
+      false,
+      const <Object?>[],
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(
+          source()..['levels'] = <Object?>[level()..['solved'] = invalid],
+        ),
+        throwsFormatException,
+        reason: 'levels[].solved = $invalid',
+      );
+    }
+
+    final nullable = endpoint.decode(
+      source()
+        ..['solvedCount'] = null
+        ..['levels'] = <Object?>[level()..['solved'] = null],
+    );
+    expect(nullable.solvedCount, isNull);
+    expect(nullable.levels.single.solved, isNull);
+  });
+
+  test('eagerly validates every tag detail relation and level', () {
+    final endpoint = contract.tagDetail('number_theory');
+    Map<String, Object?> relation() => <String, Object?>{
+          'key': 'mathematics',
+          'names': <String, Object?>{'en': 'Mathematics'},
+        };
+    Map<String, Object?> level() => <String, Object?>{
+          'level': 1,
+          'count': 2,
+          'solved': 1,
+        };
+    Map<String, Object?> source() => <String, Object?>{
+          'id': 1,
+          'key': 'number_theory',
+          'names': <String, Object?>{'en': 'Number Theory'},
+          'aliases': <Object?>[],
+          'parents': <Object?>[relation()],
+          'children': <Object?>[relation()],
+          'rated': true,
+          'problemCount': 3,
+          'solvedCount': 1,
+          'levels': <Object?>[level()],
+        };
+
+    expect(
+      () => endpoint.decode(
+        source()
+          ..['names'] = <String, Object?>{
+            'en': 'Number Theory',
+            'malformed': 1,
+          },
+      ),
+      throwsFormatException,
+      reason: 'a malformed trailing localized name must not be ignored',
+    );
+    expect(
+      () => endpoint.decode(
+        source()..['aliases'] = <Object?>['number theory', 1],
+      ),
+      throwsFormatException,
+      reason: 'a malformed trailing alias must not be ignored',
+    );
+    expect(
+      () => endpoint.decode(
+        source()
+          ..['parents'] = <Object?>[relation(), relation()..remove('names')],
+      ),
+      throwsFormatException,
+      reason: 'a malformed trailing parent must not be ignored',
+    );
+    expect(
+      () => endpoint.decode(
+        source()
+          ..['children'] = <Object?>[relation(), relation()..remove('key')],
+      ),
+      throwsFormatException,
+      reason: 'a malformed trailing child must not be ignored',
+    );
+    expect(
+      () => endpoint.decode(
+        source()..['levels'] = <Object?>[level(), level()..remove('solved')],
+      ),
+      throwsFormatException,
+      reason: 'a malformed trailing level must not be ignored',
+    );
+  });
+
+  test('preserves raw immutable tag detail values without inference', () {
+    final endpoint = contract.tagDetail('raw');
+    final names = <String, Object?>{'z-last': '  ', 'ko': '태그', 'a-first': ''};
+    final aliases = <Object?>['second', '', 'second'];
+    final parentNames = <String, Object?>{'zz': '부모', 'aa': ''};
+    final firstParent = <String, Object?>{
+      'key': ' child ',
+      'names': parentNames,
+      'futureRelationField': true,
+    };
+    final secondParent = <String, Object?>{
+      'key': '',
+      'names': <String, Object?>{},
+    };
+    final parents = <Object?>[secondParent, firstParent, secondParent];
+    final childNames = <String, Object?>{'unicode': '한 글'};
+    final child = <String, Object?>{'key': ' child ', 'names': childNames};
+    final children = <Object?>[child, child];
+    final firstLevel = <String, Object?>{
+      'level': -1,
+      'count': -2,
+      'solved': -3,
+      'futureLevelField': true,
+    };
+    final secondLevel = <String, Object?>{
+      'level': 0,
+      'count': 0,
+      'solved': null,
+    };
+    final levels = <Object?>[secondLevel, firstLevel, secondLevel];
+    final source = <String, Object?>{
+      'id': -0.5,
+      'key': ' raw key ',
+      'names': names,
+      'aliases': aliases,
+      'parents': parents,
+      'children': children,
+      'rated': false,
+      'problemCount': -7,
+      'solvedCount': -8,
+      'levels': levels,
+      'futureTagField': true,
+    };
+
+    final actual = endpoint.decode(source);
+    expect(actual.id, -0.5);
+    expect(actual.id, isA<double>());
+    expect(actual.key, ' raw key ');
+    expect(actual.names.keys, ['z-last', 'ko', 'a-first']);
+    expect(actual.names.values, ['  ', '태그', '']);
+    expect(actual.aliases, ['second', '', 'second']);
+    expect(actual.parents.map((relation) => relation.key), ['', ' child ', '']);
+    expect(actual.parents[1].names.keys, ['zz', 'aa']);
+    expect(actual.children.map((relation) => relation.key), [
+      ' child ',
+      ' child ',
+    ]);
+    expect(actual.rated, isFalse);
+    expect(actual.problemCount, -7);
+    expect(actual.solvedCount, -8);
+    expect(actual.levels.map((level) => level.level), [0, -1, 0]);
+    expect(actual.levels.map((level) => level.count), [0, -2, 0]);
+    expect(actual.levels.map((level) => level.solved), [null, -3, null]);
+
+    names.clear();
+    aliases.clear();
+    parentNames.clear();
+    firstParent.clear();
+    secondParent.clear();
+    parents.clear();
+    childNames.clear();
+    child.clear();
+    children.clear();
+    firstLevel.clear();
+    secondLevel.clear();
+    levels.clear();
+    source.clear();
+    expect(actual.names.keys, ['z-last', 'ko', 'a-first']);
+    expect(actual.aliases, ['second', '', 'second']);
+    expect(actual.parents.map((relation) => relation.key), ['', ' child ', '']);
+    expect(actual.parents[1].names, {'zz': '부모', 'aa': ''});
+    expect(actual.children, hasLength(2));
+    expect(actual.children.first.names, {'unicode': '한 글'});
+    expect(actual.levels.map((level) => level.level), [0, -1, 0]);
+
+    expect(() => actual.names['en'] = 'name', throwsUnsupportedError);
+    expect(() => actual.aliases.add('alias'), throwsUnsupportedError);
+    expect(() => actual.parents.clear(), throwsUnsupportedError);
+    expect(
+      () => actual.parents.first.names['en'] = 'parent',
+      throwsUnsupportedError,
+    );
+    expect(
+      () => actual.children[0] = const TagDetailRelatedTag(key: 'x', names: {}),
+      throwsUnsupportedError,
+    );
+    expect(() => actual.children.first.names.clear(), throwsUnsupportedError);
+    expect(
+      () => actual.levels.add(
+        const TagDetailLevel(level: 1, count: 1, solved: 1),
+      ),
+      throwsUnsupportedError,
+    );
+    expect(
+      () => actual.levels[0] = const TagDetailLevel(
+        level: 1,
+        count: 1,
+        solved: 1,
+      ),
+      throwsUnsupportedError,
+    );
+
+    final empty = endpoint.decode({
+      'id': 0,
+      'key': '',
+      'names': <String, Object?>{},
+      'aliases': <Object?>[],
+      'parents': <Object?>[],
+      'children': <Object?>[],
+      'rated': true,
+      'problemCount': 0,
+      'solvedCount': null,
+      'levels': <Object?>[],
+      'futureField': 'allowed',
+    });
+    expect(empty.id, 0);
+    expect(empty.id, isA<int>());
+    expect(empty.names, isEmpty);
+    expect(empty.aliases, isEmpty);
+    expect(empty.parents, isEmpty);
+    expect(empty.children, isEmpty);
+    expect(empty.levels, isEmpty);
+  });
+
   test('normalizes standalone v4 background and badge items', () {
     final OfficialAchievementItem item = contract
         .achievementItem(

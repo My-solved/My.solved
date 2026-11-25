@@ -1,0 +1,45 @@
+{
+  "id": 42.5,
+  "key": "number_theory",
+  "names": {
+    "ko": "수학 > 정수론",
+    "en": "Mathematics > Number Theory"
+  },
+  "aliases": [
+    "정수론",
+    "number theory"
+  ],
+  "parents": [
+    {
+      "key": "mathematics",
+      "names": {
+        "ko": "수학",
+        "en": "Mathematics"
+      }
+    }
+  ],
+  "children": [
+    {
+      "key": "prime_number",
+      "names": {
+        "ko": "소수",
+        "en": "Prime Number"
+      }
+    }
+  ],
+  "rated": true,
+  "problemCount": 321,
+  "solvedCount": 123,
+  "levels": [
+    {
+      "level": 0,
+      "count": 7,
+      "solved": null
+    },
+    {
+      "level": 12,
+      "count": 19,
+      "solved": 5
+    }
+  ]
+}

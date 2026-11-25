@@ -356,6 +356,14 @@ class SolvedApiClient {
     );
   }
 
+  Future<TagDetailResult> v4TagDetail(String key) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.tagDetail(key),
+      requestType: _RequestType.search,
+    );
+  }
+
   Future<SearchObject<ProblemSearchItem>> searchProblem(
     String query,
     int? page,
