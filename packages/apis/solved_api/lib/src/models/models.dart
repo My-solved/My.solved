@@ -22,6 +22,7 @@ export 'profile_streak.dart';
 export 'profile_tag_rating.dart';
 export 'profile_tier_stat.dart';
 export 'search_object.dart';
+export 'search_suggestion_result.dart';
 export 'solved_user_identity.dart';
 export 'tag_detail_result.dart';
 export 'tag_search_item.dart';

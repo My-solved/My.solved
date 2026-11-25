@@ -225,6 +225,34 @@ final class SolvedApiV4Contract {
     );
   }
 
+  SolvedApiEndpoint<SearchSuggestionResult> searchSuggestions(
+    String topic, {
+    String? value,
+  }) {
+    if (topic.runes.length > 64) {
+      throw ArgumentError.value(
+        topic,
+        'topic',
+        'Must not exceed 64 characters',
+      );
+    }
+    if (value != null && value.runes.length > 100) {
+      throw ArgumentError.value(
+        value,
+        'value',
+        'Must not exceed 100 characters',
+      );
+    }
+    return _endpoint(
+      path: 'search/suggest',
+      queryParameters: {
+        'topic': topic,
+        if (value != null) 'value': value,
+      },
+      decode: _decodeV4SearchSuggestions,
+    );
+  }
+
   /// Fetches the complete official tag catalog and filters it locally.
   ///
   /// The v4 `/tags` endpoint accepts no query or page parameters. Matching is
@@ -272,6 +300,35 @@ SolvedUserIdentity _decodeV4UserIdentity(dynamic json) {
     handle: _string(body['handle'], 'handle'),
   );
 }
+
+SearchSuggestionResult _decodeV4SearchSuggestions(dynamic json) {
+  final body = _object(json, 'search suggestions');
+  final suggestions = List<SearchSuggestionItem>.unmodifiable(
+    _list(body['suggestions'], 'suggestions').map(
+      (value) => _decodeV4SearchSuggestionItem(
+        _object(value, 'suggestions[]'),
+      ),
+    ),
+  );
+  return SearchSuggestionResult(suggestions: suggestions);
+}
+
+SearchSuggestionItem _decodeV4SearchSuggestionItem(
+  Map<String, dynamic> body,
+) =>
+    SearchSuggestionItem(
+      value: _string(body['value'], 'suggestions[].value'),
+      detail: _requiredNullableString(
+        body,
+        'detail',
+        'suggestions[].detail',
+      ),
+      tier: _requiredNullableInteger(
+        body,
+        'tier',
+        'suggestions[].tier',
+      ),
+    );
 
 ProblemDetailResult _decodeV4ProblemDetail(dynamic json) {
   const field = 'problem detail';
