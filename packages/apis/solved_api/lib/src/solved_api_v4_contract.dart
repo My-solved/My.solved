@@ -84,8 +84,8 @@ final class SolvedApiV4Contract {
     required DateTime from,
     required DateTime to,
   }) {
-    final fromDay = DateTime.utc(from.year, from.month, from.day);
-    final toDay = DateTime.utc(to.year, to.month, to.day);
+    final fromDay = _activityQueryDay(from, 'from');
+    final toDay = _activityQueryDay(to, 'to');
     if (fromDay.isAfter(toDay)) {
       throw ArgumentError.value(from, 'from', 'Must not be after to');
     }
@@ -1369,6 +1369,17 @@ void _positivePage(int page) {
   if (page < 1) {
     throw ArgumentError.value(page, 'page', 'Must be at least 1');
   }
+}
+
+DateTime _activityQueryDay(DateTime value, String name) {
+  if (value.year < 0 || value.year > 9999) {
+    throw ArgumentError.value(
+      value,
+      name,
+      'Year must be from 0 through 9999',
+    );
+  }
+  return DateTime.utc(value.year, value.month, value.day);
 }
 
 String _formatDay(DateTime day) => '${day.year.toString().padLeft(4, '0')}-'

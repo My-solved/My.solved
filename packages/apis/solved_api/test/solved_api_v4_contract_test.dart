@@ -2247,6 +2247,20 @@ void main() {
     expect(actual.days.last.streakRepaired, isTrue);
   });
 
+  test('encodes the complete four-digit activity query year range', () {
+    final endpoint = contract.userActivity(
+      'index',
+      from: DateTime.utc(0, 1, 2, 23, 59),
+      to: DateTime.utc(9999, 12, 31, 1),
+    );
+
+    expect(endpoint.direct.queryParameters, {
+      'from': '0000-01-02',
+      'to': '9999-12-31',
+    });
+    expect(endpoint.proxy.queryParameters, endpoint.direct.queryParameters);
+  });
+
   test('requires every activity envelope key and exact top-level types', () {
     final endpoint = contract.userActivity(
       'index',
@@ -2811,6 +2825,35 @@ void main() {
       ),
       throwsArgumentError,
     );
+  });
+
+  test('rejects activity query years outside the official pattern', () {
+    final invalidCases = <({String name, DateTime value})>[
+      (name: 'from', value: DateTime.utc(-1, 1, 1)),
+      (name: 'from', value: DateTime.utc(10000, 1, 1)),
+      (name: 'to', value: DateTime.utc(-1, 1, 1)),
+      (name: 'to', value: DateTime.utc(10000, 1, 1)),
+    ];
+
+    for (final invalid in invalidCases) {
+      final from =
+          invalid.name == 'from' ? invalid.value : DateTime.utc(2026, 11, 1);
+      final to =
+          invalid.name == 'to' ? invalid.value : DateTime.utc(2026, 11, 17);
+      expect(
+        () => contract.userActivity('index', from: from, to: to),
+        throwsA(
+          isA<ArgumentError>()
+              .having((error) => error.name, 'name', invalid.name)
+              .having(
+                (error) => error.invalidValue,
+                'invalidValue',
+                same(invalid.value),
+              ),
+        ),
+        reason: '${invalid.name} = ${invalid.value.year}',
+      );
+    }
   });
 
   test('normalizes the complete official reputation result', () {
