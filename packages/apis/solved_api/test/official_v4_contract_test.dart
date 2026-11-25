@@ -505,12 +505,24 @@ void main() {
     final activity = _get(contract, '/api/v4/users/{handle}/activity/days');
     expect(_accessClass(activity), 'public');
     expect(_parameterNames(activity), ['handle', 'from', 'to']);
+    final activityParameters = _parameters(activity);
     expect(
-      _parameters(activity)
+      activityParameters
           .where((parameter) => parameter['required'] == true)
           .map((parameter) => parameter['name']),
       ['handle', 'from', 'to'],
     );
+    for (final field in ['from', 'to']) {
+      final parameter = activityParameters.singleWhere(
+        (parameter) => parameter['name'] == field,
+      );
+      expect(parameter['in'], 'query');
+      expect(parameter['required'], isTrue);
+      expect(_map(parameter['schema']), {
+        'type': 'string',
+        'pattern': r'^\d{4}-\d{2}-\d{2}$',
+      });
+    }
     final activitySchema = _responseSchema(activity);
     expect(_required(activitySchema), [
       'from',
