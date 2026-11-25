@@ -102,6 +102,8 @@ void main() {
         expect(profile.streakCountedToday, isTrue);
         expect(profile.streakFrozenYesterday, isFalse);
         expect(profile.streakTheme, isNull);
+        expect(profile.isRival, isFalse);
+        expect(profile.isReverseRival, isFalse);
         expect(profile.backgroundId, 'anniversary_1st');
         expect(profile.background, isA<OfficialUserProfileBackground>());
         expect(profile.background?.backgroundVideoUrl, isNull);

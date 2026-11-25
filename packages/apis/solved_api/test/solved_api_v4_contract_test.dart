@@ -110,6 +110,8 @@ void main() {
     expect(actual.streakCountedToday, isTrue);
     expect(actual.streakFrozenYesterday, isFalse);
     expect(actual.streakTheme, isNull);
+    expect(actual.isRival, isFalse);
+    expect(actual.isReverseRival, isFalse);
     expect(actual.voteCount, 37);
     expect(actual.legacyContributionCount, isNull);
     expect(actual.reverseRivalCount, isNull);
@@ -222,6 +224,59 @@ void main() {
     expect(actual.reputation, 9001);
     expect(actual.handle, 'independent-handle');
     expect(actual.legacyContributionCount, isNull);
+  });
+
+  test('requires and preserves independent public profile rivalry flags', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_profile.json')) as Map,
+        );
+
+    for (final field in ['isRival', 'isReverseRival']) {
+      expect(
+        () => endpoint.decode(source()..remove(field)),
+        throwsFormatException,
+        reason: '$field missing',
+      );
+      for (final invalid in <Object?>[
+        null,
+        0,
+        1,
+        'true',
+        const <Object>[],
+        const <String, Object?>{},
+      ]) {
+        expect(
+          () => endpoint.decode(source()..[field] = invalid),
+          throwsFormatException,
+          reason: '$field = $invalid',
+        );
+      }
+    }
+
+    final legacy = const SolvedApiV3Contract()
+        .userShow('index')
+        .decode(jsonDecode(fixture('v3/user_show.json')));
+    expect(legacy.reverseRivalCount, 44);
+
+    for (final isRival in [false, true]) {
+      for (final isReverseRival in [false, true]) {
+        final actual = endpoint.decode(
+          source()
+            ..['isRival'] = isRival
+            ..['isReverseRival'] = isReverseRival
+            ..['futureProfileField'] = 'allowed',
+        );
+
+        expect(actual.isRival, isRival);
+        expect(actual.isReverseRival, isReverseRival);
+        expect(
+          actual.reverseRivalCount,
+          isNull,
+          reason: 'v4 flags must not infer the v3 count',
+        );
+      }
+    }
   });
 
   test('requires exact public profile streak state types', () {

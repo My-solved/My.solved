@@ -89,6 +89,8 @@ void main() {
         'streakCountedToday',
         'streakFrozenYesterday',
         'streakTheme',
+        'isRival',
+        'isReverseRival',
         'voteCount',
         'reputation',
         'noRatingSolvedCount',
@@ -145,6 +147,8 @@ void main() {
     expect(_map(profileProperties['streakTheme']), {
       'type': ['string', 'null'],
     });
+    expect(_map(profileProperties['isRival']), {'type': 'boolean'});
+    expect(_map(profileProperties['isReverseRival']), {'type': 'boolean'});
 
     final background = _map(profileProperties['background']);
     expect(background['type'], ['object', 'null']);

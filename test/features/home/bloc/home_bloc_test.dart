@@ -753,6 +753,8 @@ OfficialUserProfile _officialProfile({
   streakCountedToday: streakCountedToday,
   streakFrozenYesterday: false,
   streakTheme: null,
+  isRival: false,
+  isReverseRival: false,
   handle: 'w8385',
   profileImageUrl: null,
   solvedCount: 1,
