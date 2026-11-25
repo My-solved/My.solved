@@ -224,7 +224,7 @@ class SolvedApiClient {
       );
 
   /// Requests the official v4 profile through its credential-holding proxy.
-  Future<UserProfile> v4UserProfile(String handle) {
+  Future<OfficialUserProfile> v4UserProfile(String handle) {
     final contract = _requireV4Contract();
     return _getV4(
       contract.userProfile(handle),

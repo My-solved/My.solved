@@ -72,7 +72,8 @@ final class SolvedApiV4Contract {
         decode: _decodeV4UserIdentity,
       );
 
-  SolvedApiEndpoint<UserProfile> userProfile(String handle) => _endpoint(
+  SolvedApiEndpoint<OfficialUserProfile> userProfile(String handle) =>
+      _endpoint(
         path: 'users/${_pathSegment(handle, 'handle')}',
         queryParameters: const {'lang': 'ko'},
         decode: _decodeV4UserProfile,
@@ -719,7 +720,7 @@ final class _V4CatalogTag {
   ].any((candidate) => candidate.toLowerCase().contains(normalizedQuery));
 }
 
-UserProfile _decodeV4UserProfile(dynamic json) {
+OfficialUserProfile _decodeV4UserProfile(dynamic json) {
   final body = _object(json, 'profile');
   final background = _decodeInlineBackground(body['background']);
   final badge = _decodeInlineBadge(body['badge']);
@@ -728,7 +729,9 @@ UserProfile _decodeV4UserProfile(dynamic json) {
       .map((item) => _decodeV4TagRating(_object(item, 'tagRatings[]')))
       .toList(growable: false);
 
-  return UserProfile(
+  return OfficialUserProfile(
+    id: _number(body['id'], 'id'),
+    voteCount: _integer(body['voteCount'], 'voteCount'),
     handle: _string(body['handle'], 'handle'),
     badgeId: badge?.key,
     backgroundId: background?.key,

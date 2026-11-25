@@ -69,7 +69,7 @@ void main() {
           return _jsonResponse(_paddedFixture(fixturePath));
         };
 
-        final profile = await client.v4UserProfile('index');
+        final OfficialUserProfile profile = await client.v4UserProfile('index');
         final ProfileActivityResult activity = await client.v4UserActivity(
           'index',
           from: DateTime.utc(2026, 11),
@@ -95,6 +95,8 @@ void main() {
         final tags = await client.v4SearchTags('NUMBER');
 
         expect(profile.handle, 'index');
+        expect(profile.id, 1);
+        expect(profile.voteCount, 37);
         expect(profile.solvedCount, 2048);
         expect(activity.from, '2026-11-01');
         expect(activity.to, '2026-11-17');

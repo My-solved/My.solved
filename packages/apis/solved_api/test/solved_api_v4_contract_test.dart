@@ -94,8 +94,10 @@ void main() {
 
   test('normalizes the integrated v4 public profile', () {
     final source = jsonDecode(fixture('v4/user_profile.json'));
-    final actual = contract.userProfile('index').decode(source);
+    final OfficialUserProfile actual =
+        contract.userProfile('index').decode(source);
 
+    expect(actual.id, 1);
     expect(actual.handle, 'index');
     expect(actual.tier, isNull);
     expect(actual.rating, 2417);
@@ -104,6 +106,7 @@ void main() {
     expect(actual.classPlus, isTrue);
     expect(actual.currentStreak, 12);
     expect(actual.maxStreak, 365);
+    expect(actual.voteCount, 37);
     expect(actual.legacyContributionCount, isNull);
     expect(actual.reverseRivalCount, isNull);
     expect(actual.reputation, 314);
@@ -126,7 +129,77 @@ void main() {
     expect(actual.tagRatings.first.key, 'dp');
     expect(actual.tagRatings.first.rating, 1750);
     expect(actual.tagRatings.first.solvedCount, 120);
-    expect((source as Map<String, dynamic>)['voteCount'], 37);
+    expect(actual, isA<UserProfile>());
+  });
+
+  test('requires raw public profile identity fields without inference', () {
+    final endpoint = contract.userProfile('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_profile.json')) as Map,
+        );
+
+    for (final field in ['id', 'voteCount']) {
+      expect(
+        () => endpoint.decode(source()..remove(field)),
+        throwsFormatException,
+        reason: '$field missing',
+      );
+    }
+
+    for (final invalid in <Object?>[
+      null,
+      '1',
+      false,
+      const <Object>[],
+      const <String, Object?>{},
+      double.nan,
+      double.infinity,
+      double.negativeInfinity,
+    ]) {
+      expect(
+        () => endpoint.decode(source()..['id'] = invalid),
+        throwsFormatException,
+        reason: 'id = $invalid',
+      );
+    }
+    for (final invalid in <Object?>[
+      null,
+      '1',
+      1.0,
+      false,
+      const <Object>[],
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(source()..['voteCount'] = invalid),
+        throwsFormatException,
+        reason: 'voteCount = $invalid',
+      );
+    }
+
+    for (final id in <num>[-7, 0, 42, 42.0, -2.5, 42.5]) {
+      final actual = endpoint.decode(source()..['id'] = id);
+      expect(actual.id, id);
+      expect(actual.id.runtimeType, id.runtimeType);
+    }
+    for (final voteCount in [-7, 0, 42]) {
+      final actual = endpoint.decode(source()..['voteCount'] = voteCount);
+      expect(actual.voteCount, voteCount);
+    }
+
+    final actual = endpoint.decode(
+      source()
+        ..['id'] = -2.5
+        ..['voteCount'] = -7
+        ..['reputation'] = 9001
+        ..['handle'] = 'independent-handle'
+        ..['futureProfileField'] = 'allowed',
+    );
+    expect(actual.id, -2.5);
+    expect(actual.voteCount, -7);
+    expect(actual.reputation, 9001);
+    expect(actual.handle, 'independent-handle');
+    expect(actual.legacyContributionCount, isNull);
   });
 
   test('requires nullable tier and profile image keys in public profiles', () {

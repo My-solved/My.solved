@@ -76,6 +76,7 @@ void main() {
     expect(
       _required(profileSchema),
       containsAll([
+        'id',
         'tier',
         'profileImageUrl',
         'bio',
@@ -97,6 +98,8 @@ void main() {
       ]),
     );
     final profileProperties = _properties(profileSchema);
+    expect(_map(profileProperties['id']), {'type': 'number'});
+    expect(_map(profileProperties['voteCount']), {'type': 'integer'});
     expect(_map(profileProperties['tier']), {
       'type': ['integer', 'null'],
       'minimum': 0,
