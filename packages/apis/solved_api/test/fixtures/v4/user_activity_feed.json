@@ -1,0 +1,60 @@
+{
+  "events": [
+    {
+      "id": -17,
+      "type": "solved",
+      "occurredAt": "2026-11-25T01:02:03Z",
+      "problem": {
+        "problemId": -1000,
+        "subId": "main",
+        "level": 30,
+        "effectiveVoteCount": 0,
+        "givesNoRating": true,
+        "isStandard": false,
+        "titles": [
+          {
+            "language": "ko",
+            "title": "활동 문제",
+            "isOriginal": true,
+            "latex": false,
+            "html": false
+          },
+          {
+            "language": "ko",
+            "title": "활동 문제",
+            "isOriginal": true,
+            "latex": false,
+            "html": false
+          }
+        ],
+        "userStatus": "partial"
+      },
+      "reason": null,
+      "milestone": null,
+      "payload": {
+        "delta": -3,
+        "whole": 2.0,
+        "ratio": 1.5,
+        "nested": [null, true, "raw", {"value": 7}]
+      }
+    },
+    {
+      "id": 0,
+      "type": "rating",
+      "occurredAt": "not-a-date-time",
+      "problem": null,
+      "reason": "raw reason",
+      "milestone": -99,
+      "payload": null
+    },
+    {
+      "id": 42,
+      "type": "voteMilestone",
+      "occurredAt": "",
+      "problem": null,
+      "reason": null,
+      "milestone": 0
+    }
+  ],
+  "nextCursor": ""
+}

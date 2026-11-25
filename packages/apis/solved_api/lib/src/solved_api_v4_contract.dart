@@ -110,6 +110,30 @@ final class SolvedApiV4Contract {
     );
   }
 
+  SolvedApiEndpoint<ProfileActivityFeedResult> userActivityFeed(
+    String handle, {
+    String? before,
+    String? from,
+    String? to,
+    int? limit,
+  }) {
+    if (from != null) _activityFeedQueryDay(from, 'from');
+    if (to != null) _activityFeedQueryDay(to, 'to');
+    if (limit != null && (limit < 1 || limit > 500)) {
+      throw ArgumentError.value(limit, 'limit', 'Must be from 1 through 500');
+    }
+    return _endpoint(
+      path: 'users/${_pathSegment(handle, 'handle')}/activity/feed',
+      queryParameters: {
+        if (before != null) 'before': before,
+        if (from != null) 'from': from,
+        if (to != null) 'to': to,
+        if (limit != null) 'limit': limit.toString(),
+      },
+      decode: _decodeV4ProfileActivityFeed,
+    );
+  }
+
   SolvedApiEndpoint<ProfileReputationResult> userReputation(
     String handle, {
     SolvedApiV4ReputationRange? range,
@@ -1637,6 +1661,112 @@ ProfileActivityResult _decodeV4ProfileActivity(dynamic json) {
   );
 }
 
+ProfileActivityFeedResult _decodeV4ProfileActivityFeed(dynamic json) {
+  final body = _object(json, 'activity feed');
+  final events = List<ProfileActivityFeedEvent>.unmodifiable(
+    _list(body['events'], 'events').map(
+      (value) => _decodeV4ProfileActivityFeedEvent(
+        _object(value, 'events[]'),
+      ),
+    ),
+  );
+  return ProfileActivityFeedResult(
+    events: events,
+    nextCursor: _requiredNullableString(body, 'nextCursor'),
+  );
+}
+
+ProfileActivityFeedEvent _decodeV4ProfileActivityFeedEvent(
+  Map<String, dynamic> body,
+) {
+  if (!body.containsKey('problem')) {
+    throw const FormatException('Missing required field events[].problem');
+  }
+  final problemValue = body['problem'];
+  final hasPayload = body.containsKey('payload');
+  return ProfileActivityFeedEvent(
+    id: _integer(body['id'], 'events[].id'),
+    type: _decodeV4ProfileActivityFeedEventType(body['type']),
+    occurredAt: _string(body['occurredAt'], 'events[].occurredAt'),
+    problem: problemValue == null
+        ? null
+        : _decodeV4ProfileActivityFeedProblem(
+            _object(problemValue, 'events[].problem'),
+          ),
+    reason: _requiredNullableString(body, 'reason', 'events[].reason'),
+    milestone: _requiredNullableInteger(
+      body,
+      'milestone',
+      'events[].milestone',
+    ),
+    hasPayload: hasPayload,
+    payload: hasPayload
+        ? _immutableJsonValue(body['payload'], 'events[].payload')
+        : null,
+  );
+}
+
+ProfileActivityFeedEventType _decodeV4ProfileActivityFeedEventType(
+  Object? value,
+) {
+  final code = _string(value, 'events[].type');
+  return switch (code) {
+    'solved' => ProfileActivityFeedEventType.solved,
+    'unsolved' => ProfileActivityFeedEventType.unsolved,
+    'vote' => ProfileActivityFeedEventType.vote,
+    'rating' => ProfileActivityFeedEventType.rating,
+    'tier' => ProfileActivityFeedEventType.tier,
+    'solvedMilestone' => ProfileActivityFeedEventType.solvedMilestone,
+    'voteMilestone' => ProfileActivityFeedEventType.voteMilestone,
+    _ => throw const FormatException('Unsupported events[].type'),
+  };
+}
+
+ProfileActivityFeedProblem _decodeV4ProfileActivityFeedProblem(
+  Map<String, dynamic> body,
+) {
+  if (!body.containsKey('userStatus')) {
+    throw const FormatException(
+      'Missing required field events[].problem.userStatus',
+    );
+  }
+  final userStatusValue = body['userStatus'];
+  return ProfileActivityFeedProblem(
+    problemId: _integer(body['problemId'], 'events[].problem.problemId'),
+    subId: _string(body['subId'], 'events[].problem.subId'),
+    level: _activityFeedProblemLevel(
+      body['level'],
+      'events[].problem.level',
+    ),
+    effectiveVoteCount: _nonNegativeInteger(
+      body['effectiveVoteCount'],
+      'events[].problem.effectiveVoteCount',
+    ),
+    givesNoRating: _boolean(
+      body['givesNoRating'],
+      'events[].problem.givesNoRating',
+    ),
+    isStandard: _boolean(
+      body['isStandard'],
+      'events[].problem.isStandard',
+    ),
+    titles: List<ProblemSearchTitle>.unmodifiable(
+      _list(body['titles'], 'events[].problem.titles').map(
+        (value) => _decodeV4ProblemSearchTitle(
+          _object(value, 'events[].problem.titles[]'),
+          'events[].problem.titles[]',
+        ),
+      ),
+    ),
+    userStatus: userStatusValue == null
+        ? null
+        : _decodeV4ProblemUserStatus(
+            userStatusValue,
+            'events[].problem.userStatus',
+          ),
+  );
+}
+
 ProfileActivityCurrentVacation _decodeV4ProfileActivityCurrentVacation(
   Map<String, dynamic> body,
 ) =>
@@ -2255,6 +2385,16 @@ String _formatDay(DateTime day) => '${day.year.toString().padLeft(4, '0')}-'
     '${day.month.toString().padLeft(2, '0')}-'
     '${day.day.toString().padLeft(2, '0')}';
 
+void _activityFeedQueryDay(String value, String name) {
+  if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value)) {
+    throw ArgumentError.value(
+      value,
+      name,
+      'Must match YYYY-MM-DD',
+    );
+  }
+}
+
 String _profileHistoryDay(Object? value, String field) {
   final day = _string(value, field);
   if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(day)) {
@@ -2296,6 +2436,28 @@ Map<String, String> _stringMap(Object? value, String field) {
 List<dynamic> _list(Object? value, String field) {
   if (value is! List) throw FormatException('Expected list for $field');
   return List<dynamic>.from(value);
+}
+
+Object? _immutableJsonValue(Object? value, String field) {
+  if (value == null || value is String || value is bool) return value;
+  if (value is num) return _number(value, field);
+  if (value is List) {
+    return List<Object?>.unmodifiable(
+      value.map((item) => _immutableJsonValue(item, '$field[]')),
+    );
+  }
+  if (value is Map) {
+    final decoded = <String, Object?>{};
+    for (final entry in value.entries) {
+      if (entry.key is! String) {
+        throw FormatException('Expected string key for $field');
+      }
+      decoded[entry.key as String] =
+          _immutableJsonValue(entry.value, '$field{}');
+    }
+    return Map<String, Object?>.unmodifiable(decoded);
+  }
+  throw FormatException('Expected JSON value for $field');
 }
 
 String _string(Object? value, String field) {
@@ -2347,6 +2509,14 @@ int _nonNegativeInteger(Object? value, String field) {
 }
 
 int _profileActivityMaxSolvedLevel(Object? value, String field) {
+  final decoded = _integer(value, field);
+  if (decoded < 0 || decoded > 30) {
+    throw FormatException('Expected integer from 0 through 30 for $field');
+  }
+  return decoded;
+}
+
+int _activityFeedProblemLevel(Object? value, String field) {
   final decoded = _integer(value, field);
   if (decoded < 0 || decoded > 30) {
     throw FormatException('Expected integer from 0 through 30 for $field');

@@ -56,6 +56,8 @@ void main() {
             '/solved/v4/users/index' => 'v4/user_profile.json',
             '/solved/v4/users/index/activity/days' =>
               'v4/user_activity_days.json',
+            '/solved/v4/users/index/activity/feed' =>
+              'v4/user_activity_feed.json',
             '/solved/v4/users/index/reputation' => 'v4/user_reputation.json',
             '/solved/v4/users/index/rating/history' =>
               'v4/user_rating_history.json',
@@ -87,6 +89,14 @@ void main() {
           'index',
           from: DateTime.utc(2026, 11),
           to: DateTime.utc(2026, 11, 17),
+        );
+        final ProfileActivityFeedResult activityFeed =
+            await client.v4UserActivityFeed(
+          'index',
+          before: '',
+          from: '9999-99-99',
+          to: '0000-00-00',
+          limit: 500,
         );
         final ProfileReputationResult reputation =
             await client.v4UserReputation(
@@ -227,6 +237,16 @@ void main() {
         expect(activity.countedToday, isTrue);
         expect(activity.frozenYesterday, isFalse);
         expect(activity.days, hasLength(2));
+        expect(activityFeed.events, hasLength(3));
+        expect(
+          activityFeed.events.first.type,
+          ProfileActivityFeedEventType.solved,
+        );
+        expect(activityFeed.events.first.problem?.problemId, -1000);
+        expect(activityFeed.events[1].hasPayload, isTrue);
+        expect(activityFeed.events[1].payload, isNull);
+        expect(activityFeed.events.last.hasPayload, isFalse);
+        expect(activityFeed.nextCursor, '');
         expect(reputation.reputation, 314);
         expect(reputation.history.single.day, '2026-11-17');
         expect(reputation.history.single.value, 314);
@@ -328,6 +348,10 @@ void main() {
               'from': '2026-11-01',
               'to': '2026-11-17',
             }),
+            Uri.parse(
+              'https://proxy.example/solved/v4/users/index/activity/feed?'
+              'before=&from=9999-99-99&to=0000-00-00&limit=500',
+            ),
             _uri('users/index/reputation', <String, String>{'range': '1y'}),
             _uri(
               'users/index/rating/history',
@@ -388,23 +412,23 @@ void main() {
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(20));
+        expect(httpClient.requests, hasLength(21));
         expect(
-          httpClient.requests[11].url.toString(),
+          httpClient.requests[12].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
         );
         expect(
-          httpClient.requests[14].url.toString(),
+          httpClient.requests[15].url.toString(),
           'https://proxy.example/solved/v4/search/suggest?'
           'topic=tag%26%ED%95%9C&value=',
         );
         expect(
-          httpClient.requests[15].url.toString(),
+          httpClient.requests[16].url.toString(),
           'https://proxy.example/solved/v4/search/analyze?'
           'q=tag%26%ED%95%9C',
         );
         expect(
-          httpClient.requests[16].url.toString(),
+          httpClient.requests[17].url.toString(),
           'https://proxy.example/solved/v4/search/random-problem?q=',
         );
         for (final request in httpClient.requests) {
@@ -558,6 +582,10 @@ void main() {
         isA<UserRequestFailed>(),
       );
       expect(
+        await _captureFailure(client.v4UserActivityFeed('index')),
+        isA<UserRequestFailed>(),
+      );
+      expect(
         await _captureFailure(client.v4UserRatingHistory('index')),
         isA<UserRequestFailed>(),
       );
@@ -629,7 +657,7 @@ void main() {
         await _captureFailure(client.v4SiteStats()),
         isA<SiteRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(16));
+      expect(httpClient.requests, hasLength(17));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -653,6 +681,111 @@ void main() {
         _uri('users/index/rating/history'),
       );
       expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves omitted, empty, and combined activity-feed queries',
+        () async {
+      handler = (_) async => _jsonResponse(
+            fixture('v4/user_activity_feed.json'),
+          );
+
+      final omitted = await client.v4UserActivityFeed('index');
+      final empty = await client.v4UserActivityFeed('index', before: '');
+      final combined = await client.v4UserActivityFeed(
+        '한 글',
+        before: '커서 & raw',
+        from: '9999-99-99',
+        to: '0000-00-00',
+        limit: 500,
+      );
+
+      expect(omitted.events.first.type, ProfileActivityFeedEventType.solved);
+      expect(empty.nextCursor, '');
+      expect(combined.events.last.hasPayload, isFalse);
+      expect(httpClient.requests.map((request) => request.url), [
+        _uri('users/index/activity/feed'),
+        Uri.parse(
+          'https://proxy.example/solved/v4/users/index/activity/feed?before=',
+        ),
+        _uri(
+          'users/%ED%95%9C%20%EA%B8%80/activity/feed',
+          <String, String>{
+            'before': '커서 & raw',
+            'from': '9999-99-99',
+            'to': '0000-00-00',
+            'limit': '500',
+          },
+        ),
+      ]);
+      expect(httpClient.requests, hasLength(3));
+    });
+
+    test('rejects invalid activity-feed queries before transport', () {
+      expect(
+        () => client.v4UserActivityFeed('index', from: '2026-1-01'),
+        throwsArgumentError,
+      );
+      expect(
+        () => client.v4UserActivityFeed('index', to: 'not-a-day'),
+        throwsArgumentError,
+      );
+      expect(
+        () => client.v4UserActivityFeed('index', limit: 0),
+        throwsArgumentError,
+      );
+      expect(
+        () => client.v4UserActivityFeed('index', limit: 501),
+        throwsArgumentError,
+      );
+      expect(httpClient.requests, isEmpty);
+    });
+
+    test('wraps a malformed activity feed as a user failure', () async {
+      handler = (_) async => _jsonResponse(
+            jsonEncode({'events': <Object?>[]}),
+          );
+
+      final error = await _captureFailure(
+        client.v4UserActivityFeed('index'),
+      );
+
+      expect(error, isA<UserRequestFailed>());
+      expect(error.statusCode, 200);
+      expect(error.cause, isA<FormatException>());
+      expect(error.responseBody, isNull);
+      expect(
+        httpClient.requests.single.url,
+        _uri('users/index/activity/feed'),
+      );
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves activity-feed 404 and 429 failures', () async {
+      for (final status in [404, 429]) {
+        handler = (_) async => _bytesResponse(
+              const <int>[0xff],
+              statusCode: status,
+              headers: <String, String>{
+                'content-type': 'text/plain',
+                if (status == 429) 'retry-after': '11',
+              },
+            );
+
+        final error = await _captureFailure(
+          client.v4UserActivityFeed('index'),
+        );
+
+        expect(error, isA<UserRequestFailed>());
+        expect(error.statusCode, status);
+        expect(error.cause, isNull);
+        expect(error.responseBody, isNull);
+        expect(
+          error.retryAfter,
+          status == 429 ? const Duration(seconds: 11) : isNull,
+        );
+        expect(error.isRetryable, status == 429);
+      }
+      expect(httpClient.requests, hasLength(2));
     });
 
     test('sends an encoded anonymous user-tag histogram request', () async {
