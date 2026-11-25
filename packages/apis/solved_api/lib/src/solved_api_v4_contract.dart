@@ -770,6 +770,9 @@ OfficialUserProfile _decodeV4UserProfile(dynamic json) {
       ),
     ),
   );
+  final metadata = _decodeV4OfficialUserProfileMetadata(
+    _object(body['metadata'], 'metadata'),
+  );
   if (!body.containsKey('streakVacation')) {
     throw const FormatException('Missing required field streakVacation');
   }
@@ -794,6 +797,7 @@ OfficialUserProfile _decodeV4UserProfile(dynamic json) {
     linkedAccounts: linkedAccounts,
     affiliations: affiliations,
     bans: bans,
+    metadata: metadata,
     handle: _string(body['handle'], 'handle'),
     profileImageUrl: _requiredNullableString(body, 'profileImageUrl'),
     bio: _requiredNullableString(body, 'bio'),
@@ -977,6 +981,61 @@ OfficialUserProfileBanReason? _decodeV4OfficialUserProfileBanReason(
     default:
       throw const FormatException('Unknown bans[].banReason');
   }
+}
+
+OfficialUserProfileMetadata _decodeV4OfficialUserProfileMetadata(
+  Map<String, dynamic> body,
+) {
+  if (!body.containsKey('birthday')) {
+    throw const FormatException('Missing required field metadata.birthday');
+  }
+  final birthdayValue = body['birthday'];
+
+  return OfficialUserProfileMetadata(
+    countryCode: _requiredNullableString(
+      body,
+      'countryCode',
+      'metadata.countryCode',
+    ),
+    pronouns: _requiredNullableString(
+      body,
+      'pronouns',
+      'metadata.pronouns',
+    ),
+    name: _requiredNullableString(body, 'name', 'metadata.name'),
+    nameNative: _requiredNullableString(
+      body,
+      'nameNative',
+      'metadata.nameNative',
+    ),
+    birthday: birthdayValue == null
+        ? null
+        : _decodeV4OfficialUserProfileBirthday(
+            _object(birthdayValue, 'metadata.birthday'),
+          ),
+  );
+}
+
+OfficialUserProfileBirthday _decodeV4OfficialUserProfileBirthday(
+  Map<String, dynamic> body,
+) {
+  return OfficialUserProfileBirthday(
+    year: _requiredNullableInteger(
+      body,
+      'year',
+      'metadata.birthday.year',
+    ),
+    month: _requiredNullableInteger(
+      body,
+      'month',
+      'metadata.birthday.month',
+    ),
+    day: _requiredNullableInteger(
+      body,
+      'day',
+      'metadata.birthday.day',
+    ),
+  );
 }
 
 OfficialUserProfileStreakVacation _decodeV4OfficialUserProfileStreakVacation(

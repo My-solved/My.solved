@@ -307,6 +307,13 @@ solved_api.OfficialUserProfile _officialProfile({
       linkedAccounts: const [],
       affiliations: const [],
       bans: const [],
+      metadata: const solved_api.OfficialUserProfileMetadata(
+        countryCode: null,
+        pronouns: null,
+        name: null,
+        nameNative: null,
+        birthday: null,
+      ),
       handle: 'w8385',
       profileImageUrl: null,
       solvedCount: 2048,
