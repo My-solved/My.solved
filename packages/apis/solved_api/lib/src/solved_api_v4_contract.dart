@@ -295,6 +295,11 @@ final class SolvedApiV4Contract {
     );
   }
 
+  SolvedApiEndpoint<SiteStatsResult> siteStats() => _endpoint(
+        path: 'site/stats',
+        decode: _decodeV4SiteStats,
+      );
+
   /// Fetches the complete official tag catalog and filters it locally.
   ///
   /// The v4 `/tags` endpoint accepts no query or page parameters. Matching is
@@ -816,6 +821,25 @@ RandomProblemResult _decodeV4RandomProblem(dynamic json) {
     contests: contests,
     tags: tags,
     viewerFolders: viewerFolders,
+  );
+}
+
+SiteStatsResult _decodeV4SiteStats(dynamic json) {
+  const field = 'site stats';
+  final body = _object(json, field);
+  return SiteStatsResult(
+    problemsWithLevel: _integer(
+      body['problemsWithLevel'],
+      '$field.problemsWithLevel',
+    ),
+    users: _integer(body['users'], '$field.users'),
+    contributors: _integer(body['contributors'], '$field.contributors'),
+    contributions: _integer(body['contributions'], '$field.contributions'),
+    usersByTier: List<int>.unmodifiable(
+      _list(body['usersByTier'], '$field.usersByTier').map(
+        (value) => _integer(value, '$field.usersByTier[]'),
+      ),
+    ),
   );
 }
 

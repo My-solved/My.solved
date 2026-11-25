@@ -17,6 +17,7 @@ const _relevantPaths = <String>[
   '/api/v4/search/analyze',
   '/api/v4/search/random-problem',
   '/api/v4/search/suggest',
+  '/api/v4/site/stats',
   '/api/v4/tags',
   '/api/v4/tags/{key}',
   '/api/v4/users/{handle}',

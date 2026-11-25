@@ -74,6 +74,7 @@ void main() {
             '/solved/v4/search/analyze' => 'v4/search_analysis.json',
             '/solved/v4/search/random-problem' => 'v4/random_problem.json',
             '/solved/v4/search/suggest' => 'v4/search_suggestions.json',
+            '/solved/v4/site/stats' => 'v4/site_stats.json',
             '/solved/v4/tags' => 'v4/tags.json',
             '/solved/v4/tags/number_theory' => 'v4/tag_detail.json',
             _ => throw StateError('Unexpected request: ${request.url}'),
@@ -135,6 +136,7 @@ void main() {
         final analysis = await client.v4AnalyzeProblemSearch(query: 'tag&한');
         final RandomProblemResult randomProblem =
             await client.v4RandomProblem(query: '');
+        final SiteStatsResult siteStats = await client.v4SiteStats();
         final tags = await client.v4SearchTags('NUMBER');
         final TagDetailResult tagDetail =
             await client.v4TagDetail('number_theory');
@@ -304,6 +306,11 @@ void main() {
         expect(randomProblem.level, isA<double>());
         expect(randomProblem.viewerFolders.last.color,
             ProblemSearchViewerFolderColor.red);
+        expect(siteStats.problemsWithLevel, 120000);
+        expect(siteStats.users, 0);
+        expect(siteStats.contributors, -7);
+        expect(siteStats.contributions, 345678);
+        expect(siteStats.usersByTier, [-3, 0, 0, 31, 7]);
         expect(tags.items.single.key, 'number_theory');
         expect(tagDetail.id, 42.5);
         expect(tagDetail.key, 'number_theory');
@@ -376,11 +383,12 @@ void main() {
             Uri.parse(
               'https://proxy.example/solved/v4/search/random-problem?q=',
             ),
+            _uri('site/stats'),
             _uri('tags'),
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(19));
+        expect(httpClient.requests, hasLength(20));
         expect(
           httpClient.requests[11].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
@@ -617,7 +625,11 @@ void main() {
         await _captureFailure(client.v4RandomProblem()),
         isA<SearchRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(15));
+      expect(
+        await _captureFailure(client.v4SiteStats()),
+        isA<SiteRequestFailed>(),
+      );
+      expect(httpClient.requests, hasLength(16));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -1025,6 +1037,48 @@ void main() {
         );
       }
       expect(httpClient.requests, hasLength(2));
+    });
+
+    test('wraps malformed site stats as a site failure', () async {
+      handler = (_) async => _jsonResponse(
+            jsonEncode({
+              'problemsWithLevel': 1,
+              'users': 2,
+              'contributors': 3,
+              'contributions': 4,
+            }),
+          );
+
+      final error = await _captureFailure(client.v4SiteStats());
+
+      expect(error, isA<SiteRequestFailed>());
+      expect(error.statusCode, 200);
+      expect(error.cause, isA<FormatException>());
+      expect(error.responseBody, isNull);
+      expect(httpClient.requests.single.url, _uri('site/stats'));
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves site-stats 429 failure metadata', () async {
+      handler = (_) async => _bytesResponse(
+            const <int>[0xff],
+            statusCode: 429,
+            headers: const <String, String>{
+              'content-type': 'text/plain',
+              'retry-after': '17',
+            },
+          );
+
+      final error = await _captureFailure(client.v4SiteStats());
+
+      expect(error, isA<SiteRequestFailed>());
+      expect(error.statusCode, 429);
+      expect(error.cause, isNull);
+      expect(error.responseBody, isNull);
+      expect(error.retryAfter, const Duration(seconds: 17));
+      expect(error.isRetryable, isTrue);
+      expect(httpClient.requests.single.url, _uri('site/stats'));
+      expect(httpClient.requests, hasLength(1));
     });
 
     test('preserves omitted, empty, and encoded suggestion queries', () async {
