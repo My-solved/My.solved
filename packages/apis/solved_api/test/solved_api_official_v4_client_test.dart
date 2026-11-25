@@ -73,6 +73,8 @@ void main() {
             '/solved/v4/problems/1000' => 'v4/problem_detail.json',
             '/solved/v4/problems' => 'v4/search_problems.json',
             '/solved/v4/rankings/regions' => 'v4/ranking_regions.json',
+            '/solved/v4/rankings/affiliations' =>
+              'v4/ranking_affiliations.json',
             '/solved/v4/rankings/tags' => 'v4/ranking_tags.json',
             '/solved/v4/rankings/users/search' => 'v4/search_users.json',
             '/solved/v4/search/analyze' => 'v4/search_analysis.json',
@@ -154,6 +156,11 @@ void main() {
         );
         final RankingRegionsResult rankingRegions =
             await client.v4RankingRegions();
+        final RankingAffiliationsResult rankingAffiliations =
+            await client.v4RankingAffiliations(
+          query: '',
+          language: '',
+        );
         final RankingTagsResult rankingTags =
             await client.v4RankingTags(language: '');
         final suggestions = await client.v4SearchSuggestions(
@@ -356,6 +363,16 @@ void main() {
           rankingRegions.regions.map((region) => region.userCount),
           [0, -7, 100],
         );
+        expect(rankingAffiliations.affiliations, hasLength(3));
+        expect(rankingAffiliations.affiliations.first.id, -1);
+        expect(rankingAffiliations.affiliations.first.userCount, -7);
+        expect(
+          rankingAffiliations.affiliations.first.type,
+          OfficialUserProfileAffiliationType.undefined,
+        );
+        expect(rankingAffiliations.affiliations.last.name, 'duplicate');
+        expect(rankingAffiliations.affiliations.last.color,
+            'not necessarily a color');
         expect(rankingTags.tags.map((tag) => tag.key), ['math', '', 'math']);
         expect(
           rankingTags.tags.map((tag) => tag.ratingTagIndex),
@@ -482,6 +499,10 @@ void main() {
             }),
             _uri('rankings/regions'),
             Uri.parse(
+              'https://proxy.example/solved/v4/'
+              'rankings/affiliations?q=&lang=',
+            ),
+            Uri.parse(
               'https://proxy.example/solved/v4/rankings/tags?lang=',
             ),
             Uri.parse(
@@ -517,23 +538,23 @@ void main() {
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(29));
+        expect(httpClient.requests, hasLength(30));
         expect(
           httpClient.requests[12].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
         );
         expect(
-          httpClient.requests[17].url.toString(),
+          httpClient.requests[18].url.toString(),
           'https://proxy.example/solved/v4/search/suggest?'
           'topic=tag%26%ED%95%9C&value=',
         );
         expect(
-          httpClient.requests[18].url.toString(),
+          httpClient.requests[19].url.toString(),
           'https://proxy.example/solved/v4/search/analyze?'
           'q=tag%26%ED%95%9C',
         );
         expect(
-          httpClient.requests[19].url.toString(),
+          httpClient.requests[20].url.toString(),
           'https://proxy.example/solved/v4/search/random-problem?q=',
         );
         for (final request in httpClient.requests) {
@@ -784,6 +805,10 @@ void main() {
         isA<RankingRequestFailed>(),
       );
       expect(
+        await _captureFailure(client.v4RankingAffiliations()),
+        isA<RankingRequestFailed>(),
+      );
+      expect(
         await _captureFailure(client.v4RankingTags()),
         isA<RankingRequestFailed>(),
       );
@@ -799,7 +824,7 @@ void main() {
         await _captureFailure(client.v4SourceGroup('boj', 'group')),
         isA<SourceRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(25));
+      expect(httpClient.requests, hasLength(26));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -1814,6 +1839,129 @@ void main() {
       expect(error.retryAfter, const Duration(seconds: 15));
       expect(error.isRetryable, isTrue);
       expect(httpClient.requests.single.url, _uri('rankings/regions'));
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves omitted empty and raw ranking-affiliation queries',
+        () async {
+      handler = (_) async => _jsonResponse(
+            fixture('v4/ranking_affiliations.json'),
+          );
+
+      final omitted = await client.v4RankingAffiliations();
+      final empty = await client.v4RankingAffiliations(
+        query: '',
+        language: '',
+      );
+      final raw = await client.v4RankingAffiliations(
+        query: 'a/b & 한',
+        language: '한 글 & raw',
+      );
+
+      expect(omitted.affiliations.first.id, -1);
+      expect(empty.affiliations[1].affiliationId, -9);
+      expect(raw.affiliations.last.userCount, 100);
+      expect(
+        httpClient.requests.map((request) => request.url.toString()),
+        [
+          'https://proxy.example/solved/v4/rankings/affiliations',
+          'https://proxy.example/solved/v4/'
+              'rankings/affiliations?q=&lang=',
+          'https://proxy.example/solved/v4/rankings/affiliations?'
+              'q=a%2Fb+%26+%ED%95%9C&lang='
+              '%ED%95%9C+%EA%B8%80+%26+raw',
+        ],
+      );
+      for (final request in httpClient.requests) {
+        expect(request.method, 'GET');
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+        });
+        expect(request.bodyBytes, isEmpty);
+      }
+      expect(httpClient.requests, hasLength(3));
+    });
+
+    test('rejects oversized ranking-affiliation queries before transport', () {
+      expect(
+        () => client.v4RankingAffiliations(
+          query: List<String>.filled(65, '🌏').join(),
+        ),
+        throwsA(
+          isA<ArgumentError>().having(
+            (error) => error.name,
+            'name',
+            'query',
+          ),
+        ),
+      );
+      expect(
+        () => client.v4RankingAffiliations(
+          language: List<String>.filled(17, '🌏').join(),
+        ),
+        throwsA(
+          isA<ArgumentError>().having(
+            (error) => error.name,
+            'name',
+            'language',
+          ),
+        ),
+      );
+      expect(httpClient.requests, isEmpty);
+    });
+
+    test('wraps malformed ranking affiliations as a ranking failure',
+        () async {
+      handler = (_) async => _jsonResponse(
+            jsonEncode({
+              'affiliations': <Object?>[
+                <String, Object?>{
+                  'id': 1,
+                  'affiliationId': 2,
+                  'name': 'school',
+                  'type': 'university',
+                  'logoThumbnailUrl': null,
+                  'color': null,
+                },
+              ],
+            }),
+          );
+
+      final error = await _captureFailure(client.v4RankingAffiliations());
+
+      expect(error, isA<RankingRequestFailed>());
+      expect(error.statusCode, 200);
+      expect(error.cause, isA<FormatException>());
+      expect(error.responseBody, isNull);
+      expect(
+        httpClient.requests.single.url,
+        _uri('rankings/affiliations'),
+      );
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves ranking-affiliations 429 failure metadata', () async {
+      handler = (_) async => _bytesResponse(
+            const <int>[0xff],
+            statusCode: 429,
+            headers: const <String, String>{
+              'content-type': 'text/plain',
+              'retry-after': '19',
+            },
+          );
+
+      final error = await _captureFailure(client.v4RankingAffiliations());
+
+      expect(error, isA<RankingRequestFailed>());
+      expect(error.statusCode, 429);
+      expect(error.cause, isNull);
+      expect(error.responseBody, isNull);
+      expect(error.retryAfter, const Duration(seconds: 19));
+      expect(error.isRetryable, isTrue);
+      expect(
+        httpClient.requests.single.url,
+        _uri('rankings/affiliations'),
+      );
       expect(httpClient.requests, hasLength(1));
     });
 

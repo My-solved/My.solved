@@ -1502,6 +1502,102 @@ void main() {
     expect(schema, problemItem);
   });
 
+  test('pins public ranking affiliations without inferred relations', () {
+    final rankingAffiliations =
+        _get(contract, '/api/v4/rankings/affiliations');
+
+    expect(_accessClass(rankingAffiliations), 'public');
+    expect(_parameterNames(rankingAffiliations), ['q', 'lang']);
+    final parameters = _parameters(rankingAffiliations);
+    expect(parameters.first['in'], 'query');
+    expect(parameters.first['required'], isFalse);
+    expect(_map(parameters.first['schema']), {
+      'maxLength': 64,
+      'type': 'string',
+    });
+    expect(parameters.last['in'], 'query');
+    expect(parameters.last['required'], isFalse);
+    expect(_map(parameters.last['schema']), {
+      'default': 'ko',
+      'maxLength': 16,
+      'type': 'string',
+    });
+    expect(rankingAffiliations.containsKey('requestBody'), isFalse);
+    expect(_map(rankingAffiliations['responses']).keys.toList(), ['200']);
+    expect(
+      rankingAffiliations['summary'],
+      'Affiliations with a rankable population',
+    );
+    expect(
+      _map(_map(rankingAffiliations['responses'])['200'])['description'],
+      'Affiliations that have members, largest first.',
+    );
+
+    final schema = _responseSchema(rankingAffiliations);
+    expect(schema['type'], 'object');
+    expect(_required(schema), ['affiliations']);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    final outerProperties = _properties(schema);
+    expect(outerProperties.keys.toList(growable: false), ['affiliations']);
+    final affiliations = _map(outerProperties['affiliations']);
+    expect(affiliations['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(affiliations.containsKey(constraint), isFalse);
+    }
+
+    final affiliation = _map(affiliations['items']);
+    expect(affiliation['type'], 'object');
+    expect(_required(affiliation), [
+      'id',
+      'affiliationId',
+      'name',
+      'type',
+      'userCount',
+      'logoThumbnailUrl',
+      'color',
+    ]);
+    expect(affiliation.containsKey('additionalProperties'), isFalse);
+    final properties = _properties(affiliation);
+    expect(properties.keys.toList(growable: false), [
+      'affiliationId',
+      'color',
+      'id',
+      'logoThumbnailUrl',
+      'name',
+      'type',
+      'userCount',
+    ]);
+    for (final field in ['id', 'affiliationId', 'userCount']) {
+      expect(_map(properties[field]), {'type': 'integer'});
+    }
+    expect(_map(properties['name']), {'type': 'string'});
+    expect(_map(properties['type']), {
+      'enum': [
+        'undefined',
+        'university',
+        'high_school',
+        'middle_school',
+        'elementary_school',
+        'company',
+        'community',
+      ],
+      'type': 'string',
+    });
+    final profile = _get(contract, '/api/v4/users/{handle}');
+    final profileAffiliations =
+        _map(_properties(_responseSchema(profile))['affiliations']);
+    final profileAffiliation = _map(profileAffiliations['items']);
+    expect(
+      _map(properties['type']),
+      _map(_properties(profileAffiliation)['type']),
+    );
+    for (final field in ['logoThumbnailUrl', 'color']) {
+      expect(_map(properties[field]), {
+        'type': ['string', 'null'],
+      });
+    }
+  });
+
   test('pins public ranking regions without inferred sorting or bounds', () {
     final rankingRegions = _get(contract, '/api/v4/rankings/regions');
 

@@ -1083,6 +1083,105 @@
         }
       }
     },
+    "/api/v4/rankings/affiliations": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "maxLength": 64,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "lang",
+            "required": false,
+            "schema": {
+              "default": "ko",
+              "maxLength": 16,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "affiliations": {
+                      "items": {
+                        "properties": {
+                          "affiliationId": {
+                            "type": "integer"
+                          },
+                          "color": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "id": {
+                            "type": "integer"
+                          },
+                          "logoThumbnailUrl": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "enum": [
+                              "undefined",
+                              "university",
+                              "high_school",
+                              "middle_school",
+                              "elementary_school",
+                              "company",
+                              "community"
+                            ],
+                            "type": "string"
+                          },
+                          "userCount": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "affiliationId",
+                          "name",
+                          "type",
+                          "userCount",
+                          "logoThumbnailUrl",
+                          "color"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "affiliations"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Affiliations that have members, largest first."
+          }
+        },
+        "summary": "Affiliations with a rankable population",
+        "x-access": {
+          "class": "public"
+        }
+      }
+    },
     "/api/v4/rankings/regions": {
       "get": {
         "responses": {
