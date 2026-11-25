@@ -954,6 +954,94 @@ void main() {
     }
   });
 
+  test('pins the public problem-search analysis schema without inference', () {
+    final analysis = _get(contract, '/api/v4/search/analyze');
+
+    expect(_map(analysis['x-access']), {'class': 'public'});
+    expect(_parameterNames(analysis), ['q']);
+    final parameter = _parameters(analysis).single;
+    expect(parameter['in'], 'query');
+    expect(parameter['required'], isFalse);
+    expect(_map(parameter['schema']), {
+      'type': 'string',
+      'maxLength': 1000,
+    });
+    expect(_map(analysis['responses']).keys, unorderedEquals(['200']));
+
+    final schema = _responseSchema(analysis);
+    expect(_required(schema), ['diagnostics']);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    final properties = _properties(schema);
+    expect(properties.keys, unorderedEquals(['diagnostics']));
+    final diagnostics = _map(properties['diagnostics']);
+    expect(diagnostics['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(diagnostics.containsKey(constraint), isFalse);
+    }
+    final item = _map(diagnostics['items']);
+    expect(item['type'], 'object');
+    expect(_required(item), [
+      'start',
+      'end',
+      'severity',
+      'code',
+      'messageKey',
+      'message',
+    ]);
+    expect(item.containsKey('additionalProperties'), isFalse);
+    final itemProperties = _properties(item);
+    expect(
+        itemProperties.keys,
+        unorderedEquals([
+          'start',
+          'end',
+          'severity',
+          'code',
+          'messageKey',
+          'message',
+          'data',
+        ]));
+    for (final field in ['start', 'end']) {
+      final number = _map(itemProperties[field]);
+      expect(number, {'type': 'number'});
+      for (final constraint in ['minimum', 'maximum', 'multipleOf']) {
+        expect(number.containsKey(constraint), isFalse);
+      }
+    }
+    expect(_map(itemProperties['severity']), {
+      'enum': ['error', 'warning'],
+      'type': 'string',
+    });
+    expect(_map(itemProperties['code']), {
+      'enum': [
+        'unknown-filter',
+        'unimplemented-filter',
+        'empty-value',
+        'invalid-value',
+        'unknown-lang',
+        'invalid-boolean',
+        'unclosed-quote',
+        'unmatched-paren',
+        'dangling-operator',
+        'ignored-input',
+        'unknown-handle',
+        'unknown-tag',
+        'me-without-viewer',
+      ],
+      'type': 'string',
+    });
+    for (final field in ['messageKey', 'message']) {
+      expect(_map(itemProperties[field]), {'type': 'string'});
+    }
+    final data = _map(itemProperties['data']);
+    expect(data['type'], 'object');
+    expect(_map(data['additionalProperties']), {'type': 'string'});
+
+    final problemSearch = _responseSchema(_get(contract, '/api/v4/problems'));
+    final problemDiagnostics = _map(_properties(problemSearch)['diagnostics']);
+    expect(item, _map(problemDiagnostics['items']));
+  });
+
   test('pins the public search-suggestion schema without inference', () {
     final suggestions = _get(contract, '/api/v4/search/suggest');
 

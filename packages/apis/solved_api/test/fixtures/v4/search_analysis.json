@@ -1,0 +1,35 @@
+{
+  "diagnostics": [
+    {
+      "start": -1.5,
+      "end": 2,
+      "severity": "error",
+      "code": "unknown-filter",
+      "messageKey": "search.unknownFilter",
+      "message": "Unknown filter",
+      "data": {
+        "filter": "raw",
+        "empty": ""
+      },
+      "futureItem": true
+    },
+    {
+      "start": 4,
+      "end": 4.0,
+      "severity": "warning",
+      "code": "unknown-tag",
+      "messageKey": "search.unknownTag",
+      "message": "Unknown tag"
+    },
+    {
+      "start": 0,
+      "end": 0,
+      "severity": "warning",
+      "code": "unknown-tag",
+      "messageKey": "search.unknownTag",
+      "message": "",
+      "data": {}
+    }
+  ],
+  "futureEnvelope": true
+}

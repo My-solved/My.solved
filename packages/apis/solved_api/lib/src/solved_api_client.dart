@@ -378,6 +378,16 @@ class SolvedApiClient {
     );
   }
 
+  Future<ProblemSearchAnalysisResult> v4AnalyzeProblemSearch({
+    String? query,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.analyzeProblemSearch(query: query),
+      requestType: _RequestType.search,
+    );
+  }
+
   Future<SearchObject<TagSearchItem>> v4SearchTags(
     String query, {
     int page = 1,

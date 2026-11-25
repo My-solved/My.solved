@@ -1296,6 +1296,101 @@
         }
       }
     },
+    "/api/v4/search/analyze": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "maxLength": 1000,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "diagnostics": {
+                      "items": {
+                        "properties": {
+                          "code": {
+                            "enum": [
+                              "unknown-filter",
+                              "unimplemented-filter",
+                              "empty-value",
+                              "invalid-value",
+                              "unknown-lang",
+                              "invalid-boolean",
+                              "unclosed-quote",
+                              "unmatched-paren",
+                              "dangling-operator",
+                              "ignored-input",
+                              "unknown-handle",
+                              "unknown-tag",
+                              "me-without-viewer"
+                            ],
+                            "type": "string"
+                          },
+                          "data": {
+                            "additionalProperties": {
+                              "type": "string"
+                            },
+                            "type": "object"
+                          },
+                          "end": {
+                            "type": "number"
+                          },
+                          "message": {
+                            "type": "string"
+                          },
+                          "messageKey": {
+                            "type": "string"
+                          },
+                          "severity": {
+                            "enum": [
+                              "error",
+                              "warning"
+                            ],
+                            "type": "string"
+                          },
+                          "start": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "start",
+                          "end",
+                          "severity",
+                          "code",
+                          "messageKey",
+                          "message"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "diagnostics"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Everything wrong with the query, including checks that need the database."
+          }
+        },
+        "summary": "Diagnostics for a search query, without running the search",
+        "x-access": {
+          "class": "public"
+        }
+      }
+    },
     "/api/v4/search/suggest": {
       "get": {
         "x-access": {
