@@ -499,6 +499,46 @@ void main() {
     final helpfulProperties = _properties(helpful);
     expect(_map(helpfulProperties['earned']), {'type': 'integer'});
     expect(_map(helpfulProperties['cap']), {'type': 'integer'});
+
+    final ratingHistory =
+        _get(contract, '/api/v4/users/{handle}/rating/history');
+    expect(_accessClass(ratingHistory), 'public');
+    expect(_parameterNames(ratingHistory), ['handle', 'range']);
+    final ratingHistoryParameters = _parameters(ratingHistory);
+    expect(_map(ratingHistoryParameters.first['schema']), {
+      'type': 'string',
+      'minLength': 1,
+      'maxLength': 64,
+    });
+    expect(ratingHistoryParameters.first['required'], isTrue);
+    final ratingHistoryRange = ratingHistoryParameters.last;
+    expect(ratingHistoryRange['in'], 'query');
+    expect(ratingHistoryRange['required'], isFalse);
+    expect(_map(ratingHistoryRange['schema']), {
+      'type': 'string',
+      'enum': ['90d', '1y', 'all'],
+    });
+    expect(_map(ratingHistoryRange['schema']).containsKey('default'), isFalse);
+
+    final ratingHistorySchema = _responseSchema(ratingHistory);
+    expect(_required(ratingHistorySchema), ['history']);
+    expect(ratingHistorySchema.containsKey('additionalProperties'), isFalse);
+    final ratingHistoryProperties = _properties(ratingHistorySchema);
+    final ratingHistoryItems = _map(ratingHistoryProperties['history']);
+    expect(ratingHistoryItems['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(ratingHistoryItems.containsKey(constraint), isFalse);
+    }
+    final ratingHistoryItem = _map(ratingHistoryItems['items']);
+    expect(ratingHistoryItem['type'], 'object');
+    expect(_required(ratingHistoryItem), ['day', 'value']);
+    expect(ratingHistoryItem.containsKey('additionalProperties'), isFalse);
+    final ratingHistoryItemProperties = _properties(ratingHistoryItem);
+    expect(_map(ratingHistoryItemProperties['day']), {
+      'type': 'string',
+      'pattern': r'^\d{4}-\d{2}-\d{2}$',
+    });
+    expect(_map(ratingHistoryItemProperties['value']), {'type': 'integer'});
   });
 
   test('pins the required activity range and sparse-day response', () {

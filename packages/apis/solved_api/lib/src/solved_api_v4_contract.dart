@@ -12,6 +12,17 @@ enum SolvedApiV4ReputationRange {
   final String value;
 }
 
+/// Date ranges supported by the public v4 rating history.
+enum SolvedApiV4RatingHistoryRange {
+  days90('90d'),
+  year('1y'),
+  all('all');
+
+  const SolvedApiV4RatingHistoryRange(this.value);
+
+  final String value;
+}
+
 /// Sort orders supported by the official v4 problem search.
 ///
 /// In particular, the v3-only `title` sort is intentionally not representable.
@@ -109,6 +120,18 @@ final class SolvedApiV4Contract {
           if (range != null) 'range': range.value,
         },
         decode: _decodeV4ProfileReputation,
+      );
+
+  SolvedApiEndpoint<ProfileRatingHistoryResult> userRatingHistory(
+    String handle, {
+    SolvedApiV4RatingHistoryRange? range,
+  }) =>
+      _endpoint(
+        path: 'users/${_pathSegment(handle, 'handle')}/rating/history',
+        queryParameters: {
+          if (range != null) 'range': range.value,
+        },
+        decode: _decodeV4ProfileRatingHistory,
       );
 
   SolvedApiEndpoint<OfficialAchievementItem> achievementItem(
@@ -1195,7 +1218,7 @@ ProfileReputationHistoryEntry _decodeV4ProfileReputationHistoryEntry(
   Map<String, dynamic> body,
 ) =>
     ProfileReputationHistoryEntry(
-      day: _profileReputationDay(body['day'], 'history[].day'),
+      day: _profileHistoryDay(body['day'], 'history[].day'),
       value: _integer(body['value'], 'history[].value'),
     );
 
@@ -1226,6 +1249,26 @@ ProfileReputationTodayHelpful _decodeV4ProfileReputationTodayHelpful(
     ProfileReputationTodayHelpful(
       earned: _integer(body['earned'], 'today.helpful.earned'),
       cap: _integer(body['cap'], 'today.helpful.cap'),
+    );
+
+ProfileRatingHistoryResult _decodeV4ProfileRatingHistory(dynamic json) {
+  final body = _object(json, 'rating history');
+  final history = List<ProfileRatingHistoryEntry>.unmodifiable(
+    _list(body['history'], 'history').map(
+      (item) => _decodeV4ProfileRatingHistoryEntry(
+        _object(item, 'history[]'),
+      ),
+    ),
+  );
+  return ProfileRatingHistoryResult(history: history);
+}
+
+ProfileRatingHistoryEntry _decodeV4ProfileRatingHistoryEntry(
+  Map<String, dynamic> body,
+) =>
+    ProfileRatingHistoryEntry(
+      day: _profileHistoryDay(body['day'], 'history[].day'),
+      value: _integer(body['value'], 'history[].value'),
     );
 
 ProfileBackgroundAsset? _decodeV4BackgroundAsset(dynamic json) {
@@ -1656,7 +1699,7 @@ String _formatDay(DateTime day) => '${day.year.toString().padLeft(4, '0')}-'
     '${day.month.toString().padLeft(2, '0')}-'
     '${day.day.toString().padLeft(2, '0')}';
 
-String _profileReputationDay(Object? value, String field) {
+String _profileHistoryDay(Object? value, String field) {
   final day = _string(value, field);
   if (!RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(day)) {
     throw FormatException('Invalid $field');

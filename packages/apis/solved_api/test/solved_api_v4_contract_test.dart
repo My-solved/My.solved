@@ -79,6 +79,10 @@ void main() {
       contract.backgroundShow('event item').direct.path,
       'achievements/items/background/event%20item',
     );
+    expect(
+      contract.userRatingHistory('한 글').direct.path,
+      'users/%ED%95%9C%20%EA%B8%80/rating/history',
+    );
     final achievement = contract.achievementItem(
       OfficialAchievementItemKind.badge,
       'event item',
@@ -100,6 +104,7 @@ void main() {
 
     expect(() => contract.userProfile(''), throwsArgumentError);
     expect(() => contract.userProfile('..'), throwsArgumentError);
+    expect(() => contract.userRatingHistory('..'), throwsArgumentError);
     expect(() => contract.badgeShow('.'), throwsArgumentError);
     expect(
       () => contract.achievementItem(OfficialAchievementItemKind.badge, '..'),
@@ -3208,6 +3213,190 @@ void main() {
       },
     });
     expect(empty.history, isEmpty);
+  });
+
+  test('normalizes the official rating history result', () {
+    final endpoint = contract.userRatingHistory(
+      'index',
+      range: SolvedApiV4RatingHistoryRange.year,
+    );
+    final ProfileRatingHistoryResult actual = endpoint.decode(
+      jsonDecode(fixture('v4/user_rating_history.json')),
+    );
+
+    expect(endpoint.direct.path, 'users/index/rating/history');
+    expect(endpoint.direct.queryParameters, {'range': '1y'});
+    expect(endpoint.proxy.path, endpoint.direct.path);
+    expect(endpoint.proxy.queryParameters, endpoint.direct.queryParameters);
+    expect(actual.history.map((entry) => entry.day), [
+      '2026-11-01',
+      '2026-11-17',
+    ]);
+    expect(actual.history.map((entry) => entry.value), [2400, 2417]);
+  });
+
+  test('encodes every optional rating history range and its omission', () {
+    expect(
+      SolvedApiV4RatingHistoryRange.values.map((range) => range.value),
+      ['90d', '1y', 'all'],
+    );
+    for (final range in SolvedApiV4RatingHistoryRange.values) {
+      final endpoint = contract.userRatingHistory('index', range: range);
+      expect(endpoint.direct.queryParameters, {'range': range.value});
+      expect(endpoint.proxy.queryParameters, {'range': range.value});
+    }
+
+    final omitted = contract.userRatingHistory('index');
+    expect(omitted.direct.queryParameters, isEmpty);
+    expect(omitted.proxy.queryParameters, isEmpty);
+  });
+
+  test('requires the exact rating history response shape', () {
+    final endpoint = contract.userRatingHistory('index');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/user_rating_history.json')) as Map,
+        );
+    Map<String, Object?> historyEntry() => <String, Object?>{
+          'day': '2026-11-17',
+          'value': 2417,
+        };
+
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      const <Object?>[],
+    ]) {
+      expect(
+        () => endpoint.decode(invalid),
+        throwsFormatException,
+        reason: 'response = $invalid',
+      );
+    }
+    expect(
+      () => endpoint.decode(source()..remove('history')),
+      throwsFormatException,
+      reason: 'history missing',
+    );
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      'history',
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(source()..['history'] = invalid),
+        throwsFormatException,
+        reason: 'history = $invalid',
+      );
+    }
+    expect(
+      () => endpoint.decode(source()..['history'] = <Object?>[0]),
+      throwsFormatException,
+      reason: 'history[] must be an object',
+    );
+    for (final field in ['day', 'value']) {
+      expect(
+        () => endpoint.decode(
+          source()
+            ..['history'] = <Object?>[
+              historyEntry()..remove(field),
+            ],
+        ),
+        throwsFormatException,
+        reason: 'history[].$field missing',
+      );
+    }
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      const <Object?>[],
+      const <String, Object?>{},
+      '',
+      '2026-1-01',
+      '2026-01-1',
+      ' 2026-01-01',
+      '2026-01-01 ',
+    ]) {
+      expect(
+        () => endpoint.decode(
+          source()
+            ..['history'] = <Object?>[
+              historyEntry()..['day'] = invalid,
+            ],
+        ),
+        throwsFormatException,
+        reason: 'history[].day = $invalid',
+      );
+    }
+    for (final invalid in <Object?>[
+      null,
+      1.0,
+      '1',
+      false,
+      const <Object?>[],
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(
+          source()
+            ..['history'] = <Object?>[
+              historyEntry()..['value'] = invalid,
+            ],
+        ),
+        throwsFormatException,
+        reason: 'history[].value = $invalid',
+      );
+    }
+  });
+
+  test('preserves raw immutable rating history without sorting', () {
+    final endpoint = contract.userRatingHistory('index');
+    final first = <String, Object?>{
+      'day': '0000-00-00',
+      'value': -7,
+      'futureHistoryField': 'allowed',
+    };
+    final second = <String, Object?>{
+      'day': '9999-99-99',
+      'value': 0,
+    };
+    final history = <Object?>[second, first, second];
+    final source = <String, Object?>{
+      'history': history,
+      'futureRatingHistoryField': 'allowed',
+    };
+
+    final actual = endpoint.decode(source);
+    expect(actual.history.map((entry) => entry.day), [
+      '9999-99-99',
+      '0000-00-00',
+      '9999-99-99',
+    ]);
+    expect(actual.history.map((entry) => entry.value), [0, -7, 0]);
+
+    second['day'] = '2026-01-01';
+    first['value'] = 99;
+    history.clear();
+    source.clear();
+    expect(actual.history.map((entry) => entry.day), [
+      '9999-99-99',
+      '0000-00-00',
+      '9999-99-99',
+    ]);
+    expect(actual.history[1].value, -7);
+    expect(() => actual.history.removeAt(0), throwsUnsupportedError);
+    expect(
+      () => actual.history[0] = const ProfileRatingHistoryEntry(
+        day: '2026-01-01',
+        value: 0,
+      ),
+      throwsUnsupportedError,
+    );
+
+    expect(endpoint.decode({'history': <Object?>[]}).history, isEmpty);
   });
 
   test('normalizes standalone v4 background and badge items', () {

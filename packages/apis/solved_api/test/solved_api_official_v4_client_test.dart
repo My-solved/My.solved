@@ -57,6 +57,8 @@ void main() {
             '/solved/v4/users/index/activity/days' =>
               'v4/user_activity_days.json',
             '/solved/v4/users/index/reputation' => 'v4/user_reputation.json',
+            '/solved/v4/users/index/rating/history' =>
+              'v4/user_rating_history.json',
             '/solved/v4/achievements/items/background/anniversary_1st' =>
               'v4/background_item.json',
             '/solved/v4/achievements/items/badge/boardgame' =>
@@ -79,6 +81,11 @@ void main() {
             await client.v4UserReputation(
           'index',
           range: SolvedApiV4ReputationRange.year,
+        );
+        final ProfileRatingHistoryResult ratingHistory =
+            await client.v4UserRatingHistory(
+          'index',
+          range: SolvedApiV4RatingHistoryRange.days90,
         );
         final OfficialAchievementItem achievementBackground =
             await client.v4AchievementItem(
@@ -198,6 +205,11 @@ void main() {
         expect(reputation.today.contributions.max, 10);
         expect(reputation.today.helpful.earned, 1);
         expect(reputation.today.helpful.cap, 5);
+        expect(ratingHistory.history.map((entry) => entry.day), [
+          '2026-11-01',
+          '2026-11-17',
+        ]);
+        expect(ratingHistory.history.map((entry) => entry.value), [2400, 2417]);
         expect(
           achievementBackground.kind,
           OfficialAchievementItemKind.background,
@@ -229,6 +241,10 @@ void main() {
             }),
             _uri('users/index/reputation', <String, String>{'range': '1y'}),
             _uri(
+              'users/index/rating/history',
+              <String, String>{'range': '90d'},
+            ),
+            _uri(
               'achievements/items/background/anniversary_1st',
               <String, String>{'lang': 'ko'},
             ),
@@ -258,7 +274,7 @@ void main() {
             _uri('tags'),
           ],
         );
-        expect(httpClient.requests, hasLength(10));
+        expect(httpClient.requests, hasLength(11));
         for (final request in httpClient.requests) {
           expect(request, isA<http.AbortableRequest>());
           expect(request.method, 'GET');
@@ -410,6 +426,10 @@ void main() {
         isA<UserRequestFailed>(),
       );
       expect(
+        await _captureFailure(client.v4UserRatingHistory('index')),
+        isA<UserRequestFailed>(),
+      );
+      expect(
         await _captureFailure(client.v4BackgroundShow('anniversary_1st')),
         isA<BackgroundRequestFailed>(),
       );
@@ -439,7 +459,30 @@ void main() {
         await _captureFailure(client.v4SearchTags('dp')),
         isA<SearchRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(6));
+      expect(httpClient.requests, hasLength(7));
+    });
+
+    test('wraps malformed rating history as a user failure', () async {
+      handler = (_) async => _jsonResponse(
+            jsonEncode({
+              'history': <Object?>[
+                <String, Object?>{'day': '2026-11-17'},
+              ],
+            }),
+          );
+
+      final error = await _captureFailure(
+        client.v4UserRatingHistory('index'),
+      );
+
+      expect(error, isA<UserRequestFailed>());
+      expect(error.statusCode, 200);
+      expect(error.cause, isA<FormatException>());
+      expect(
+        httpClient.requests.single.url,
+        _uri('users/index/rating/history'),
+      );
+      expect(httpClient.requests, hasLength(1));
     });
 
     test('wraps malformed canonical items by requested asset family', () async {
