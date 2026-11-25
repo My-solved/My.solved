@@ -19,6 +19,7 @@ export 'ranking_tags_result.dart';
 export 'profile_activity_feed_result.dart';
 export 'profile_activity_result.dart';
 export 'profile_achievement_summary_result.dart';
+export 'profile_achievements_result.dart';
 export 'profile_badge_stand_result.dart';
 export 'profile_background_asset.dart';
 export 'profile_badge_asset.dart';

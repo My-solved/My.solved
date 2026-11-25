@@ -846,6 +846,169 @@ void main() {
     }
   });
 
+  test('pins user achievements as the catalog base plus required vs', () {
+    final operation =
+        _get(contract, '/api/v4/users/{handle}/achievements');
+
+    expect(_accessClass(operation), 'public');
+    expect(operation.containsKey('requestBody'), isFalse);
+    expect(
+      operation['summary'],
+      "Every achievement with a user's standing, or two users'",
+    );
+    expect(_parameterNames(operation), ['handle', 'lang', 'vs']);
+    final parameters = _parameters(operation);
+    expect(parameters.first['in'], 'path');
+    expect(parameters.first['required'], isTrue);
+    expect(_map(parameters.first['schema']), {
+      'maxLength': 64,
+      'minLength': 1,
+      'type': 'string',
+    });
+    expect(parameters[1]['in'], 'query');
+    expect(parameters[1]['required'], isFalse);
+    expect(_map(parameters[1]['schema']), {
+      'default': 'ko',
+      'maxLength': 16,
+      'type': 'string',
+    });
+    expect(parameters.last['in'], 'query');
+    expect(parameters.last['required'], isFalse);
+    expect(_map(parameters.last['schema']), {
+      'maxLength': 64,
+      'minLength': 1,
+      'type': 'string',
+    });
+
+    final responses = _map(operation['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '404']);
+    expect(
+      _map(responses['200'])['description'],
+      'The catalog, as the user (and `vs`) stand on it.',
+    );
+    expect(_map(responses['404'])['description'], 'No such user.');
+
+    final schema = _responseSchema(operation);
+    expect(schema['type'], 'object');
+    expect(_required(schema), ['handle', 'vsHandle', 'items', 'userCount']);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    final properties = _properties(schema);
+    expect(properties.keys.toList(growable: false), [
+      'handle',
+      'items',
+      'userCount',
+      'vsHandle',
+    ]);
+    expect(_map(properties['handle']), {'type': 'string'});
+    expect(_map(properties['vsHandle']), {
+      'type': ['string', 'null'],
+    });
+    expect(_map(properties['userCount']), {
+      'minimum': 0,
+      'type': 'integer',
+    });
+
+    final items = _map(properties['items']);
+    expect(items['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(items.containsKey(constraint), isFalse);
+    }
+    final item = _map(items['items']);
+    const itemFields = [
+      'id',
+      'key',
+      'series',
+      'seriesOrder',
+      'historic',
+      'hidden',
+      'name',
+      'condition',
+      'searchQuery',
+      'shopKey',
+      'rewards',
+      'holderCount',
+      'earnedAt',
+      'progress',
+      'vs',
+    ];
+    expect(item['type'], 'object');
+    expect(_required(item), itemFields);
+    expect(item.containsKey('additionalProperties'), isFalse);
+    final itemProperties = _properties(item);
+    expect(itemProperties.keys.toList(growable: false), [
+      'condition',
+      'earnedAt',
+      'hidden',
+      'historic',
+      'holderCount',
+      'id',
+      'key',
+      'name',
+      'progress',
+      'rewards',
+      'searchQuery',
+      'series',
+      'seriesOrder',
+      'shopKey',
+      'vs',
+    ]);
+
+    final catalog = _get(contract, '/api/v4/achievements');
+    final catalogItems = _map(_properties(_responseSchema(catalog))['items']);
+    final catalogItem = _map(catalogItems['items']);
+    final userBaseProperties = Map<String, dynamic>.from(itemProperties)
+      ..remove('vs');
+    expect(userBaseProperties, _properties(catalogItem));
+    expect(
+      _required(item).where((field) => field != 'vs').toList(),
+      _required(catalogItem),
+    );
+
+    final versus = _map(itemProperties['vs']);
+    expect(versus['type'], ['object', 'null']);
+    expect(_required(versus), ['earnedAt']);
+    expect(versus.containsKey('additionalProperties'), isFalse);
+    final versusProperties = _properties(versus);
+    expect(versusProperties.keys.toList(growable: false), ['earnedAt']);
+    expect(_map(versusProperties['earnedAt']), {
+      'type': ['string', 'null'],
+    });
+
+    final notFound = _map(responses['404']);
+    final notFoundContent = _map(notFound['content']);
+    expect(notFoundContent.keys.toList(growable: false), [
+      'application/json',
+    ]);
+    final notFoundSchema = _map(
+      _map(notFoundContent['application/json'])['schema'],
+    );
+    expect(notFoundSchema['type'], 'object');
+    expect(_required(notFoundSchema), ['error']);
+    expect(notFoundSchema.containsKey('additionalProperties'), isFalse);
+    final error = _map(_properties(notFoundSchema)['error']);
+    expect(error['type'], 'object');
+    expect(_required(error), ['code', 'message']);
+    expect(error.containsKey('additionalProperties'), isFalse);
+    final errorProperties = _properties(error);
+    expect(errorProperties.keys.toList(growable: false), [
+      'code',
+      'details',
+      'message',
+    ]);
+    expect(_map(errorProperties['code']), {'type': 'string'});
+    expect(_map(errorProperties['message']), {'type': 'string'});
+    final details = _map(errorProperties['details']);
+    expect(details['type'], 'object');
+    expect(details.containsKey('required'), isFalse);
+    expect(_map(details['additionalProperties']), {
+      'anyOf': [
+        {'type': 'string'},
+        {'type': 'number'},
+        {'type': 'boolean'},
+      ],
+    });
+  });
+
   test('pins the public achievement summary schema without inference', () {
     final summary =
         _get(contract, '/api/v4/users/{handle}/achievements/summary');

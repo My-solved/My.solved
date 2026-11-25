@@ -178,6 +178,36 @@ final class SolvedApiV4Contract {
         decode: _decodeV4ProfileTagLevelHistogram,
       );
 
+  SolvedApiEndpoint<ProfileAchievementsResult> userAchievements(
+    String handle, {
+    String? language,
+    String? versusHandle,
+  }) {
+    if (language != null && language.runes.length > 16) {
+      throw ArgumentError.value(
+        language,
+        'language',
+        'Must not exceed 16 characters',
+      );
+    }
+    if (versusHandle != null &&
+        (versusHandle.isEmpty || versusHandle.runes.length > 64)) {
+      throw ArgumentError.value(
+        versusHandle,
+        'versusHandle',
+        'Must contain 1 to 64 characters',
+      );
+    }
+    return _endpoint(
+      path: 'users/${_pathSegment(handle, 'handle')}/achievements',
+      queryParameters: {
+        if (language != null) 'lang': language,
+        if (versusHandle != null) 'vs': versusHandle,
+      },
+      decode: _decodeV4ProfileAchievements,
+    );
+  }
+
   SolvedApiEndpoint<ProfileAchievementSummaryResult> userAchievementSummary(
     String handle,
   ) =>
@@ -2065,6 +2095,45 @@ AchievementCatalogResult _decodeV4AchievementCatalog(dynamic json) {
 AchievementCatalogItem _decodeV4AchievementCatalogItem(
   Map<String, dynamic> body,
 ) {
+  final fields = _decodeV4AchievementItemFields(body);
+  return AchievementCatalogItem(
+    id: fields.id,
+    key: fields.key,
+    series: fields.series,
+    seriesOrder: fields.seriesOrder,
+    historic: fields.historic,
+    hidden: fields.hidden,
+    name: fields.name,
+    condition: fields.condition,
+    searchQuery: fields.searchQuery,
+    shopKey: fields.shopKey,
+    rewards: fields.rewards,
+    holderCount: fields.holderCount,
+    earnedAt: fields.earnedAt,
+    progress: fields.progress,
+  );
+}
+
+typedef _AchievementItemFields = ({
+  int id,
+  String key,
+  String series,
+  int seriesOrder,
+  bool historic,
+  bool hidden,
+  String name,
+  String? condition,
+  String? searchQuery,
+  String? shopKey,
+  List<AchievementReward> rewards,
+  int holderCount,
+  String? earnedAt,
+  AchievementProgress? progress,
+});
+
+_AchievementItemFields _decodeV4AchievementItemFields(
+  Map<String, dynamic> body,
+) {
   if (!body.containsKey('progress')) {
     throw const FormatException('Missing required field items[].progress');
   }
@@ -2077,7 +2146,7 @@ AchievementCatalogItem _decodeV4AchievementCatalogItem(
       ),
     ),
   );
-  return AchievementCatalogItem(
+  return (
     id: _integer(body['id'], 'items[].id'),
     key: _string(body['key'], 'items[].key'),
     series: _string(body['series'], 'items[].series'),
@@ -2135,6 +2204,64 @@ AchievementReward _decodeV4AchievementReward(
       imageUrl: _string(body['imageUrl'], '$field.imageUrl'),
       category: _string(body['category'], '$field.category'),
       addedAt: _string(body['addedAt'], '$field.addedAt'),
+    );
+
+ProfileAchievementsResult _decodeV4ProfileAchievements(dynamic json) {
+  final body = _object(json, 'profile achievements');
+  return ProfileAchievementsResult(
+    handle: _string(body['handle'], 'handle'),
+    vsHandle: _requiredNullableString(body, 'vsHandle', 'vsHandle'),
+    items: List<ProfileAchievementItem>.unmodifiable(
+      _list(body['items'], 'items').map(
+        (value) => _decodeV4ProfileAchievementItem(
+          _object(value, 'items[]'),
+        ),
+      ),
+    ),
+    userCount: _nonNegativeInteger(body['userCount'], 'userCount'),
+  );
+}
+
+ProfileAchievementItem _decodeV4ProfileAchievementItem(
+  Map<String, dynamic> body,
+) {
+  if (!body.containsKey('vs')) {
+    throw const FormatException('Missing required field items[].vs');
+  }
+  final vsValue = body['vs'];
+  final fields = _decodeV4AchievementItemFields(body);
+  return ProfileAchievementItem(
+    id: fields.id,
+    key: fields.key,
+    series: fields.series,
+    seriesOrder: fields.seriesOrder,
+    historic: fields.historic,
+    hidden: fields.hidden,
+    name: fields.name,
+    condition: fields.condition,
+    searchQuery: fields.searchQuery,
+    shopKey: fields.shopKey,
+    rewards: fields.rewards,
+    holderCount: fields.holderCount,
+    earnedAt: fields.earnedAt,
+    progress: fields.progress,
+    vs: vsValue == null
+        ? null
+        : _decodeV4ProfileAchievementVs(
+            _object(vsValue, 'items[].vs'),
+          ),
+  );
+}
+
+ProfileAchievementVs _decodeV4ProfileAchievementVs(
+  Map<String, dynamic> body,
+) =>
+    ProfileAchievementVs(
+      earnedAt: _requiredNullableString(
+        body,
+        'earnedAt',
+        'items[].vs.earnedAt',
+      ),
     );
 
 ProblemAchievementsResult _decodeV4ProblemAchievements(dynamic json) {
