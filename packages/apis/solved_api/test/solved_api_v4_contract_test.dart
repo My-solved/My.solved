@@ -296,8 +296,9 @@ void main() {
     }
   });
 
-  test('normalizes sparse activity days for an explicit date range', () {
-    final endpoint = contract.userActivity(
+  test('preserves the full sparse activity envelope and explicit range', () {
+    final SolvedApiEndpoint<ProfileActivityResult> endpoint =
+        contract.userActivity(
       'index',
       from: DateTime(2026, 11, 1, 23, 59),
       to: DateTime(2026, 11, 17, 1),
@@ -311,16 +312,409 @@ void main() {
       'from': '2026-11-01',
       'to': '2026-11-17',
     });
+    expect(actual, isA<ProfileActivityResult>());
+    expect(actual, isA<ProfileStreak>());
+    expect(actual.from, '2026-11-01');
+    expect(actual.to, '2026-11-17');
+    expect(actual.maxSolvedCount, 4);
     expect(actual.currentStreak, 12);
     expect(actual.maxStreak, 365);
     expect(actual.theme, isNull);
     expect(actual.firstActiveDay, '2020-01-02');
+    expect(actual.vacation, isNull);
+    expect(actual.vacations, isEmpty);
+    expect(actual.countedToday, isTrue);
+    expect(actual.frozenYesterday, isFalse);
     expect(actual.days, hasLength(2));
     expect(actual.days.first.solvedCount, 4);
     expect(actual.days.first.maxSolvedLevel, 18);
     expect(actual.days.first.ratingDelta, 12);
     expect(actual.days.last.freezeUsed, isTrue);
     expect(actual.days.last.streakRepaired, isTrue);
+  });
+
+  test('requires every activity envelope key and exact top-level types', () {
+    final endpoint = contract.userActivity(
+      'index',
+      from: DateTime.utc(2026, 11),
+      to: DateTime.utc(2026, 11, 17),
+    );
+    for (final field in [
+      'from',
+      'to',
+      'days',
+      'maxSolvedCount',
+      'currentStreak',
+      'maxStreak',
+      'theme',
+      'firstActiveDay',
+      'vacation',
+      'vacations',
+      'countedToday',
+      'frozenYesterday',
+    ]) {
+      expect(
+        () => endpoint.decode(_activitySource()..remove(field)),
+        throwsFormatException,
+        reason: 'missing $field',
+      );
+    }
+
+    final invalidValues = <String, List<Object?>>{
+      'from': [null, 0, false, const <Object>[], const <String, Object?>{}],
+      'to': [null, 0, false, const <Object>[], const <String, Object?>{}],
+      'days': [null, 0, false, 'days', const <String, Object?>{}],
+      'maxSolvedCount': [
+        null,
+        '0',
+        0.0,
+        false,
+        const <Object>[],
+        const <String, Object?>{},
+      ],
+      'currentStreak': [
+        null,
+        '0',
+        0.0,
+        false,
+        const <Object>[],
+        const <String, Object?>{},
+      ],
+      'maxStreak': [
+        null,
+        '0',
+        0.0,
+        false,
+        const <Object>[],
+        const <String, Object?>{},
+      ],
+      'theme': [0, false, const <Object>[], const <String, Object?>{}],
+      'firstActiveDay': [
+        0,
+        false,
+        const <Object>[],
+        const <String, Object?>{},
+      ],
+      'vacation': [0, false, 'vacation', const <Object>[]],
+      'vacations': [null, 0, false, 'vacations', const <String, Object?>{}],
+      'countedToday': [
+        null,
+        0,
+        'true',
+        const <Object>[],
+        const <String, Object?>{},
+      ],
+      'frozenYesterday': [
+        null,
+        0,
+        'false',
+        const <Object>[],
+        const <String, Object?>{},
+      ],
+    };
+    for (final entry in invalidValues.entries) {
+      for (final invalid in entry.value) {
+        expect(
+          () => endpoint.decode(_activitySource()..[entry.key] = invalid),
+          throwsFormatException,
+          reason: '${entry.key} = $invalid',
+        );
+      }
+    }
+  });
+
+  test('preserves raw activity values without cross-field inference', () {
+    final endpoint = contract.userActivity(
+      'index',
+      from: DateTime.utc(2026, 11),
+      to: DateTime.utc(2026, 11, 17),
+    );
+    final source = _activitySource()
+      ..['from'] = ' response from '
+      ..['to'] = ''
+      ..['maxSolvedCount'] = 0
+      ..['currentStreak'] = 0
+      ..['maxStreak'] = 0
+      ..['theme'] = '  '
+      ..['firstActiveDay'] = ''
+      ..['vacation'] = null
+      ..['vacations'] = <Object>[]
+      ..['countedToday'] = false
+      ..['frozenYesterday'] = true
+      ..['futureEnvelopeField'] = 'allowed';
+    final actual = endpoint.decode(source);
+
+    expect(actual.from, ' response from ');
+    expect(actual.to, '');
+    expect(actual.maxSolvedCount, 0);
+    expect(actual.currentStreak, 0);
+    expect(actual.maxStreak, 0);
+    expect(actual.theme, '  ');
+    expect(actual.firstActiveDay, '');
+    expect(actual.vacation, isNull);
+    expect(actual.vacations, isEmpty);
+    expect(actual.countedToday, isFalse);
+    expect(actual.frozenYesterday, isTrue);
+    expect(actual.days.first.solvedCount, 4);
+
+    final nullable = endpoint.decode(
+      _activitySource()
+        ..['theme'] = null
+        ..['firstActiveDay'] = null
+        ..['vacation'] = null,
+    );
+    expect(nullable.theme, isNull);
+    expect(nullable.firstActiveDay, isNull);
+    expect(nullable.vacation, isNull);
+
+    for (final field in ['maxSolvedCount', 'currentStreak', 'maxStreak']) {
+      expect(
+        () => endpoint.decode(_activitySource()..[field] = -1),
+        throwsFormatException,
+        reason: '$field = -1',
+      );
+    }
+  });
+
+  test('strictly decodes the required nullable current vacation', () {
+    final endpoint = contract.userActivity(
+      'index',
+      from: DateTime.utc(2026, 11),
+      to: DateTime.utc(2026, 11, 17),
+    );
+    expect(
+      ProfileActivityVacationSource.values.map((value) => value.value),
+      ['item', 'launch'],
+    );
+
+    for (final sourceValue in ['item', 'launch']) {
+      final actual = endpoint.decode(
+        _activitySource()
+          ..['vacation'] = <String, Object?>{
+            'fromDay': ' raw day ',
+            'source': sourceValue,
+            'futureField': true,
+          },
+      );
+      expect(actual.vacation?.fromDay, ' raw day ');
+      expect(actual.vacation?.source.value, sourceValue);
+    }
+
+    for (final field in ['fromDay', 'source']) {
+      final vacation = <String, Object?>{
+        'fromDay': '2026-11-01',
+        'source': 'item',
+      }..remove(field);
+      expect(
+        () => endpoint.decode(_activitySource()..['vacation'] = vacation),
+        throwsFormatException,
+        reason: 'missing vacation.$field',
+      );
+    }
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      const <Object>[],
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(
+          _activitySource()
+            ..['vacation'] = <String, Object?>{
+              'fromDay': invalid,
+              'source': 'item',
+            },
+        ),
+        throwsFormatException,
+        reason: 'vacation.fromDay = $invalid',
+      );
+    }
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      '',
+      'ITEM',
+      ' item',
+      'item ',
+      'future',
+      const <Object>[],
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(
+          _activitySource()
+            ..['vacation'] = <String, Object?>{
+              'fromDay': '2026-11-01',
+              'source': invalid,
+            },
+        ),
+        throwsFormatException,
+        reason: 'vacation.source = $invalid',
+      );
+    }
+  });
+
+  test('preserves immutable vacation order, duplicates, and raw values', () {
+    final endpoint = contract.userActivity(
+      'index',
+      from: DateTime.utc(2026, 11),
+      to: DateTime.utc(2026, 11, 17),
+    );
+    final first = <String, Object?>{
+      'fromDay': '',
+      'untilDay': null,
+      'futureField': 'allowed',
+    };
+    final second = <String, Object?>{
+      'fromDay': ' from ',
+      'untilDay': ' until ',
+    };
+    final sourceVacations = <Object>[
+      first,
+      second,
+      Map<String, Object?>.from(second),
+    ];
+    final source = _activitySource()..['vacations'] = sourceVacations;
+    final actual = endpoint.decode(source);
+
+    sourceVacations.clear();
+    first['fromDay'] = 'changed';
+    second['untilDay'] = 'changed';
+    source['vacations'] = <Object>[];
+
+    expect(actual.vacations, hasLength(3));
+    expect(actual.vacations.map((value) => value.fromDay), [
+      '',
+      ' from ',
+      ' from ',
+    ]);
+    expect(actual.vacations.map((value) => value.untilDay), [
+      null,
+      ' until ',
+      ' until ',
+    ]);
+    expect(
+      () => actual.vacations.add(actual.vacations.first),
+      throwsUnsupportedError,
+    );
+    expect(
+      () => actual.vacations[0] = actual.vacations[1],
+      throwsUnsupportedError,
+    );
+  });
+
+  test('requires every vacation entry field and exact nullable types', () {
+    final endpoint = contract.userActivity(
+      'index',
+      from: DateTime.utc(2026, 11),
+      to: DateTime.utc(2026, 11, 17),
+    );
+    for (final malformed in <Object?>[
+      null,
+      0,
+      false,
+      'vacation',
+      const <Object>[],
+    ]) {
+      expect(
+        () => endpoint.decode(
+          _activitySource()..['vacations'] = <Object?>[malformed],
+        ),
+        throwsFormatException,
+        reason: 'vacations[] = $malformed',
+      );
+    }
+
+    for (final field in ['fromDay', 'untilDay']) {
+      final vacation = <String, Object?>{
+        'fromDay': '2026-11-01',
+        'untilDay': null,
+      }..remove(field);
+      expect(
+        () => endpoint.decode(
+          _activitySource()..['vacations'] = <Object>[vacation],
+        ),
+        throwsFormatException,
+        reason: 'missing vacations[].$field',
+      );
+    }
+    for (final invalid in <Object?>[
+      null,
+      0,
+      false,
+      const <Object>[],
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(
+          _activitySource()
+            ..['vacations'] = <Object>[
+              <String, Object?>{'fromDay': invalid, 'untilDay': null},
+            ],
+        ),
+        throwsFormatException,
+        reason: 'vacations[].fromDay = $invalid',
+      );
+    }
+    for (final invalid in <Object>[
+      0,
+      false,
+      const <Object>[],
+      const <String, Object?>{},
+    ]) {
+      expect(
+        () => endpoint.decode(
+          _activitySource()
+            ..['vacations'] = <Object>[
+              <String, Object?>{
+                'fromDay': '2026-11-01',
+                'untilDay': invalid,
+              },
+            ],
+        ),
+        throwsFormatException,
+        reason: 'vacations[].untilDay = $invalid',
+      );
+    }
+  });
+
+  test('isolates and freezes decoded sparse days without changing semantics',
+      () {
+    final endpoint = contract.userActivity(
+      'index',
+      from: DateTime.utc(2026, 11),
+      to: DateTime.utc(2026, 11, 17),
+    );
+    final source = _activitySource();
+    final sourceDays = source['days'] as List<dynamic>;
+    final firstSourceDay = sourceDays.first as Map<String, dynamic>;
+    firstSourceDay['futureField'] = 'allowed';
+    sourceDays.insert(1, Map<String, dynamic>.from(firstSourceDay));
+    final actual = endpoint.decode(source);
+
+    firstSourceDay['solvedCount'] = 999;
+    (sourceDays[1] as Map<String, dynamic>)['day'] = '2026-11-16';
+    sourceDays.clear();
+    source['days'] = <Object>[];
+
+    expect(actual.days, hasLength(3));
+    expect(actual.days.map((value) => value.solvedCount), [4, 4, 1]);
+    expect(actual.days.map((value) => value.day), [15, 15, 17]);
+    expect(
+      () => actual.days.add(actual.days.first),
+      throwsUnsupportedError,
+    );
+    expect(
+      () => actual.days[0] = const ProfileSolvedDay(
+        year: 2026,
+        month: 11,
+        day: 1,
+        solvedCount: 0,
+      ),
+      throwsUnsupportedError,
+    );
   });
 
   test('rejects a reversed activity range before making a target', () {
@@ -394,3 +788,6 @@ void main() {
     expect(actual, isNull);
   });
 }
+
+Map<String, dynamic> _activitySource() =>
+    jsonDecode(fixture('v4/user_activity_days.json')) as Map<String, dynamic>;

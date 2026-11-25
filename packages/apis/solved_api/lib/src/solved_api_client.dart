@@ -232,7 +232,7 @@ class SolvedApiClient {
     );
   }
 
-  Future<ProfileStreak> v4UserActivity(
+  Future<ProfileActivityResult> v4UserActivity(
     String handle, {
     required DateTime from,
     required DateTime to,

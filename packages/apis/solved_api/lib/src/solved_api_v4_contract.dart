@@ -78,7 +78,7 @@ final class SolvedApiV4Contract {
         decode: _decodeV4UserProfile,
       );
 
-  SolvedApiEndpoint<ProfileStreak> userActivity(
+  SolvedApiEndpoint<ProfileActivityResult> userActivity(
     String handle, {
     required DateTime from,
     required DateTime to,
@@ -94,7 +94,7 @@ final class SolvedApiV4Contract {
         'from': _formatDay(fromDay),
         'to': _formatDay(toDay),
       },
-      decode: _decodeV4ProfileStreak,
+      decode: _decodeV4ProfileActivity,
     );
   }
 
@@ -766,29 +766,98 @@ UserProfile _decodeV4UserProfile(dynamic json) {
   );
 }
 
-ProfileStreak _decodeV4ProfileStreak(dynamic json) {
+ProfileActivityResult _decodeV4ProfileActivity(dynamic json) {
   final body = _object(json, 'activity');
-  final days = _list(body['days'], 'days').map((item) {
-    final day = _object(item, 'days[]');
-    final date = _day(_string(day['day'], 'days[].day'), 'days[].day');
-    return ProfileSolvedDay(
-      year: date.year,
-      month: date.month,
-      day: date.day,
-      solvedCount: _integer(day['solvedCount'], 'days[].solvedCount'),
-      maxSolvedLevel: _integer(day['maxSolvedLevel'], 'days[].maxSolvedLevel'),
-      ratingDelta: _integer(day['ratingDelta'], 'days[].ratingDelta'),
-      freezeUsed: _boolean(day['freezeUsed'], 'days[].freezeUsed'),
-      streakRepaired: _boolean(day['streakRepaired'], 'days[].streakRepaired'),
-    );
-  }).toList(growable: false);
-  return ProfileStreak(
-    days: days,
-    currentStreak: _integer(body['currentStreak'], 'currentStreak'),
-    maxStreak: _integer(body['maxStreak'], 'maxStreak'),
-    theme: _nullableString(body['theme'], 'theme'),
-    firstActiveDay: _nullableString(body['firstActiveDay'], 'firstActiveDay'),
+  final days = List<ProfileSolvedDay>.unmodifiable(
+    _list(body['days'], 'days').map((item) {
+      final day = _object(item, 'days[]');
+      final date = _day(_string(day['day'], 'days[].day'), 'days[].day');
+      return ProfileSolvedDay(
+        year: date.year,
+        month: date.month,
+        day: date.day,
+        solvedCount: _integer(day['solvedCount'], 'days[].solvedCount'),
+        maxSolvedLevel: _integer(
+          day['maxSolvedLevel'],
+          'days[].maxSolvedLevel',
+        ),
+        ratingDelta: _integer(day['ratingDelta'], 'days[].ratingDelta'),
+        freezeUsed: _boolean(day['freezeUsed'], 'days[].freezeUsed'),
+        streakRepaired: _boolean(
+          day['streakRepaired'],
+          'days[].streakRepaired',
+        ),
+      );
+    }),
   );
+  if (!body.containsKey('vacation')) {
+    throw const FormatException('Missing required field vacation');
+  }
+  final vacationValue = body['vacation'];
+  final vacations = List<ProfileActivityVacation>.unmodifiable(
+    _list(body['vacations'], 'vacations').map(
+      (value) => _decodeV4ProfileActivityVacation(
+        _object(value, 'vacations[]'),
+      ),
+    ),
+  );
+  return ProfileActivityResult(
+    from: _string(body['from'], 'from'),
+    to: _string(body['to'], 'to'),
+    days: days,
+    maxSolvedCount: _nonNegativeInteger(
+      body['maxSolvedCount'],
+      'maxSolvedCount',
+    ),
+    currentStreak: _nonNegativeInteger(
+      body['currentStreak'],
+      'currentStreak',
+    ),
+    maxStreak: _nonNegativeInteger(body['maxStreak'], 'maxStreak'),
+    theme: _requiredNullableString(body, 'theme'),
+    firstActiveDay: _requiredNullableString(body, 'firstActiveDay'),
+    vacation: vacationValue == null
+        ? null
+        : _decodeV4ProfileActivityCurrentVacation(
+            _object(vacationValue, 'vacation'),
+          ),
+    vacations: vacations,
+    countedToday: _boolean(body['countedToday'], 'countedToday'),
+    frozenYesterday: _boolean(body['frozenYesterday'], 'frozenYesterday'),
+  );
+}
+
+ProfileActivityCurrentVacation _decodeV4ProfileActivityCurrentVacation(
+  Map<String, dynamic> body,
+) =>
+    ProfileActivityCurrentVacation(
+      fromDay: _string(body['fromDay'], 'vacation.fromDay'),
+      source: _decodeV4ProfileActivityVacationSource(body['source']),
+    );
+
+ProfileActivityVacation _decodeV4ProfileActivityVacation(
+  Map<String, dynamic> body,
+) =>
+    ProfileActivityVacation(
+      fromDay: _string(body['fromDay'], 'vacations[].fromDay'),
+      untilDay: _requiredNullableString(
+        body,
+        'untilDay',
+        'vacations[].untilDay',
+      ),
+    );
+
+ProfileActivityVacationSource _decodeV4ProfileActivityVacationSource(
+  Object? value,
+) {
+  switch (_string(value, 'vacation.source')) {
+    case 'item':
+      return ProfileActivityVacationSource.item;
+    case 'launch':
+      return ProfileActivityVacationSource.launch;
+    default:
+      throw const FormatException('Unsupported vacation.source');
+  }
 }
 
 ProfileContributionStats _decodeV4ContributionStats(dynamic json) {
@@ -949,6 +1018,14 @@ num _number(Object? value, String field) {
 int _integer(Object? value, String field) {
   if (value is! int) throw FormatException('Expected integer for $field');
   return value;
+}
+
+int _nonNegativeInteger(Object? value, String field) {
+  final decoded = _integer(value, field);
+  if (decoded < 0) {
+    throw FormatException('Expected non-negative integer for $field');
+  }
+  return decoded;
 }
 
 int _wholeNumber(Object? value, String field) {

@@ -70,7 +70,7 @@ void main() {
         };
 
         final profile = await client.v4UserProfile('index');
-        final activity = await client.v4UserActivity(
+        final ProfileActivityResult activity = await client.v4UserActivity(
           'index',
           from: DateTime.utc(2026, 11),
           to: DateTime.utc(2026, 11, 17),
@@ -96,7 +96,16 @@ void main() {
 
         expect(profile.handle, 'index');
         expect(profile.solvedCount, 2048);
+        expect(activity.from, '2026-11-01');
+        expect(activity.to, '2026-11-17');
+        expect(activity.maxSolvedCount, 4);
         expect(activity.currentStreak, 12);
+        final int maxStreak = activity.maxStreak;
+        expect(maxStreak, 365);
+        expect(activity.vacation, isNull);
+        expect(activity.vacations, isEmpty);
+        expect(activity.countedToday, isTrue);
+        expect(activity.frozenYesterday, isFalse);
         expect(activity.days, hasLength(2));
         expect(reputation.reputation, 314);
         expect(background?.key, 'anniversary_1st');
