@@ -388,6 +388,14 @@ class SolvedApiClient {
     );
   }
 
+  Future<RandomProblemResult> v4RandomProblem({String? query}) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.randomProblem(query: query),
+      requestType: _RequestType.search,
+    );
+  }
+
   Future<SearchObject<TagSearchItem>> v4SearchTags(
     String query, {
     int page = 1,

@@ -954,6 +954,126 @@ void main() {
     }
   });
 
+  test('pins the public random-problem operation and complete schema', () {
+    final randomProblem = _get(
+      contract,
+      '/api/v4/search/random-problem',
+    );
+
+    expect(_map(randomProblem['x-access']), {'class': 'public'});
+    expect(_parameterNames(randomProblem), ['q']);
+    final parameter = _parameters(randomProblem).single;
+    expect(parameter['in'], 'query');
+    expect(parameter['required'], isFalse);
+    expect(_map(parameter['schema']), {
+      'maxLength': 1000,
+      'type': 'string',
+    });
+    expect(
+      _map(randomProblem['responses']).keys,
+      unorderedEquals(['200', '404']),
+    );
+
+    const fields = [
+      'id',
+      'problemId',
+      'subId',
+      'level',
+      'levelAverage',
+      'levelStdev',
+      'isStandard',
+      'votedUserCount',
+      'effectiveVoteCount',
+      'solvedUserCount',
+      'givesNoRating',
+      'noRatingReasons',
+      'noRatingWarnings',
+      'titles',
+      'userStatus',
+      'contests',
+      'tags',
+      'viewerFolders',
+    ];
+    final schema = _responseSchema(randomProblem);
+    expect(schema['type'], 'object');
+    expect(_required(schema), fields);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    final properties = _properties(schema);
+    expect(properties.keys, unorderedEquals(fields));
+
+    const numberFields = [
+      'id',
+      'problemId',
+      'level',
+      'levelAverage',
+      'levelStdev',
+      'votedUserCount',
+      'effectiveVoteCount',
+      'solvedUserCount',
+    ];
+    for (final field in numberFields) {
+      expect(_map(properties[field]), {'type': 'number'});
+    }
+    expect(_map(properties['subId']), {'type': 'string'});
+    for (final field in ['isStandard', 'givesNoRating']) {
+      expect(_map(properties[field]), {'type': 'boolean'});
+    }
+    expect(_map(properties['userStatus']), {
+      'enum': ['solved', 'partial', 'tried', null],
+      'type': ['string', 'null'],
+    });
+
+    const arrayFields = [
+      'noRatingReasons',
+      'noRatingWarnings',
+      'titles',
+      'contests',
+      'tags',
+      'viewerFolders',
+    ];
+    for (final field in arrayFields) {
+      final array = _map(properties[field]);
+      expect(array['type'], 'array');
+      for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+        expect(array.containsKey(constraint), isFalse);
+      }
+    }
+
+    final warning = _map(_map(properties['noRatingWarnings'])['items']);
+    final warningProblem = _map(_properties(warning)['problem']);
+    expect(warningProblem['type'], ['object', 'null']);
+    expect(_map(_properties(warningProblem)['userStatus']), {
+      'enum': ['solved', 'partial', 'tried', null],
+      'type': ['string', 'null'],
+    });
+    final contest = _map(_map(properties['contests'])['items']);
+    expect(_map(_properties(contest)['abbreviation']), {
+      'type': ['string', 'null'],
+    });
+    final viewerFolder = _map(_map(properties['viewerFolders'])['items']);
+    expect(_map(_properties(viewerFolder)['color']), {
+      'enum': [
+        'red',
+        'violet',
+        'blue',
+        'teal',
+        'lime',
+        'yellow',
+        'orange',
+        null,
+      ],
+      'type': ['string', 'null'],
+    });
+
+    final problemSearch = _responseSchema(
+      _get(contract, '/api/v4/problems'),
+    );
+    final problemItem = _map(
+      _map(_properties(problemSearch)['problems'])['items'],
+    );
+    expect(schema, problemItem);
+  });
+
   test('pins the public problem-search analysis schema without inference', () {
     final analysis = _get(contract, '/api/v4/search/analyze');
 

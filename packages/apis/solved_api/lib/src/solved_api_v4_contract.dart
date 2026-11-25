@@ -280,6 +280,21 @@ final class SolvedApiV4Contract {
     );
   }
 
+  SolvedApiEndpoint<RandomProblemResult> randomProblem({String? query}) {
+    if (query != null && query.runes.length > 1000) {
+      throw ArgumentError.value(
+        query,
+        'query',
+        'Must not exceed 1000 characters',
+      );
+    }
+    return _endpoint(
+      path: 'search/random-problem',
+      queryParameters: {if (query != null) 'q': query},
+      decode: _decodeV4RandomProblem,
+    );
+  }
+
   /// Fetches the complete official tag catalog and filters it locally.
   ///
   /// The v4 `/tags` endpoint accepts no query or page parameters. Matching is
@@ -619,6 +634,7 @@ ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
     _list(body['titles'], 'problems[].titles').map(
       (value) => _decodeV4ProblemSearchTitle(
         _object(value, 'problems[].titles[]'),
+        'problems[].titles[]',
       ),
     ),
   );
@@ -626,18 +642,23 @@ ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
     _list(body['contests'], 'problems[].contests').map(
       (value) => _decodeV4ProblemSearchContest(
         _object(value, 'problems[].contests[]'),
+        'problems[].contests[]',
       ),
     ),
   );
   final tags = List<ProblemSearchTag>.unmodifiable(
     _list(body['tags'], 'problems[].tags').map(
-      (value) => _decodeV4ProblemSearchTag(_object(value, 'problems[].tags[]')),
+      (value) => _decodeV4ProblemSearchTag(
+        _object(value, 'problems[].tags[]'),
+        'problems[].tags[]',
+      ),
     ),
   );
   final viewerFolders = List<ProblemSearchViewerFolder>.unmodifiable(
     _list(body['viewerFolders'], 'problems[].viewerFolders').map(
       (value) => _decodeV4ProblemSearchViewerFolder(
         _object(value, 'problems[].viewerFolders[]'),
+        'problems[].viewerFolders[]',
       ),
     ),
   );
@@ -702,6 +723,99 @@ ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
     noRatingWarnings: noRatingWarnings,
     // The official v4 problem shape has tag keys but no localized names.
     tagNames: tags.map((tag) => tag.key).toList(growable: false),
+  );
+}
+
+RandomProblemResult _decodeV4RandomProblem(dynamic json) {
+  const field = 'random problem';
+  final body = _object(json, field);
+  final titles = List<ProblemSearchTitle>.unmodifiable(
+    _list(body['titles'], '$field.titles').map(
+      (value) => _decodeV4ProblemSearchTitle(
+        _object(value, '$field.titles[]'),
+        '$field.titles[]',
+      ),
+    ),
+  );
+  final contests = List<ProblemSearchContest>.unmodifiable(
+    _list(body['contests'], '$field.contests').map(
+      (value) => _decodeV4ProblemSearchContest(
+        _object(value, '$field.contests[]'),
+        '$field.contests[]',
+      ),
+    ),
+  );
+  final tags = List<ProblemSearchTag>.unmodifiable(
+    _list(body['tags'], '$field.tags').map(
+      (value) => _decodeV4ProblemSearchTag(
+        _object(value, '$field.tags[]'),
+        '$field.tags[]',
+      ),
+    ),
+  );
+  final viewerFolders = List<ProblemSearchViewerFolder>.unmodifiable(
+    _list(body['viewerFolders'], '$field.viewerFolders').map(
+      (value) => _decodeV4ProblemSearchViewerFolder(
+        _object(value, '$field.viewerFolders[]'),
+        '$field.viewerFolders[]',
+      ),
+    ),
+  );
+  final noRatingReasons = List<ProblemNoRatingReason>.unmodifiable(
+    _list(body['noRatingReasons'], '$field.noRatingReasons').map(
+      (value) => _decodeV4ProblemNoRatingReason(
+        value,
+        '$field.noRatingReasons[]',
+      ),
+    ),
+  );
+  final noRatingWarnings = List<ProblemNoRatingWarning>.unmodifiable(
+    _list(body['noRatingWarnings'], '$field.noRatingWarnings').map(
+      (value) => _decodeV4ProblemNoRatingWarning(
+        _object(value, '$field.noRatingWarnings[]'),
+        '$field.noRatingWarnings[]',
+      ),
+    ),
+  );
+  if (!body.containsKey('userStatus')) {
+    throw const FormatException(
+      'Missing required field random problem.userStatus',
+    );
+  }
+  final userStatusValue = body['userStatus'];
+  return RandomProblemResult(
+    id: _number(body['id'], '$field.id'),
+    problemId: _number(body['problemId'], '$field.problemId'),
+    subId: _string(body['subId'], '$field.subId'),
+    level: _number(body['level'], '$field.level'),
+    levelAverage: _number(body['levelAverage'], '$field.levelAverage'),
+    levelStdev: _number(body['levelStdev'], '$field.levelStdev'),
+    isStandard: _boolean(body['isStandard'], '$field.isStandard'),
+    votedUserCount: _number(body['votedUserCount'], '$field.votedUserCount'),
+    effectiveVoteCount: _number(
+      body['effectiveVoteCount'],
+      '$field.effectiveVoteCount',
+    ),
+    solvedUserCount: _number(
+      body['solvedUserCount'],
+      '$field.solvedUserCount',
+    ),
+    givesNoRating: _boolean(
+      body['givesNoRating'],
+      '$field.givesNoRating',
+    ),
+    noRatingReasons: noRatingReasons,
+    noRatingWarnings: noRatingWarnings,
+    titles: titles,
+    userStatus: userStatusValue == null
+        ? null
+        : _decodeV4ProblemUserStatus(
+            userStatusValue,
+            '$field.userStatus',
+          ),
+    contests: contests,
+    tags: tags,
+    viewerFolders: viewerFolders,
   );
 }
 
@@ -806,65 +920,68 @@ ProblemNoRatingReason _decodeV4ProblemNoRatingReason(
   };
 }
 
-ProblemSearchTitle _decodeV4ProblemSearchTitle(Map<String, dynamic> body) =>
+ProblemSearchTitle _decodeV4ProblemSearchTitle(
+  Map<String, dynamic> body,
+  String field,
+) =>
     ProblemSearchTitle(
-      language: _string(body['language'], 'problems[].titles[].language'),
-      title: _string(body['title'], 'problems[].titles[].title'),
-      isOriginal: _boolean(
-        body['isOriginal'],
-        'problems[].titles[].isOriginal',
-      ),
-      latex: _boolean(body['latex'], 'problems[].titles[].latex'),
-      html: _boolean(body['html'], 'problems[].titles[].html'),
+      language: _string(body['language'], '$field.language'),
+      title: _string(body['title'], '$field.title'),
+      isOriginal: _boolean(body['isOriginal'], '$field.isOriginal'),
+      latex: _boolean(body['latex'], '$field.latex'),
+      html: _boolean(body['html'], '$field.html'),
     );
 
-ProblemSearchTag _decodeV4ProblemSearchTag(Map<String, dynamic> body) =>
+ProblemSearchTag _decodeV4ProblemSearchTag(
+  Map<String, dynamic> body,
+  String field,
+) =>
     ProblemSearchTag(
-      id: _number(body['id'], 'problems[].tags[].id'),
-      key: _string(body['key'], 'problems[].tags[].key'),
-      isMeta: _boolean(body['isMeta'], 'problems[].tags[].isMeta'),
+      id: _number(body['id'], '$field.id'),
+      key: _string(body['key'], '$field.key'),
+      isMeta: _boolean(body['isMeta'], '$field.isMeta'),
     );
 
-ProblemSearchContest _decodeV4ProblemSearchContest(Map<String, dynamic> body) {
+ProblemSearchContest _decodeV4ProblemSearchContest(
+  Map<String, dynamic> body,
+  String field,
+) {
   if (!body.containsKey('abbreviation')) {
-    throw const FormatException(
-      'Missing required field problems[].contests[].abbreviation',
-    );
+    throw FormatException('Missing required field $field.abbreviation');
   }
   return ProblemSearchContest(
-    id: _number(body['id'], 'problems[].contests[].id'),
-    displayId: _string(body['displayId'], 'problems[].contests[].displayId'),
-    name: _string(body['name'], 'problems[].contests[].name'),
-    abbreviation: _nullableString(
-      body['abbreviation'],
-      'problems[].contests[].abbreviation',
-    ),
+    id: _number(body['id'], '$field.id'),
+    displayId: _string(body['displayId'], '$field.displayId'),
+    name: _string(body['name'], '$field.name'),
+    abbreviation: _nullableString(body['abbreviation'], '$field.abbreviation'),
   );
 }
 
 ProblemSearchViewerFolder _decodeV4ProblemSearchViewerFolder(
   Map<String, dynamic> body,
+  String field,
 ) {
   if (!body.containsKey('color')) {
-    throw const FormatException(
-      'Missing required field problems[].viewerFolders[].color',
-    );
+    throw FormatException('Missing required field $field.color');
   }
   final colorValue = body['color'];
   return ProblemSearchViewerFolder(
-    slug: _string(body['slug'], 'problems[].viewerFolders[].slug'),
-    name: _string(body['name'], 'problems[].viewerFolders[].name'),
-    color:
-        colorValue == null
-            ? null
-            : _decodeV4ProblemSearchViewerFolderColor(colorValue),
+    slug: _string(body['slug'], '$field.slug'),
+    name: _string(body['name'], '$field.name'),
+    color: colorValue == null
+        ? null
+        : _decodeV4ProblemSearchViewerFolderColor(
+            colorValue,
+            '$field.color',
+          ),
   );
 }
 
 ProblemSearchViewerFolderColor _decodeV4ProblemSearchViewerFolderColor(
   Object? value,
+  String field,
 ) {
-  final color = _string(value, 'problems[].viewerFolders[].color');
+  final color = _string(value, field);
   return switch (color) {
     'red' => ProblemSearchViewerFolderColor.red,
     'violet' => ProblemSearchViewerFolderColor.violet,
@@ -873,10 +990,7 @@ ProblemSearchViewerFolderColor _decodeV4ProblemSearchViewerFolderColor(
     'lime' => ProblemSearchViewerFolderColor.lime,
     'yellow' => ProblemSearchViewerFolderColor.yellow,
     'orange' => ProblemSearchViewerFolderColor.orange,
-    _ =>
-      throw const FormatException(
-        'Unsupported problems[].viewerFolders[].color',
-      ),
+    _ => throw FormatException('Unsupported $field'),
   };
 }
 
