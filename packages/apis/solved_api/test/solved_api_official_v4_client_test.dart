@@ -84,6 +84,8 @@ void main() {
             '/solved/v4/sources/oj/boj/groups/team-1' =>
               'v4/source_lookup.json',
             '/solved/v4/achievements' => 'v4/achievement_catalog.json',
+            '/solved/v4/achievements/for-problem/1000' =>
+              'v4/problem_achievements.json',
             '/solved/v4/tags' => 'v4/tags.json',
             '/solved/v4/tags/number_theory' => 'v4/tag_detail.json',
             _ => throw StateError('Unexpected request: ${request.url}'),
@@ -164,6 +166,8 @@ void main() {
             await client.v4SourceGroup('boj', 'team-1');
         final AchievementCatalogResult achievementCatalog =
             await client.v4AchievementCatalog(language: '');
+        final ProblemAchievementsResult problemAchievements =
+            await client.v4AchievementsForProblem(1000, language: '');
         final tags = await client.v4SearchTags('NUMBER');
         final TagDetailResult tagDetail =
             await client.v4TagDetail('number_theory');
@@ -374,6 +378,13 @@ void main() {
         expect(achievementCatalog.items.first.id, -1);
         expect(achievementCatalog.items.first.rewards, hasLength(2));
         expect(achievementCatalog.items.last.progress, isNull);
+        expect(problemAchievements.items, hasLength(2));
+        expect(
+          problemAchievements.items.first.relation,
+          ProblemAchievementRelation.unlocks,
+        );
+        expect(problemAchievements.items.first.rewards, hasLength(2));
+        expect(problemAchievements.items.last.condition, isNull);
         expect(tags.items.single.key, 'number_theory');
         expect(tagDetail.id, 42.5);
         expect(tagDetail.key, 'number_theory');
@@ -460,11 +471,15 @@ void main() {
             Uri.parse(
               'https://proxy.example/solved/v4/achievements?lang=',
             ),
+            Uri.parse(
+              'https://proxy.example/solved/v4/'
+              'achievements/for-problem/1000?lang=',
+            ),
             _uri('tags'),
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(26));
+        expect(httpClient.requests, hasLength(27));
         expect(
           httpClient.requests[12].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
@@ -660,6 +675,10 @@ void main() {
         isA<AchievementRequestFailed>(),
       );
       expect(
+        await _captureFailure(client.v4AchievementsForProblem(1000)),
+        isA<AchievementRequestFailed>(),
+      );
+      expect(
         await _captureFailure(client.v4BackgroundShow('anniversary_1st')),
         isA<BackgroundRequestFailed>(),
       );
@@ -729,7 +748,7 @@ void main() {
         await _captureFailure(client.v4SourceGroup('boj', 'group')),
         isA<SourceRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(22));
+      expect(httpClient.requests, hasLength(23));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -1023,6 +1042,117 @@ void main() {
       expect(error.retryAfter, const Duration(seconds: 23));
       expect(error.isRetryable, isTrue);
       expect(httpClient.requests.single.url, _uri('achievements'));
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test(
+        'preserves omitted empty and encoded problem-achievement queries',
+        () async {
+      handler = (_) async => _jsonResponse(
+            fixture('v4/problem_achievements.json'),
+          );
+
+      final omitted = await client.v4AchievementsForProblem(1000);
+      final empty = await client.v4AchievementsForProblem(1000, language: '');
+      final raw = await client.v4AchievementsForProblem(
+        1000,
+        language: '한 글 & raw',
+      );
+
+      expect(omitted.items.first.relation, ProblemAchievementRelation.unlocks);
+      expect(empty.items.last.earnedAt, isNull);
+      expect(raw.items.first.rewards, hasLength(2));
+      expect(
+        httpClient.requests.map((request) => request.url.toString()),
+        [
+          'https://proxy.example/solved/v4/achievements/for-problem/1000',
+          'https://proxy.example/solved/v4/'
+              'achievements/for-problem/1000?lang=',
+          'https://proxy.example/solved/v4/'
+              'achievements/for-problem/1000?'
+              'lang=%ED%95%9C+%EA%B8%80+%26+raw',
+        ],
+      );
+      for (final request in httpClient.requests) {
+        expect(request.method, 'GET');
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+        });
+        expect(request.bodyBytes, isEmpty);
+      }
+      expect(httpClient.requests, hasLength(3));
+    });
+
+    test('rejects invalid problem-achievement requests before transport', () {
+      for (final invalid in [0, -1]) {
+        expect(
+          () => client.v4AchievementsForProblem(invalid),
+          throwsA(
+            isA<ArgumentError>()
+                .having((error) => error.name, 'name', 'problemId')
+                .having(
+                  (error) => error.invalidValue,
+                  'invalidValue',
+                  invalid,
+                ),
+          ),
+        );
+      }
+      expect(
+        () => client.v4AchievementsForProblem(
+          1,
+          language: List<String>.filled(17, '🌏').join(),
+        ),
+        throwsArgumentError,
+      );
+      expect(httpClient.requests, isEmpty);
+    });
+
+    test('wraps malformed problem achievements as achievement failure',
+        () async {
+      handler = (_) async => _jsonResponse(
+            jsonEncode({'items': null}),
+          );
+
+      final error = await _captureFailure(
+        client.v4AchievementsForProblem(1000),
+      );
+
+      expect(error, isA<AchievementRequestFailed>());
+      expect(error.statusCode, 200);
+      expect(error.cause, isA<FormatException>());
+      expect(error.responseBody, isNull);
+      expect(
+        httpClient.requests.single.url,
+        _uri('achievements/for-problem/1000'),
+      );
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves problem-achievement 429 failure metadata', () async {
+      handler = (_) async => _bytesResponse(
+            const <int>[0xff],
+            statusCode: 429,
+            headers: const <String, String>{
+              'content-type': 'text/plain',
+              'retry-after': '29',
+            },
+          );
+
+      final error = await _captureFailure(
+        client.v4AchievementsForProblem(1000),
+      );
+
+      expect(error, isA<AchievementRequestFailed>());
+      expect(error.statusCode, 429);
+      expect(error.cause, isNull);
+      expect(error.responseBody, isNull);
+      expect(error.retryAfter, const Duration(seconds: 29));
+      expect(error.isRetryable, isTrue);
+      expect(
+        httpClient.requests.single.url,
+        _uri('achievements/for-problem/1000'),
+      );
       expect(httpClient.requests, hasLength(1));
     });
 

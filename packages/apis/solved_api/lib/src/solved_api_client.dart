@@ -378,6 +378,17 @@ class SolvedApiClient {
     );
   }
 
+  Future<ProblemAchievementsResult> v4AchievementsForProblem(
+    int problemId, {
+    String? language,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.achievementsForProblem(problemId, language: language),
+      requestType: _RequestType.achievement,
+    );
+  }
+
   Future<OfficialAchievementItem> v4AchievementItem(
     OfficialAchievementItemKind kind,
     String key,
