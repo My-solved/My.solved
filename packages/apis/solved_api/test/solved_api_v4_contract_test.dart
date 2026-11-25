@@ -680,6 +680,177 @@ void main() {
     }
   });
 
+  test('requires every sparse-day field and exact value types', () {
+    final endpoint = contract.userActivity(
+      'index',
+      from: DateTime.utc(2026, 11),
+      to: DateTime.utc(2026, 11, 17),
+    );
+
+    for (final malformed in <Object?>[
+      null,
+      0,
+      false,
+      'day',
+      const <Object>[],
+    ]) {
+      expect(
+        () => endpoint.decode(
+          _activitySource()..['days'] = <Object?>[malformed],
+        ),
+        throwsFormatException,
+        reason: 'days[] = $malformed',
+      );
+    }
+
+    for (final field in [
+      'day',
+      'solvedCount',
+      'maxSolvedLevel',
+      'ratingDelta',
+      'freezeUsed',
+      'streakRepaired',
+    ]) {
+      final day = _activityDaySource()..remove(field);
+      expect(
+        () => endpoint.decode(_activitySource()..['days'] = <Object>[day]),
+        throwsFormatException,
+        reason: 'missing days[].$field',
+      );
+    }
+
+    final invalidValues = <String, List<Object?>>{
+      'day': [null, 0, false, const <Object>[], const <String, Object?>{}],
+      'solvedCount': [
+        null,
+        '0',
+        0.0,
+        false,
+        const <Object>[],
+        const <String, Object?>{},
+      ],
+      'maxSolvedLevel': [
+        null,
+        '0',
+        0.0,
+        false,
+        const <Object>[],
+        const <String, Object?>{},
+      ],
+      'ratingDelta': [
+        null,
+        '0',
+        0.0,
+        false,
+        const <Object>[],
+        const <String, Object?>{},
+      ],
+      'freezeUsed': [
+        null,
+        0,
+        'false',
+        const <Object>[],
+        const <String, Object?>{},
+      ],
+      'streakRepaired': [
+        null,
+        0,
+        'false',
+        const <Object>[],
+        const <String, Object?>{},
+      ],
+    };
+    for (final entry in invalidValues.entries) {
+      for (final invalid in entry.value) {
+        final day = _activityDaySource()..[entry.key] = invalid;
+        expect(
+          () => endpoint.decode(_activitySource()..['days'] = <Object>[day]),
+          throwsFormatException,
+          reason: 'days[].${entry.key} = $invalid',
+        );
+      }
+    }
+  });
+
+  test('matches sparse-day bounds without calendar or range inference', () {
+    final endpoint = contract.userActivity(
+      'index',
+      from: DateTime.utc(2026, 11),
+      to: DateTime.utc(2026, 11, 17),
+    );
+    final first = _activityDaySource()
+      ..['day'] = '0000-00-00'
+      ..['solvedCount'] = 0
+      ..['maxSolvedLevel'] = 0
+      ..['ratingDelta'] = -999
+      ..['futureDayField'] = 'allowed';
+    final second = _activityDaySource()
+      ..['day'] = '9999-99-99'
+      ..['solvedCount'] = 999999999999
+      ..['maxSolvedLevel'] = 30
+      ..['ratingDelta'] = 999;
+    final actual = endpoint.decode(
+      _activitySource()
+        ..['maxSolvedCount'] = 0
+        ..['days'] = <Object>[first, second],
+    );
+
+    expect(actual.maxSolvedCount, 0);
+    expect(actual.days.map((value) => value.year), [0, 9999]);
+    expect(actual.days.map((value) => value.month), [0, 99]);
+    expect(actual.days.map((value) => value.day), [0, 99]);
+    expect(actual.days.map((value) => value.solvedCount), [0, 999999999999]);
+    expect(actual.days.map((value) => value.maxSolvedLevel), [0, 30]);
+    expect(actual.days.map((value) => value.ratingDelta), [-999, 999]);
+
+    for (final ratingDelta in [-1, 0, 1]) {
+      final day = _activityDaySource()..['ratingDelta'] = ratingDelta;
+      final decoded = endpoint.decode(
+        _activitySource()..['days'] = <Object>[day],
+      );
+      expect(decoded.days.single.ratingDelta, ratingDelta);
+    }
+  });
+
+  test('rejects values outside sparse-day bounds and malformed day tokens', () {
+    final endpoint = contract.userActivity(
+      'index',
+      from: DateTime.utc(2026, 11),
+      to: DateTime.utc(2026, 11, 17),
+    );
+
+    for (final entry in <String, List<int>>{
+      'solvedCount': [-1],
+      'maxSolvedLevel': [-1, 31],
+    }.entries) {
+      for (final invalid in entry.value) {
+        final day = _activityDaySource()..[entry.key] = invalid;
+        expect(
+          () => endpoint.decode(_activitySource()..['days'] = <Object>[day]),
+          throwsFormatException,
+          reason: 'days[].${entry.key} = $invalid',
+        );
+      }
+    }
+
+    for (final invalid in [
+      '',
+      '2026-1-01',
+      '2026-01-1',
+      '2026-01-011',
+      '2026/01/01',
+      ' 2026-01-01',
+      '2026-01-01 ',
+    ]) {
+      final day = _activityDaySource()..['day'] = invalid;
+      expect(
+        () => endpoint.decode(_activitySource()..['days'] = <Object>[day]),
+        throwsFormatException,
+        reason: 'days[].day = $invalid',
+      );
+    }
+  });
+
   test('isolates and freezes decoded sparse days without changing semantics',
       () {
     final endpoint = contract.userActivity(
@@ -791,3 +962,7 @@ void main() {
 
 Map<String, dynamic> _activitySource() =>
     jsonDecode(fixture('v4/user_activity_days.json')) as Map<String, dynamic>;
+
+Map<String, dynamic> _activityDaySource() => Map<String, dynamic>.from(
+      (_activitySource()['days'] as List<dynamic>).first as Map,
+    );

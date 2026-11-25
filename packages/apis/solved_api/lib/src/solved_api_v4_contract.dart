@@ -771,13 +771,19 @@ ProfileActivityResult _decodeV4ProfileActivity(dynamic json) {
   final days = List<ProfileSolvedDay>.unmodifiable(
     _list(body['days'], 'days').map((item) {
       final day = _object(item, 'days[]');
-      final date = _day(_string(day['day'], 'days[].day'), 'days[].day');
+      final date = _profileActivityDay(
+        _string(day['day'], 'days[].day'),
+        'days[].day',
+      );
       return ProfileSolvedDay(
         year: date.year,
         month: date.month,
         day: date.day,
-        solvedCount: _integer(day['solvedCount'], 'days[].solvedCount'),
-        maxSolvedLevel: _integer(
+        solvedCount: _nonNegativeInteger(
+          day['solvedCount'],
+          'days[].solvedCount',
+        ),
+        maxSolvedLevel: _profileActivityMaxSolvedLevel(
           day['maxSolvedLevel'],
           'days[].maxSolvedLevel',
         ),
@@ -967,15 +973,17 @@ String _formatDay(DateTime day) => '${day.year.toString().padLeft(4, '0')}-'
     '${day.month.toString().padLeft(2, '0')}-'
     '${day.day.toString().padLeft(2, '0')}';
 
-DateTime _day(String value, String field) {
+({int year, int month, int day}) _profileActivityDay(
+  String value,
+  String field,
+) {
   final match = RegExp(r'^(\d{4})-(\d{2})-(\d{2})$').firstMatch(value);
   if (match == null) throw FormatException('Invalid $field');
-  final year = int.parse(match.group(1)!);
-  final month = int.parse(match.group(2)!);
-  final day = int.parse(match.group(3)!);
-  final result = DateTime.utc(year, month, day);
-  if (_formatDay(result) != value) throw FormatException('Invalid $field');
-  return result;
+  return (
+    year: int.parse(match.group(1)!),
+    month: int.parse(match.group(2)!),
+    day: int.parse(match.group(3)!),
+  );
 }
 
 Map<String, dynamic> _object(Object? value, String field) {
@@ -1024,6 +1032,14 @@ int _nonNegativeInteger(Object? value, String field) {
   final decoded = _integer(value, field);
   if (decoded < 0) {
     throw FormatException('Expected non-negative integer for $field');
+  }
+  return decoded;
+}
+
+int _profileActivityMaxSolvedLevel(Object? value, String field) {
+  final decoded = _integer(value, field);
+  if (decoded < 0 || decoded > 30) {
+    throw FormatException('Expected integer from 0 through 30 for $field');
   }
   return decoded;
 }
