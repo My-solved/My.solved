@@ -77,5 +77,8 @@ class UserProfile {
   final ProfileBadgeAsset? badge;
 
   /// Tag ratings embedded by the v4 profile response.
+  ///
+  /// Decoder-produced lists are unmodifiable. Lists passed to this constructor
+  /// remain owned by the caller.
   final List<ProfileTagRating> tagRatings;
 }

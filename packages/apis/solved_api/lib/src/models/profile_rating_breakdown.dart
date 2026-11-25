@@ -20,6 +20,11 @@ class ProfileRatingBreakdown {
   final int ratingByClass;
   final int ratingBySolvedCount;
   final int ratingProblemsCutoff;
+
+  /// Rating-problem counts in wire order.
+  ///
+  /// Decoder-produced lists are unmodifiable. Lists passed to this constructor
+  /// remain owned by the caller.
   final List<int> ratingProblemsHistogram;
 
   /// Problems that the active contract reports outside rating calculation.
