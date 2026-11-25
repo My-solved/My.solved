@@ -498,6 +498,17 @@ class SolvedApiClient {
     );
   }
 
+  Future<RankingAffiliationsResult> v4RankingAffiliations({
+    String? query,
+    String? language,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.rankingAffiliations(query: query, language: language),
+      requestType: _RequestType.ranking,
+    );
+  }
+
   Future<RankingTagsResult> v4RankingTags({String? language}) {
     final contract = _requireV4Contract();
     return _getV4(

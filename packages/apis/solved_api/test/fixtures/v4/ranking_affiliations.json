@@ -1,0 +1,31 @@
+{
+  "affiliations": [
+    {
+      "id": -1,
+      "affiliationId": 0,
+      "name": "",
+      "type": "undefined",
+      "userCount": -7,
+      "logoThumbnailUrl": "not necessarily a URI",
+      "color": null
+    },
+    {
+      "id": 42,
+      "affiliationId": -9,
+      "name": "한 글 & raw",
+      "type": "university",
+      "userCount": 0,
+      "logoThumbnailUrl": null,
+      "color": ""
+    },
+    {
+      "id": -1,
+      "affiliationId": 0,
+      "name": "duplicate",
+      "type": "community",
+      "userCount": 100,
+      "logoThumbnailUrl": "",
+      "color": "not necessarily a color"
+    }
+  ]
+}
