@@ -10,7 +10,17 @@
   "owned": null,
   "equipped": null,
   "background": null,
-  "credits": [],
+  "credits": [
+    {
+      "key": "badge-designer",
+      "displayName": "Badge Designer",
+      "role": "Design",
+      "authorUrl": null,
+      "handle": null,
+      "twitter": null,
+      "instagram": null
+    }
+  ],
   "userCount": 1,
   "achievements": []
 }

@@ -395,6 +395,73 @@ void main() {
       expect(httpClient.requests, hasLength(4));
     });
 
+    test('wraps eagerly validated item envelopes by requested asset family',
+        () async {
+      handler = (request) async {
+        final isBackground = request.url.path.endsWith('/background/item');
+        final source = Map<String, dynamic>.from(
+          jsonDecode(
+            fixture(
+              isBackground ? 'v4/background_item.json' : 'v4/badge_item.json',
+            ),
+          ) as Map,
+        );
+        if (isBackground) {
+          final background = Map<String, dynamic>.from(
+            source['background'] as Map,
+          );
+          final authors = List<Object?>.from(background['authors'] as List)
+            ..add(<String, Object?>{
+              'key': 'malformed-trailing-author',
+              'displayName': null,
+              'role': 'Illustration',
+              'authorUrl': null,
+              'handle': null,
+              'twitter': null,
+            });
+          source['background'] = background..['authors'] = authors;
+        } else {
+          final credits = List<Object?>.from(source['credits'] as List)
+            ..add(<String, Object?>{
+              'key': 'malformed-trailing-credit',
+              'displayName': null,
+              'role': 'Design',
+              'authorUrl': null,
+              'handle': null,
+              'twitter': null,
+            });
+          source['credits'] = credits;
+        }
+        return _jsonResponse(jsonEncode(source));
+      };
+
+      final backgroundError = await _captureFailure(
+        client.v4BackgroundShow('item'),
+      );
+      final badgeError = await _captureFailure(client.v4BadgeShow('item'));
+
+      expect(backgroundError, isA<BackgroundRequestFailed>());
+      expect(backgroundError.statusCode, 200);
+      expect(backgroundError.cause, isA<FormatException>());
+      expect(badgeError, isA<BadgeRequestFailed>());
+      expect(badgeError.statusCode, 200);
+      expect(badgeError.cause, isA<FormatException>());
+      expect(
+        httpClient.requests.map((request) => request.url),
+        [
+          _uri(
+            'achievements/items/background/item',
+            const <String, String>{'lang': 'ko'},
+          ),
+          _uri(
+            'achievements/items/badge/item',
+            const <String, String>{'lang': 'ko'},
+          ),
+        ],
+      );
+      expect(httpClient.requests, hasLength(2));
+    });
+
     test('preserves only valid Retry-After metadata on retryable 429s',
         () async {
       final cases = <(String?, Duration?, bool)>[

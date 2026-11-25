@@ -3224,11 +3224,439 @@ void main() {
     );
   });
 
+  test('requires the complete standalone achievement item envelope', () {
+    final endpoint = contract.badgeShow('boardgame');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/badge_item.json')) as Map,
+        );
+    const fields = [
+      'kind',
+      'id',
+      'key',
+      'name',
+      'imageUrl',
+      'category',
+      'addedAt',
+      'unlockedByDefault',
+      'owned',
+      'equipped',
+      'background',
+      'credits',
+      'userCount',
+      'achievements',
+    ];
+
+    for (final field in fields) {
+      expect(
+        () => endpoint.decode(source()..remove(field)),
+        throwsFormatException,
+        reason: '$field missing',
+      );
+    }
+
+    final invalidValues = <String, List<Object?>>{
+      'kind': [
+        null,
+        0,
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+        '',
+        'Badge',
+        'badge ',
+        'unknown',
+      ],
+      'id': [
+        null,
+        1.0,
+        '1',
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+      ],
+      for (final field in ['key', 'name', 'imageUrl', 'category', 'addedAt'])
+        field: [
+          null,
+          0,
+          false,
+          const <Object?>[],
+          const <String, Object?>{},
+        ],
+      'unlockedByDefault': [
+        null,
+        0,
+        'false',
+        const <Object?>[],
+        const <String, Object?>{},
+      ],
+      for (final field in ['owned', 'equipped'])
+        field: [
+          0,
+          'false',
+          const <Object?>[],
+          const <String, Object?>{},
+        ],
+      'background': [
+        0,
+        false,
+        'background',
+        const <Object?>[],
+      ],
+      'credits': [
+        null,
+        0,
+        false,
+        'credits',
+        const <String, Object?>{},
+      ],
+      'userCount': [
+        null,
+        1.0,
+        '1',
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+        -1,
+      ],
+      'achievements': [
+        null,
+        0,
+        false,
+        'achievements',
+        const <String, Object?>{},
+      ],
+    };
+    for (final entry in invalidValues.entries) {
+      for (final invalid in entry.value) {
+        expect(
+          () => endpoint.decode(source()..[entry.key] = invalid),
+          throwsFormatException,
+          reason: '${entry.key} = $invalid',
+        );
+      }
+    }
+
+    final raw = endpoint.decode(
+      source()
+        ..['id'] = -7
+        ..['key'] = ''
+        ..['name'] = '  '
+        ..['imageUrl'] = 'not a uri'
+        ..['category'] = ''
+        ..['addedAt'] = 'not a date'
+        ..['unlockedByDefault'] = true
+        ..['owned'] = true
+        ..['equipped'] = false
+        ..['userCount'] = 0
+        ..['achievements'] = <Object?>[
+          null,
+          0,
+          <String, Object?>{'futureAchievementShape': 'deferred'},
+        ]
+        ..['futureItemField'] = 'allowed',
+    );
+    expect(raw.key, '');
+    expect(raw.name, '  ');
+    expect(raw.imageUrl, 'not a uri');
+  });
+
+  test('strictly validates standalone background and author shapes', () {
+    final endpoint = contract.backgroundShow('anniversary_1st');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/background_item.json')) as Map,
+        );
+    Map<String, dynamic> background() => Map<String, dynamic>.from(
+          source()['background'] as Map,
+        );
+    Map<String, Object?> author() => <String, Object?>{
+          'key': 'author',
+          'displayName': null,
+          'role': 'Illustration',
+          'authorUrl': null,
+          'handle': null,
+          'twitter': null,
+          'instagram': null,
+        };
+    const fields = [
+      'key',
+      'backgroundImageUrl',
+      'fallbackBackgroundImageUrl',
+      'backgroundVideoUrl',
+      'thumbnailPlaceholder',
+      'isIllust',
+      'displayName',
+      'authors',
+    ];
+    for (final field in fields) {
+      expect(
+        () => endpoint.decode(
+          source()..['background'] = (background()..remove(field)),
+        ),
+        throwsFormatException,
+        reason: 'background.$field missing',
+      );
+    }
+
+    final invalidValues = <String, List<Object?>>{
+      'key': [null, 0, false, const <Object?>[], const <String, Object?>{}],
+      'backgroundImageUrl': [
+        null,
+        0,
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+      ],
+      for (final field in [
+        'fallbackBackgroundImageUrl',
+        'backgroundVideoUrl',
+        'thumbnailPlaceholder',
+        'displayName',
+      ])
+        field: [
+          0,
+          false,
+          const <Object?>[],
+          const <String, Object?>{},
+        ],
+      'isIllust': [
+        null,
+        0,
+        'true',
+        const <Object?>[],
+        const <String, Object?>{},
+      ],
+      'authors': [
+        null,
+        0,
+        false,
+        'authors',
+        const <String, Object?>{},
+      ],
+    };
+    for (final entry in invalidValues.entries) {
+      for (final invalid in entry.value) {
+        expect(
+          () => endpoint.decode(
+            source()..['background'] = (background()..[entry.key] = invalid),
+          ),
+          throwsFormatException,
+          reason: 'background.${entry.key} = $invalid',
+        );
+      }
+    }
+    expect(
+      () => endpoint.decode(
+        source()..['background'] = (background()..['authors'] = <Object?>[0]),
+      ),
+      throwsFormatException,
+    );
+
+    final authorInvalidValues = <String, List<Object?>>{
+      'key': [null, 0, false, const <Object?>[], const <String, Object?>{}],
+      'displayName': [
+        0,
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+      ],
+      'role': [null, 0, false, const <Object?>[], const <String, Object?>{}],
+      for (final field in ['authorUrl', 'handle', 'twitter', 'instagram'])
+        field: [
+          0,
+          false,
+          const <Object?>[],
+          const <String, Object?>{},
+        ],
+    };
+    for (final entry in authorInvalidValues.entries) {
+      expect(
+        () => endpoint.decode(
+          source()
+            ..['background'] = (background()
+              ..['authors'] = <Object?>[author()..remove(entry.key)]),
+        ),
+        throwsFormatException,
+        reason: 'background.authors[].${entry.key} missing',
+      );
+      for (final invalid in entry.value) {
+        expect(
+          () => endpoint.decode(
+            source()
+              ..['background'] = (background()
+                ..['authors'] = <Object?>[
+                  author()..[entry.key] = invalid,
+                ]),
+          ),
+          throwsFormatException,
+          reason: 'background.authors[].${entry.key} = $invalid',
+        );
+      }
+    }
+
+    expect(
+      () => endpoint.decode(
+        source()
+          ..['background'] = (background()
+            ..['authors'] = <Object?>[
+              author(),
+              author()..remove('instagram'),
+            ]),
+      ),
+      throwsFormatException,
+      reason: 'a malformed trailing author must not be ignored',
+    );
+  });
+
+  test('strictly validates every standalone item credit', () {
+    final endpoint = contract.badgeShow('boardgame');
+    Map<String, dynamic> source() => Map<String, dynamic>.from(
+          jsonDecode(fixture('v4/badge_item.json')) as Map,
+        );
+    Map<String, Object?> credit() => <String, Object?>{
+          'key': 'credit',
+          'displayName': null,
+          'role': 'Design',
+          'authorUrl': null,
+          'handle': null,
+          'twitter': null,
+          'instagram': null,
+        };
+    expect(
+      () => endpoint.decode(source()..['credits'] = <Object?>[0]),
+      throwsFormatException,
+    );
+
+    final invalidValues = <String, List<Object?>>{
+      'key': [null, 0, false, const <Object?>[], const <String, Object?>{}],
+      'displayName': [
+        0,
+        false,
+        const <Object?>[],
+        const <String, Object?>{},
+      ],
+      'role': [null, 0, false, const <Object?>[], const <String, Object?>{}],
+      for (final field in ['authorUrl', 'handle', 'twitter', 'instagram'])
+        field: [
+          0,
+          false,
+          const <Object?>[],
+          const <String, Object?>{},
+        ],
+    };
+    for (final entry in invalidValues.entries) {
+      expect(
+        () => endpoint.decode(
+          source()..['credits'] = <Object?>[credit()..remove(entry.key)],
+        ),
+        throwsFormatException,
+        reason: 'credits[].${entry.key} missing',
+      );
+      for (final invalid in entry.value) {
+        expect(
+          () => endpoint.decode(
+            source()
+              ..['credits'] = <Object?>[
+                credit()..[entry.key] = invalid,
+              ],
+          ),
+          throwsFormatException,
+          reason: 'credits[].${entry.key} = $invalid',
+        );
+      }
+    }
+
+    expect(
+      () => endpoint.decode(
+        source()
+          ..['credits'] = <Object?>[
+            credit(),
+            credit()..remove('instagram'),
+          ],
+      ),
+      throwsFormatException,
+      reason: 'a malformed trailing credit must not be ignored',
+    );
+  });
+
+  test('preserves standalone item projections without relationship inference',
+      () {
+    final backgroundSource = Map<String, dynamic>.from(
+      jsonDecode(fixture('v4/background_item.json')) as Map,
+    );
+    final background = Map<String, dynamic>.from(
+      backgroundSource['background'] as Map,
+    )
+      ..['key'] = 'nested-key'
+      ..['backgroundImageUrl'] = 'not a uri'
+      ..['fallbackBackgroundImageUrl'] = ''
+      ..['backgroundVideoUrl'] = 'also not a uri'
+      ..['thumbnailPlaceholder'] = ' raw placeholder '
+      ..['displayName'] = ''
+      ..['futureBackgroundField'] = 'allowed';
+    final author = Map<String, dynamic>.from(
+      (background['authors'] as List).first as Map,
+    )
+      ..['key'] = ''
+      ..['displayName'] = '  '
+      ..['role'] = ''
+      ..['authorUrl'] = 'not a uri'
+      ..['futureAuthorField'] = 'allowed';
+    background['authors'] = <Object?>[author, author];
+    final credit = Map<String, dynamic>.from(
+      (backgroundSource['credits'] as List).first as Map,
+    )
+      ..['key'] = ''
+      ..['displayName'] = '  '
+      ..['role'] = ''
+      ..['authorUrl'] = 'not a uri'
+      ..['futureCreditField'] = 'allowed';
+    backgroundSource
+      ..['id'] = -1
+      ..['key'] = 'outer-key'
+      ..['owned'] = true
+      ..['equipped'] = false
+      ..['background'] = background
+      ..['credits'] = <Object?>[credit, credit]
+      ..['achievements'] = <Object?>[0, null, const <String, Object?>{}]
+      ..['futureItemField'] = 'allowed';
+
+    final actual = contract.backgroundShow('outer-key').decode(
+          backgroundSource,
+        );
+    expect(actual?.key, 'outer-key');
+    expect(actual?.imageUrl, 'not a uri');
+    expect(actual?.fallbackImageUrl, '');
+
+    final badgeSource = Map<String, dynamic>.from(
+      jsonDecode(fixture('v4/badge_item.json')) as Map,
+    )
+      ..['id'] = -2
+      ..['key'] = ' badge key '
+      ..['name'] = ''
+      ..['imageUrl'] = 'not a uri'
+      ..['background'] = background
+      ..['userCount'] = 0
+      ..['futureItemField'] = 'allowed';
+    final badge = contract.badgeShow('boardgame').decode(badgeSource);
+    expect(badge.key, ' badge key ');
+    expect(badge.name, '');
+    expect(badge.imageUrl, 'not a uri');
+
+    background['backgroundImageUrl'] = 'mutated';
+    author['key'] = 'mutated';
+    credit['role'] = 'mutated';
+    backgroundSource['key'] = 'mutated';
+    badgeSource['name'] = 'mutated';
+    expect(actual?.key, 'outer-key');
+    expect(actual?.imageUrl, 'not a uri');
+    expect(badge.name, '');
+  });
+
   test('preserves an unavailable standalone background', () {
-    final actual = contract.backgroundShow('future-background').decode({
-      'kind': 'background',
-      'background': null,
-    });
+    final source = Map<String, dynamic>.from(
+      jsonDecode(fixture('v4/background_item.json')) as Map,
+    )..['background'] = null;
+    final actual = contract.backgroundShow('future-background').decode(source);
 
     expect(actual, isNull);
   });
