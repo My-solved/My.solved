@@ -101,7 +101,20 @@ void main() {
       });
 
       test('uses the explicit day range only for v4 activity', () async {
-        final streak = MockProfileStreak();
+        const activity = solved_api.ProfileActivityResult(
+          from: '2026-11-17',
+          to: '2026-11-17',
+          days: <solved_api.ProfileSolvedDay>[],
+          maxSolvedCount: 0,
+          currentStreak: 0,
+          maxStreak: 0,
+          theme: null,
+          firstActiveDay: null,
+          vacation: null,
+          vacations: <solved_api.ProfileActivityVacation>[],
+          countedToday: false,
+          frozenYesterday: false,
+        );
         when(() => solvedApiClient.supportsV4).thenReturn(true);
         when(
           () => solvedApiClient.v4UserActivity(
@@ -109,12 +122,14 @@ void main() {
             from: from,
             to: to,
           ),
-        ).thenAnswer((_) async => streak);
+        ).thenAnswer((_) async => activity);
 
-        expect(
-          await userRepository.getStreak(handle, from: from, to: to),
-          streak,
+        final solved_api.ProfileStreak actual = await userRepository.getStreak(
+          handle,
+          from: from,
+          to: to,
         );
+        expect(actual, same(activity));
         verify(
           () => solvedApiClient.v4UserActivity(
             handle,

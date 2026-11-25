@@ -150,23 +150,62 @@ void main() {
       ['handle', 'from', 'to'],
     );
     final activitySchema = _responseSchema(activity);
-    expect(
-      _required(activitySchema),
-      containsAll([
-        'from',
-        'to',
-        'days',
-        'currentStreak',
-        'maxStreak',
-        'theme',
-        'firstActiveDay',
-      ]),
-    );
+    expect(_required(activitySchema), [
+      'from',
+      'to',
+      'days',
+      'maxSolvedCount',
+      'currentStreak',
+      'maxStreak',
+      'theme',
+      'firstActiveDay',
+      'vacation',
+      'vacations',
+      'countedToday',
+      'frozenYesterday',
+    ]);
+    expect(activitySchema.containsKey('additionalProperties'), isFalse);
     final activityProperties = _properties(activitySchema);
-    for (final field in ['currentStreak', 'maxStreak']) {
-      final property = _map(activityProperties[field]);
-      expect(property['type'], 'integer');
-      expect(property['minimum'], 0);
+    for (final field in ['from', 'to']) {
+      expect(_map(activityProperties[field]), {'type': 'string'});
+    }
+    expect(_map(activityProperties['days'])['type'], 'array');
+    for (final field in ['maxSolvedCount', 'currentStreak', 'maxStreak']) {
+      expect(_map(activityProperties[field]), {
+        'type': 'integer',
+        'minimum': 0,
+      });
+    }
+    for (final field in ['theme', 'firstActiveDay']) {
+      expect(_map(activityProperties[field]), {
+        'type': ['string', 'null'],
+      });
+    }
+    final vacation = _map(activityProperties['vacation']);
+    expect(vacation['type'], ['object', 'null']);
+    expect(_required(vacation), ['fromDay', 'source']);
+    expect(vacation.containsKey('additionalProperties'), isFalse);
+    final vacationProperties = _properties(vacation);
+    expect(_map(vacationProperties['fromDay']), {'type': 'string'});
+    expect(_map(vacationProperties['source']), {
+      'type': 'string',
+      'enum': ['item', 'launch'],
+    });
+    final vacations = _map(activityProperties['vacations']);
+    expect(vacations['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(vacations.containsKey(constraint), isFalse);
+    }
+    final vacationItem = _map(vacations['items']);
+    expect(_required(vacationItem), ['fromDay', 'untilDay']);
+    expect(vacationItem.containsKey('additionalProperties'), isFalse);
+    final vacationItemProperties = _properties(vacationItem);
+    expect(_map(vacationItemProperties['fromDay']), {'type': 'string'});
+    expect(_map(vacationItemProperties['untilDay']), {
+      'type': ['string', 'null'],
+    });
+    for (final field in ['countedToday', 'frozenYesterday']) {
+      expect(_map(activityProperties[field]), {'type': 'boolean'});
     }
   });
 

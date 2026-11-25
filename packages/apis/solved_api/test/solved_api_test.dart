@@ -693,6 +693,7 @@ void main() {
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
 
         final actual = await apiClient.userGrass(handle, topic);
+        expect(actual, isNot(isA<ProfileActivityResult>()));
         expect(
           actual,
           isA<ProfileStreak>()
