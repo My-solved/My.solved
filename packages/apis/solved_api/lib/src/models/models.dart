@@ -1,3 +1,4 @@
+export 'official_user_profile.dart';
 export 'problem_no_rating_warning.dart';
 export 'problem_search_contest.dart';
 export 'problem_search_diagnostic.dart';

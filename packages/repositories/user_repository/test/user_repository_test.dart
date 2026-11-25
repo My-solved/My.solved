@@ -58,13 +58,15 @@ void main() {
       });
 
       test('uses only the v4 profile when configured', () async {
-        final user = MockUserProfile();
+        final profile = _officialProfile();
         when(() => solvedApiClient.supportsV4).thenReturn(true);
         when(
           () => solvedApiClient.v4UserProfile(handle),
-        ).thenAnswer((_) async => user);
+        ).thenAnswer((_) async => profile);
 
-        expect(await userRepository.getUser(handle), user);
+        final solved_api.UserProfile actual =
+            await userRepository.getUser(handle);
+        expect(actual, same(profile));
         verify(() => solvedApiClient.v4UserProfile(handle)).called(1);
         verifyNever(() => solvedApiClient.userShow(any()));
       });
@@ -195,10 +197,9 @@ void main() {
       });
 
       test('uses tag ratings embedded in the v4 profile', () async {
-        final profile = MockUserProfile();
         final tagRatings = [MockProfileTagRating()];
+        final profile = _officialProfile(tagRatings: tagRatings);
         when(() => solvedApiClient.supportsV4).thenReturn(true);
-        when(() => profile.tagRatings).thenReturn(tagRatings);
         when(
           () => solvedApiClient.v4UserProfile(handle),
         ).thenAnswer((_) async => profile);
@@ -289,3 +290,22 @@ void main() {
     });
   });
 }
+
+solved_api.OfficialUserProfile _officialProfile({
+  List<solved_api.ProfileTagRating> tagRatings = const [],
+}) =>
+    solved_api.OfficialUserProfile(
+      id: 1,
+      voteCount: 37,
+      handle: 'w8385',
+      badgeId: null,
+      backgroundId: null,
+      profileImageUrl: null,
+      solvedCount: 2048,
+      legacyContributionCount: null,
+      userClass: 6,
+      reverseRivalCount: null,
+      tier: null,
+      rating: 2417,
+      tagRatings: tagRatings,
+    );

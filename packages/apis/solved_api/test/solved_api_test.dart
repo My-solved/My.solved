@@ -621,6 +621,7 @@ void main() {
         when(() => httpClient.get(any())).thenAnswer((_) async => response);
 
         final actual = await apiClient.userShow(handle);
+        expect(actual, isNot(isA<OfficialUserProfile>()));
         expect(
           actual,
           isA<UserProfile>()
