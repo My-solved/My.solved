@@ -542,6 +542,45 @@ void main() {
     expect(_map(ratingHistoryItemProperties['value']), {'type': 'integer'});
   });
 
+  test('pins the public user-tag level histogram without inference', () {
+    final histogram =
+        _get(contract, '/api/v4/users/{handle}/tags/{key}/histogram');
+
+    expect(_map(histogram['x-access']), {'class': 'public'});
+    expect(_parameterNames(histogram), ['handle', 'key']);
+    final parameters = _parameters(histogram);
+    for (final parameter in parameters) {
+      expect(parameter['in'], 'path');
+      expect(parameter['required'], isTrue);
+      expect(_map(parameter['schema']), {
+        'type': 'string',
+        'minLength': 1,
+        'maxLength': 64,
+      });
+    }
+    expect(
+      _map(histogram['responses']).keys,
+      unorderedEquals(['200', '404']),
+    );
+
+    final schema = _responseSchema(histogram);
+    expect(_required(schema), ['key', 'histogram']);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    final properties = _properties(schema);
+    expect(properties.keys, unorderedEquals(['key', 'histogram']));
+    expect(_map(properties['key']), {'type': 'string'});
+    final buckets = _map(properties['histogram']);
+    expect(buckets['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(buckets.containsKey(constraint), isFalse);
+    }
+    final bucket = _map(buckets['items']);
+    expect(bucket, {'type': 'integer'});
+    for (final constraint in ['minimum', 'maximum', 'multipleOf']) {
+      expect(bucket.containsKey(constraint), isFalse);
+    }
+  });
+
   test('pins the public achievement summary schema without inference', () {
     final summary =
         _get(contract, '/api/v4/users/{handle}/achievements/summary');

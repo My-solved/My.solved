@@ -19,6 +19,7 @@ export 'profile_rating_breakdown.dart';
 export 'profile_rating_history_result.dart';
 export 'profile_reputation_result.dart';
 export 'profile_streak.dart';
+export 'profile_tag_level_histogram_result.dart';
 export 'profile_tag_rating.dart';
 export 'profile_tier_stat.dart';
 export 'search_object.dart';
