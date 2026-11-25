@@ -226,6 +226,11 @@ final class SolvedApiV4Contract {
     );
   }
 
+  SolvedApiEndpoint<TagDetailResult> tagDetail(String key) => _endpoint(
+        path: 'tags/${_pathSegment(key, 'key')}',
+        decode: _decodeV4TagDetail,
+      );
+
   SolvedApiEndpoint<T> _endpoint<T>({
     required String path,
     Map<String, String> queryParameters = const {},
@@ -727,6 +732,57 @@ _V4CatalogTag _decodeV4CatalogTag(Map<String, dynamic> body) {
     rated: _boolean(body['rated'], 'tags[].rated'),
   );
 }
+
+TagDetailResult _decodeV4TagDetail(dynamic json) {
+  final body = _object(json, 'tag detail');
+  return TagDetailResult(
+    id: _number(body['id'], 'id'),
+    key: _string(body['key'], 'key'),
+    names: _stringMap(body['names'], 'names'),
+    aliases: List<String>.unmodifiable(
+      _list(
+        body['aliases'],
+        'aliases',
+      ).map((value) => _string(value, 'aliases[]')),
+    ),
+    parents: List<TagDetailRelatedTag>.unmodifiable(
+      _list(body['parents'], 'parents').map(
+        (value) =>
+            _decodeV4RelatedTag(_object(value, 'parents[]'), 'parents[]'),
+      ),
+    ),
+    children: List<TagDetailRelatedTag>.unmodifiable(
+      _list(body['children'], 'children').map(
+        (value) =>
+            _decodeV4RelatedTag(_object(value, 'children[]'), 'children[]'),
+      ),
+    ),
+    rated: _boolean(body['rated'], 'rated'),
+    problemCount: _integer(body['problemCount'], 'problemCount'),
+    solvedCount: _requiredNullableInteger(body, 'solvedCount', 'solvedCount'),
+    levels: List<TagDetailLevel>.unmodifiable(
+      _list(
+        body['levels'],
+        'levels',
+      ).map((value) => _decodeV4TagLevel(_object(value, 'levels[]'))),
+    ),
+  );
+}
+
+TagDetailRelatedTag _decodeV4RelatedTag(
+  Map<String, dynamic> body,
+  String field,
+) =>
+    TagDetailRelatedTag(
+      key: _string(body['key'], '$field.key'),
+      names: _stringMap(body['names'], '$field.names'),
+    );
+
+TagDetailLevel _decodeV4TagLevel(Map<String, dynamic> body) => TagDetailLevel(
+      level: _integer(body['level'], 'levels[].level'),
+      count: _integer(body['count'], 'levels[].count'),
+      solved: _requiredNullableInteger(body, 'solved', 'levels[].solved'),
+    );
 
 String? _preferredLocalizedName(Map<String, String> names) {
   for (final language in const ['ko', 'en']) {
@@ -1807,6 +1863,18 @@ String _profileHistoryDay(Object? value, String field) {
 Map<String, dynamic> _object(Object? value, String field) {
   if (value is! Map) throw FormatException('Expected object for $field');
   return Map<String, dynamic>.from(value);
+}
+
+Map<String, String> _stringMap(Object? value, String field) {
+  if (value is! Map) throw FormatException('Expected object for $field');
+  final decoded = <String, String>{};
+  for (final entry in value.entries) {
+    if (entry.key is! String) {
+      throw FormatException('Expected string key for $field');
+    }
+    decoded[entry.key as String] = _string(entry.value, '$field[]');
+  }
+  return Map<String, String>.unmodifiable(decoded);
 }
 
 List<dynamic> _list(Object? value, String field) {
