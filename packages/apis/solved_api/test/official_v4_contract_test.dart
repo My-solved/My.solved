@@ -169,7 +169,45 @@ void main() {
     for (final field in ['from', 'to']) {
       expect(_map(activityProperties[field]), {'type': 'string'});
     }
-    expect(_map(activityProperties['days'])['type'], 'array');
+    final days = _map(activityProperties['days']);
+    expect(days['type'], 'array');
+    for (final constraint in [
+      'minItems',
+      'maxItems',
+      'uniqueItems',
+      'additionalProperties',
+    ]) {
+      expect(days.containsKey(constraint), isFalse);
+    }
+    final dayItem = _map(days['items']);
+    expect(dayItem['type'], 'object');
+    expect(_required(dayItem), [
+      'day',
+      'solvedCount',
+      'maxSolvedLevel',
+      'ratingDelta',
+      'freezeUsed',
+      'streakRepaired',
+    ]);
+    expect(dayItem.containsKey('additionalProperties'), isFalse);
+    final dayProperties = _properties(dayItem);
+    expect(_map(dayProperties['day']), {
+      'type': 'string',
+      'pattern': r'^\d{4}-\d{2}-\d{2}$',
+    });
+    expect(_map(dayProperties['solvedCount']), {
+      'type': 'integer',
+      'minimum': 0,
+    });
+    expect(_map(dayProperties['maxSolvedLevel']), {
+      'type': 'integer',
+      'minimum': 0,
+      'maximum': 30,
+    });
+    expect(_map(dayProperties['ratingDelta']), {'type': 'integer'});
+    for (final field in ['freezeUsed', 'streakRepaired']) {
+      expect(_map(dayProperties[field]), {'type': 'boolean'});
+    }
     for (final field in ['maxSolvedCount', 'currentStreak', 'maxStreak']) {
       expect(_map(activityProperties[field]), {
         'type': 'integer',

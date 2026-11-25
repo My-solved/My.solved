@@ -18,7 +18,10 @@ class ProfileStreak {
   final String? firstActiveDay;
 }
 
-/// One calendar day in a profile activity streak.
+/// One upstream day token in a profile activity streak.
+///
+/// The official v4 schema guarantees four/two/two decimal components, but
+/// does not require those components to form a valid Gregorian calendar date.
 class ProfileSolvedDay {
   const ProfileSolvedDay({
     required this.year,
