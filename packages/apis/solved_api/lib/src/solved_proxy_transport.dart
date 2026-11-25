@@ -86,9 +86,7 @@ final class SolvedProxyTransport {
 
     _validateMaximumResponseBytes(maximumResponseBytes);
     final resolvedPath = _resolveRelativePath(relativePath);
-    final uri = queryParameters.isEmpty
-        ? resolvedPath
-        : resolvedPath.replace(queryParameters: queryParameters);
+    final uri = _withQueryParameters(resolvedPath, queryParameters);
     final abortTrigger = Completer<void>();
     final request = http.AbortableRequest(
       'GET',
@@ -265,6 +263,17 @@ final class SolvedProxyResponseTooLarge implements Exception {
   const SolvedProxyResponseTooLarge(this.statusCode);
 
   final int statusCode;
+}
+
+Uri _withQueryParameters(Uri uri, Map<String, String> queryParameters) {
+  if (queryParameters.isEmpty) return uri;
+  final query = queryParameters.entries.map((entry) {
+    final encoded = Uri(
+      queryParameters: <String, String>{entry.key: entry.value},
+    ).query;
+    return entry.value.isEmpty ? '$encoded=' : encoded;
+  }).join('&');
+  return uri.replace(query: query);
 }
 
 Uri _validateProxyBaseUri(

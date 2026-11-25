@@ -66,6 +66,7 @@ void main() {
               'v4/background_item.json',
             '/solved/v4/achievements/items/badge/boardgame' =>
               'v4/badge_item.json',
+            '/solved/v4/problems/1000' => 'v4/problem_detail.json',
             '/solved/v4/problems' => 'v4/search_problems.json',
             '/solved/v4/rankings/users/search' => 'v4/search_users.json',
             '/solved/v4/tags' => 'v4/tags.json',
@@ -107,6 +108,8 @@ void main() {
         );
         final background = await client.v4BackgroundShow('anniversary_1st');
         final badge = await client.v4BadgeShow('boardgame');
+        final ProblemDetailResult problemDetail =
+            await client.v4ProblemDetail(1000, sub: '');
         final ProblemSearchResult problems = await client.v4SearchProblems(
           'number',
           page: 2,
@@ -257,6 +260,12 @@ void main() {
         expect(achievementBadge.achievements, isEmpty);
         expect(background?.key, 'anniversary_1st');
         expect(badge.key, 'boardgame');
+        expect(problemDetail.id, 1000.5);
+        expect(problemDetail.problemId, 1000);
+        expect(problemDetail.userStatus, isNull);
+        expect(problemDetail.noRatingWarnings, hasLength(2));
+        expect(problemDetail.contests.single.abbreviation, isNull);
+        expect(problemDetail.ojLinks.first.logoUrl, isNull);
         expect(problems.count, 4);
         expect(problems.page, 1);
         expect(problems.pageSize, 50);
@@ -309,6 +318,9 @@ void main() {
               'achievements/items/badge/boardgame',
               <String, String>{'lang': 'ko'},
             ),
+            Uri.parse(
+              'https://proxy.example/solved/v4/problems/1000?sub=',
+            ),
             _uri('problems', <String, String>{
               'q': 'number',
               'page': '2',
@@ -324,7 +336,11 @@ void main() {
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(14));
+        expect(httpClient.requests, hasLength(15));
+        expect(
+          httpClient.requests[10].url.toString(),
+          'https://proxy.example/solved/v4/problems/1000?sub=',
+        );
         for (final request in httpClient.requests) {
           expect(request, isA<http.AbortableRequest>());
           expect(request.method, 'GET');
@@ -521,7 +537,11 @@ void main() {
         await _captureFailure(client.v4TagDetail('number_theory')),
         isA<SearchRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(10));
+      expect(
+        await _captureFailure(client.v4ProblemDetail(1000)),
+        isA<SearchRequestFailed>(),
+      );
+      expect(httpClient.requests, hasLength(11));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -652,6 +672,69 @@ void main() {
         _uri('tags/number_theory'),
       );
       expect(httpClient.requests, hasLength(1));
+    });
+
+    test('rejects an invalid problem ID before transport', () {
+      expect(() => client.v4ProblemDetail(0), throwsArgumentError);
+      expect(httpClient.requests, isEmpty);
+    });
+
+    test('wraps a malformed problem detail as a search failure', () async {
+      handler = (_) async => _jsonResponse(
+            jsonEncode({
+              'id': 1,
+              'problemId': 1,
+              'subId': '',
+              'level': 1,
+              'levelAverage': 1,
+              'levelStdev': 0,
+              'isStandard': true,
+              'votedUserCount': 1,
+              'effectiveVoteCount': 1,
+              'solvedUserCount': 1,
+              'givesNoRating': false,
+              'noRatingReasons': <Object?>[],
+              'noRatingWarnings': <Object?>[],
+              'titles': <Object?>[],
+              'userStatus': null,
+              'contests': <Object?>[],
+              'tags': <Object?>[],
+            }),
+          );
+
+      final error = await _captureFailure(client.v4ProblemDetail(1000));
+
+      expect(error, isA<SearchRequestFailed>());
+      expect(error.statusCode, 200);
+      expect(error.cause, isA<FormatException>());
+      expect(error.responseBody, isNull);
+      expect(httpClient.requests.single.url, _uri('problems/1000'));
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves problem-detail 404 and 429 failures', () async {
+      for (final status in [404, 429]) {
+        handler = (_) async => _bytesResponse(
+              const <int>[0xff],
+              statusCode: status,
+              headers: <String, String>{
+                'content-type': 'text/plain',
+                if (status == 429) 'retry-after': '7',
+              },
+            );
+
+        final error = await _captureFailure(client.v4ProblemDetail(1000));
+
+        expect(error, isA<SearchRequestFailed>());
+        expect(error.statusCode, status);
+        expect(error.cause, isNull);
+        expect(error.responseBody, isNull);
+        expect(
+          error.retryAfter,
+          status == 429 ? const Duration(seconds: 7) : isNull,
+        );
+      }
+      expect(httpClient.requests, hasLength(2));
     });
 
     test('wraps malformed canonical items by requested asset family', () async {

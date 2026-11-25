@@ -173,6 +173,20 @@ final class SolvedApiV4Contract {
         decode: _decodeV4BadgeAsset,
       );
 
+  SolvedApiEndpoint<ProblemDetailResult> problemDetail(
+    int problemId, {
+    String? sub,
+  }) {
+    if (problemId < 1) {
+      throw ArgumentError.value(problemId, 'problemId', 'Must be at least 1');
+    }
+    return _endpoint(
+      path: 'problems/$problemId',
+      queryParameters: {if (sub != null) 'sub': sub},
+      decode: _decodeV4ProblemDetail,
+    );
+  }
+
   SolvedApiEndpoint<ProblemSearchResult> searchProblems(
     String query, {
     int page = 1,
@@ -256,6 +270,158 @@ SolvedUserIdentity _decodeV4UserIdentity(dynamic json) {
   return SolvedUserIdentity(
     id: _number(body['id'], 'id'),
     handle: _string(body['handle'], 'handle'),
+  );
+}
+
+ProblemDetailResult _decodeV4ProblemDetail(dynamic json) {
+  const field = 'problem detail';
+  final body = _object(json, field);
+  final noRatingReasons = List<ProblemNoRatingReason>.unmodifiable(
+    _list(body['noRatingReasons'], '$field.noRatingReasons').map(
+      (value) => _decodeV4ProblemNoRatingReason(
+        value,
+        '$field.noRatingReasons[]',
+      ),
+    ),
+  );
+  final noRatingWarnings = List<ProblemNoRatingWarning>.unmodifiable(
+    _list(body['noRatingWarnings'], '$field.noRatingWarnings').map(
+      (value) => _decodeV4ProblemNoRatingWarning(
+        _object(value, '$field.noRatingWarnings[]'),
+        '$field.noRatingWarnings[]',
+      ),
+    ),
+  );
+  final titles = List<ProblemDetailTitle>.unmodifiable(
+    _list(body['titles'], '$field.titles').map(
+      (value) => _decodeV4ProblemDetailTitle(
+        _object(value, '$field.titles[]'),
+        '$field.titles[]',
+      ),
+    ),
+  );
+  final contests = List<ProblemDetailContest>.unmodifiable(
+    _list(body['contests'], '$field.contests').map(
+      (value) => _decodeV4ProblemDetailContest(
+        _object(value, '$field.contests[]'),
+        '$field.contests[]',
+      ),
+    ),
+  );
+  final tags = List<ProblemDetailTag>.unmodifiable(
+    _list(body['tags'], '$field.tags').map(
+      (value) => _decodeV4ProblemDetailTag(
+        _object(value, '$field.tags[]'),
+        '$field.tags[]',
+      ),
+    ),
+  );
+  final ojLinks = List<ProblemDetailOjLink>.unmodifiable(
+    _list(body['ojLinks'], '$field.ojLinks').map(
+      (value) => _decodeV4ProblemDetailOjLink(
+        _object(value, '$field.ojLinks[]'),
+        '$field.ojLinks[]',
+      ),
+    ),
+  );
+  if (!body.containsKey('userStatus')) {
+    throw const FormatException(
+      'Missing required field problem detail.userStatus',
+    );
+  }
+  final userStatusValue = body['userStatus'];
+  return ProblemDetailResult(
+    id: _number(body['id'], '$field.id'),
+    problemId: _number(body['problemId'], '$field.problemId'),
+    subId: _string(body['subId'], '$field.subId'),
+    level: _number(body['level'], '$field.level'),
+    levelAverage: _number(body['levelAverage'], '$field.levelAverage'),
+    levelStdev: _number(body['levelStdev'], '$field.levelStdev'),
+    isStandard: _boolean(body['isStandard'], '$field.isStandard'),
+    votedUserCount: _number(body['votedUserCount'], '$field.votedUserCount'),
+    effectiveVoteCount: _number(
+      body['effectiveVoteCount'],
+      '$field.effectiveVoteCount',
+    ),
+    solvedUserCount: _number(
+      body['solvedUserCount'],
+      '$field.solvedUserCount',
+    ),
+    givesNoRating: _boolean(
+      body['givesNoRating'],
+      '$field.givesNoRating',
+    ),
+    noRatingReasons: noRatingReasons,
+    noRatingWarnings: noRatingWarnings,
+    titles: titles,
+    userStatus: userStatusValue == null
+        ? null
+        : _decodeV4ProblemUserStatus(
+            userStatusValue,
+            '$field.userStatus',
+          ),
+    contests: contests,
+    tags: tags,
+    ojLinks: ojLinks,
+  );
+}
+
+ProblemDetailTitle _decodeV4ProblemDetailTitle(
+  Map<String, dynamic> body,
+  String field,
+) =>
+    ProblemDetailTitle(
+      language: _string(body['language'], '$field.language'),
+      title: _string(body['title'], '$field.title'),
+      isOriginal: _boolean(body['isOriginal'], '$field.isOriginal'),
+      latex: _boolean(body['latex'], '$field.latex'),
+      html: _boolean(body['html'], '$field.html'),
+    );
+
+ProblemDetailContest _decodeV4ProblemDetailContest(
+  Map<String, dynamic> body,
+  String field,
+) {
+  if (!body.containsKey('abbreviation')) {
+    throw FormatException('Missing required field $field.abbreviation');
+  }
+  return ProblemDetailContest(
+    id: _number(body['id'], '$field.id'),
+    displayId: _string(body['displayId'], '$field.displayId'),
+    name: _string(body['name'], '$field.name'),
+    abbreviation: _nullableString(
+      body['abbreviation'],
+      '$field.abbreviation',
+    ),
+  );
+}
+
+ProblemDetailTag _decodeV4ProblemDetailTag(
+  Map<String, dynamic> body,
+  String field,
+) =>
+    ProblemDetailTag(
+      id: _number(body['id'], '$field.id'),
+      key: _string(body['key'], '$field.key'),
+      isMeta: _boolean(body['isMeta'], '$field.isMeta'),
+    );
+
+ProblemDetailOjLink _decodeV4ProblemDetailOjLink(
+  Map<String, dynamic> body,
+  String field,
+) {
+  if (!body.containsKey('logoUrl')) {
+    throw FormatException('Missing required field $field.logoUrl');
+  }
+  return ProblemDetailOjLink(
+    ojId: _string(body['ojId'], '$field.ojId'),
+    ojName: _string(body['ojName'], '$field.ojName'),
+    nativeProblemId: _string(
+      body['nativeProblemId'],
+      '$field.nativeProblemId',
+    ),
+    url: _string(body['url'], '$field.url'),
+    logoUrl: _nullableString(body['logoUrl'], '$field.logoUrl'),
   );
 }
 
@@ -384,12 +550,18 @@ ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
     _list(
       body['noRatingReasons'],
       'problems[].noRatingReasons',
-    ).map(_decodeV4ProblemNoRatingReason),
+    ).map(
+      (value) => _decodeV4ProblemNoRatingReason(
+        value,
+        'problems[].noRatingReasons[]',
+      ),
+    ),
   );
   final noRatingWarnings = List<ProblemNoRatingWarning>.unmodifiable(
     _list(body['noRatingWarnings'], 'problems[].noRatingWarnings').map(
       (value) => _decodeV4ProblemNoRatingWarning(
         _object(value, 'problems[].noRatingWarnings[]'),
+        'problems[].noRatingWarnings[]',
       ),
     ),
   );
@@ -440,27 +612,30 @@ ProblemSearchItem _decodeV4ProblemSearchItem(Map<String, dynamic> body) {
 
 ProblemNoRatingWarning _decodeV4ProblemNoRatingWarning(
   Map<String, dynamic> body,
+  String field,
 ) {
   if (!body.containsKey('problem')) {
-    throw const FormatException(
-      'Missing required field problems[].noRatingWarnings[].problem',
-    );
+    throw FormatException('Missing required field $field.problem');
   }
   final problemValue = body['problem'];
   ProblemNoRatingWarningProblem? problem;
   if (problemValue != null) {
     problem = _decodeV4ProblemNoRatingWarningProblem(
-      _object(problemValue, 'problems[].noRatingWarnings[].problem'),
+      _object(problemValue, '$field.problem'),
+      '$field.problem',
     );
   }
   return ProblemNoRatingWarning(
-    type: _decodeV4ProblemNoRatingWarningType(body['type']),
+    type: _decodeV4ProblemNoRatingWarningType(body['type'], '$field.type'),
     problem: problem,
   );
 }
 
-ProblemNoRatingWarningType _decodeV4ProblemNoRatingWarningType(Object? value) {
-  final code = _string(value, 'problems[].noRatingWarnings[].type');
+ProblemNoRatingWarningType _decodeV4ProblemNoRatingWarningType(
+  Object? value,
+  String field,
+) {
+  final code = _string(value, field);
   return switch (code) {
     'same' => ProblemNoRatingWarningType.same,
     'searchable' => ProblemNoRatingWarningType.searchable,
@@ -476,45 +651,37 @@ ProblemNoRatingWarningType _decodeV4ProblemNoRatingWarningType(Object? value) {
 
 ProblemNoRatingWarningProblem _decodeV4ProblemNoRatingWarningProblem(
   Map<String, dynamic> body,
+  String field,
 ) {
   if (!body.containsKey('userStatus')) {
-    throw const FormatException(
-      'Missing required field '
-      'problems[].noRatingWarnings[].problem.userStatus',
-    );
+    throw FormatException('Missing required field $field.userStatus');
   }
   final userStatusValue = body['userStatus'];
   ProblemUserStatus? userStatus;
   if (userStatusValue != null) {
     userStatus = _decodeV4ProblemUserStatus(
       userStatusValue,
-      'problems[].noRatingWarnings[].problem.userStatus',
+      '$field.userStatus',
     );
   }
   return ProblemNoRatingWarningProblem(
     problemId: _number(
       body['problemId'],
-      'problems[].noRatingWarnings[].problem.problemId',
+      '$field.problemId',
     ),
-    subId: _string(
-      body['subId'],
-      'problems[].noRatingWarnings[].problem.subId',
-    ),
-    level: _number(
-      body['level'],
-      'problems[].noRatingWarnings[].problem.level',
-    ),
+    subId: _string(body['subId'], '$field.subId'),
+    level: _number(body['level'], '$field.level'),
     effectiveVoteCount: _number(
       body['effectiveVoteCount'],
-      'problems[].noRatingWarnings[].problem.effectiveVoteCount',
+      '$field.effectiveVoteCount',
     ),
     givesNoRating: _boolean(
       body['givesNoRating'],
-      'problems[].noRatingWarnings[].problem.givesNoRating',
+      '$field.givesNoRating',
     ),
     isStandard: _boolean(
       body['isStandard'],
-      'problems[].noRatingWarnings[].problem.isStandard',
+      '$field.isStandard',
     ),
     userStatus: userStatus,
   );
@@ -530,8 +697,11 @@ ProblemUserStatus _decodeV4ProblemUserStatus(Object? value, String field) {
   };
 }
 
-ProblemNoRatingReason _decodeV4ProblemNoRatingReason(Object? value) {
-  final code = _string(value, 'problems[].noRatingReasons[]');
+ProblemNoRatingReason _decodeV4ProblemNoRatingReason(
+  Object? value,
+  String field,
+) {
+  final code = _string(value, field);
   return switch (code) {
     'unofficial' => ProblemNoRatingReason.unofficial,
     'legacy' => ProblemNoRatingReason.legacy,

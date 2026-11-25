@@ -1,0 +1,88 @@
+{
+  "id": 1000.5,
+  "problemId": 1000,
+  "subId": "A",
+  "level": 12.5,
+  "levelAverage": 13.25,
+  "levelStdev": 0.75,
+  "isStandard": true,
+  "votedUserCount": 42.5,
+  "effectiveVoteCount": 40,
+  "solvedUserCount": 1234.5,
+  "givesNoRating": false,
+  "noRatingReasons": [
+    "unofficial",
+    "staff"
+  ],
+  "noRatingWarnings": [
+    {
+      "type": "same",
+      "problem": {
+        "problemId": 1001.5,
+        "subId": "B",
+        "level": 11.5,
+        "effectiveVoteCount": 9.5,
+        "givesNoRating": true,
+        "isStandard": false,
+        "userStatus": "partial"
+      }
+    },
+    {
+      "type": "wrong-statement",
+      "problem": null
+    }
+  ],
+  "titles": [
+    {
+      "language": "ko",
+      "title": "문제 제목",
+      "isOriginal": true,
+      "latex": false,
+      "html": false
+    },
+    {
+      "language": "en",
+      "title": "Problem title",
+      "isOriginal": false,
+      "latex": true,
+      "html": true
+    }
+  ],
+  "userStatus": null,
+  "contests": [
+    {
+      "id": 7.5,
+      "displayId": "contest-7",
+      "name": "Contest Seven",
+      "abbreviation": null
+    }
+  ],
+  "tags": [
+    {
+      "id": 1.5,
+      "key": "math",
+      "isMeta": false
+    },
+    {
+      "id": 2,
+      "key": "number_theory",
+      "isMeta": true
+    }
+  ],
+  "ojLinks": [
+    {
+      "ojId": "boj",
+      "ojName": "Baekjoon Online Judge",
+      "nativeProblemId": "1000A",
+      "url": "raw://problem/1000A",
+      "logoUrl": null
+    },
+    {
+      "ojId": "example",
+      "ojName": "Example Judge",
+      "nativeProblemId": "alpha",
+      "url": "not a normalized URI",
+      "logoUrl": "raw logo value"
+    }
+  ]
+}

@@ -723,6 +723,198 @@ void main() {
     }
   });
 
+  test('pins the public problem detail schema without inference', () {
+    final problemDetail = _get(contract, '/api/v4/problems/{problemId}');
+
+    expect(_accessClass(problemDetail), 'public');
+    expect(_accessScope(problemDetail), 'solves');
+    expect(_parameterNames(problemDetail), ['problemId', 'sub']);
+    final parameters = _parameters(problemDetail);
+    expect(parameters.first['in'], 'path');
+    expect(parameters.first['required'], isTrue);
+    expect(_map(parameters.first['schema']), {
+      'minimum': 1,
+      'type': 'integer',
+    });
+    expect(parameters.last['in'], 'query');
+    expect(parameters.last['required'], isFalse);
+    expect(_map(parameters.last['schema']), {
+      'default': '',
+      'type': 'string',
+    });
+    expect(
+      _map(problemDetail['responses']).keys,
+      unorderedEquals(['200', '404']),
+    );
+
+    const fields = [
+      'id',
+      'problemId',
+      'subId',
+      'level',
+      'levelAverage',
+      'levelStdev',
+      'isStandard',
+      'votedUserCount',
+      'effectiveVoteCount',
+      'solvedUserCount',
+      'givesNoRating',
+      'noRatingReasons',
+      'noRatingWarnings',
+      'titles',
+      'userStatus',
+      'contests',
+      'tags',
+      'ojLinks',
+    ];
+    final schema = _responseSchema(problemDetail);
+    expect(_required(schema), fields);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    final properties = _properties(schema);
+    expect(properties.keys, unorderedEquals(fields));
+    for (final field in [
+      'id',
+      'problemId',
+      'level',
+      'levelAverage',
+      'levelStdev',
+      'votedUserCount',
+      'effectiveVoteCount',
+      'solvedUserCount',
+    ]) {
+      expect(_map(properties[field]), {'type': 'number'});
+    }
+    expect(_map(properties['subId']), {'type': 'string'});
+    for (final field in ['isStandard', 'givesNoRating']) {
+      expect(_map(properties[field]), {'type': 'boolean'});
+    }
+    expect(_map(properties['userStatus']), {
+      'enum': ['solved', 'partial', 'tried', null],
+      'type': ['string', 'null'],
+    });
+
+    Map<String, dynamic> arrayItem(String field) {
+      final array = _map(properties[field]);
+      expect(array['type'], 'array');
+      for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+        expect(array.containsKey(constraint), isFalse);
+      }
+      return _map(array['items']);
+    }
+
+    expect(arrayItem('noRatingReasons'), {
+      'enum': ['unofficial', 'legacy', 'staff', 'unsettled'],
+      'type': 'string',
+    });
+
+    final warning = arrayItem('noRatingWarnings');
+    expect(warning['type'], 'object');
+    expect(_required(warning), ['type', 'problem']);
+    expect(warning.containsKey('additionalProperties'), isFalse);
+    final warningProperties = _properties(warning);
+    expect(_map(warningProperties['type']), {
+      'enum': [
+        'same',
+        'searchable',
+        'wrong-inputs',
+        'insufficient-conditions',
+        'no-special-judge',
+        'wrong-conditions',
+        'wrong-statement',
+      ],
+      'type': 'string',
+    });
+    final warningProblem = _map(warningProperties['problem']);
+    expect(warningProblem['type'], ['object', 'null']);
+    expect(_required(warningProblem), [
+      'problemId',
+      'subId',
+      'level',
+      'effectiveVoteCount',
+      'givesNoRating',
+      'isStandard',
+      'userStatus',
+    ]);
+    expect(warningProblem.containsKey('additionalProperties'), isFalse);
+    final warningProblemProperties = _properties(warningProblem);
+    for (final field in [
+      'problemId',
+      'level',
+      'effectiveVoteCount',
+    ]) {
+      expect(_map(warningProblemProperties[field]), {'type': 'number'});
+    }
+    expect(_map(warningProblemProperties['subId']), {'type': 'string'});
+    for (final field in ['givesNoRating', 'isStandard']) {
+      expect(_map(warningProblemProperties[field]), {'type': 'boolean'});
+    }
+    expect(_map(warningProblemProperties['userStatus']), {
+      'enum': ['solved', 'partial', 'tried', null],
+      'type': ['string', 'null'],
+    });
+
+    final title = arrayItem('titles');
+    expect(title['type'], 'object');
+    expect(_required(title), [
+      'language',
+      'title',
+      'isOriginal',
+      'latex',
+      'html',
+    ]);
+    expect(title.containsKey('additionalProperties'), isFalse);
+    final titleProperties = _properties(title);
+    for (final field in ['language', 'title']) {
+      expect(_map(titleProperties[field]), {'type': 'string'});
+    }
+    for (final field in ['isOriginal', 'latex', 'html']) {
+      expect(_map(titleProperties[field]), {'type': 'boolean'});
+    }
+
+    final contest = arrayItem('contests');
+    expect(contest['type'], 'object');
+    expect(_required(contest), ['id', 'displayId', 'name', 'abbreviation']);
+    expect(contest.containsKey('additionalProperties'), isFalse);
+    final contestProperties = _properties(contest);
+    expect(_map(contestProperties['id']), {'type': 'number'});
+    for (final field in ['displayId', 'name']) {
+      expect(_map(contestProperties[field]), {'type': 'string'});
+    }
+    expect(_map(contestProperties['abbreviation']), {
+      'type': ['string', 'null'],
+    });
+
+    final tag = arrayItem('tags');
+    expect(tag['type'], 'object');
+    expect(_required(tag), ['id', 'key', 'isMeta']);
+    expect(tag.containsKey('additionalProperties'), isFalse);
+    final tagProperties = _properties(tag);
+    expect(_map(tagProperties['id']), {'type': 'number'});
+    expect(_map(tagProperties['key']), {'type': 'string'});
+    expect(_map(tagProperties['isMeta']), {'type': 'boolean'});
+
+    final ojLink = arrayItem('ojLinks');
+    expect(ojLink['type'], 'object');
+    expect(_required(ojLink), [
+      'ojId',
+      'ojName',
+      'nativeProblemId',
+      'url',
+      'logoUrl',
+    ]);
+    expect(ojLink.containsKey('additionalProperties'), isFalse);
+    final ojLinkProperties = _properties(ojLink);
+    for (final field in ['ojId', 'ojName', 'nativeProblemId', 'url']) {
+      expect(_map(ojLinkProperties[field]), {'type': 'string'});
+    }
+    expect(_map(ojLinkProperties['logoUrl']), {
+      'type': ['string', 'null'],
+    });
+    for (final field in ['url', 'logoUrl']) {
+      expect(_map(ojLinkProperties[field]).containsKey('format'), isFalse);
+    }
+  });
+
   test('pins the public tag detail schema without inference', () {
     final tagDetail = _get(contract, '/api/v4/tags/{key}');
 
