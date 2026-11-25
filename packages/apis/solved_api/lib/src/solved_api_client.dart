@@ -255,6 +255,26 @@ class SolvedApiClient {
     );
   }
 
+  Future<ProfileActivityFeedResult> v4UserActivityFeed(
+    String handle, {
+    String? before,
+    String? from,
+    String? to,
+    int? limit,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.userActivityFeed(
+        handle,
+        before: before,
+        from: from,
+        to: to,
+        limit: limit,
+      ),
+      requestType: _RequestType.user,
+    );
+  }
+
   Future<ProfileReputationResult> v4UserReputation(
     String handle, {
     SolvedApiV4ReputationRange? range,

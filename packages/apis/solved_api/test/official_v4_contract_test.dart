@@ -1484,6 +1484,150 @@ void main() {
     }
   });
 
+  test('pins the public activity feed without inferred event relations', () {
+    final feed = _get(contract, '/api/v4/users/{handle}/activity/feed');
+    expect(_accessClass(feed), 'public');
+    expect(_parameterNames(feed), ['handle', 'before', 'from', 'to', 'limit']);
+
+    final parameters = _parameters(feed);
+    final handle = parameters.singleWhere(
+      (parameter) => parameter['name'] == 'handle',
+    );
+    expect(handle['in'], 'path');
+    expect(handle['required'], isTrue);
+    expect(_map(handle['schema']), {
+      'maxLength': 64,
+      'minLength': 1,
+      'type': 'string',
+    });
+    final before = parameters.singleWhere(
+      (parameter) => parameter['name'] == 'before',
+    );
+    expect(before['in'], 'query');
+    expect(before['required'], isFalse);
+    expect(_map(before['schema']), {'type': 'string'});
+    for (final name in ['from', 'to']) {
+      final parameter = parameters.singleWhere(
+        (candidate) => candidate['name'] == name,
+      );
+      expect(parameter['in'], 'query');
+      expect(parameter['required'], isFalse);
+      expect(_map(parameter['schema']), {
+        'pattern': r'^\d{4}-\d{2}-\d{2}$',
+        'type': 'string',
+      });
+    }
+    final limit = parameters.singleWhere(
+      (parameter) => parameter['name'] == 'limit',
+    );
+    expect(limit['in'], 'query');
+    expect(limit['required'], isFalse);
+    expect(_map(limit['schema']), {
+      'maximum': 500,
+      'minimum': 1,
+      'type': 'integer',
+    });
+
+    final responses = _map(feed['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '404']);
+    expect(_map(responses['200'])['description'], 'One page, newest first.');
+    expect(_map(responses['404'])['description'], 'No such user.');
+
+    final schema = _responseSchema(feed);
+    expect(schema['type'], 'object');
+    expect(_required(schema), ['events', 'nextCursor']);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    final properties = _properties(schema);
+    expect(_map(properties['nextCursor']), {
+      'type': ['string', 'null'],
+    });
+
+    final events = _map(properties['events']);
+    expect(events['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(events.containsKey(constraint), isFalse);
+    }
+    final event = _map(events['items']);
+    expect(event['type'], 'object');
+    expect(_required(event), [
+      'id',
+      'type',
+      'occurredAt',
+      'problem',
+      'reason',
+      'milestone',
+    ]);
+    expect(event.containsKey('additionalProperties'), isFalse);
+    final eventProperties = _properties(event);
+    expect(_map(eventProperties['id']), {'type': 'integer'});
+    expect(_map(eventProperties['type']), {
+      'enum': [
+        'solved',
+        'unsolved',
+        'vote',
+        'rating',
+        'tier',
+        'solvedMilestone',
+        'voteMilestone',
+      ],
+      'type': 'string',
+    });
+    expect(_map(eventProperties['occurredAt']), {'type': 'string'});
+    expect(_map(eventProperties['reason']), {
+      'type': ['string', 'null'],
+    });
+    expect(_map(eventProperties['milestone']), {
+      'type': ['integer', 'null'],
+    });
+    expect(_map(eventProperties['payload']), isEmpty);
+
+    final problem = _map(eventProperties['problem']);
+    expect(problem['type'], ['object', 'null']);
+    expect(_required(problem), [
+      'problemId',
+      'subId',
+      'level',
+      'effectiveVoteCount',
+      'givesNoRating',
+      'isStandard',
+      'titles',
+      'userStatus',
+    ]);
+    expect(problem.containsKey('additionalProperties'), isFalse);
+    final problemProperties = _properties(problem);
+    expect(_map(problemProperties['problemId']), {'type': 'integer'});
+    expect(_map(problemProperties['subId']), {'type': 'string'});
+    expect(_map(problemProperties['level']), {
+      'maximum': 30,
+      'minimum': 0,
+      'type': 'integer',
+    });
+    expect(_map(problemProperties['effectiveVoteCount']), {
+      'minimum': 0,
+      'type': 'integer',
+    });
+    for (final field in ['givesNoRating', 'isStandard']) {
+      expect(_map(problemProperties[field]), {'type': 'boolean'});
+    }
+    expect(_map(problemProperties['userStatus']), {
+      'enum': ['solved', 'partial', 'tried', null],
+      'type': ['string', 'null'],
+    });
+    final titles = _map(problemProperties['titles']);
+    expect(titles['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(titles.containsKey(constraint), isFalse);
+    }
+    final search = _get(contract, '/api/v4/problems');
+    final searchProblem = _map(
+      _map(_properties(_responseSchema(search))['problems'])['items'],
+    );
+    final searchTitle = _map(
+      _map(_properties(searchProblem)['titles'])['items'],
+    );
+    expect(_map(titles['items']), searchTitle);
+  });
+
   test('pins v4 problem and user search shapes', () {
     final problems = _get(contract, '/api/v4/problems');
     expect(_parameterNames(problems), [
