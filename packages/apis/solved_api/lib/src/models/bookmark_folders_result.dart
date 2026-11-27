@@ -93,3 +93,28 @@ final class BookmarkFolderOwner {
   /// Raw required nullable response value. URI validity is not implied.
   final String? profileImageUrl;
 }
+
+/// The viewer's own bookmark folders, for the add-to-folder menu.
+final class AccountBookmarkFoldersResult {
+  const AccountBookmarkFoldersResult({required this.folders});
+
+  /// Folders in wire order, including duplicates. No ordering is enforced.
+  ///
+  /// Decoder-produced lists are eagerly validated, source-isolated, and
+  /// unmodifiable.
+  final List<AccountBookmarkFolder> folders;
+}
+
+/// One of the viewer's own bookmark folders.
+final class AccountBookmarkFolder {
+  const AccountBookmarkFolder({
+    required this.folder,
+    required this.containsProblem,
+  });
+
+  /// The fields shared exactly with a public bookmark folder.
+  final BookmarkFolder folder;
+
+  /// Raw flag. No meaning is inferred when no problem was requested.
+  final bool containsProblem;
+}

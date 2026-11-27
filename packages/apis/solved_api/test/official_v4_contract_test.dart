@@ -2355,6 +2355,50 @@ void main() {
     });
   });
 
+  test('pins the viewer folders to the shared folder shape', () {
+    final own = _get(contract, '/api/v4/account/bookmarks');
+    final public = _get(contract, '/api/v4/bookmarks');
+
+    expect(_accessClass(own), 'user');
+    expect(_accessScope(own), 'bookmarks');
+    expect(own.containsKey('security'), isFalse);
+    expect(own.containsKey('requestBody'), isFalse);
+    expect(
+      own['summary'],
+      "The signed-in user's folders, for the add-to-folder menu",
+    );
+    expect(_parameters(own), [
+      {
+        'in': 'query',
+        'name': 'problemId',
+        'required': false,
+        'schema': {'exclusiveMinimum': 0, 'type': 'integer'},
+      },
+    ]);
+    final responses = _map(own['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '401']);
+    expect(
+        _map(responses['200'])['description'], 'Every folder, newest first.');
+    expect(_map(responses['401'])['description'], 'Not signed in.');
+    expect(
+      _jsonResponseSchema(own, '401'),
+      _jsonResponseSchema(_get(contract, '/api/v4/affiliations/{id}'), '404'),
+    );
+
+    final schema = _responseSchema(own);
+    expect(_required(schema), ['folders']);
+    expect(_properties(schema).keys.toList(growable: false), ['folders']);
+    final folder = _map(_map(_properties(schema)['folders'])['items']);
+    final publicFolder = _map(
+      _map(_properties(_responseSchema(public))['folders'])['items'],
+    );
+    expect(folder['type'], 'object');
+    expect(_required(folder), [..._required(publicFolder), 'containsProblem']);
+    final folderProperties = Map<String, dynamic>.of(_properties(folder));
+    expect(folderProperties.remove('containsProblem'), {'type': 'boolean'});
+    expect(folderProperties, _properties(publicFolder));
+  });
+
   test('pins favorited folders to the shared folder-list schema', () {
     final favorites = _get(contract, '/api/v4/account/bookmark-favorites');
     final public = _get(contract, '/api/v4/bookmarks');
