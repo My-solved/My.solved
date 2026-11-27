@@ -4636,6 +4636,280 @@
         }
       }
     },
+    "/api/v4/rankings/reverse-rivals": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "properties": {
+                          "class": {
+                            "type": "integer"
+                          },
+                          "classPlus": {
+                            "type": "boolean"
+                          },
+                          "globalRank": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "handle": {
+                            "type": "string"
+                          },
+                          "id": {
+                            "type": "number"
+                          },
+                          "isReverseRival": {
+                            "type": "boolean"
+                          },
+                          "isRival": {
+                            "type": "boolean"
+                          },
+                          "profileImageUrl": {
+                            "format": "uri",
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "rank": {
+                            "type": "integer"
+                          },
+                          "rating": {
+                            "type": "integer"
+                          },
+                          "reputation": {
+                            "type": "integer"
+                          },
+                          "solvedCount": {
+                            "type": "integer"
+                          },
+                          "tagRating": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "tier": {
+                            "maximum": 31,
+                            "minimum": 0,
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "voteCount": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "handle",
+                          "tier",
+                          "profileImageUrl",
+                          "rank",
+                          "rating",
+                          "solvedCount",
+                          "voteCount",
+                          "reputation",
+                          "class",
+                          "classPlus",
+                          "tagRating",
+                          "globalRank",
+                          "isRival",
+                          "isReverseRival"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "me": {
+                      "properties": {
+                        "class": {
+                          "type": "integer"
+                        },
+                        "classPlus": {
+                          "type": "boolean"
+                        },
+                        "globalRank": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
+                        "handle": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "number"
+                        },
+                        "profileImageUrl": {
+                          "format": "uri",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "rank": {
+                          "type": "integer"
+                        },
+                        "rating": {
+                          "type": "integer"
+                        },
+                        "reputation": {
+                          "type": "integer"
+                        },
+                        "solvedCount": {
+                          "type": "integer"
+                        },
+                        "tagRating": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
+                        "tier": {
+                          "maximum": 31,
+                          "minimum": 0,
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
+                        "voteCount": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "handle",
+                        "tier",
+                        "profileImageUrl",
+                        "rank",
+                        "rating",
+                        "solvedCount",
+                        "voteCount",
+                        "reputation",
+                        "class",
+                        "classPlus",
+                        "tagRating",
+                        "globalRank"
+                      ],
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    },
+                    "mePage": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "pageSize": {
+                      "type": "integer"
+                    },
+                    "reverseRivalCount": {
+                      "type": "integer"
+                    },
+                    "rivalCount": {
+                      "type": "integer"
+                    },
+                    "total": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "me",
+                    "mePage",
+                    "total",
+                    "page",
+                    "pageSize",
+                    "items",
+                    "rivalCount",
+                    "reverseRivalCount"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "One page of the board."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Not signed in: the board is the viewer's own."
+          }
+        },
+        "summary": "Those who have the viewer as a rival and the viewer, by rating",
+        "x-access": {
+          "class": "user",
+          "scope": "rivals"
+        }
+      }
+    },
     "/api/v4/rankings/rivals": {
       "get": {
         "parameters": [

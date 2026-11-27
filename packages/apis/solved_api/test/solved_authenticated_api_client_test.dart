@@ -280,6 +280,52 @@ void main() {
       }
     });
 
+    test('sends one token-bound reverse-rivals GET', () async {
+      handler =
+          (_) async => _jsonResponse(fixture('v4/rival_leaderboard.json'));
+
+      final omitted = await client.reverseRivals();
+      final explicit = await client.reverseRivals(page: 2);
+
+      expect(omitted.reverseRivalCount, 0);
+      expect(explicit.items[1].isReverseRival, isTrue);
+      expect(httpClient.requests.map((request) => request.url.toString()), [
+        'https://proxy.example/solved/v4/rankings/reverse-rivals',
+        'https://proxy.example/solved/v4/rankings/reverse-rivals?page=2',
+      ]);
+      for (final request in httpClient.requests) {
+        expect(request.method, 'GET');
+        expect(request.followRedirects, isFalse);
+        expect(request.maxRedirects, 0);
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+          'authorization': 'Bearer access-token',
+        });
+        expect(request.bodyBytes, isEmpty);
+      }
+
+      await expectLater(
+        client.reverseRivals(page: 0),
+        throwsA(
+          isA<ArgumentError>().having((error) => error.name, 'name', 'page'),
+        ),
+      );
+      expect(httpClient.requests, hasLength(2));
+
+      handler = (_) async => _bytesResponse(
+            const <int>[],
+            statusCode: 401,
+            headers: const <String, String>{'content-type': 'text/plain'},
+          );
+      final error = await _captureFailure(client.reverseRivals());
+      expect(error.operation, SolvedAuthenticatedOperation.reverseRivals);
+      expect(error.kind, SolvedAuthenticatedFailureKind.unauthorized);
+      expect(
+        error.uri,
+        Uri.parse('https://proxy.example/solved/v4/rankings/reverse-rivals'),
+      );
+    });
+
     test('rejects an invalid rivals page before any request', () async {
       await expectLater(
         client.rivals(page: 0),
@@ -342,6 +388,7 @@ void main() {
         ),
       );
       await expectLater(client.rivals(), throwsStateError);
+      await expectLater(client.reverseRivals(), throwsStateError);
       expect(httpClient.requests, isEmpty);
     });
   });

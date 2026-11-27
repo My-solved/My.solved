@@ -140,6 +140,20 @@ final class SolvedApiV4Contract {
     );
   }
 
+  /// Those who have the viewer as a rival. It requires a user token with
+  /// `rivals` scope, so it is only exposed through
+  /// [SolvedAuthenticatedApiClient].
+  SolvedApiEndpoint<RivalLeaderboardResult> reverseRivals({int? page}) {
+    if (page != null) {
+      _positivePage(page);
+    }
+    return _endpoint(
+      path: 'rankings/reverse-rivals',
+      queryParameters: {if (page != null) 'page': page.toString()},
+      decode: _decodeV4RivalLeaderboard,
+    );
+  }
+
   SolvedApiEndpoint<OfficialUserProfile> userProfile(String handle) =>
       _endpoint(
         path: 'users/${_pathSegment(handle, 'handle')}',

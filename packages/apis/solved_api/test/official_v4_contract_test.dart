@@ -5024,6 +5024,22 @@ void main() {
     expect(itemProperties, _properties(boardItem));
   });
 
+  test('pins the reverse-rival board to the rival board schema', () {
+    final reverse = _get(contract, '/api/v4/rankings/reverse-rivals');
+    final rivals = _get(contract, '/api/v4/rankings/rivals');
+
+    expect(_accessClass(reverse), 'user');
+    expect(_accessScope(reverse), 'rivals');
+    expect(reverse.containsKey('security'), isFalse);
+    expect(reverse.containsKey('requestBody'), isFalse);
+    expect(
+      reverse['summary'],
+      'Those who have the viewer as a rival and the viewer, by rating',
+    );
+    expect(_parameters(reverse), _parameters(rivals));
+    expect(_map(reverse['responses']), _map(rivals['responses']));
+  });
+
   test('pins the public tag ranking to the shared leaderboard schema', () {
     final tag = _get(contract, '/api/v4/rankings/tags/{key}');
 

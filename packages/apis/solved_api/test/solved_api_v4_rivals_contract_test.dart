@@ -32,6 +32,30 @@ void main() {
     }
   });
 
+  test('builds reverse rivals with the same strict decoder', () {
+    final omitted = contract.reverseRivals();
+    final explicit = contract.reverseRivals(page: 1);
+
+    expect(omitted.proxy.path, 'rankings/reverse-rivals');
+    expect(omitted.proxy.queryParameters, isEmpty);
+    expect(explicit.proxy.queryParameters, {'page': '1'});
+    expect(
+      () => contract.reverseRivals(page: 0),
+      throwsA(
+        isA<ArgumentError>().having((error) => error.name, 'name', 'page'),
+      ),
+    );
+    final actual = omitted.decode(
+      jsonDecode(fixture('v4/rival_leaderboard.json')),
+    );
+    expect(actual.reverseRivalCount, 0);
+    expect(actual.items[1].isReverseRival, isTrue);
+    expect(
+      () => omitted.decode(_response()..remove('rivalCount')),
+      throwsFormatException,
+    );
+  });
+
   test('decodes the complete fixture with the shared leaderboard user', () {
     final actual = contract.rivals().decode(
           jsonDecode(fixture('v4/rival_leaderboard.json')),
