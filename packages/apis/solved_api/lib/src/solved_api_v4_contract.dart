@@ -518,6 +518,23 @@ final class SolvedApiV4Contract {
     );
   }
 
+  SolvedApiEndpoint<BookmarkFoldersResult> userBookmarks(
+    String handle, {
+    int? page,
+  }) {
+    final segment = _pathSegment(handle, 'handle');
+    if (page != null && (page < 1 || page > 10000)) {
+      throw ArgumentError.value(page, 'page', 'Must be from 1 through 10000');
+    }
+    return _endpoint(
+      path: 'users/$segment/bookmarks',
+      queryParameters: {
+        if (page != null) 'page': page.toString(),
+      },
+      decode: _decodeV4BookmarkFolders,
+    );
+  }
+
   SolvedApiEndpoint<RankingRegionsResult> rankingRegions() => _endpoint(
         path: 'rankings/regions',
         decode: _decodeV4RankingRegions,

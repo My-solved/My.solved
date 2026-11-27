@@ -569,6 +569,17 @@ class SolvedApiClient {
     );
   }
 
+  Future<BookmarkFoldersResult> v4UserBookmarks(
+    String handle, {
+    int? page,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.userBookmarks(handle, page: page),
+      requestType: _RequestType.bookmark,
+    );
+  }
+
   Future<RankingRegionsResult> v4RankingRegions() {
     final contract = _requireV4Contract();
     return _getV4(
