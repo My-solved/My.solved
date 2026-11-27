@@ -1445,6 +1445,12 @@ final class SolvedApiV4Contract {
     );
   }
 
+  /// The service health status.
+  SolvedApiEndpoint<HealthResult> health() => _endpoint(
+        path: 'health',
+        decode: _decodeV4Health,
+      );
+
   SolvedApiEndpoint<SiteStatsResult> siteStats() => _endpoint(
         path: 'site/stats',
         decode: _decodeV4SiteStats,
@@ -3672,6 +3678,19 @@ String _bookmarkSlug(String slug, [String name = 'slug']) {
 }
 
 void _ignoreNoContent(dynamic _) {}
+
+HealthResult _decodeV4Health(dynamic json) {
+  final body = _object(json, 'health');
+  return HealthResult(
+    status: switch (_string(body['status'], 'status')) {
+      'ok' => HealthStatus.ok,
+      'degraded' => HealthStatus.degraded,
+      'down' => HealthStatus.down,
+      _ => throw const FormatException('Unsupported status'),
+    },
+    timestamp: _string(body['timestamp'], 'timestamp'),
+  );
+}
 
 HelpTreeResult _decodeV4HelpTree(dynamic json) {
   final body = _object(json, 'help tree');

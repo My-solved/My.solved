@@ -767,6 +767,14 @@ class SolvedApiClient {
     );
   }
 
+  Future<HealthResult> v4Health() {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.health(),
+      requestType: _RequestType.site,
+    );
+  }
+
   Future<SiteStatsResult> v4SiteStats() {
     final contract = _requireV4Contract();
     return _getV4(
