@@ -470,6 +470,34 @@ void main() {
       expect(error.kind, SolvedAuthenticatedFailureKind.invalidResponse);
     });
 
+    test('sends one token-bound consents GET', () async {
+      handler = (_) async => _jsonResponse(fixture('v4/account_consents.json'));
+
+      final actual = await client.accountConsents();
+
+      expect(actual.pending, hasLength(3));
+      final request = httpClient.requests.single;
+      expect(
+        request.url,
+        Uri.parse('https://proxy.example/solved/v4/account/consents'),
+      );
+      expect(request.followRedirects, isFalse);
+      expect(request.headers, const <String, String>{
+        'accept': 'application/json',
+        'authorization': 'Bearer access-token',
+      });
+      expect(request.bodyBytes, isEmpty);
+
+      handler = (_) async => _bytesResponse(
+            const <int>[],
+            statusCode: 401,
+            headers: const <String, String>{'content-type': 'text/plain'},
+          );
+      final error = await _captureFailure(client.accountConsents());
+      expect(error.operation, SolvedAuthenticatedOperation.accountConsents);
+      expect(error.kind, SolvedAuthenticatedFailureKind.unauthorized);
+    });
+
     test('rejects an invalid rivals page before any request', () async {
       await expectLater(
         client.rivals(page: 0),
@@ -537,6 +565,7 @@ void main() {
       await expectLater(client.collection(), throwsStateError);
       await expectLater(client.myProblemVote(1), throwsStateError);
       await expectLater(client.tagProgress(), throwsStateError);
+      await expectLater(client.accountConsents(), throwsStateError);
       expect(httpClient.requests, isEmpty);
     });
   });

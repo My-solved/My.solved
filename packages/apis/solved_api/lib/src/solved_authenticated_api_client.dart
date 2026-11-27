@@ -19,6 +19,7 @@ enum SolvedAuthenticatedOperation {
   collection,
   myProblemVote,
   tagProgress,
+  accountConsents,
 }
 
 enum SolvedAuthenticatedFailureKind {
@@ -144,6 +145,13 @@ final class SolvedAuthenticatedApiClient {
   Future<BookmarkFoldersResult> bookmarkFavorites({int? page}) => _get(
         SolvedAuthenticatedOperation.bookmarkFavorites,
         () => _contract.bookmarkFavorites(page: page),
+      );
+
+  /// Policy versions in force that the viewer has not agreed to. The token
+  /// needs the `profile` scope.
+  Future<AccountConsentsResult> accountConsents() => _get(
+        SolvedAuthenticatedOperation.accountConsents,
+        _contract.accountConsents,
       );
 
   /// The viewer's solved and tried counts per tag. The token needs the

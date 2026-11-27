@@ -127,6 +127,14 @@ final class SolvedApiV4Contract {
         decode: _decodeV4UserIdentity,
       );
 
+  /// Policy versions the viewer has not agreed to. It requires a user token
+  /// with `profile` scope, so it is only exposed through
+  /// [SolvedAuthenticatedApiClient].
+  SolvedApiEndpoint<AccountConsentsResult> accountConsents() => _endpoint(
+        path: 'account/consents',
+        decode: _decodeV4AccountConsents,
+      );
+
   /// The viewer's per-tag progress. It requires a user token with `solves`
   /// scope, so it is only exposed through [SolvedAuthenticatedApiClient].
   SolvedApiEndpoint<TagProgressResult> tagProgress() => _endpoint(
@@ -3005,6 +3013,26 @@ RankingLeaderboardResult _decodeV4RankingLeaderboard(dynamic json) {
           'items[]',
         ),
       ),
+    ),
+  );
+}
+
+AccountConsentsResult _decodeV4AccountConsents(dynamic json) {
+  final body = _object(json, 'account consents');
+  return AccountConsentsResult(
+    pending: List<PendingConsent>.unmodifiable(
+      _list(body['pending'], 'pending').map((value) {
+        final consent = _object(value, 'pending[]');
+        return PendingConsent(
+          slug: switch (_string(consent['slug'], 'pending[].slug')) {
+            'tos' => PolicySlug.tos,
+            'privacy' => PolicySlug.privacy,
+            _ => throw const FormatException('Unsupported pending[].slug'),
+          },
+          version: _string(consent['version'], 'pending[].version'),
+          label: _string(consent['label'], 'pending[].label'),
+        );
+      }),
     ),
   );
 }
