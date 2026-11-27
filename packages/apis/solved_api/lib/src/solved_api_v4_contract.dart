@@ -191,6 +191,33 @@ final class SolvedApiV4Contract {
         decode: _decodeV4AccountWallet,
       );
 
+  /// One month of the viewer's Stardust history. It requires a user token
+  /// with `wallet` scope, so it is only exposed through
+  /// [SolvedAuthenticatedApiClient].
+  SolvedApiEndpoint<WalletHistoryResult> walletHistory({
+    String? month,
+    String? language,
+  }) {
+    if (month != null && !RegExp(r'^\d{4}-(0[1-9]|1[0-2])$').hasMatch(month)) {
+      throw ArgumentError.value(month, 'month', 'Must match YYYY-MM');
+    }
+    if (language != null && language.runes.length > 16) {
+      throw ArgumentError.value(
+        language,
+        'language',
+        'Must not exceed 16 characters',
+      );
+    }
+    return _endpoint(
+      path: 'account/wallet/history',
+      queryParameters: {
+        if (month != null) 'month': month,
+        if (language != null) 'lang': language,
+      },
+      decode: _decodeV4WalletHistory,
+    );
+  }
+
   /// The viewer's per-tag progress. It requires a user token with `solves`
   /// scope, so it is only exposed through [SolvedAuthenticatedApiClient].
   SolvedApiEndpoint<TagProgressResult> tagProgress() => _endpoint(
@@ -3258,6 +3285,57 @@ EmoticonCatalogResult _decodeV4EmoticonCatalog(dynamic json) {
         );
       }),
     ),
+  );
+}
+
+WalletHistoryResult _decodeV4WalletHistory(dynamic json) {
+  final body = _object(json, 'wallet history');
+  return WalletHistoryResult(
+    month: _string(body['month'], 'month'),
+    moves: List<WalletMove>.unmodifiable(
+      _list(body['moves'], 'moves').map(
+        (value) => _decodeV4WalletMove(_object(value, 'moves[]')),
+      ),
+    ),
+  );
+}
+
+WalletMove _decodeV4WalletMove(Map<String, dynamic> body) {
+  const field = 'moves[]';
+  final problemValue = _requiredValue(body, 'problem', '$field.problem');
+  final problem =
+      problemValue == null ? null : _object(problemValue, '$field.problem');
+  return WalletMove(
+    id: _integer(body['id'], '$field.id'),
+    delta: _integer(body['delta'], '$field.delta'),
+    balanceAfter: _integer(body['balanceAfter'], '$field.balanceAfter'),
+    reason: switch (_string(body['reason'], '$field.reason')) {
+      'migration' => WalletMoveReason.migration,
+      'welcome' => WalletMoveReason.welcome,
+      'first_solve' => WalletMoveReason.firstSolve,
+      'solve' => WalletMoveReason.solve,
+      'contribute' => WalletMoveReason.contribute,
+      'shop_purchase' => WalletMoveReason.shopPurchase,
+      'redeem' => WalletMoveReason.redeem,
+      'admin' => WalletMoveReason.admin,
+      _ => throw const FormatException('Unsupported moves[].reason'),
+    },
+    at: _string(body['at'], '$field.at'),
+    day: _requiredNullableString(body, 'day', '$field.day'),
+    problem: problem == null
+        ? null
+        : WalletMoveProblem(
+            problem: _decodeV4ProblemReportSameProblem(problem),
+            titles: List<ProblemSearchTitle>.unmodifiable(
+              _list(problem['titles'], '$field.problem.titles').map(
+                (value) => _decodeV4ProblemSearchTitle(
+                  _object(value, '$field.problem.titles[]'),
+                  '$field.problem.titles[]',
+                ),
+              ),
+            ),
+          ),
+    label: _requiredNullableString(body, 'label', '$field.label'),
   );
 }
 

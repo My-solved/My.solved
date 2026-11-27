@@ -2038,6 +2038,236 @@
         }
       }
     },
+    "/api/v4/account/wallet/history": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "month",
+            "required": false,
+            "schema": {
+              "pattern": "^\\d{4}-(0[1-9]|1[0-2])$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "lang",
+            "required": false,
+            "schema": {
+              "default": "ko",
+              "maxLength": 16,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "month": {
+                      "type": "string"
+                    },
+                    "moves": {
+                      "items": {
+                        "properties": {
+                          "at": {
+                            "type": "string"
+                          },
+                          "balanceAfter": {
+                            "type": "integer"
+                          },
+                          "day": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "delta": {
+                            "type": "integer"
+                          },
+                          "id": {
+                            "type": "integer"
+                          },
+                          "label": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "problem": {
+                            "properties": {
+                              "effectiveVoteCount": {
+                                "type": "number"
+                              },
+                              "givesNoRating": {
+                                "type": "boolean"
+                              },
+                              "isStandard": {
+                                "type": "boolean"
+                              },
+                              "level": {
+                                "type": "number"
+                              },
+                              "problemId": {
+                                "type": "number"
+                              },
+                              "subId": {
+                                "type": "string"
+                              },
+                              "titles": {
+                                "items": {
+                                  "properties": {
+                                    "html": {
+                                      "type": "boolean"
+                                    },
+                                    "isOriginal": {
+                                      "type": "boolean"
+                                    },
+                                    "language": {
+                                      "type": "string"
+                                    },
+                                    "latex": {
+                                      "type": "boolean"
+                                    },
+                                    "title": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "language",
+                                    "title",
+                                    "isOriginal",
+                                    "latex",
+                                    "html"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "userStatus": {
+                                "enum": [
+                                  "solved",
+                                  "partial",
+                                  "tried",
+                                  null
+                                ],
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "problemId",
+                              "subId",
+                              "level",
+                              "effectiveVoteCount",
+                              "givesNoRating",
+                              "isStandard",
+                              "userStatus",
+                              "titles"
+                            ],
+                            "type": [
+                              "object",
+                              "null"
+                            ]
+                          },
+                          "reason": {
+                            "enum": [
+                              "migration",
+                              "welcome",
+                              "first_solve",
+                              "solve",
+                              "contribute",
+                              "shop_purchase",
+                              "redeem",
+                              "admin"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "delta",
+                          "balanceAfter",
+                          "reason",
+                          "at",
+                          "day",
+                          "problem",
+                          "label"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "month",
+                    "moves"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Newest first."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Not signed in."
+          }
+        },
+        "summary": "A month of the signed-in user's Stardust history",
+        "x-access": {
+          "class": "user",
+          "scope": "wallet"
+        }
+      }
+    },
     "/api/v4/affiliations/{id}": {
       "get": {
         "parameters": [

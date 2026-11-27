@@ -655,6 +655,41 @@ void main() {
       expect(error.kind, SolvedAuthenticatedFailureKind.invalidResponse);
     });
 
+    test('sends one token-bound wallet-history GET', () async {
+      handler = (_) async => _jsonResponse(fixture('v4/wallet_history.json'));
+
+      final omitted = await client.walletHistory();
+      await client.walletHistory(month: '2026-11', language: 'ko');
+
+      expect(omitted.moves, hasLength(3));
+      expect(httpClient.requests.map((request) => request.url.toString()), [
+        'https://proxy.example/solved/v4/account/wallet/history',
+        'https://proxy.example/solved/v4/account/wallet/history?'
+            'month=2026-11&lang=ko',
+      ]);
+      for (final request in httpClient.requests) {
+        expect(request.followRedirects, isFalse);
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+          'authorization': 'Bearer access-token',
+        });
+        expect(request.bodyBytes, isEmpty);
+      }
+
+      await expectLater(
+        client.walletHistory(month: '2026-13'),
+        throwsA(
+          isA<ArgumentError>().having((error) => error.name, 'name', 'month'),
+        ),
+      );
+      expect(httpClient.requests, hasLength(2));
+
+      handler = (_) async => _jsonResponse('{"month":"x"}');
+      final error = await _captureFailure(client.walletHistory());
+      expect(error.operation, SolvedAuthenticatedOperation.walletHistory);
+      expect(error.kind, SolvedAuthenticatedFailureKind.invalidResponse);
+    });
+
     test('rejects an invalid rivals page before any request', () async {
       await expectLater(
         client.rivals(page: 0),
@@ -729,6 +764,7 @@ void main() {
       await expectLater(client.accountBans(), throwsStateError);
       await expectLater(client.accountStanding(), throwsStateError);
       await expectLater(client.accountBookmarks(), throwsStateError);
+      await expectLater(client.walletHistory(), throwsStateError);
       expect(httpClient.requests, isEmpty);
     });
   });

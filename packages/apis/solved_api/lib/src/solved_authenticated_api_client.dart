@@ -26,6 +26,7 @@ enum SolvedAuthenticatedOperation {
   accountBans,
   accountStanding,
   accountBookmarks,
+  walletHistory,
 }
 
 enum SolvedAuthenticatedFailureKind {
@@ -190,6 +191,20 @@ final class SolvedAuthenticatedApiClient {
   Future<EmoticonCatalogResult> emoticons() => _get(
         SolvedAuthenticatedOperation.emoticons,
         _contract.emoticons,
+      );
+
+  /// One month of the viewer's Stardust history. The token needs the
+  /// `wallet` scope.
+  ///
+  /// Invalid arguments fail the returned future with an [ArgumentError]
+  /// before any request is sent.
+  Future<WalletHistoryResult> walletHistory({
+    String? month,
+    String? language,
+  }) =>
+      _get(
+        SolvedAuthenticatedOperation.walletHistory,
+        () => _contract.walletHistory(month: month, language: language),
       );
 
   /// The viewer's Stardust balance and today's capped earnings. The token
