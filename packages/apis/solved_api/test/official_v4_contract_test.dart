@@ -6205,6 +6205,144 @@ void main() {
     });
   });
 
+  test('pins user contributions and their shared vote and title shapes', () {
+    final contributions =
+        _get(contract, '/api/v4/users/{handle}/contributions');
+    final votes = _get(contract, '/api/v4/problems/{problemId}/votes');
+    final search = _get(contract, '/api/v4/problems');
+
+    expect(_accessClass(contributions), 'public');
+    expect(_accessScope(contributions), 'votes');
+    expect(contributions.containsKey('security'), isFalse);
+    expect(contributions.containsKey('requestBody'), isFalse);
+    expect(
+      contributions['summary'],
+      "A user's contributions, with what each earns",
+    );
+    expect(_parameters(contributions), [
+      {
+        'in': 'path',
+        'name': 'handle',
+        'required': true,
+        'schema': {'maxLength': 64, 'minLength': 1, 'type': 'string'},
+      },
+      {
+        'in': 'query',
+        'name': 'page',
+        'required': false,
+        'schema': {'maximum': 10000, 'minimum': 1, 'type': 'integer'},
+      },
+      {
+        'in': 'query',
+        'name': 'limit',
+        'required': false,
+        'schema': {'maximum': 20, 'minimum': 1, 'type': 'integer'},
+      },
+      {
+        'in': 'query',
+        'name': 'sort',
+        'required': false,
+        'schema': {
+          'enum': ['recent', 'helpful'],
+          'type': 'string',
+        },
+      },
+      {
+        'in': 'query',
+        'name': 'only',
+        'required': false,
+        'schema': {
+          'enum': ['scoring', 'helpful', 'vouched'],
+          'type': 'string',
+        },
+      },
+      {
+        'in': 'query',
+        'name': 'commented',
+        'required': false,
+        'schema': {
+          'enum': ['true', 'false'],
+          'type': 'string',
+        },
+      },
+    ]);
+    final responses = _map(contributions['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '404']);
+    expect(_map(responses['200'])['description'], 'One page.');
+    expect(_map(responses['404'])['description'], 'No such user.');
+
+    final schema = _responseSchema(contributions);
+    expect(_required(schema), [
+      'items',
+      'total',
+      'hiddenCount',
+      'page',
+      'pageSize',
+      'sort',
+    ]);
+    final properties = _properties(schema);
+    expect(properties.keys.length, 6);
+    for (final field in ['total', 'hiddenCount', 'page', 'pageSize']) {
+      expect(_map(properties[field]), {'type': 'integer'}, reason: field);
+    }
+    expect(_map(properties['sort']), {
+      'enum': ['recent', 'helpful'],
+      'type': 'string',
+    });
+    final item = _map(_map(properties['items'])['items']);
+    expect(_required(item), [
+      'voteId',
+      'problem',
+      'votedAt',
+      'points',
+      'place',
+      'vote',
+    ]);
+    final itemProperties = _properties(item);
+    expect(itemProperties.keys.length, 6);
+    expect(_map(itemProperties['voteId']), {'type': 'integer'});
+    expect(_map(itemProperties['votedAt']), {'type': 'string'});
+    expect(_map(itemProperties['points']), {'type': 'integer'});
+    expect(_map(itemProperties['place']), {
+      'type': ['integer', 'null'],
+    });
+    expect(
+      _map(itemProperties['vote']),
+      _map(_map(_properties(_responseSchema(votes))['items'])['items']),
+    );
+    final problem = _map(itemProperties['problem']);
+    expect(problem['type'], 'object');
+    expect(_required(problem), [
+      'problemId',
+      'subId',
+      'level',
+      'effectiveVoteCount',
+      'givesNoRating',
+      'isStandard',
+      'titles',
+      'userStatus',
+    ]);
+    final problemProperties = Map<String, dynamic>.of(_properties(problem));
+    final searchItem =
+        _map(_map(_properties(_responseSchema(search))['problems'])['items']);
+    expect(
+      problemProperties.remove('titles'),
+      _properties(searchItem)['titles'],
+    );
+    expect(problemProperties, {
+      'effectiveVoteCount': {'minimum': 0, 'type': 'integer'},
+      'givesNoRating': {'type': 'boolean'},
+      'isStandard': {'type': 'boolean'},
+      'level': {'maximum': 30, 'minimum': 0, 'type': 'integer'},
+      'problemId': {'type': 'integer'},
+      'subId': {'type': 'string'},
+      'userStatus': {
+        'enum': ['solved', 'partial', 'tried', null],
+        'type': ['string', 'null'],
+      },
+    });
+  });
+
   test('pins the viewer standing and its shared ban shapes', () {
     final standing = _get(contract, '/api/v4/account/standing');
     final bans = _get(contract, '/api/v4/account/bans');

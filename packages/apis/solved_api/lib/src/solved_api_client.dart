@@ -351,6 +351,28 @@ class SolvedApiClient {
     );
   }
 
+  Future<UserContributionsResult> v4UserContributions(
+    String handle, {
+    int? page,
+    int? limit,
+    UserContributionSort? sort,
+    UserContributionFilter? only,
+    bool? commented,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.userContributions(
+        handle,
+        page: page,
+        limit: limit,
+        sort: sort,
+        only: only,
+        commented: commented,
+      ),
+      requestType: _RequestType.user,
+    );
+  }
+
   Future<ProfileRatingHistoryResult> v4UserRatingHistory(
     String handle, {
     SolvedApiV4RatingHistoryRange? range,
