@@ -35,6 +35,7 @@ enum SolvedAuthenticatedOperation {
   removeBookmarkFavorite,
   deleteBookmarkFolder,
   reorderBookmarkFolders,
+  createBookmarkFolder,
 }
 
 enum SolvedAuthenticatedFailureKind {
@@ -365,6 +366,20 @@ final class SolvedAuthenticatedApiClient {
   Future<void> reorderBookmarkFolders(List<String> slugs) => _mutate(
         SolvedAuthenticatedOperation.reorderBookmarkFolders,
         () => _contract.reorderBookmarkFolders(slugs),
+      );
+
+  /// Creates a folder for the viewer and returns it. The token needs the
+  /// `bookmarks.write` scope.
+  ///
+  /// Completes only on exactly 201. A 409 (slug taken) or 422 (too many
+  /// folders) fails as [SolvedAuthenticatedFailureKind.unexpectedStatus].
+  /// Invalid fields fail the returned future with an [ArgumentError] before
+  /// any request. The request is sent once and never retried; after a
+  /// timeout or transport failure the folder may or may not exist.
+  Future<BookmarkFolder> createBookmarkFolder(NewBookmarkFolder folder) =>
+      _mutate(
+        SolvedAuthenticatedOperation.createBookmarkFolder,
+        () => _contract.createBookmarkFolder(folder),
       );
 
   Future<T> _get<T>(

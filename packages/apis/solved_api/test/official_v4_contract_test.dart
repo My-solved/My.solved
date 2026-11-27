@@ -5850,6 +5850,67 @@ void main() {
     );
   });
 
+  test('pins creating a bookmark folder as a 201 JSON POST', () {
+    final item = _map(_map(contract['paths'])['/api/v4/account/bookmarks']);
+    final create = _map(item['post']);
+    final folders = _get(contract, '/api/v4/account/bookmarks');
+    final public = _get(contract, '/api/v4/users/{handle}/bookmarks');
+
+    expect(item.keys.toList(growable: false), ['get', 'post']);
+    expect(_accessClass(create), 'user');
+    expect(_accessScope(create), 'bookmarks.write');
+    expect(create.containsKey('security'), isFalse);
+    expect(create.containsKey('parameters'), isFalse);
+    expect(create['summary'], 'Create a folder');
+    final content = _map(_map(create['requestBody'])['content']);
+    expect(content.keys.toList(growable: false), ['application/json']);
+    expect(_map(_map(content['application/json'])['schema']), {
+      'properties': {
+        'color': {
+          'default': null,
+          'enum': [
+            'red',
+            'violet',
+            'blue',
+            'teal',
+            'lime',
+            'yellow',
+            'orange',
+            null,
+          ],
+          'type': ['string', 'null'],
+        },
+        'description': {'default': '', 'maxLength': 2048, 'type': 'string'},
+        'name': {'maxLength': 256, 'minLength': 1, 'type': 'string'},
+        'slug': {'pattern': r'^[0-9a-z_]{1,32}$', 'type': 'string'},
+        'visibility': {
+          'default': 'private',
+          'enum': ['private', 'unlisted', 'public'],
+          'type': 'string',
+        },
+      },
+      'required': ['slug', 'name'],
+      'type': 'object',
+    });
+    final responses = _map(create['responses']);
+    expect(
+      responses.keys.toList(growable: false),
+      ['201', '401', '409', '422'],
+    );
+    expect(_map(responses['201'])['description'], 'Created.');
+    expect(_map(responses['409'])['description'], 'That slug is taken.');
+    expect(_map(responses['422'])['description'], 'Too many folders.');
+    expect(
+      _map(responses['401']),
+      _map(_map(folders['responses'])['401']),
+    );
+    expect(
+      _map(_map(_map(responses['201'])['content'])['application/json'])[
+          'schema'],
+      _map(_properties(_responseSchema(public))['folders'])['items'],
+    );
+  });
+
   test('pins the viewer standing and its shared ban shapes', () {
     final standing = _get(contract, '/api/v4/account/standing');
     final bans = _get(contract, '/api/v4/account/bans');

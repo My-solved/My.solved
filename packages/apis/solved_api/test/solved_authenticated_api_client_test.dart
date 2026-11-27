@@ -992,6 +992,65 @@ void main() {
       expect(httpClient.requests, hasLength(2));
     });
 
+    test('sends one folder-create POST and requires exactly 201', () async {
+      final folder = ((jsonDecode(fixture('v4/bookmark_folders.json'))
+              as Map<String, dynamic>)['folders'] as List<dynamic>)
+          .first;
+      handler = (_) async => _jsonResponse(jsonEncode(folder), statusCode: 201);
+
+      final actual = await client.createBookmarkFolder(
+        const NewBookmarkFolder(
+          slug: 'z_9',
+          name: 'n',
+          visibility: BookmarkFolderVisibility.public,
+        ),
+      );
+
+      expect(actual.slug, (folder as Map<String, dynamic>)['slug']);
+      final request = httpClient.requests.single;
+      expect(request.method, 'POST');
+      expect(
+        request.url.toString(),
+        'https://proxy.example/solved/v4/account/bookmarks',
+      );
+      expect(request.followRedirects, isFalse);
+      expect(request.headers, const <String, String>{
+        'accept': 'application/json',
+        'authorization': 'Bearer access-token',
+        'content-type': 'application/json',
+      });
+      expect(
+        utf8.decode(request.bodyBytes),
+        '{"slug":"z_9","name":"n","visibility":"public"}',
+      );
+
+      await expectLater(
+        client
+            .createBookmarkFolder(const NewBookmarkFolder(slug: 'a', name: '')),
+        throwsA(
+          isA<ArgumentError>().having((error) => error.name, 'name', 'name'),
+        ),
+      );
+      expect(httpClient.requests, hasLength(1));
+
+      for (final status in [200, 409, 422]) {
+        handler =
+            (_) async => _jsonResponse(jsonEncode(folder), statusCode: status);
+        final error = await _captureFailure(
+          client.createBookmarkFolder(
+            const NewBookmarkFolder(slug: 'a', name: 'b'),
+          ),
+        );
+        expect(
+          error.operation,
+          SolvedAuthenticatedOperation.createBookmarkFolder,
+        );
+        expect(error.kind, SolvedAuthenticatedFailureKind.unexpectedStatus);
+        expect(error.statusCode, status);
+      }
+      expect(httpClient.requests, hasLength(4));
+    });
+
     test('keeps GET success at exactly 200', () async {
       handler = (_) async => _bytesResponse(const <int>[], statusCode: 204);
 
@@ -1090,6 +1149,12 @@ void main() {
       );
       await expectLater(client.deleteBookmarkFolder('a'), throwsStateError);
       await expectLater(client.reorderBookmarkFolders(['a']), throwsStateError);
+      await expectLater(
+        client.createBookmarkFolder(
+          const NewBookmarkFolder(slug: 'a', name: 'b'),
+        ),
+        throwsStateError,
+      );
       expect(httpClient.requests, isEmpty);
     });
   });

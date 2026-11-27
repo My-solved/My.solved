@@ -118,3 +118,30 @@ final class AccountBookmarkFolder {
   /// Raw flag. No meaning is inferred when no problem was requested.
   final bool containsProblem;
 }
+
+/// A folder to create for the viewer.
+///
+/// Optional fields left `null` are omitted, so the server applies its
+/// documented defaults: an empty description, no color, and private
+/// visibility.
+final class NewBookmarkFolder {
+  const NewBookmarkFolder({
+    required this.slug,
+    required this.name,
+    this.description,
+    this.color,
+    this.visibility,
+  });
+
+  /// Must match `[0-9a-z_]{1,32}`.
+  final String slug;
+
+  /// 1 through 256 code points.
+  final String name;
+
+  /// At most 2048 code points when set.
+  final String? description;
+
+  final ProblemSearchViewerFolderColor? color;
+  final BookmarkFolderVisibility? visibility;
+}
