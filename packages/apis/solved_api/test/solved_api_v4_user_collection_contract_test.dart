@@ -92,6 +92,54 @@ void main() {
     }
   });
 
+  test('builds the viewer collection with the same query rules', () {
+    final omitted = contract.accountCollection();
+    final explicit = contract.accountCollection(
+      language: '',
+      kind: OfficialAchievementItemKind.background,
+      sort: SolvedApiV4CollectionSort.name,
+      category: '',
+      query: '',
+      offset: 0,
+    );
+
+    expect(omitted.proxy.path, 'account/collection');
+    expect(omitted.proxy.queryParameters, isEmpty);
+    expect(explicit.proxy.queryParameters, {
+      'lang': '',
+      'kind': 'background',
+      'sort': 'name',
+      'category': '',
+      'q': '',
+      'offset': '0',
+    });
+    final cases = <String, void Function()>{
+      'language': () =>
+          contract.accountCollection(language: List.filled(17, 'a').join()),
+      'category': () =>
+          contract.accountCollection(category: List.filled(65, 'a').join()),
+      'query': () =>
+          contract.accountCollection(query: List.filled(65, 'a').join()),
+      'offset': () => contract.accountCollection(offset: -1),
+    };
+    for (final MapEntry(key: name, value: call) in cases.entries) {
+      expect(
+        call,
+        throwsA(
+          isA<ArgumentError>().having((error) => error.name, 'name', name),
+        ),
+        reason: name,
+      );
+    }
+    expect(
+      omitted
+          .decode(jsonDecode(fixture('v4/user_collection.json')))
+          .counts
+          .background,
+      -2,
+    );
+  });
+
   test('decodes the complete fixture without inferred relationships', () {
     final actual = contract.userCollection('alice').decode(
           jsonDecode(fixture('v4/user_collection.json')),

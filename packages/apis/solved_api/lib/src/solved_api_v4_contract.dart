@@ -702,43 +702,42 @@ final class SolvedApiV4Contract {
     int? offset,
   }) {
     final segment = _pathSegment(handle, 'handle');
-    if (language != null && language.runes.length > 16) {
-      throw ArgumentError.value(
-        language,
-        'language',
-        'Must not exceed 16 characters',
-      );
-    }
-    if (category != null && category.runes.length > 64) {
-      throw ArgumentError.value(
-        category,
-        'category',
-        'Must not exceed 64 characters',
-      );
-    }
-    if (query != null && query.runes.length > 64) {
-      throw ArgumentError.value(
-        query,
-        'query',
-        'Must not exceed 64 characters',
-      );
-    }
-    if (offset != null && offset < 0) {
-      throw ArgumentError.value(offset, 'offset', 'Must not be negative');
-    }
     return _endpoint(
       path: 'users/$segment/collection',
-      queryParameters: {
-        if (language != null) 'lang': language,
-        if (kind != null) 'kind': kind.value,
-        if (sort != null) 'sort': sort.value,
-        if (category != null) 'category': category,
-        if (query != null) 'q': query,
-        if (offset != null) 'offset': offset.toString(),
-      },
+      queryParameters: _collectionQuery(
+        language: language,
+        kind: kind,
+        sort: sort,
+        category: category,
+        query: query,
+        offset: offset,
+      ),
       decode: _decodeV4UserCollection,
     );
   }
+
+  /// The viewer's own collection. It requires a user token with `collection`
+  /// scope, so it is only exposed through [SolvedAuthenticatedApiClient].
+  SolvedApiEndpoint<UserCollectionResult> accountCollection({
+    String? language,
+    OfficialAchievementItemKind? kind,
+    SolvedApiV4CollectionSort? sort,
+    String? category,
+    String? query,
+    int? offset,
+  }) =>
+      _endpoint(
+        path: 'account/collection',
+        queryParameters: _collectionQuery(
+          language: language,
+          kind: kind,
+          sort: sort,
+          category: category,
+          query: query,
+          offset: offset,
+        ),
+        decode: _decodeV4UserCollection,
+      );
 
   SolvedApiEndpoint<RankingRegionsResult> rankingRegions() => _endpoint(
         path: 'rankings/regions',
@@ -4690,6 +4689,48 @@ ProfileTagRating _decodeV4TagRating(Map<String, dynamic> body) =>
         'tagRatings[].ratingProblemsCutoff',
       ),
     );
+
+Map<String, String> _collectionQuery({
+  required String? language,
+  required OfficialAchievementItemKind? kind,
+  required SolvedApiV4CollectionSort? sort,
+  required String? category,
+  required String? query,
+  required int? offset,
+}) {
+  if (language != null && language.runes.length > 16) {
+    throw ArgumentError.value(
+      language,
+      'language',
+      'Must not exceed 16 characters',
+    );
+  }
+  if (category != null && category.runes.length > 64) {
+    throw ArgumentError.value(
+      category,
+      'category',
+      'Must not exceed 64 characters',
+    );
+  }
+  if (query != null && query.runes.length > 64) {
+    throw ArgumentError.value(
+      query,
+      'query',
+      'Must not exceed 64 characters',
+    );
+  }
+  if (offset != null && offset < 0) {
+    throw ArgumentError.value(offset, 'offset', 'Must not be negative');
+  }
+  return {
+    if (language != null) 'lang': language,
+    if (kind != null) 'kind': kind.value,
+    if (sort != null) 'sort': sort.value,
+    if (category != null) 'category': category,
+    if (query != null) 'q': query,
+    if (offset != null) 'offset': offset.toString(),
+  };
+}
 
 String _pathSegment(
   String value,

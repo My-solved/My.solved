@@ -364,6 +364,46 @@ void main() {
       expect(error.kind, SolvedAuthenticatedFailureKind.invalidResponse);
     });
 
+    test('sends one token-bound collection GET', () async {
+      handler = (_) async => _jsonResponse(fixture('v4/user_collection.json'));
+
+      final omitted = await client.collection();
+      await client.collection(
+        kind: OfficialAchievementItemKind.badge,
+        query: 'a b',
+        offset: 0,
+      );
+
+      expect(omitted.counts.background, -2);
+      expect(httpClient.requests.map((request) => request.url.toString()), [
+        'https://proxy.example/solved/v4/account/collection',
+        'https://proxy.example/solved/v4/account/collection?'
+            'kind=badge&q=a+b&offset=0',
+      ]);
+      for (final request in httpClient.requests) {
+        expect(request.method, 'GET');
+        expect(request.followRedirects, isFalse);
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+          'authorization': 'Bearer access-token',
+        });
+        expect(request.bodyBytes, isEmpty);
+      }
+
+      await expectLater(
+        client.collection(offset: -1),
+        throwsA(
+          isA<ArgumentError>().having((error) => error.name, 'name', 'offset'),
+        ),
+      );
+      expect(httpClient.requests, hasLength(2));
+
+      handler = (_) async => _jsonResponse('{"items":null}');
+      final error = await _captureFailure(client.collection());
+      expect(error.operation, SolvedAuthenticatedOperation.collection);
+      expect(error.kind, SolvedAuthenticatedFailureKind.invalidResponse);
+    });
+
     test('rejects an invalid rivals page before any request', () async {
       await expectLater(
         client.rivals(page: 0),
@@ -428,6 +468,7 @@ void main() {
       await expectLater(client.rivals(), throwsStateError);
       await expectLater(client.reverseRivals(), throwsStateError);
       await expectLater(client.bookmarkFavorites(), throwsStateError);
+      await expectLater(client.collection(), throwsStateError);
       expect(httpClient.requests, isEmpty);
     });
   });

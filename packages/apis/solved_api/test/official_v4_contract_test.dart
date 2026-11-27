@@ -2648,6 +2648,29 @@ void main() {
     });
   });
 
+  test('pins the viewer collection to the shared collection schema', () {
+    final account = _get(contract, '/api/v4/account/collection');
+    final user = _get(contract, '/api/v4/users/{handle}/collection');
+
+    expect(_accessClass(account), 'user');
+    expect(_accessScope(account), 'collection');
+    expect(account.containsKey('security'), isFalse);
+    expect(account.containsKey('requestBody'), isFalse);
+    expect(
+      account['summary'],
+      'A page of the badges or backgrounds the viewer owns',
+    );
+    expect(_parameters(account), _parameters(user).skip(1).toList());
+    final responses = _map(account['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '401']);
+    expect(_map(responses['200']), _map(_map(user['responses'])['200']));
+    expect(_map(responses['401'])['description'], 'Not signed in.');
+    expect(
+      _jsonResponseSchema(account, '401'),
+      _jsonResponseSchema(user, '404'),
+    );
+  });
+
   test('pins the public affiliation board without inferred relations', () {
     final board = _get(contract, '/api/v4/rankings/affiliation-board');
 
