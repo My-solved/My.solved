@@ -3,6 +3,7 @@ export 'account_bans_result.dart';
 export 'account_consents_result.dart';
 export 'account_items_result.dart';
 export 'account_profile_result.dart';
+export 'account_settings_result.dart';
 export 'account_standing_result.dart';
 export 'account_wallet_result.dart';
 export 'achievement_catalog_result.dart';

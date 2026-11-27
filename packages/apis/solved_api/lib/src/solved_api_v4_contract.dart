@@ -177,6 +177,14 @@ final class SolvedApiV4Contract {
         decode: _decodeV4AccountProfile,
       );
 
+  /// The viewer's resolved settings. It requires a user token with
+  /// `settings` scope, so it is only exposed through
+  /// [SolvedAuthenticatedApiClient].
+  SolvedApiEndpoint<AccountSettingsResult> accountSettings() => _endpoint(
+        path: 'account/settings',
+        decode: _decodeV4AccountSettings,
+      );
+
   /// The viewer's standing warnings and bans. It requires a user token with
   /// `standing` scope, so it is only exposed through
   /// [SolvedAuthenticatedApiClient].
@@ -3294,6 +3302,95 @@ int? _boundedNullableInteger(
   final field = 'profile.$wireKey';
   final value = _requiredNullableInteger(body, wireKey, field);
   if (value != null && (value < minimum || value > maximum)) {
+    throw FormatException('Expected $minimum through $maximum for $field');
+  }
+  return value;
+}
+
+AccountSettingsResult _decodeV4AccountSettings(dynamic json) {
+  final body = _object(json, 'account settings');
+  final settings = _object(body['settings'], 'settings');
+  return AccountSettingsResult(
+    settings: AccountSettings(
+      theme: _settingEnum(settings, 'theme', AccountSettingTheme.values,
+          (value) => value.value),
+      iconTheme: _settingEnum(settings, 'iconTheme',
+          AccountSettingIconTheme.values, (value) => value.value),
+      iconSchemeSolved: _settingEnum(settings, 'iconSchemeSolved',
+          AccountSettingIconScheme.values, (value) => value.value),
+      iconSchemeUnsolved: _settingEnum(settings, 'iconSchemeUnsolved',
+          AccountSettingIconScheme.values, (value) => value.value),
+      iconSchemeHover: _settingEnum(settings, 'iconSchemeHover',
+          AccountSettingIconScheme.values, (value) => value.value),
+      iconWarnMode: _settingEnum(settings, 'iconWarnMode',
+          AccountSettingIconWarnMode.values, (value) => value.value),
+      iconWarnRelative: _settingInteger(settings, 'iconWarnRelative', -30, 30),
+      iconWarnAbsolute: _settingInteger(settings, 'iconWarnAbsolute', 0, 30),
+      alwaysShowUnrated:
+          _boolean(settings['alwaysShowUnrated'], 'settings.alwaysShowUnrated'),
+      alwaysShowUnratable: _boolean(
+          settings['alwaysShowUnratable'], 'settings.alwaysShowUnratable'),
+      showSolvedUserCount: _settingEnum(settings, 'showSolvedUserCount',
+          AccountSettingSolvedOnlyVisibility.values, (value) => value.value),
+      showVotedUserCount: _settingEnum(settings, 'showVotedUserCount',
+          AccountSettingSolvedOnlyVisibility.values, (value) => value.value),
+      showTagButton: _settingEnum(settings, 'showTagButton',
+          AccountSettingSolvedOnlyVisibility.values, (value) => value.value),
+      tagDisplayLanguage: _settingEnum(settings, 'tagDisplayLanguage',
+          AccountSettingTagDisplayLanguage.values, (value) => value.value),
+      problemSort: _settingEnum(settings, 'problemSort',
+          AccountSettingProblemSort.values, (value) => value.value),
+      problemSortDirection: _settingEnum(settings, 'problemSortDirection',
+          AccountSettingSortDirection.values, (value) => value.value),
+      showOriginalTitle:
+          _boolean(settings['showOriginalTitle'], 'settings.showOriginalTitle'),
+      showOriginalContest: _boolean(
+          settings['showOriginalContest'], 'settings.showOriginalContest'),
+      sourceLevelAllSolved: _settingEnum(settings, 'sourceLevelAllSolved',
+          AccountSettingVisibility.values, (value) => value.value),
+      sourceLevelPartlySolved: _settingEnum(settings, 'sourceLevelPartlySolved',
+          AccountSettingSourceLevelPartlySolved.values, (value) => value.value),
+      sourceLevelUnsolved: _settingEnum(settings, 'sourceLevelUnsolved',
+          AccountSettingVisibility.values, (value) => value.value),
+      sourceLevelHover: _settingEnum(settings, 'sourceLevelHover',
+          AccountSettingVisibility.values, (value) => value.value),
+      sourceLevelDisplay: _settingEnum(settings, 'sourceLevelDisplay',
+          AccountSettingSourceLevelDisplay.values, (value) => value.value),
+      sourceSort: _settingEnum(settings, 'sourceSort',
+          AccountSettingSourceSort.values, (value) => value.value),
+      sourceSortDirection: _settingEnum(settings, 'sourceSortDirection',
+          AccountSettingSortDirection.values, (value) => value.value),
+      sourceOrderType: _settingEnum(settings, 'sourceOrderType',
+          AccountSettingSourceOrderType.values, (value) => value.value),
+      sourceOrderHover: _settingEnum(settings, 'sourceOrderHover',
+          AccountSettingVisibility.values, (value) => value.value),
+    ),
+  );
+}
+
+T _settingEnum<T>(
+  Map<String, dynamic> body,
+  String wireKey,
+  List<T> values,
+  String Function(T value) wireValue,
+) {
+  final field = 'settings.$wireKey';
+  final value = _string(body[wireKey], field);
+  for (final candidate in values) {
+    if (wireValue(candidate) == value) return candidate;
+  }
+  throw FormatException('Unsupported $field');
+}
+
+int _settingInteger(
+  Map<String, dynamic> body,
+  String wireKey,
+  int minimum,
+  int maximum,
+) {
+  final field = 'settings.$wireKey';
+  final value = _integer(body[wireKey], field);
+  if (value < minimum || value > maximum) {
     throw FormatException('Expected $minimum through $maximum for $field');
   }
   return value;
