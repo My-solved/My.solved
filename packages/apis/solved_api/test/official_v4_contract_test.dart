@@ -3102,6 +3102,153 @@ void main() {
     }
   });
 
+  test('pins the public overall ranking without inferred relations', () {
+    final ranking = _get(contract, '/api/v4/rankings/users');
+
+    expect(_accessClass(ranking), 'public');
+    expect(ranking.containsKey('security'), isFalse);
+    expect(ranking.containsKey('requestBody'), isFalse);
+    expect(
+      ranking['summary'],
+      'The overall ranking, by rating, solved count, or contributions',
+    );
+    expect(_parameterNames(ranking), ['page', 'sort']);
+
+    final parameters = _parameters(ranking);
+    for (final parameter in parameters) {
+      expect(parameter['in'], 'query');
+      expect(parameter['required'], isFalse);
+    }
+    expect(_map(parameters.first['schema']), {
+      'default': 1,
+      'minimum': 1,
+      'type': 'integer',
+    });
+    expect(_map(parameters.last['schema']), {
+      'default': 'rating',
+      'enum': ['rating', 'solved', 'contribution'],
+      'type': 'string',
+    });
+
+    final responses = _map(ranking['responses']);
+    expect(responses.keys.toList(growable: false), ['200']);
+    expect(_map(responses['200'])['description'], 'One page of the board.');
+
+    final schema = _responseSchema(ranking);
+    expect(schema['type'], 'object');
+    expect(_required(schema), [
+      'me',
+      'mePage',
+      'total',
+      'page',
+      'pageSize',
+      'items',
+    ]);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    final properties = _properties(schema);
+    expect(properties.keys.toList(growable: false), [
+      'items',
+      'me',
+      'mePage',
+      'page',
+      'pageSize',
+      'total',
+    ]);
+
+    for (final field in ['page', 'pageSize', 'total']) {
+      expect(_map(properties[field]), {'type': 'integer'});
+    }
+    expect(_map(properties['mePage']), {
+      'type': ['integer', 'null'],
+    });
+
+    final items = _map(properties['items']);
+    expect(items['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(items.containsKey(constraint), isFalse);
+    }
+    final item = _map(items['items']);
+    final me = _map(properties['me']);
+    expect(item['type'], 'object');
+    expect(me['type'], ['object', 'null']);
+
+    const userFields = [
+      'id',
+      'handle',
+      'tier',
+      'profileImageUrl',
+      'rank',
+      'rating',
+      'solvedCount',
+      'voteCount',
+      'reputation',
+      'class',
+      'classPlus',
+      'tagRating',
+      'globalRank',
+    ];
+    for (final user in [item, me]) {
+      expect(_required(user), userFields);
+      expect(user.containsKey('additionalProperties'), isFalse);
+    }
+    final userProperties = _properties(item);
+    expect(_properties(me), userProperties);
+    expect(userProperties.keys.toList(growable: false), [
+      'class',
+      'classPlus',
+      'globalRank',
+      'handle',
+      'id',
+      'profileImageUrl',
+      'rank',
+      'rating',
+      'reputation',
+      'solvedCount',
+      'tagRating',
+      'tier',
+      'voteCount',
+    ]);
+
+    expect(_map(userProperties['id']), {'type': 'number'});
+    expect(_map(userProperties['handle']), {'type': 'string'});
+    expect(_map(userProperties['tier']), {
+      'maximum': 31,
+      'minimum': 0,
+      'type': ['integer', 'null'],
+    });
+    expect(_map(userProperties['profileImageUrl']), {
+      'format': 'uri',
+      'type': ['string', 'null'],
+    });
+    for (final field in [
+      'rank',
+      'rating',
+      'solvedCount',
+      'voteCount',
+      'reputation',
+      'class',
+    ]) {
+      expect(_map(userProperties[field]), {'type': 'integer'});
+    }
+    expect(_map(userProperties['classPlus']), {'type': 'boolean'});
+    for (final field in ['tagRating', 'globalRank']) {
+      expect(_map(userProperties[field]), {
+        'type': ['integer', 'null'],
+      });
+    }
+
+    final search = _get(contract, '/api/v4/rankings/users/search');
+    final searchItems = _map(_properties(_responseSchema(search))['items']);
+    final searchUser = _map(searchItems['items']);
+    final searchProperties = _properties(searchUser);
+    expect(_required(searchUser), [...userFields, 'page']);
+    for (final field in userFields) {
+      expect(searchProperties[field], userProperties[field]);
+    }
+    expect(_map(searchProperties['page']), {'type': 'integer'});
+    expect(userProperties.containsKey('page'), isFalse);
+  });
+
   test('pins the tag catalog and standalone asset item envelope', () {
     final tags = _get(contract, '/api/v4/tags');
     expect(_parameterNames(tags), isEmpty);
