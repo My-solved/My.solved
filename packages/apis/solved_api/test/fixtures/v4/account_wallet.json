@@ -1,0 +1,15 @@
+{
+  "stardusts": -5,
+  "today": {
+    "day": "not a date",
+    "earned": 120,
+    "cap": 100
+  },
+  "earnings": {
+    "firstSolve": 0,
+    "solve": -1,
+    "contribute": 3,
+    "welcomePerSolve": 7,
+    "welcomeMax": 2
+  }
+}

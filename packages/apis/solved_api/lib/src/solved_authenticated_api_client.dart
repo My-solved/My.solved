@@ -20,6 +20,7 @@ enum SolvedAuthenticatedOperation {
   myProblemVote,
   tagProgress,
   accountConsents,
+  accountWallet,
 }
 
 enum SolvedAuthenticatedFailureKind {
@@ -145,6 +146,13 @@ final class SolvedAuthenticatedApiClient {
   Future<BookmarkFoldersResult> bookmarkFavorites({int? page}) => _get(
         SolvedAuthenticatedOperation.bookmarkFavorites,
         () => _contract.bookmarkFavorites(page: page),
+      );
+
+  /// The viewer's Stardust balance and today's capped earnings. The token
+  /// needs the `wallet` scope.
+  Future<AccountWalletResult> accountWallet() => _get(
+        SolvedAuthenticatedOperation.accountWallet,
+        _contract.accountWallet,
       );
 
   /// Policy versions in force that the viewer has not agreed to. The token

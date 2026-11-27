@@ -823,6 +823,129 @@
         }
       }
     },
+    "/api/v4/account/wallet": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "earnings": {
+                      "properties": {
+                        "contribute": {
+                          "type": "integer"
+                        },
+                        "firstSolve": {
+                          "type": "integer"
+                        },
+                        "solve": {
+                          "type": "integer"
+                        },
+                        "welcomeMax": {
+                          "type": "integer"
+                        },
+                        "welcomePerSolve": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "firstSolve",
+                        "solve",
+                        "contribute",
+                        "welcomePerSolve",
+                        "welcomeMax"
+                      ],
+                      "type": "object"
+                    },
+                    "stardusts": {
+                      "type": "integer"
+                    },
+                    "today": {
+                      "properties": {
+                        "cap": {
+                          "type": "integer"
+                        },
+                        "day": {
+                          "type": "string"
+                        },
+                        "earned": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "day",
+                        "earned",
+                        "cap"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "stardusts",
+                    "today",
+                    "earnings"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The balance, and today's capped earnings."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Not signed in."
+          }
+        },
+        "summary": "The signed-in user's Stardust",
+        "x-access": {
+          "class": "user",
+          "scope": "wallet"
+        }
+      }
+    },
     "/api/v4/affiliations/{id}": {
       "get": {
         "parameters": [
