@@ -6343,6 +6343,30 @@ void main() {
     });
   });
 
+  test('pins the open service health check', () {
+    final item = _map(_map(contract['paths'])['/api/v4/health']);
+    final health = _map(item['get']);
+
+    expect(item.keys.toList(growable: false), ['get']);
+    expect(health.keys.toSet(), {'responses', 'summary', 'x-access'});
+    expect(health['x-access'], {'class': 'open'});
+    expect(health['summary'], 'Health check');
+    final responses = _map(health['responses']);
+    expect(responses.keys.toList(growable: false), ['200']);
+    expect(_map(responses['200'])['description'], 'Service health status');
+    expect(_responseSchema(health), {
+      'properties': {
+        'status': {
+          'enum': ['ok', 'degraded', 'down'],
+          'type': 'string',
+        },
+        'timestamp': {'format': 'date-time', 'type': 'string'},
+      },
+      'required': ['status', 'timestamp'],
+      'type': 'object',
+    });
+  });
+
   test('pins the viewer standing and its shared ban shapes', () {
     final standing = _get(contract, '/api/v4/account/standing');
     final bans = _get(contract, '/api/v4/account/bans');

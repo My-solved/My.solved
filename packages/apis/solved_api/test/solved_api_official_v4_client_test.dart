@@ -91,6 +91,7 @@ void main() {
             '/solved/v4/search/random-problem' => 'v4/random_problem.json',
             '/solved/v4/search/suggest' => 'v4/search_suggestions.json',
             '/solved/v4/site/stats' => 'v4/site_stats.json',
+            '/solved/v4/health' => 'v4/health.json',
             '/solved/v4/posts/notice' => 'v4/notice_list.json',
             '/solved/v4/posts/notice/first' => 'v4/post_detail.json',
             '/solved/v4/posts/help' => 'v4/help_tree.json',
@@ -230,6 +231,7 @@ void main() {
         final RandomProblemResult randomProblem =
             await client.v4RandomProblem(query: '');
         final SiteStatsResult siteStats = await client.v4SiteStats();
+        final HealthResult health = await client.v4Health();
         final NoticeListResult notices = await client.v4Notices(page: 1);
         final PostDetailResult notice = await client.v4Notice('first');
         final HelpTreeResult helpTree = await client.v4HelpTree();
@@ -527,6 +529,7 @@ void main() {
         expect(randomProblem.viewerFolders.last.color,
             ProblemSearchViewerFolderColor.red);
         expect(siteStats.problemsWithLevel, 120000);
+        expect(health.status, HealthStatus.degraded);
         expect(siteStats.users, 0);
         expect(siteStats.contributors, -7);
         expect(siteStats.contributions, 345678);
@@ -705,6 +708,7 @@ void main() {
               'https://proxy.example/solved/v4/search/random-problem?q=',
             ),
             _uri('site/stats'),
+            _uri('health'),
             _uri('posts/notice', <String, String>{'page': '1'}),
             _uri('posts/notice/first'),
             _uri('posts/help'),
@@ -750,7 +754,7 @@ void main() {
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(55));
+        expect(httpClient.requests, hasLength(56));
         expect(
           httpClient.requests[14].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
@@ -1061,6 +1065,10 @@ void main() {
         isA<SiteRequestFailed>(),
       );
       expect(
+        await _captureFailure(client.v4Health()),
+        isA<SiteRequestFailed>(),
+      );
+      expect(
         await _captureFailure(client.v4Notices()),
         isA<SiteRequestFailed>(),
       );
@@ -1136,7 +1144,7 @@ void main() {
         await _captureFailure(client.v4ProblemVoteSummary(1000)),
         isA<SearchRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(51));
+      expect(httpClient.requests, hasLength(52));
     });
 
     test('wraps malformed rating history as a user failure', () async {
