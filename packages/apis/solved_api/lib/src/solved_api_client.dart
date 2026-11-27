@@ -602,6 +602,30 @@ class SolvedApiClient {
     );
   }
 
+  Future<UserCollectionResult> v4UserCollection(
+    String handle, {
+    String? language,
+    OfficialAchievementItemKind? kind,
+    SolvedApiV4CollectionSort? sort,
+    String? category,
+    String? query,
+    int? offset,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.userCollection(
+        handle,
+        language: language,
+        kind: kind,
+        sort: sort,
+        category: category,
+        query: query,
+        offset: offset,
+      ),
+      requestType: _RequestType.user,
+    );
+  }
+
   Future<RankingRegionsResult> v4RankingRegions() {
     final contract = _requireV4Contract();
     return _getV4(

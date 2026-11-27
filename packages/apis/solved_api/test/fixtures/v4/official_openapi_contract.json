@@ -7378,6 +7378,442 @@
         }
       }
     },
+    "/api/v4/users/{handle}/collection": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "handle",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "lang",
+            "required": false,
+            "schema": {
+              "default": "ko",
+              "maxLength": 16,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "default": "badge",
+              "enum": [
+                "badge",
+                "background"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "recent",
+              "enum": [
+                "recent",
+                "rarity",
+                "name"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "schema": {
+              "maxLength": 64,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "maxLength": 64,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "minimum": 0,
+              "type": [
+                "integer",
+                "null"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "categories": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "counts": {
+                      "properties": {
+                        "background": {
+                          "type": "integer"
+                        },
+                        "badge": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "badge",
+                        "background"
+                      ],
+                      "type": "object"
+                    },
+                    "equipped": {
+                      "properties": {
+                        "acquiredAt": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "addedAt": {
+                          "type": "string"
+                        },
+                        "category": {
+                          "type": "string"
+                        },
+                        "equipped": {
+                          "type": "boolean"
+                        },
+                        "holderCount": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
+                        "id": {
+                          "type": "integer"
+                        },
+                        "imageUrl": {
+                          "type": "string"
+                        },
+                        "key": {
+                          "type": "string"
+                        },
+                        "kind": {
+                          "enum": [
+                            "badge",
+                            "background"
+                          ],
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "kind",
+                        "id",
+                        "key",
+                        "name",
+                        "imageUrl",
+                        "category",
+                        "addedAt",
+                        "equipped",
+                        "acquiredAt",
+                        "holderCount"
+                      ],
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    },
+                    "equippedByKind": {
+                      "properties": {
+                        "background": {
+                          "properties": {
+                            "acquiredAt": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "addedAt": {
+                              "type": "string"
+                            },
+                            "category": {
+                              "type": "string"
+                            },
+                            "equipped": {
+                              "type": "boolean"
+                            },
+                            "holderCount": {
+                              "type": [
+                                "integer",
+                                "null"
+                              ]
+                            },
+                            "id": {
+                              "type": "integer"
+                            },
+                            "imageUrl": {
+                              "type": "string"
+                            },
+                            "key": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "enum": [
+                                "badge",
+                                "background"
+                              ],
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "id",
+                            "key",
+                            "name",
+                            "imageUrl",
+                            "category",
+                            "addedAt",
+                            "equipped",
+                            "acquiredAt",
+                            "holderCount"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        },
+                        "badge": {
+                          "properties": {
+                            "acquiredAt": {
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "addedAt": {
+                              "type": "string"
+                            },
+                            "category": {
+                              "type": "string"
+                            },
+                            "equipped": {
+                              "type": "boolean"
+                            },
+                            "holderCount": {
+                              "type": [
+                                "integer",
+                                "null"
+                              ]
+                            },
+                            "id": {
+                              "type": "integer"
+                            },
+                            "imageUrl": {
+                              "type": "string"
+                            },
+                            "key": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "enum": [
+                                "badge",
+                                "background"
+                              ],
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "kind",
+                            "id",
+                            "key",
+                            "name",
+                            "imageUrl",
+                            "category",
+                            "addedAt",
+                            "equipped",
+                            "acquiredAt",
+                            "holderCount"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "badge",
+                        "background"
+                      ],
+                      "type": "object"
+                    },
+                    "items": {
+                      "items": {
+                        "properties": {
+                          "acquiredAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "addedAt": {
+                            "type": "string"
+                          },
+                          "category": {
+                            "type": "string"
+                          },
+                          "equipped": {
+                            "type": "boolean"
+                          },
+                          "holderCount": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "id": {
+                            "type": "integer"
+                          },
+                          "imageUrl": {
+                            "type": "string"
+                          },
+                          "key": {
+                            "type": "string"
+                          },
+                          "kind": {
+                            "enum": [
+                              "badge",
+                              "background"
+                            ],
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "id",
+                          "key",
+                          "name",
+                          "imageUrl",
+                          "category",
+                          "addedAt",
+                          "equipped",
+                          "acquiredAt",
+                          "holderCount"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "nextOffset": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "total": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "total",
+                    "nextOffset",
+                    "counts",
+                    "categories",
+                    "equipped",
+                    "equippedByKind"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Owned items of one kind, filtered and sorted."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "No such user."
+          }
+        },
+        "summary": "A page of the badges or backgrounds a user owns",
+        "x-access": {
+          "class": "public"
+        }
+      }
+    },
     "/api/v4/users/{handle}/activity/days": {
       "get": {
         "x-access": {

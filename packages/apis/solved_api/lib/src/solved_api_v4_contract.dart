@@ -80,6 +80,17 @@ enum SolvedApiV4BookmarkProblemSort {
   final String value;
 }
 
+/// Sort orders supported by the official v4 user collection.
+enum SolvedApiV4CollectionSort {
+  recent('recent'),
+  rarity('rarity'),
+  name('name');
+
+  const SolvedApiV4CollectionSort(this.value);
+
+  final String value;
+}
+
 /// Sort orders supported by the official v4 achievement-holder listing.
 enum SolvedApiV4AchievementHolderSort {
   recent('recent'),
@@ -579,6 +590,54 @@ final class SolvedApiV4Contract {
         if (query != null) 'q': query,
       },
       decode: _decodeV4BookmarkFolderDetail,
+    );
+  }
+
+  SolvedApiEndpoint<UserCollectionResult> userCollection(
+    String handle, {
+    String? language,
+    OfficialAchievementItemKind? kind,
+    SolvedApiV4CollectionSort? sort,
+    String? category,
+    String? query,
+    int? offset,
+  }) {
+    final segment = _pathSegment(handle, 'handle');
+    if (language != null && language.runes.length > 16) {
+      throw ArgumentError.value(
+        language,
+        'language',
+        'Must not exceed 16 characters',
+      );
+    }
+    if (category != null && category.runes.length > 64) {
+      throw ArgumentError.value(
+        category,
+        'category',
+        'Must not exceed 64 characters',
+      );
+    }
+    if (query != null && query.runes.length > 64) {
+      throw ArgumentError.value(
+        query,
+        'query',
+        'Must not exceed 64 characters',
+      );
+    }
+    if (offset != null && offset < 0) {
+      throw ArgumentError.value(offset, 'offset', 'Must not be negative');
+    }
+    return _endpoint(
+      path: 'users/$segment/collection',
+      queryParameters: {
+        if (language != null) 'lang': language,
+        if (kind != null) 'kind': kind.value,
+        if (sort != null) 'sort': sort.value,
+        if (category != null) 'category': category,
+        if (query != null) 'q': query,
+        if (offset != null) 'offset': offset.toString(),
+      },
+      decode: _decodeV4UserCollection,
     );
   }
 
@@ -1728,6 +1787,84 @@ BookmarkFoldersResult _decodeV4BookmarkFolders(dynamic json) {
     pageSize: _number(body['pageSize'], 'pageSize'),
   );
 }
+
+UserCollectionResult _decodeV4UserCollection(dynamic json) {
+  final body = _object(json, 'user collection');
+  final counts = _object(body['counts'], 'counts');
+  final equippedByKind = _object(body['equippedByKind'], 'equippedByKind');
+  return UserCollectionResult(
+    items: List<UserCollectionItem>.unmodifiable(
+      _list(body['items'], 'items').map(
+        (value) => _decodeV4UserCollectionItem(
+          _object(value, 'items[]'),
+          'items[]',
+        ),
+      ),
+    ),
+    total: _integer(body['total'], 'total'),
+    nextOffset: _requiredNullableInteger(body, 'nextOffset', 'nextOffset'),
+    counts: UserCollectionCounts(
+      badge: _integer(counts['badge'], 'counts.badge'),
+      background: _integer(counts['background'], 'counts.background'),
+    ),
+    categories: List<String>.unmodifiable(
+      _list(body['categories'], 'categories').map(
+        (value) => _string(value, 'categories[]'),
+      ),
+    ),
+    equipped: _requiredNullableUserCollectionItem(body, 'equipped', 'equipped'),
+    equippedBadge: _requiredNullableUserCollectionItem(
+      equippedByKind,
+      'badge',
+      'equippedByKind.badge',
+    ),
+    equippedBackground: _requiredNullableUserCollectionItem(
+      equippedByKind,
+      'background',
+      'equippedByKind.background',
+    ),
+  );
+}
+
+UserCollectionItem? _requiredNullableUserCollectionItem(
+  Map<String, dynamic> body,
+  String wireKey,
+  String field,
+) {
+  final value = _requiredValue(body, wireKey, field);
+  return value == null
+      ? null
+      : _decodeV4UserCollectionItem(_object(value, field), field);
+}
+
+UserCollectionItem _decodeV4UserCollectionItem(
+  Map<String, dynamic> body,
+  String field,
+) =>
+    UserCollectionItem(
+      kind: switch (_string(body['kind'], '$field.kind')) {
+        'badge' => OfficialAchievementItemKind.badge,
+        'background' => OfficialAchievementItemKind.background,
+        _ => throw FormatException('Unsupported $field.kind'),
+      },
+      id: _integer(body['id'], '$field.id'),
+      key: _string(body['key'], '$field.key'),
+      name: _string(body['name'], '$field.name'),
+      imageUrl: _string(body['imageUrl'], '$field.imageUrl'),
+      category: _string(body['category'], '$field.category'),
+      addedAt: _string(body['addedAt'], '$field.addedAt'),
+      equipped: _boolean(body['equipped'], '$field.equipped'),
+      acquiredAt: _requiredNullableString(
+        body,
+        'acquiredAt',
+        '$field.acquiredAt',
+      ),
+      holderCount: _requiredNullableInteger(
+        body,
+        'holderCount',
+        '$field.holderCount',
+      ),
+    );
 
 BookmarkFolderDetailResult _decodeV4BookmarkFolderDetail(dynamic json) {
   final body = _object(json, 'bookmark folder');
