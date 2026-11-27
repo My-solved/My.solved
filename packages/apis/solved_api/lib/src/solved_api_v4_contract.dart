@@ -3256,7 +3256,7 @@ String _pathSegment(
       value == '..' ||
       value.contains('/') ||
       value.contains(r'\') ||
-      RegExp(r'[\u0000-\u001f\u007f]').hasMatch(value)) {
+      RegExp(r'[\u0000-\u001f\u007f-\u009f]').hasMatch(value)) {
     throw ArgumentError.value(value, name, 'Must be one safe path segment');
   }
   return Uri.encodeComponent(value);

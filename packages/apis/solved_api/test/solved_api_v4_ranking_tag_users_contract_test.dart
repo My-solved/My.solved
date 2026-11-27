@@ -37,6 +37,7 @@ void main() {
       'a b&한': 'rankings/tags/a%20b%26%ED%95%9C',
       '%2F': 'rankings/tags/%252F',
       '.a': 'rankings/tags/.a',
+      'a\u00a0': 'rankings/tags/a%C2%A0',
       maximum: 'rankings/tags/${Uri.encodeComponent(maximum)}',
     };
     for (final MapEntry(key: key, value: path) in cases.entries) {
@@ -56,7 +57,10 @@ void main() {
       'a/b',
       r'a\b',
       'a\u0000',
+      'a\u001f',
       'a\u007f',
+      'a\u0080',
+      '\u009fa',
     ]) {
       expect(
         () => contract.rankingTagUsers(invalid),
