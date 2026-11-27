@@ -7,6 +7,7 @@ export 'official_achievement_item.dart';
 export 'help_article_result.dart';
 export 'notice_list_result.dart';
 export 'official_user_profile.dart';
+export 'policy_result.dart';
 export 'post_detail_result.dart';
 export 'problem_achievements_result.dart';
 export 'problem_detail_result.dart';

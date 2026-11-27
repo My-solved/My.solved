@@ -828,6 +828,251 @@
         }
       }
     },
+    "/api/v4/policies/{slug}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "enum": [
+                "tos",
+                "tos_recurring",
+                "privacy",
+                "chrome_privacy",
+                "guideline",
+                "rules",
+                "developer_terms",
+                "partner_terms"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "lang",
+            "required": false,
+            "schema": {
+              "maxLength": 16,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "announcedAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "content": {
+                      "oneOf": [
+                        {
+                          "properties": {
+                            "body": {
+                              "type": "string"
+                            },
+                            "format": {
+                              "enum": [
+                                "markdown"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "format",
+                            "body"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "properties": {
+                            "doc": {
+                              "additionalProperties": {},
+                              "properties": {
+                                "content": {
+                                  "items": {},
+                                  "type": "array"
+                                },
+                                "type": {
+                                  "enum": [
+                                    "doc"
+                                  ],
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "type"
+                              ],
+                              "type": "object"
+                            },
+                            "format": {
+                              "enum": [
+                                "tiptap"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "format",
+                            "doc"
+                          ],
+                          "type": "object"
+                        }
+                      ]
+                    },
+                    "currentLabel": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "effectiveAt": {
+                      "type": "string"
+                    },
+                    "isCurrent": {
+                      "type": "boolean"
+                    },
+                    "label": {
+                      "type": "string"
+                    },
+                    "language": {
+                      "type": "string"
+                    },
+                    "revisedAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "slug": {
+                      "enum": [
+                        "tos",
+                        "tos_recurring",
+                        "privacy",
+                        "chrome_privacy",
+                        "guideline",
+                        "rules",
+                        "developer_terms",
+                        "partner_terms"
+                      ],
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "string"
+                    },
+                    "versions": {
+                      "items": {
+                        "properties": {
+                          "announcedAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "effectiveAt": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "version": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "version",
+                          "label",
+                          "announcedAt",
+                          "effectiveAt"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "slug",
+                    "version",
+                    "label",
+                    "announcedAt",
+                    "effectiveAt",
+                    "language",
+                    "title",
+                    "content",
+                    "revisedAt",
+                    "isCurrent",
+                    "currentLabel",
+                    "versions"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The version's text. `language` reports what was served, which may differ from `lang`."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "No such document or version, or none published yet."
+          }
+        },
+        "summary": "Read the version of a policy in force now, or its soonest upcoming one while none is",
+        "x-access": {
+          "class": "public"
+        }
+      }
+    },
     "/api/v4/posts/help/page": {
       "get": {
         "parameters": [

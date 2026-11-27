@@ -93,6 +93,7 @@ void main() {
             '/solved/v4/posts/notice/first' => 'v4/post_detail.json',
             '/solved/v4/posts/help/page' => 'v4/post_detail.json',
             '/solved/v4/help/tiers' => 'v4/help_article.json',
+            '/solved/v4/policies/privacy' => 'v4/policy.json',
             '/solved/v4/sources/oj/boj/contests/round-1' =>
               'v4/source_lookup.json',
             '/solved/v4/sources/oj/boj/groups/team-1' =>
@@ -221,6 +222,7 @@ void main() {
         final PostDetailResult helpPage = await client.v4HelpPage('a/b');
         final HelpArticleResult helpArticle =
             await client.v4HelpArticle('tiers');
+        final PolicyResult policy = await client.v4Policy(PolicySlug.privacy);
         final SourceLookupResult sourceContest =
             await client.v4SourceContest('boj', 'round-1');
         final SourceLookupResult sourceGroup =
@@ -518,6 +520,7 @@ void main() {
         expect(notice.content['type'], 'doc');
         expect(helpPage.previous?.path, 'notice/zero');
         expect(helpArticle.slug, 'other-slug');
+        expect(policy.content, isA<PolicyMarkdownContent>());
         expect(sourceContest.id, -42.5);
         expect(sourceContest.id, isA<double>());
         expect(sourceGroup.id, -42.5);
@@ -680,6 +683,7 @@ void main() {
             _uri('posts/notice/first'),
             _uri('posts/help/page', <String, String>{'path': 'a/b'}),
             _uri('help/tiers'),
+            _uri('policies/privacy'),
             _uri('sources/oj/boj/contests/round-1'),
             _uri('sources/oj/boj/groups/team-1'),
             _uri('sources'),
@@ -718,7 +722,7 @@ void main() {
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(51));
+        expect(httpClient.requests, hasLength(52));
         expect(
           httpClient.requests[13].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
@@ -1041,6 +1045,10 @@ void main() {
         isA<SiteRequestFailed>(),
       );
       expect(
+        await _captureFailure(client.v4Policy(PolicySlug.tos)),
+        isA<SiteRequestFailed>(),
+      );
+      expect(
         await _captureFailure(client.v4SourceContest('boj', 'contest')),
         isA<SourceRequestFailed>(),
       );
@@ -1088,7 +1096,7 @@ void main() {
         await _captureFailure(client.v4ProblemVoteSummary(1000)),
         isA<SearchRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(47));
+      expect(httpClient.requests, hasLength(48));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -3921,6 +3929,54 @@ void main() {
             );
 
         final error = await _captureFailure(client.v4HelpArticle('a'));
+
+        expect(error, isA<SiteRequestFailed>());
+        expect(error.statusCode, status);
+        expect(error.cause, isNull);
+        expect(
+          error.retryAfter,
+          status == 429 ? const Duration(seconds: 9) : isNull,
+        );
+      }
+      expect(httpClient.requests, hasLength(4));
+    });
+
+    test('sends policy requests and preserves official failures', () async {
+      handler = (_) async => _jsonResponse(fixture('v4/policy.json'));
+      await client.v4Policy(PolicySlug.tosRecurring, language: 'ko & en');
+      expect(
+        () => client.v4Policy(
+          PolicySlug.tos,
+          language: List.filled(17, 'a').join(),
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        httpClient.requests.single.url.toString(),
+        'https://proxy.example/solved/v4/policies/tos_recurring?'
+        'lang=ko+%26+en',
+      );
+      expect(httpClient.requests.single.headers, const <String, String>{
+        'accept': 'application/json',
+      });
+
+      handler = (_) async => _jsonResponse(jsonEncode({'slug': 'tos'}));
+      final malformed = await _captureFailure(client.v4Policy(PolicySlug.tos));
+      expect(malformed, isA<SiteRequestFailed>());
+      expect(malformed.statusCode, 200);
+      expect(malformed.cause, isA<FormatException>());
+
+      for (final status in [404, 429]) {
+        handler = (_) async => _bytesResponse(
+              const <int>[0xff],
+              statusCode: status,
+              headers: <String, String>{
+                'content-type': 'text/plain',
+                if (status == 429) 'retry-after': '9',
+              },
+            );
+
+        final error = await _captureFailure(client.v4Policy(PolicySlug.tos));
 
         expect(error, isA<SiteRequestFailed>());
         expect(error.statusCode, status);
