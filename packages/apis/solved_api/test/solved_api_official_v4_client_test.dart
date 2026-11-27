@@ -80,6 +80,7 @@ void main() {
             '/solved/v4/affiliations/1' => 'v4/affiliation_detail.json',
             '/solved/v4/rankings/tags' => 'v4/ranking_tags.json',
             '/solved/v4/rankings/users' => 'v4/ranking_users.json',
+            '/solved/v4/rankings/regions/KR' => 'v4/ranking_users.json',
             '/solved/v4/rankings/users/search' => 'v4/search_users.json',
             '/solved/v4/search/analyze' => 'v4/search_analysis.json',
             '/solved/v4/search/random-problem' => 'v4/random_problem.json',
@@ -163,6 +164,8 @@ void main() {
           page: 1,
           sort: SolvedApiV4UserSort.rating,
         );
+        final RankingLeaderboardResult rankingRegionUsers =
+            await client.v4RankingRegionUsers('KR', page: 1);
         final RankingRegionsResult rankingRegions =
             await client.v4RankingRegions();
         final RankingAffiliationsResult rankingAffiliations =
@@ -383,6 +386,9 @@ void main() {
           rankingUsers.items.last.profileImageUrl,
           'not necessarily a URI',
         );
+        expect(rankingRegionUsers.me?.id, -1.5);
+        expect(rankingRegionUsers.page, 99);
+        expect(rankingRegionUsers.items.last.globalRank, -99);
         expect(
           rankingRegions.regions.map((region) => region.countryCode),
           ['KR', '', 'KR'],
@@ -544,6 +550,7 @@ void main() {
               'page': '1',
               'sort': 'rating',
             }),
+            _uri('rankings/regions/KR', <String, String>{'page': '1'}),
             _uri('rankings/regions'),
             Uri.parse(
               'https://proxy.example/solved/v4/'
@@ -592,23 +599,23 @@ void main() {
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(33));
+        expect(httpClient.requests, hasLength(34));
         expect(
           httpClient.requests[12].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
         );
         expect(
-          httpClient.requests[21].url.toString(),
+          httpClient.requests[22].url.toString(),
           'https://proxy.example/solved/v4/search/suggest?'
           'topic=tag%26%ED%95%9C&value=',
         );
         expect(
-          httpClient.requests[22].url.toString(),
+          httpClient.requests[23].url.toString(),
           'https://proxy.example/solved/v4/search/analyze?'
           'q=tag%26%ED%95%9C',
         );
         expect(
-          httpClient.requests[23].url.toString(),
+          httpClient.requests[24].url.toString(),
           'https://proxy.example/solved/v4/search/random-problem?q=',
         );
         for (final request in httpClient.requests) {
@@ -859,6 +866,10 @@ void main() {
         isA<RankingRequestFailed>(),
       );
       expect(
+        await _captureFailure(client.v4RankingRegionUsers('KR')),
+        isA<RankingRequestFailed>(),
+      );
+      expect(
         await _captureFailure(client.v4RankingRegions()),
         isA<RankingRequestFailed>(),
       );
@@ -890,7 +901,7 @@ void main() {
         await _captureFailure(client.v4SourceGroup('boj', 'group')),
         isA<SourceRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(29));
+      expect(httpClient.requests, hasLength(30));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -1962,6 +1973,103 @@ void main() {
       expect(error.retryAfter, const Duration(seconds: 31));
       expect(error.isRetryable, isTrue);
       expect(httpClient.requests.single.url, _uri('rankings/users'));
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves omitted explicit and encoded region-user requests',
+        () async {
+      handler = (_) async => _jsonResponse(fixture('v4/ranking_users.json'));
+
+      final omitted = await client.v4RankingRegionUsers('KR');
+      final explicit = await client.v4RankingRegionUsers('KR', page: 1);
+      final encoded = await client.v4RankingRegionUsers('한글', page: 999);
+
+      expect(omitted.me?.id, -1.5);
+      expect(explicit.mePage, -2);
+      expect(encoded.items.last.globalRank, -99);
+      expect(
+        httpClient.requests.map((request) => request.url.toString()),
+        [
+          'https://proxy.example/solved/v4/rankings/regions/KR',
+          'https://proxy.example/solved/v4/rankings/regions/KR?page=1',
+          'https://proxy.example/solved/v4/rankings/regions/'
+              '%ED%95%9C%EA%B8%80?page=999',
+        ],
+      );
+      for (final request in httpClient.requests) {
+        expect(request.method, 'GET');
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+        });
+        expect(request.bodyBytes, isEmpty);
+      }
+      expect(httpClient.requests, hasLength(3));
+    });
+
+    test('rejects invalid region-user arguments before transport', () {
+      for (final countryCode in ['', 'K', 'KRX', '..', 'K/']) {
+        expect(
+          () => client.v4RankingRegionUsers(countryCode),
+          throwsA(
+            isA<ArgumentError>()
+                .having((error) => error.name, 'name', 'countryCode'),
+          ),
+          reason: countryCode,
+        );
+      }
+      for (final page in [0, -1]) {
+        expect(
+          () => client.v4RankingRegionUsers('KR', page: page),
+          throwsA(
+            isA<ArgumentError>()
+                .having((error) => error.name, 'name', 'page')
+                .having((error) => error.invalidValue, 'invalidValue', page),
+          ),
+        );
+      }
+      expect(httpClient.requests, isEmpty);
+    });
+
+    test('wraps a malformed region leaderboard as a ranking failure', () async {
+      handler = (_) async => _jsonResponse(
+            jsonEncode({
+              'mePage': null,
+              'total': 0,
+              'page': 1,
+              'pageSize': 50,
+              'items': <Object?>[],
+            }),
+          );
+
+      final error = await _captureFailure(client.v4RankingRegionUsers('KR'));
+
+      expect(error, isA<RankingRequestFailed>());
+      expect(error.statusCode, 200);
+      expect(error.cause, isA<FormatException>());
+      expect(error.responseBody, isNull);
+      expect(httpClient.requests.single.url, _uri('rankings/regions/KR'));
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves region-users 429 failure metadata', () async {
+      handler = (_) async => _bytesResponse(
+            const <int>[0xff],
+            statusCode: 429,
+            headers: const <String, String>{
+              'content-type': 'text/plain',
+              'retry-after': '31',
+            },
+          );
+
+      final error = await _captureFailure(client.v4RankingRegionUsers('KR'));
+
+      expect(error, isA<RankingRequestFailed>());
+      expect(error.statusCode, 429);
+      expect(error.cause, isNull);
+      expect(error.responseBody, isNull);
+      expect(error.retryAfter, const Duration(seconds: 31));
+      expect(error.isRetryable, isTrue);
+      expect(httpClient.requests.single.url, _uri('rankings/regions/KR'));
       expect(httpClient.requests, hasLength(1));
     });
 
