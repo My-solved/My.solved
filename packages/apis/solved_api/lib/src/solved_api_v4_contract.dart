@@ -152,6 +152,23 @@ final class SolvedApiV4Contract {
     );
   }
 
+  /// The items the viewer holds. It requires a user token with `collection`
+  /// scope, so it is only exposed through [SolvedAuthenticatedApiClient].
+  SolvedApiEndpoint<AccountItemsResult> accountItems({String? language}) {
+    if (language != null && language.runes.length > 16) {
+      throw ArgumentError.value(
+        language,
+        'language',
+        'Must not exceed 16 characters',
+      );
+    }
+    return _endpoint(
+      path: 'account/items',
+      queryParameters: {if (language != null) 'lang': language},
+      decode: _decodeV4AccountItems,
+    );
+  }
+
   /// The viewer's standing warnings and bans. It requires a user token with
   /// `standing` scope, so it is only exposed through
   /// [SolvedAuthenticatedApiClient].
@@ -3112,6 +3129,90 @@ AccountBookmarkFoldersResult _decodeV4AccountBookmarkFolders(dynamic json) {
             folder['containsProblem'],
             'folders[].containsProblem',
           ),
+        );
+      }),
+    ),
+  );
+}
+
+AccountItemsResult _decodeV4AccountItems(dynamic json) {
+  final body = _object(json, 'account items');
+  final themes = _object(body['streakThemes'], 'streakThemes');
+  final vacationValue = _requiredValue(body, 'vacation', 'vacation');
+  return AccountItemsResult(
+    items: List<AccountItem>.unmodifiable(
+      _list(body['items'], 'items').map(
+        (value) => _decodeV4AccountItem(_object(value, 'items[]')),
+      ),
+    ),
+    streakThemes: AccountStreakThemes(
+      equipped: _string(themes['equipped'], 'streakThemes.equipped'),
+      owned: List<OwnedStreakTheme>.unmodifiable(
+        _list(themes['owned'], 'streakThemes.owned').map((value) {
+          final theme = _object(value, 'streakThemes.owned[]');
+          return OwnedStreakTheme(
+            theme: _string(theme['theme'], 'streakThemes.owned[].theme'),
+            acquiredAt: _requiredNullableString(
+              theme,
+              'acquiredAt',
+              'streakThemes.owned[].acquiredAt',
+            ),
+          );
+        }),
+      ),
+    ),
+    vacation: vacationValue == null
+        ? null
+        : _decodeV4ProfileActivityCurrentVacation(
+            _object(vacationValue, 'vacation'),
+          ),
+  );
+}
+
+AccountItem _decodeV4AccountItem(Map<String, dynamic> body) {
+  const field = 'items[]';
+  final equippedValue = _requiredValue(body, 'equipped', '$field.equipped');
+  final progressValue = _requiredValue(body, 'progress', '$field.progress');
+  final progress =
+      progressValue == null ? null : _object(progressValue, '$field.progress');
+  return AccountItem(
+    key: _string(body['key'], '$field.key'),
+    kind: switch (_string(body['kind'], '$field.kind')) {
+      'consumable' => AccountItemKind.consumable,
+      'equippable' => AccountItemKind.equippable,
+      'voucher' => AccountItemKind.voucher,
+      'keepsake' => AccountItemKind.keepsake,
+      _ => throw const FormatException('Unsupported items[].kind'),
+    },
+    effect: _requiredNullableString(body, 'effect', '$field.effect'),
+    name: _string(body['name'], '$field.name'),
+    description: _string(body['description'], '$field.description'),
+    imageUrl: _string(body['imageUrl'], '$field.imageUrl'),
+    units: _integer(body['units'], '$field.units'),
+    maxUnits: _integer(body['maxUnits'], '$field.maxUnits'),
+    usable: _boolean(body['usable'], '$field.usable'),
+    equipped: equippedValue == null
+        ? null
+        : _boolean(equippedValue, '$field.equipped'),
+    progress: progress == null
+        ? null
+        : AccountItemProgress(
+            held: _integer(progress['held'], '$field.progress.held'),
+            total: _integer(progress['total'], '$field.progress.total'),
+          ),
+    stacks: List<AccountItemStack>.unmodifiable(
+      _list(body['stacks'], '$field.stacks').map((value) {
+        final stack = _object(value, '$field.stacks[]');
+        return AccountItemStack(
+          units: _integer(stack['units'], '$field.stacks[].units'),
+          expiresAt: _requiredNullableString(
+            stack,
+            'expiresAt',
+            '$field.stacks[].expiresAt',
+          ),
+          day: _requiredNullableString(stack, 'day', '$field.stacks[].day'),
+          usable: _boolean(stack['usable'], '$field.stacks[].usable'),
+          counted: _boolean(stack['counted'], '$field.stacks[].counted'),
         );
       }),
     ),

@@ -1,0 +1,113 @@
+{
+  "items": [
+    {
+      "key": "freeze",
+      "kind": "consumable",
+      "effect": "streak_freeze",
+      "name": "Freeze",
+      "description": "raw / 한 글",
+      "imageUrl": "not a URI",
+      "units": 3,
+      "maxUnits": 2,
+      "usable": true,
+      "equipped": true,
+      "progress": {
+        "held": 5,
+        "total": -1
+      },
+      "stacks": [
+        {
+          "units": -1,
+          "expiresAt": "later",
+          "day": "x",
+          "usable": true,
+          "counted": false
+        },
+        {
+          "units": 0,
+          "expiresAt": null,
+          "day": null,
+          "usable": false,
+          "counted": true
+        },
+        {
+          "units": -1,
+          "expiresAt": "later",
+          "day": "x",
+          "usable": true,
+          "counted": false
+        }
+      ]
+    },
+    {
+      "key": "",
+      "kind": "keepsake",
+      "effect": null,
+      "name": "",
+      "description": "",
+      "imageUrl": "",
+      "units": 0,
+      "maxUnits": 0,
+      "usable": false,
+      "equipped": null,
+      "progress": null,
+      "stacks": []
+    },
+    {
+      "key": "freeze",
+      "kind": "consumable",
+      "effect": "streak_freeze",
+      "name": "Freeze",
+      "description": "raw / 한 글",
+      "imageUrl": "not a URI",
+      "units": 3,
+      "maxUnits": 2,
+      "usable": true,
+      "equipped": true,
+      "progress": {
+        "held": 5,
+        "total": -1
+      },
+      "stacks": [
+        {
+          "units": -1,
+          "expiresAt": "later",
+          "day": "x",
+          "usable": true,
+          "counted": false
+        },
+        {
+          "units": 0,
+          "expiresAt": null,
+          "day": null,
+          "usable": false,
+          "counted": true
+        },
+        {
+          "units": -1,
+          "expiresAt": "later",
+          "day": "x",
+          "usable": true,
+          "counted": false
+        }
+      ]
+    }
+  ],
+  "streakThemes": {
+    "equipped": "not owned",
+    "owned": [
+      {
+        "theme": "fire",
+        "acquiredAt": "x"
+      },
+      {
+        "theme": "",
+        "acquiredAt": null
+      }
+    ]
+  },
+  "vacation": {
+    "fromDay": "not a day",
+    "source": "launch"
+  }
+}

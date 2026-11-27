@@ -27,6 +27,7 @@ enum SolvedAuthenticatedOperation {
   accountStanding,
   accountBookmarks,
   walletHistory,
+  accountItems,
 }
 
 enum SolvedAuthenticatedFailureKind {
@@ -163,6 +164,16 @@ final class SolvedAuthenticatedApiClient {
       _get(
         SolvedAuthenticatedOperation.accountBookmarks,
         () => _contract.accountBookmarks(problemId: problemId),
+      );
+
+  /// The items the viewer holds, and the vacation the viewer is on. The token
+  /// needs the `collection` scope.
+  ///
+  /// An invalid [language] fails the returned future with an [ArgumentError]
+  /// before any request is sent.
+  Future<AccountItemsResult> accountItems({String? language}) => _get(
+        SolvedAuthenticatedOperation.accountItems,
+        () => _contract.accountItems(language: language),
       );
 
   /// The viewer's standing warnings and bans. The token needs the `standing`

@@ -5283,6 +5283,121 @@ void main() {
     });
   });
 
+  test('pins the viewer items and the shared vacation shape', () {
+    final items = _get(contract, '/api/v4/account/items');
+    final days = _get(contract, '/api/v4/users/{handle}/activity/days');
+
+    expect(_accessClass(items), 'user');
+    expect(_accessScope(items), 'collection');
+    expect(items.containsKey('security'), isFalse);
+    expect(items.containsKey('requestBody'), isFalse);
+    expect(items['summary'], 'The items the signed-in user holds');
+    expect(_parameters(items), [
+      {
+        'in': 'query',
+        'name': 'lang',
+        'required': false,
+        'schema': {'default': 'ko', 'maxLength': 16, 'type': 'string'},
+      },
+    ]);
+    final responses = _map(items['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '401']);
+    expect(
+      _map(responses['200'])['description'],
+      'Held items, and the vacation the user is on.',
+    );
+    expect(_map(responses['401'])['description'], 'Not signed in.');
+
+    final schema = _responseSchema(items);
+    expect(_required(schema), ['items', 'streakThemes', 'vacation']);
+    final properties = _properties(schema);
+    expect(properties.keys.length, 3);
+    expect(
+      _map(properties['vacation']),
+      _map(_properties(_responseSchema(days))['vacation']),
+    );
+    const nullableString = {
+      'type': ['string', 'null'],
+    };
+    expect(_map(properties['streakThemes']), {
+      'properties': {
+        'equipped': {'type': 'string'},
+        'owned': {
+          'items': {
+            'properties': {
+              'acquiredAt': nullableString,
+              'theme': {'type': 'string'},
+            },
+            'required': ['theme', 'acquiredAt'],
+            'type': 'object',
+          },
+          'type': 'array',
+        },
+      },
+      'required': ['equipped', 'owned'],
+      'type': 'object',
+    });
+    expect(_map(properties['items']), {
+      'items': {
+        'properties': {
+          'description': {'type': 'string'},
+          'effect': nullableString,
+          'equipped': {
+            'type': ['boolean', 'null'],
+          },
+          'imageUrl': {'type': 'string'},
+          'key': {'type': 'string'},
+          'kind': {
+            'enum': ['consumable', 'equippable', 'voucher', 'keepsake'],
+            'type': 'string',
+          },
+          'maxUnits': {'type': 'integer'},
+          'name': {'type': 'string'},
+          'progress': {
+            'properties': {
+              'held': {'type': 'integer'},
+              'total': {'type': 'integer'},
+            },
+            'required': ['held', 'total'],
+            'type': ['object', 'null'],
+          },
+          'stacks': {
+            'items': {
+              'properties': {
+                'counted': {'type': 'boolean'},
+                'day': nullableString,
+                'expiresAt': nullableString,
+                'units': {'type': 'integer'},
+                'usable': {'type': 'boolean'},
+              },
+              'required': ['units', 'expiresAt', 'day', 'usable', 'counted'],
+              'type': 'object',
+            },
+            'type': 'array',
+          },
+          'units': {'type': 'integer'},
+          'usable': {'type': 'boolean'},
+        },
+        'required': [
+          'key',
+          'kind',
+          'effect',
+          'name',
+          'description',
+          'imageUrl',
+          'units',
+          'maxUnits',
+          'usable',
+          'equipped',
+          'progress',
+          'stacks',
+        ],
+        'type': 'object',
+      },
+      'type': 'array',
+    });
+  });
+
   test('pins the viewer standing and its shared ban shapes', () {
     final standing = _get(contract, '/api/v4/account/standing');
     final bans = _get(contract, '/api/v4/account/bans');
