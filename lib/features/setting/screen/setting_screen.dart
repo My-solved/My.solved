@@ -90,7 +90,7 @@ class _SettingViewState extends State<SettingView> {
                             widget.homeBloc.add(
                                 HomeIsOnIllustBackgroundChanged(isOn: isOn));
                           },
-                          activeColor: MySolvedColor.background,
+                          activeThumbColor: MySolvedColor.background,
                           activeTrackColor: MySolvedColor.main,
                           inactiveThumbColor: MySolvedColor.background,
                           inactiveTrackColor:
@@ -123,7 +123,7 @@ class _SettingViewState extends State<SettingView> {
                       value: state.isOnStreakNotification,
                       onChanged: (value) => context.read<SettingBloc>().add(
                           SettingStreakNotificationSwitchChanged(isOn: value)),
-                      activeColor: MySolvedColor.background,
+                      activeThumbColor: MySolvedColor.background,
                       activeTrackColor: MySolvedColor.main,
                     ),
                   ],
