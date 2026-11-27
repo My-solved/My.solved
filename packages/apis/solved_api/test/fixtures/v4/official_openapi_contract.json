@@ -701,6 +701,122 @@
         }
       }
     },
+    "/api/v4/posts/notice": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "lang",
+            "required": false,
+            "schema": {
+              "maxLength": 16,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "maximum": 10000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "maxLength": 64,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "properties": {
+                          "coverImageUrl": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "isNew": {
+                            "type": "boolean"
+                          },
+                          "language": {
+                            "type": "string"
+                          },
+                          "path": {
+                            "type": "string"
+                          },
+                          "pinned": {
+                            "type": "boolean"
+                          },
+                          "publishedAt": {
+                            "type": "string"
+                          },
+                          "summary": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "title": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "path",
+                          "language",
+                          "title",
+                          "summary",
+                          "publishedAt",
+                          "pinned",
+                          "isNew",
+                          "coverImageUrl"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "perPage": {
+                      "type": "integer"
+                    },
+                    "total": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "total",
+                    "page",
+                    "perPage"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "One page of notices."
+          }
+        },
+        "summary": "List the notice board, pinned first, then newest first",
+        "x-access": {
+          "class": "public"
+        }
+      }
+    },
     "/api/v4/problems": {
       "get": {
         "x-access": {

@@ -13,6 +13,7 @@ const _relevantPaths = <String>[
   '/api/v4/health',
   '/api/v4/me',
   '/api/v4/oauth/token',
+  '/api/v4/posts/notice',
   '/api/v4/problems',
   '/api/v4/problems/{problemId}',
   '/api/v4/problems/{problemId}/reports',

@@ -3029,6 +3029,86 @@ void main() {
     }
   });
 
+  test('pins the public notice board without inferred relations', () {
+    final notices = _get(contract, '/api/v4/posts/notice');
+
+    expect(_accessClass(notices), 'public');
+    expect(_map(notices['x-access']).containsKey('scope'), isFalse);
+    expect(notices.containsKey('security'), isFalse);
+    expect(notices.containsKey('requestBody'), isFalse);
+    expect(
+      notices['summary'],
+      'List the notice board, pinned first, then newest first',
+    );
+    expect(_parameters(notices), [
+      {
+        'in': 'query',
+        'name': 'lang',
+        'required': false,
+        'schema': {'maxLength': 16, 'type': 'string'},
+      },
+      {
+        'in': 'query',
+        'name': 'page',
+        'required': false,
+        'schema': {
+          'default': 1,
+          'maximum': 10000,
+          'minimum': 1,
+          'type': 'integer',
+        },
+      },
+      {
+        'in': 'query',
+        'name': 'q',
+        'required': false,
+        'schema': {'maxLength': 64, 'type': 'string'},
+      },
+    ]);
+    final responses = _map(notices['responses']);
+    expect(responses.keys.toList(growable: false), ['200']);
+    expect(_map(responses['200'])['description'], 'One page of notices.');
+
+    final schema = _responseSchema(notices);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    expect(_required(schema), ['items', 'total', 'page', 'perPage']);
+    final properties = _properties(schema);
+    expect(properties.keys.length, 4);
+    for (final field in ['total', 'page', 'perPage']) {
+      expect(_map(properties[field]), {'type': 'integer'});
+    }
+    expect(_map(properties['items']), {
+      'items': {
+        'properties': {
+          'coverImageUrl': {
+            'type': ['string', 'null'],
+          },
+          'isNew': {'type': 'boolean'},
+          'language': {'type': 'string'},
+          'path': {'type': 'string'},
+          'pinned': {'type': 'boolean'},
+          'publishedAt': {'type': 'string'},
+          'summary': {
+            'type': ['string', 'null'],
+          },
+          'title': {'type': 'string'},
+        },
+        'required': [
+          'path',
+          'language',
+          'title',
+          'summary',
+          'publishedAt',
+          'pinned',
+          'isNew',
+          'coverImageUrl',
+        ],
+        'type': 'object',
+      },
+      'type': 'array',
+    });
+  });
+
   test('pins public OJ source lookups and their exact shared response', () {
     const operations = {
       '/api/v4/sources/oj/{ojId}/contests/{nativeId}':
