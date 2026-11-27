@@ -406,6 +406,23 @@ final class SolvedApiV4Contract {
     );
   }
 
+  SolvedApiEndpoint<RankingLeaderboardResult> rankingTagUsers(
+    String key, {
+    int? page,
+  }) {
+    final segment = _pathSegment(key, 'key');
+    if (page != null) {
+      _positivePage(page);
+    }
+    return _endpoint(
+      path: 'rankings/tags/$segment',
+      queryParameters: {
+        if (page != null) 'page': page.toString(),
+      },
+      decode: _decodeV4RankingLeaderboard,
+    );
+  }
+
   SolvedApiEndpoint<AffiliationDetailResult> affiliationDetail(
     int id, {
     String? language,

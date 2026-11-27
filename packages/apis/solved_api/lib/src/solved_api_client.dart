@@ -512,6 +512,17 @@ class SolvedApiClient {
     );
   }
 
+  Future<RankingLeaderboardResult> v4RankingTagUsers(
+    String key, {
+    int? page,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.rankingTagUsers(key, page: page),
+      requestType: _RequestType.ranking,
+    );
+  }
+
   Future<RankingRegionsResult> v4RankingRegions() {
     final contract = _requireV4Contract();
     return _getV4(
