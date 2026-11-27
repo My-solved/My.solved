@@ -1369,6 +1369,92 @@
         }
       }
     },
+    "/api/v4/me/tag-progress": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "counts": {
+                      "items": {
+                        "properties": {
+                          "key": {
+                            "type": "string"
+                          },
+                          "problemCount": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "problemCount"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "items": {
+                      "items": {
+                        "properties": {
+                          "key": {
+                            "type": "string"
+                          },
+                          "solved": {
+                            "type": "integer"
+                          },
+                          "tried": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "solved",
+                          "tried"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "ratings": {
+                      "items": {
+                        "properties": {
+                          "key": {
+                            "type": "string"
+                          },
+                          "rating": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "rating"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "counts",
+                    "items",
+                    "ratings"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Per tag the viewer has a problem row in."
+          }
+        },
+        "summary": "The viewer's solved and tried counts per tag",
+        "x-access": {
+          "class": "user",
+          "scope": "solves"
+        }
+      }
+    },
     "/api/v4/oauth/token": {
       "post": {
         "x-access": {

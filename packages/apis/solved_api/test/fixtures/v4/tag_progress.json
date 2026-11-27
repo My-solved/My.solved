@@ -1,0 +1,34 @@
+{
+  "counts": [
+    {
+      "key": "math",
+      "problemCount": -1
+    },
+    {
+      "key": "",
+      "problemCount": 0
+    },
+    {
+      "key": "math",
+      "problemCount": -1
+    }
+  ],
+  "items": [
+    {
+      "key": "dp",
+      "solved": 3,
+      "tried": -2
+    },
+    {
+      "key": "한글",
+      "solved": 0,
+      "tried": 0
+    }
+  ],
+  "ratings": [
+    {
+      "key": "graphs",
+      "rating": -50
+    }
+  ]
+}

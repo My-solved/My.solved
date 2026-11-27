@@ -18,6 +18,7 @@ enum SolvedAuthenticatedOperation {
   bookmarkFavorites,
   collection,
   myProblemVote,
+  tagProgress,
 }
 
 enum SolvedAuthenticatedFailureKind {
@@ -143,6 +144,13 @@ final class SolvedAuthenticatedApiClient {
   Future<BookmarkFoldersResult> bookmarkFavorites({int? page}) => _get(
         SolvedAuthenticatedOperation.bookmarkFavorites,
         () => _contract.bookmarkFavorites(page: page),
+      );
+
+  /// The viewer's solved and tried counts per tag. The token needs the
+  /// `solves` scope.
+  Future<TagProgressResult> tagProgress() => _get(
+        SolvedAuthenticatedOperation.tagProgress,
+        _contract.tagProgress,
       );
 
   /// The viewer's own vote on one problem. The token needs the `votes` scope.

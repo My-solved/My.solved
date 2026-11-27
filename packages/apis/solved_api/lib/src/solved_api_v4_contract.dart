@@ -127,6 +127,13 @@ final class SolvedApiV4Contract {
         decode: _decodeV4UserIdentity,
       );
 
+  /// The viewer's per-tag progress. It requires a user token with `solves`
+  /// scope, so it is only exposed through [SolvedAuthenticatedApiClient].
+  SolvedApiEndpoint<TagProgressResult> tagProgress() => _endpoint(
+        path: 'me/tag-progress',
+        decode: _decodeV4TagProgress,
+      );
+
   /// The viewer's rival board. It requires a user token with `rivals` scope,
   /// so it is only exposed through [SolvedAuthenticatedApiClient].
   SolvedApiEndpoint<RivalLeaderboardResult> rivals({int? page}) {
@@ -2998,6 +3005,43 @@ RankingLeaderboardResult _decodeV4RankingLeaderboard(dynamic json) {
           'items[]',
         ),
       ),
+    ),
+  );
+}
+
+TagProgressResult _decodeV4TagProgress(dynamic json) {
+  final body = _object(json, 'tag progress');
+  return TagProgressResult(
+    counts: List<TagProblemCount>.unmodifiable(
+      _list(body['counts'], 'counts').map((value) {
+        final count = _object(value, 'counts[]');
+        return TagProblemCount(
+          key: _string(count['key'], 'counts[].key'),
+          problemCount: _integer(
+            count['problemCount'],
+            'counts[].problemCount',
+          ),
+        );
+      }),
+    ),
+    items: List<TagProgressItem>.unmodifiable(
+      _list(body['items'], 'items').map((value) {
+        final item = _object(value, 'items[]');
+        return TagProgressItem(
+          key: _string(item['key'], 'items[].key'),
+          solved: _integer(item['solved'], 'items[].solved'),
+          tried: _integer(item['tried'], 'items[].tried'),
+        );
+      }),
+    ),
+    ratings: List<TagRating>.unmodifiable(
+      _list(body['ratings'], 'ratings').map((value) {
+        final rating = _object(value, 'ratings[]');
+        return TagRating(
+          key: _string(rating['key'], 'ratings[].key'),
+          rating: _integer(rating['rating'], 'ratings[].rating'),
+        );
+      }),
     ),
   );
 }
