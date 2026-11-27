@@ -1888,6 +1888,233 @@
         }
       }
     },
+    "/api/v4/account/profile": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "profile": {
+                      "properties": {
+                        "backgroundId": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
+                        "bio": {
+                          "maxLength": 2000,
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "birthDay": {
+                          "maximum": 31,
+                          "minimum": 1,
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
+                        "birthMonth": {
+                          "maximum": 12,
+                          "minimum": 1,
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
+                        "birthYear": {
+                          "maximum": 2100,
+                          "minimum": 1900,
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
+                        "countryCode": {
+                          "pattern": "^[A-Z]{2}$",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "customGender": {
+                          "maxLength": 64,
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "gender": {
+                          "anyOf": [
+                            {
+                              "enum": [
+                                0
+                              ],
+                              "type": "number"
+                            },
+                            {
+                              "enum": [
+                                1
+                              ],
+                              "type": "number"
+                            },
+                            {
+                              "enum": [
+                                2
+                              ],
+                              "type": "number"
+                            },
+                            {
+                              "enum": [
+                                9
+                              ],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "name": {
+                          "maxLength": 128,
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "nameNative": {
+                          "maxLength": 128,
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "profileImageUrl": {
+                          "format": "uri",
+                          "maxLength": 1024,
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "pronouns": {
+                          "maxLength": 64,
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "showBirthYear": {
+                          "type": "boolean"
+                        },
+                        "showBirthday": {
+                          "type": "boolean"
+                        },
+                        "showCountry": {
+                          "type": "boolean"
+                        },
+                        "showDiscord": {
+                          "type": "boolean"
+                        },
+                        "showIcpc": {
+                          "type": "boolean"
+                        },
+                        "showName": {
+                          "type": "boolean"
+                        },
+                        "showPronouns": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "bio",
+                        "profileImageUrl",
+                        "countryCode",
+                        "showCountry",
+                        "gender",
+                        "customGender",
+                        "pronouns",
+                        "showPronouns",
+                        "birthYear",
+                        "birthMonth",
+                        "birthDay",
+                        "showBirthday",
+                        "showBirthYear",
+                        "name",
+                        "nameNative",
+                        "showName",
+                        "showDiscord",
+                        "showIcpc",
+                        "backgroundId"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "profile"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Every editable field beside its visibility flag."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Not signed in."
+          }
+        },
+        "summary": "The signed-in user's own profile, editable fields only",
+        "x-access": {
+          "class": "user",
+          "scope": "profile.personal"
+        }
+      }
+    },
     "/api/v4/account/standing": {
       "get": {
         "responses": {

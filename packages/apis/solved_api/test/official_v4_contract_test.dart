@@ -5398,6 +5398,111 @@ void main() {
     });
   });
 
+  test('pins the viewer profile and its documented bounds', () {
+    final profile = _get(contract, '/api/v4/account/profile');
+
+    expect(_accessClass(profile), 'user');
+    expect(_accessScope(profile), 'profile.personal');
+    expect(profile.containsKey('security'), isFalse);
+    expect(profile.containsKey('requestBody'), isFalse);
+    expect(profile.containsKey('parameters'), isFalse);
+    expect(
+      profile['summary'],
+      "The signed-in user's own profile, editable fields only",
+    );
+    final responses = _map(profile['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '401']);
+    expect(
+      _map(responses['200'])['description'],
+      'Every editable field beside its visibility flag.',
+    );
+    expect(_map(responses['401'])['description'], 'Not signed in.');
+
+    final schema = _responseSchema(profile);
+    expect(_required(schema), ['profile']);
+    expect(_properties(schema).keys.length, 1);
+    final body = _map(_properties(schema)['profile']);
+    expect(body['type'], 'object');
+    expect(_required(body), [
+      'bio',
+      'profileImageUrl',
+      'countryCode',
+      'showCountry',
+      'gender',
+      'customGender',
+      'pronouns',
+      'showPronouns',
+      'birthYear',
+      'birthMonth',
+      'birthDay',
+      'showBirthday',
+      'showBirthYear',
+      'name',
+      'nameNative',
+      'showName',
+      'showDiscord',
+      'showIcpc',
+      'backgroundId',
+    ]);
+    final properties = _properties(body);
+    expect(properties.keys.length, 19);
+    const nullableString = ['string', 'null'];
+    const nullableInteger = ['integer', 'null'];
+    for (final MapEntry(key: field, value: maximum) in {
+      'bio': 2000,
+      'customGender': 64,
+      'pronouns': 64,
+      'name': 128,
+      'nameNative': 128,
+    }.entries) {
+      expect(_map(properties[field]), {
+        'maxLength': maximum,
+        'type': nullableString,
+      });
+    }
+    expect(_map(properties['profileImageUrl']), {
+      'format': 'uri',
+      'maxLength': 1024,
+      'type': nullableString,
+    });
+    expect(_map(properties['countryCode']), {
+      'pattern': r'^[A-Z]{2}$',
+      'type': nullableString,
+    });
+    for (final MapEntry(key: field, value: (minimum, maximum)) in {
+      'birthYear': (1900, 2100),
+      'birthMonth': (1, 12),
+      'birthDay': (1, 31),
+    }.entries) {
+      expect(_map(properties[field]), {
+        'maximum': maximum,
+        'minimum': minimum,
+        'type': nullableInteger,
+      });
+    }
+    expect(_map(properties['backgroundId']), {'type': nullableInteger});
+    expect(_map(properties['gender']), {
+      'anyOf': [
+        for (final code in [0, 1, 2, 9])
+          {
+            'enum': [code],
+            'type': 'number',
+          },
+      ],
+    });
+    for (final field in [
+      'showCountry',
+      'showPronouns',
+      'showBirthday',
+      'showBirthYear',
+      'showName',
+      'showDiscord',
+      'showIcpc',
+    ]) {
+      expect(_map(properties[field]), {'type': 'boolean'});
+    }
+  });
+
   test('pins the viewer standing and its shared ban shapes', () {
     final standing = _get(contract, '/api/v4/account/standing');
     final bans = _get(contract, '/api/v4/account/bans');

@@ -169,6 +169,14 @@ final class SolvedApiV4Contract {
     );
   }
 
+  /// The viewer's own editable profile. It requires a user token with
+  /// `profile.personal` scope, so it is only exposed through
+  /// [SolvedAuthenticatedApiClient].
+  SolvedApiEndpoint<AccountProfileResult> accountProfile() => _endpoint(
+        path: 'account/profile',
+        decode: _decodeV4AccountProfile,
+      );
+
   /// The viewer's standing warnings and bans. It requires a user token with
   /// `standing` scope, so it is only exposed through
   /// [SolvedAuthenticatedApiClient].
@@ -3217,6 +3225,78 @@ AccountItem _decodeV4AccountItem(Map<String, dynamic> body) {
       }),
     ),
   );
+}
+
+AccountProfileResult _decodeV4AccountProfile(dynamic json) {
+  final body = _object(json, 'account profile');
+  final profile = _object(body['profile'], 'profile');
+  final countryCode = _boundedNullableString(profile, 'countryCode', null);
+  if (countryCode != null && !RegExp(r'^[A-Z]{2}$').hasMatch(countryCode)) {
+    throw const FormatException('Invalid profile.countryCode');
+  }
+  final gender = _number(profile['gender'], 'profile.gender');
+  if (gender != 0 && gender != 1 && gender != 2 && gender != 9) {
+    throw const FormatException('Unsupported profile.gender');
+  }
+  return AccountProfileResult(
+    profile: AccountProfile(
+      bio: _boundedNullableString(profile, 'bio', 2000),
+      profileImageUrl: _boundedNullableString(profile, 'profileImageUrl', 1024),
+      countryCode: countryCode,
+      showCountry: _boolean(profile['showCountry'], 'profile.showCountry'),
+      gender: gender,
+      customGender: _boundedNullableString(profile, 'customGender', 64),
+      pronouns: _boundedNullableString(profile, 'pronouns', 64),
+      showPronouns: _boolean(profile['showPronouns'], 'profile.showPronouns'),
+      birthYear: _boundedNullableInteger(profile, 'birthYear', 1900, 2100),
+      birthMonth: _boundedNullableInteger(profile, 'birthMonth', 1, 12),
+      birthDay: _boundedNullableInteger(profile, 'birthDay', 1, 31),
+      showBirthday: _boolean(profile['showBirthday'], 'profile.showBirthday'),
+      showBirthYear: _boolean(
+        profile['showBirthYear'],
+        'profile.showBirthYear',
+      ),
+      name: _boundedNullableString(profile, 'name', 128),
+      nameNative: _boundedNullableString(profile, 'nameNative', 128),
+      showName: _boolean(profile['showName'], 'profile.showName'),
+      showDiscord: _boolean(profile['showDiscord'], 'profile.showDiscord'),
+      showIcpc: _boolean(profile['showIcpc'], 'profile.showIcpc'),
+      backgroundId: _requiredNullableInteger(
+        profile,
+        'backgroundId',
+        'profile.backgroundId',
+      ),
+    ),
+  );
+}
+
+String? _boundedNullableString(
+  Map<String, dynamic> body,
+  String wireKey,
+  int? maximumLength,
+) {
+  final field = 'profile.$wireKey';
+  final value = _requiredNullableString(body, wireKey, field);
+  if (value != null &&
+      maximumLength != null &&
+      value.runes.length > maximumLength) {
+    throw FormatException('Expected at most $maximumLength for $field');
+  }
+  return value;
+}
+
+int? _boundedNullableInteger(
+  Map<String, dynamic> body,
+  String wireKey,
+  int minimum,
+  int maximum,
+) {
+  final field = 'profile.$wireKey';
+  final value = _requiredNullableInteger(body, wireKey, field);
+  if (value != null && (value < minimum || value > maximum)) {
+    throw FormatException('Expected $minimum through $maximum for $field');
+  }
+  return value;
 }
 
 AccountStandingResult _decodeV4AccountStanding(dynamic json) {

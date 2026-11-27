@@ -15,6 +15,7 @@ const _relevantPaths = <String>[
   '/api/v4/account/collection',
   '/api/v4/account/consents',
   '/api/v4/account/items',
+  '/api/v4/account/profile',
   '/api/v4/account/standing',
   '/api/v4/account/wallet',
   '/api/v4/account/wallet/history',

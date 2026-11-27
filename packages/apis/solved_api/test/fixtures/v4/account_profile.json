@@ -1,0 +1,23 @@
+{
+  "profile": {
+    "bio": "raw / 한 글",
+    "profileImageUrl": "not a URI",
+    "countryCode": "ZZ",
+    "showCountry": true,
+    "gender": 9,
+    "customGender": "",
+    "pronouns": "they/them",
+    "showPronouns": false,
+    "birthYear": 1900,
+    "birthMonth": 12,
+    "birthDay": 31,
+    "showBirthday": true,
+    "showBirthYear": false,
+    "name": "Example Person",
+    "nameNative": "예시",
+    "showName": true,
+    "showDiscord": false,
+    "showIcpc": true,
+    "backgroundId": -1
+  }
+}

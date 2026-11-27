@@ -28,6 +28,7 @@ enum SolvedAuthenticatedOperation {
   accountBookmarks,
   walletHistory,
   accountItems,
+  accountProfile,
 }
 
 enum SolvedAuthenticatedFailureKind {
@@ -174,6 +175,13 @@ final class SolvedAuthenticatedApiClient {
   Future<AccountItemsResult> accountItems({String? language}) => _get(
         SolvedAuthenticatedOperation.accountItems,
         () => _contract.accountItems(language: language),
+      );
+
+  /// The viewer's own editable profile fields and visibility flags. The token
+  /// needs the `profile.personal` scope.
+  Future<AccountProfileResult> accountProfile() => _get(
+        SolvedAuthenticatedOperation.accountProfile,
+        _contract.accountProfile,
       );
 
   /// The viewer's standing warnings and bans. The token needs the `standing`
