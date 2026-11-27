@@ -860,6 +860,26 @@ final class SolvedApiV4Contract {
     );
   }
 
+  /// The official schema declares no length bound for [language].
+  SolvedApiEndpoint<HelpArticleResult> helpArticle(
+    String slug, {
+    String? language,
+  }) {
+    if (slug.length > 128 ||
+        !RegExp(r'^[a-z0-9]+(?:-[a-z0-9]+)*$').hasMatch(slug)) {
+      throw ArgumentError.value(
+        slug,
+        'slug',
+        'Must be 1 through 128 lowercase letters, digits, and single hyphens',
+      );
+    }
+    return _endpoint(
+      path: 'help/$slug',
+      queryParameters: {if (language != null) 'lang': language},
+      decode: _decodeV4HelpArticle,
+    );
+  }
+
   SolvedApiEndpoint<PostDetailResult> helpPage(
     String path, {
     String? language,
@@ -1755,13 +1775,6 @@ num? _requiredNullableNumber(
 
 PostDetailResult _decodeV4PostDetail(dynamic json) {
   final body = _object(json, 'post');
-  final contentValue = _object(body['content'], 'content');
-  if (_string(contentValue['type'], 'content.type') != 'doc') {
-    throw const FormatException('Unsupported content.type');
-  }
-  if (contentValue.containsKey('content') && contentValue['content'] is! List) {
-    throw const FormatException('Expected list for content.content');
-  }
   final previousValue = _requiredValue(body, 'previous', 'previous');
   final nextValue = _requiredValue(body, 'next', 'next');
   return PostDetailResult(
@@ -1779,8 +1792,7 @@ PostDetailResult _decodeV4PostDetail(dynamic json) {
     ),
     title: _string(body['title'], 'title'),
     summary: _requiredNullableString(body, 'summary'),
-    content:
-        _immutableJsonValue(contentValue, 'content')! as Map<String, Object?>,
+    content: _decodeV4DocContent(body['content'], 'content'),
     publishedAt: _string(body['publishedAt'], 'publishedAt'),
     updatedAt: _string(body['updatedAt'], 'updatedAt'),
     pinned: _boolean(body['pinned'], 'pinned'),
@@ -1795,6 +1807,28 @@ PostDetailResult _decodeV4PostDetail(dynamic json) {
         ? null
         : _decodeV4PostLink(previousValue, 'previous'),
     next: nextValue == null ? null : _decodeV4PostLink(nextValue, 'next'),
+  );
+}
+
+Map<String, Object?> _decodeV4DocContent(Object? value, String field) {
+  final content = _object(value, field);
+  if (_string(content['type'], '$field.type') != 'doc') {
+    throw FormatException('Unsupported $field.type');
+  }
+  if (content.containsKey('content') && content['content'] is! List) {
+    throw FormatException('Expected list for $field.content');
+  }
+  return _immutableJsonValue(content, field)! as Map<String, Object?>;
+}
+
+HelpArticleResult _decodeV4HelpArticle(dynamic json) {
+  final body = _object(json, 'help article');
+  return HelpArticleResult(
+    slug: _string(body['slug'], 'slug'),
+    language: _string(body['language'], 'language'),
+    title: _string(body['title'], 'title'),
+    content: _decodeV4DocContent(body['content'], 'content'),
+    updatedAt: _string(body['updatedAt'], 'updatedAt'),
   );
 }
 

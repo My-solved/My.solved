@@ -4,6 +4,7 @@ export 'affiliation_detail_result.dart';
 export 'bookmark_folder_detail_result.dart';
 export 'bookmark_folders_result.dart';
 export 'official_achievement_item.dart';
+export 'help_article_result.dart';
 export 'notice_list_result.dart';
 export 'official_user_profile.dart';
 export 'post_detail_result.dart';

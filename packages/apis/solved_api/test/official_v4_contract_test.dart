@@ -3253,6 +3253,71 @@ void main() {
     expect(responses, _map(notice['responses']));
   });
 
+  test('pins the public help article and its shared document shape', () {
+    final article = _get(contract, '/api/v4/help/{slug}');
+    final notice = _get(contract, '/api/v4/posts/notice/{slug}');
+
+    expect(_accessClass(article), 'public');
+    expect(_map(article['x-access']).containsKey('scope'), isFalse);
+    expect(article.containsKey('security'), isFalse);
+    expect(article.containsKey('requestBody'), isFalse);
+    expect(
+      article['summary'],
+      'Read a help article in the requested language',
+    );
+    expect(_parameters(article), [
+      {
+        'in': 'path',
+        'name': 'slug',
+        'required': true,
+        'schema': {
+          'maxLength': 128,
+          'minLength': 1,
+          'pattern': r'^[a-z0-9]+(?:-[a-z0-9]+)*$',
+          'type': 'string',
+        },
+      },
+      {
+        'in': 'query',
+        'name': 'lang',
+        'required': false,
+        'schema': {'type': 'string'},
+      },
+    ]);
+    final responses = _map(article['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '404']);
+    expect(
+      _map(responses['200'])['description'],
+      'The article. `language` reports what was actually served, which may '
+      'differ from `lang`.',
+    );
+    expect(
+      _map(responses['404'])['description'],
+      'No such slug, or the slug exists but has no content yet.',
+    );
+    expect(
+      _jsonResponseSchema(article, '404'),
+      _jsonResponseSchema(notice, '404'),
+    );
+
+    final schema = _responseSchema(article);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    expect(_required(schema), [
+      'slug',
+      'language',
+      'title',
+      'content',
+      'updatedAt',
+    ]);
+    final properties = _properties(schema);
+    expect(properties.keys.length, 5);
+    for (final field in ['slug', 'language', 'title', 'updatedAt']) {
+      expect(_map(properties[field]), {'type': 'string'});
+    }
+    expect(
+        properties['content'], _properties(_responseSchema(notice))['content']);
+  });
+
   test('pins public OJ source lookups and their exact shared response', () {
     const operations = {
       '/api/v4/sources/oj/{ojId}/contests/{nativeId}':

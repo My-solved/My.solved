@@ -11,6 +11,7 @@ const _relevantPaths = <String>[
   '/api/v4/affiliations/{id}',
   '/api/v4/bookmarks',
   '/api/v4/health',
+  '/api/v4/help/{slug}',
   '/api/v4/me',
   '/api/v4/oauth/token',
   '/api/v4/posts/help/page',
