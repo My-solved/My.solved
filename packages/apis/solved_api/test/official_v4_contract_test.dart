@@ -5054,6 +5054,61 @@ void main() {
     );
   });
 
+  test('pins the viewer wallet without inferred relationships', () {
+    final wallet = _get(contract, '/api/v4/account/wallet');
+
+    expect(_accessClass(wallet), 'user');
+    expect(_accessScope(wallet), 'wallet');
+    expect(wallet.containsKey('security'), isFalse);
+    expect(wallet.containsKey('requestBody'), isFalse);
+    expect(wallet.containsKey('parameters'), isFalse);
+    expect(wallet['summary'], "The signed-in user's Stardust");
+    final responses = _map(wallet['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '401']);
+    expect(
+      _map(responses['200'])['description'],
+      "The balance, and today's capped earnings.",
+    );
+    expect(_map(responses['401'])['description'], 'Not signed in.');
+    expect(
+      _jsonResponseSchema(wallet, '401'),
+      _jsonResponseSchema(_get(contract, '/api/v4/affiliations/{id}'), '404'),
+    );
+    expect(_responseSchema(wallet), {
+      'properties': {
+        'earnings': {
+          'properties': {
+            'contribute': {'type': 'integer'},
+            'firstSolve': {'type': 'integer'},
+            'solve': {'type': 'integer'},
+            'welcomeMax': {'type': 'integer'},
+            'welcomePerSolve': {'type': 'integer'},
+          },
+          'required': [
+            'firstSolve',
+            'solve',
+            'contribute',
+            'welcomePerSolve',
+            'welcomeMax',
+          ],
+          'type': 'object',
+        },
+        'stardusts': {'type': 'integer'},
+        'today': {
+          'properties': {
+            'cap': {'type': 'integer'},
+            'day': {'type': 'string'},
+            'earned': {'type': 'integer'},
+          },
+          'required': ['day', 'earned', 'cap'],
+          'type': 'object',
+        },
+      },
+      'required': ['stardusts', 'today', 'earnings'],
+      'type': 'object',
+    });
+  });
+
   test('pins the viewer pending consents and their two slugs', () {
     final consents = _get(contract, '/api/v4/account/consents');
 

@@ -135,6 +135,13 @@ final class SolvedApiV4Contract {
         decode: _decodeV4AccountConsents,
       );
 
+  /// The viewer's Stardust wallet. It requires a user token with `wallet`
+  /// scope, so it is only exposed through [SolvedAuthenticatedApiClient].
+  SolvedApiEndpoint<AccountWalletResult> accountWallet() => _endpoint(
+        path: 'account/wallet',
+        decode: _decodeV4AccountWallet,
+      );
+
   /// The viewer's per-tag progress. It requires a user token with `solves`
   /// scope, so it is only exposed through [SolvedAuthenticatedApiClient].
   SolvedApiEndpoint<TagProgressResult> tagProgress() => _endpoint(
@@ -3013,6 +3020,30 @@ RankingLeaderboardResult _decodeV4RankingLeaderboard(dynamic json) {
           'items[]',
         ),
       ),
+    ),
+  );
+}
+
+AccountWalletResult _decodeV4AccountWallet(dynamic json) {
+  final body = _object(json, 'account wallet');
+  final today = _object(body['today'], 'today');
+  final earnings = _object(body['earnings'], 'earnings');
+  return AccountWalletResult(
+    stardusts: _integer(body['stardusts'], 'stardusts'),
+    today: WalletToday(
+      day: _string(today['day'], 'today.day'),
+      earned: _integer(today['earned'], 'today.earned'),
+      cap: _integer(today['cap'], 'today.cap'),
+    ),
+    earnings: WalletEarnings(
+      firstSolve: _integer(earnings['firstSolve'], 'earnings.firstSolve'),
+      solve: _integer(earnings['solve'], 'earnings.solve'),
+      contribute: _integer(earnings['contribute'], 'earnings.contribute'),
+      welcomePerSolve: _integer(
+        earnings['welcomePerSolve'],
+        'earnings.welcomePerSolve',
+      ),
+      welcomeMax: _integer(earnings['welcomeMax'], 'earnings.welcomeMax'),
     ),
   );
 }
