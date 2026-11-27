@@ -1,0 +1,36 @@
+{
+  "slug": "privacy",
+  "version": "20240714",
+  "label": "v3",
+  "announcedAt": null,
+  "effectiveAt": "not a date",
+  "language": "en",
+  "title": "",
+  "content": {
+    "format": "markdown",
+    "body": "# raw / 한 글\n<script>not sanitized</script>"
+  },
+  "revisedAt": "2026-13-45",
+  "isCurrent": false,
+  "currentLabel": "v4",
+  "versions": [
+    {
+      "version": "beta",
+      "label": "",
+      "announcedAt": "x",
+      "effectiveAt": ""
+    },
+    {
+      "version": "20240714",
+      "label": "v3",
+      "announcedAt": null,
+      "effectiveAt": "y"
+    },
+    {
+      "version": "beta",
+      "label": "",
+      "announcedAt": "x",
+      "effectiveAt": ""
+    }
+  ]
+}

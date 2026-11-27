@@ -860,6 +860,24 @@ final class SolvedApiV4Contract {
     );
   }
 
+  SolvedApiEndpoint<PolicyResult> policy(
+    PolicySlug slug, {
+    String? language,
+  }) {
+    if (language != null && language.runes.length > 16) {
+      throw ArgumentError.value(
+        language,
+        'language',
+        'Must not exceed 16 characters',
+      );
+    }
+    return _endpoint(
+      path: 'policies/${slug.value}',
+      queryParameters: {if (language != null) 'lang': language},
+      decode: _decodeV4Policy,
+    );
+  }
+
   /// The official schema declares no length bound for [language].
   SolvedApiEndpoint<HelpArticleResult> helpArticle(
     String slug, {
@@ -1819,6 +1837,66 @@ Map<String, Object?> _decodeV4DocContent(Object? value, String field) {
     throw FormatException('Expected list for $field.content');
   }
   return _immutableJsonValue(content, field)! as Map<String, Object?>;
+}
+
+PolicyResult _decodeV4Policy(dynamic json) {
+  final body = _object(json, 'policy');
+  return PolicyResult(
+    slug: switch (_string(body['slug'], 'slug')) {
+      'tos' => PolicySlug.tos,
+      'tos_recurring' => PolicySlug.tosRecurring,
+      'privacy' => PolicySlug.privacy,
+      'chrome_privacy' => PolicySlug.chromePrivacy,
+      'guideline' => PolicySlug.guideline,
+      'rules' => PolicySlug.rules,
+      'developer_terms' => PolicySlug.developerTerms,
+      'partner_terms' => PolicySlug.partnerTerms,
+      _ => throw const FormatException('Unsupported slug'),
+    },
+    version: _string(body['version'], 'version'),
+    label: _string(body['label'], 'label'),
+    announcedAt: _requiredNullableString(body, 'announcedAt'),
+    effectiveAt: _string(body['effectiveAt'], 'effectiveAt'),
+    language: _string(body['language'], 'language'),
+    title: _string(body['title'], 'title'),
+    content: _decodeV4PolicyContent(_object(body['content'], 'content')),
+    revisedAt: _requiredNullableString(body, 'revisedAt'),
+    isCurrent: _boolean(body['isCurrent'], 'isCurrent'),
+    currentLabel: _requiredNullableString(body, 'currentLabel'),
+    versions: List<PolicyVersion>.unmodifiable(
+      _list(body['versions'], 'versions').map((value) {
+        final version = _object(value, 'versions[]');
+        return PolicyVersion(
+          version: _string(version['version'], 'versions[].version'),
+          label: _string(version['label'], 'versions[].label'),
+          announcedAt: _requiredNullableString(
+            version,
+            'announcedAt',
+            'versions[].announcedAt',
+          ),
+          effectiveAt: _string(
+            version['effectiveAt'],
+            'versions[].effectiveAt',
+          ),
+        );
+      }),
+    ),
+  );
+}
+
+PolicyContent _decodeV4PolicyContent(Map<String, dynamic> body) {
+  switch (_string(body['format'], 'content.format')) {
+    case 'markdown':
+      return PolicyMarkdownContent(
+        body: _string(body['body'], 'content.body'),
+      );
+    case 'tiptap':
+      return PolicyTiptapContent(
+        doc: _decodeV4DocContent(body['doc'], 'content.doc'),
+      );
+    default:
+      throw const FormatException('Unsupported content.format');
+  }
 }
 
 HelpArticleResult _decodeV4HelpArticle(dynamic json) {

@@ -3318,6 +3318,136 @@ void main() {
         properties['content'], _properties(_responseSchema(notice))['content']);
   });
 
+  test('pins the public policy and its content union', () {
+    final policy = _get(contract, '/api/v4/policies/{slug}');
+    final article = _get(contract, '/api/v4/help/{slug}');
+
+    expect(_accessClass(policy), 'public');
+    expect(_map(policy['x-access']).containsKey('scope'), isFalse);
+    expect(policy.containsKey('security'), isFalse);
+    expect(policy.containsKey('requestBody'), isFalse);
+    expect(
+      policy['summary'],
+      'Read the version of a policy in force now, or its soonest upcoming one '
+      'while none is',
+    );
+    const slugEnum = [
+      'tos',
+      'tos_recurring',
+      'privacy',
+      'chrome_privacy',
+      'guideline',
+      'rules',
+      'developer_terms',
+      'partner_terms',
+    ];
+    expect(_parameters(policy), [
+      {
+        'in': 'path',
+        'name': 'slug',
+        'required': true,
+        'schema': {'enum': slugEnum, 'type': 'string'},
+      },
+      {
+        'in': 'query',
+        'name': 'lang',
+        'required': false,
+        'schema': {'maxLength': 16, 'type': 'string'},
+      },
+    ]);
+    final responses = _map(policy['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '404']);
+    expect(
+      _map(responses['200'])['description'],
+      "The version's text. `language` reports what was served, which may "
+      'differ from `lang`.',
+    );
+    expect(
+      _map(responses['404'])['description'],
+      'No such document or version, or none published yet.',
+    );
+    expect(
+      _jsonResponseSchema(policy, '404'),
+      _jsonResponseSchema(article, '404'),
+    );
+
+    final schema = _responseSchema(policy);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    expect(_required(schema), [
+      'slug',
+      'version',
+      'label',
+      'announcedAt',
+      'effectiveAt',
+      'language',
+      'title',
+      'content',
+      'revisedAt',
+      'isCurrent',
+      'currentLabel',
+      'versions',
+    ]);
+    final properties = _properties(schema);
+    expect(properties.keys.length, 12);
+    expect(_map(properties['slug']), {'enum': slugEnum, 'type': 'string'});
+    for (final field in [
+      'version',
+      'label',
+      'effectiveAt',
+      'language',
+      'title',
+    ]) {
+      expect(_map(properties[field]), {'type': 'string'});
+    }
+    for (final field in ['announcedAt', 'revisedAt', 'currentLabel']) {
+      expect(_map(properties[field]), {
+        'type': ['string', 'null'],
+      });
+    }
+    expect(_map(properties['isCurrent']), {'type': 'boolean'});
+    expect(_map(properties['versions']), {
+      'items': {
+        'properties': {
+          'announcedAt': {
+            'type': ['string', 'null'],
+          },
+          'effectiveAt': {'type': 'string'},
+          'label': {'type': 'string'},
+          'version': {'type': 'string'},
+        },
+        'required': ['version', 'label', 'announcedAt', 'effectiveAt'],
+        'type': 'object',
+      },
+      'type': 'array',
+    });
+    expect(_map(properties['content']), {
+      'oneOf': [
+        {
+          'properties': {
+            'body': {'type': 'string'},
+            'format': {
+              'enum': ['markdown'],
+              'type': 'string',
+            },
+          },
+          'required': ['format', 'body'],
+          'type': 'object',
+        },
+        {
+          'properties': {
+            'doc': _properties(_responseSchema(article))['content'],
+            'format': {
+              'enum': ['tiptap'],
+              'type': 'string',
+            },
+          },
+          'required': ['format', 'doc'],
+          'type': 'object',
+        },
+      ],
+    });
+  });
+
   test('pins public OJ source lookups and their exact shared response', () {
     const operations = {
       '/api/v4/sources/oj/{ojId}/contests/{nativeId}':
