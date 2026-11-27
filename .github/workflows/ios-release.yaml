@@ -14,14 +14,14 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  FLUTTER_VERSION: "3.29.0"
+  FLUTTER_VERSION: "3.47.9"
 
 jobs:
   release:
     name: Build and submit to the App Store
     # A manual run must also be started from a release tag.
     if: github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 60
 
     steps:

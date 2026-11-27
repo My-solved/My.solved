@@ -16,7 +16,7 @@ dependencies:
   cupertino_icons: ^1.0.5
   equatable: ^2.0.5
   extended_image: ^8.1.0
-  fluttertoast: ^8.2.12
+  fluttertoast: ^9.1.0
   flutter_bloc: ^9.1.0
   flutter_local_notifications: ^17.2.3
   flutter_timezone: ^4.1.0
