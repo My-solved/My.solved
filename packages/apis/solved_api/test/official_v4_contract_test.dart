@@ -1727,6 +1727,86 @@ void main() {
     });
   });
 
+  test('pins the public vote summary and its shared shapes', () {
+    final summary = _get(
+      contract,
+      '/api/v4/problems/{problemId}/votes/summary',
+    );
+    final votes = _get(contract, '/api/v4/problems/{problemId}/votes');
+
+    expect(_accessClass(summary), 'public');
+    expect(_map(summary['x-access']).containsKey('scope'), isFalse);
+    expect(summary.containsKey('security'), isFalse);
+    expect(summary.containsKey('requestBody'), isFalse);
+    expect(
+      summary['summary'],
+      'Per-problem vote summary (time-series points + aggregate stats)',
+    );
+    expect(_parameters(summary), _parameters(votes).take(2).toList());
+    final responses = _map(summary['responses']);
+    expect(responses.keys.toList(growable: false), [
+      '200',
+      '401',
+      '403',
+      '404',
+    ]);
+    expect(
+      _map(responses['200'])['description'],
+      'Points and aggregate figures for the vote graph.',
+    );
+    for (final status in ['401', '403', '404']) {
+      expect(
+        _map(responses[status]),
+        _map(_map(votes['responses'])[status]),
+        reason: status,
+      );
+    }
+
+    final schema = _responseSchema(summary);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    expect(_required(schema), ['items', 'tagDistribution']);
+    final properties = _properties(schema);
+    expect(properties.keys.length, 2);
+    final voteProperties = _properties(
+      _map(_map(_properties(_responseSchema(votes))['items'])['items']),
+    );
+    const pointFields = [
+      'votedAt',
+      'level',
+      'weight',
+      'invalidated',
+      'notInCalculation',
+      'banned',
+      'cutoff',
+    ];
+    expect(_map(properties['items']), {
+      'items': {
+        'properties': {
+          for (final field in [...pointFields]..sort())
+            field: voteProperties[field],
+        },
+        'required': pointFields,
+        'type': 'object',
+      },
+      'type': 'array',
+    });
+    final searchTag = _map(_map(_properties(_map(_map(_properties(
+      _responseSchema(_get(contract, '/api/v4/problems')),
+    )['problems'])['items']))['tags'])['items']);
+    expect(_map(properties['tagDistribution']), {
+      'items': {
+        'properties': {
+          'count': {'type': 'number'},
+          'denominator': {'type': 'number'},
+          'tag': searchTag,
+        },
+        'required': ['tag', 'count', 'denominator'],
+        'type': 'object',
+      },
+      'type': 'array',
+    });
+  });
+
   test('pins the public random-problem operation and complete schema', () {
     final randomProblem = _get(
       contract,
