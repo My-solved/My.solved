@@ -41,6 +41,7 @@ const _relevantPaths = <String>[
   '/api/v4/users/{handle}/badge-stand',
   '/api/v4/users/{handle}/bookmarks',
   '/api/v4/users/{handle}/bookmarks/{slug}',
+  '/api/v4/users/{handle}/collection',
   '/api/v4/users/{handle}/activity/days',
   '/api/v4/users/{handle}/activity/feed',
   '/api/v4/users/{handle}/contributions',

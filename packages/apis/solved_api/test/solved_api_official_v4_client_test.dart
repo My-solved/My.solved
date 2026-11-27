@@ -100,6 +100,7 @@ void main() {
             '/solved/v4/users/index/bookmarks' => 'v4/bookmark_folders.json',
             '/solved/v4/users/index/bookmarks/dp_set' =>
               'v4/bookmark_folder_detail.json',
+            '/solved/v4/users/index/collection' => 'v4/user_collection.json',
             '/solved/v4/achievements' => 'v4/achievement_catalog.json',
             '/solved/v4/achievements/for-problem/1000' =>
               'v4/problem_achievements.json',
@@ -222,6 +223,11 @@ void main() {
             await client.v4UserBookmarks('index', page: 1);
         final BookmarkFolderDetailResult bookmarkFolder =
             await client.v4BookmarkFolderDetail('index', 'dp_set', page: 1);
+        final UserCollectionResult collection = await client.v4UserCollection(
+          'index',
+          kind: OfficialAchievementItemKind.background,
+          offset: 0,
+        );
         final AchievementCatalogResult achievementCatalog =
             await client.v4AchievementCatalog(language: '');
         final ProblemAchievementsResult problemAchievements =
@@ -504,6 +510,8 @@ void main() {
         expect(userBookmarks.folders.last.owner.tier, isNull);
         expect(bookmarkFolder.isFavorite, isNull);
         expect(bookmarkFolder.problems, hasLength(3));
+        expect(collection.counts.background, -2);
+        expect(collection.equippedBadge, isNull);
         expect(achievementCatalog.userCount, 0);
         expect(achievementCatalog.items, hasLength(2));
         expect(achievementCatalog.items.first.id, -1);
@@ -640,6 +648,10 @@ void main() {
             Uri.parse('https://proxy.example/solved/v4/bookmarks?page=1&q='),
             _uri('users/index/bookmarks', <String, String>{'page': '1'}),
             _uri('users/index/bookmarks/dp_set', <String, String>{'page': '1'}),
+            _uri(
+              'users/index/collection',
+              <String, String>{'kind': 'background', 'offset': '0'},
+            ),
             Uri.parse(
               'https://proxy.example/solved/v4/achievements?lang=',
             ),
@@ -659,7 +671,7 @@ void main() {
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(43));
+        expect(httpClient.requests, hasLength(44));
         expect(
           httpClient.requests[13].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
@@ -997,7 +1009,11 @@ void main() {
         await _captureFailure(client.v4BookmarkFolderDetail('index', 'dp')),
         isA<BookmarkRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(39));
+      expect(
+        await _captureFailure(client.v4UserCollection('index')),
+        isA<UserRequestFailed>(),
+      );
+      expect(httpClient.requests, hasLength(40));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -3392,6 +3408,89 @@ void main() {
       expect(httpClient.requests, hasLength(3));
       for (final request in httpClient.requests) {
         expect(request.url, _uri('users/index/bookmarks/dp'));
+      }
+    });
+
+    test('preserves omitted and explicit user-collection queries', () async {
+      handler = (_) async => _jsonResponse(fixture('v4/user_collection.json'));
+
+      await client.v4UserCollection('index');
+      await client.v4UserCollection(
+        'a b&한',
+        language: '',
+        kind: OfficialAchievementItemKind.badge,
+        sort: SolvedApiV4CollectionSort.name,
+        category: 'a&b',
+        query: '한 글',
+        offset: 0,
+      );
+
+      expect(
+        httpClient.requests.map((request) => request.url.toString()),
+        [
+          'https://proxy.example/solved/v4/users/index/collection',
+          'https://proxy.example/solved/v4/users/a%20b%26%ED%95%9C/collection?'
+              'lang=&kind=badge&sort=name&category=a%26b'
+              '&q=%ED%95%9C+%EA%B8%80&offset=0',
+        ],
+      );
+      for (final request in httpClient.requests) {
+        expect(request.method, 'GET');
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+        });
+        expect(request.bodyBytes, isEmpty);
+      }
+    });
+
+    test('rejects invalid user-collection arguments before transport', () {
+      expect(
+        () => client.v4UserCollection('index', offset: -1),
+        throwsA(
+          isA<ArgumentError>().having((error) => error.name, 'name', 'offset'),
+        ),
+      );
+      expect(
+        () => client.v4UserCollection('a/b'),
+        throwsA(
+          isA<ArgumentError>().having((error) => error.name, 'name', 'handle'),
+        ),
+      );
+      expect(httpClient.requests, isEmpty);
+    });
+
+    test('preserves user-collection malformed, 404 and 429 failures', () async {
+      handler = (_) async => _jsonResponse(jsonEncode({'items': null}));
+      final malformed = await _captureFailure(client.v4UserCollection('index'));
+      expect(malformed, isA<UserRequestFailed>());
+      expect(malformed.statusCode, 200);
+      expect(malformed.cause, isA<FormatException>());
+
+      for (final status in [404, 429]) {
+        handler = (_) async => _bytesResponse(
+              const <int>[0xff],
+              statusCode: status,
+              headers: <String, String>{
+                'content-type': 'text/plain',
+                if (status == 429) 'retry-after': '13',
+              },
+            );
+
+        final error = await _captureFailure(client.v4UserCollection('index'));
+
+        expect(error, isA<UserRequestFailed>());
+        expect(error.statusCode, status);
+        expect(error.cause, isNull);
+        expect(error.responseBody, isNull);
+        expect(
+          error.retryAfter,
+          status == 429 ? const Duration(seconds: 13) : isNull,
+        );
+        expect(error.isRetryable, status == 429);
+      }
+      expect(httpClient.requests, hasLength(3));
+      for (final request in httpClient.requests) {
+        expect(request.url, _uri('users/index/collection'));
       }
     });
 

@@ -2038,6 +2038,168 @@ void main() {
     });
   });
 
+  test('pins the public user collection and its shared item shape', () {
+    final collection = _get(contract, '/api/v4/users/{handle}/collection');
+
+    expect(_accessClass(collection), 'public');
+    expect(_map(collection['x-access']).containsKey('scope'), isFalse);
+    expect(collection.containsKey('security'), isFalse);
+    expect(collection.containsKey('requestBody'), isFalse);
+    expect(
+      collection['summary'],
+      'A page of the badges or backgrounds a user owns',
+    );
+    expect(_parameters(collection), [
+      {
+        'in': 'path',
+        'name': 'handle',
+        'required': true,
+        'schema': {'maxLength': 64, 'minLength': 1, 'type': 'string'},
+      },
+      {
+        'in': 'query',
+        'name': 'lang',
+        'required': false,
+        'schema': {'default': 'ko', 'maxLength': 16, 'type': 'string'},
+      },
+      {
+        'in': 'query',
+        'name': 'kind',
+        'required': false,
+        'schema': {
+          'default': 'badge',
+          'enum': ['badge', 'background'],
+          'type': 'string',
+        },
+      },
+      {
+        'in': 'query',
+        'name': 'sort',
+        'required': false,
+        'schema': {
+          'default': 'recent',
+          'enum': ['recent', 'rarity', 'name'],
+          'type': 'string',
+        },
+      },
+      {
+        'in': 'query',
+        'name': 'category',
+        'required': false,
+        'schema': {'maxLength': 64, 'type': 'string'},
+      },
+      {
+        'in': 'query',
+        'name': 'q',
+        'required': false,
+        'schema': {'maxLength': 64, 'type': 'string'},
+      },
+      {
+        'in': 'query',
+        'name': 'offset',
+        'required': false,
+        'schema': {
+          'default': 0,
+          'minimum': 0,
+          'type': ['integer', 'null'],
+        },
+      },
+    ]);
+    final responses = _map(collection['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '404']);
+    expect(
+      _map(responses['200'])['description'],
+      'Owned items of one kind, filtered and sorted.',
+    );
+    expect(_map(responses['404'])['description'], 'No such user.');
+    expect(
+      _jsonResponseSchema(collection, '404'),
+      _jsonResponseSchema(_get(contract, '/api/v4/affiliations/{id}'), '404'),
+    );
+
+    final schema = _responseSchema(collection);
+    expect(schema['type'], 'object');
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    expect(_required(schema), [
+      'items',
+      'total',
+      'nextOffset',
+      'counts',
+      'categories',
+      'equipped',
+      'equippedByKind',
+    ]);
+    final properties = _properties(schema);
+    expect(properties.keys.length, 7);
+    expect(_map(properties['total']), {'type': 'integer'});
+    expect(_map(properties['nextOffset']), {
+      'type': ['integer', 'null'],
+    });
+    expect(_map(properties['categories']), {
+      'items': {'type': 'string'},
+      'type': 'array',
+    });
+    expect(_map(properties['counts']), {
+      'properties': {
+        'background': {'type': 'integer'},
+        'badge': {'type': 'integer'},
+      },
+      'required': ['badge', 'background'],
+      'type': 'object',
+    });
+
+    const item = {
+      'properties': {
+        'acquiredAt': {
+          'type': ['string', 'null'],
+        },
+        'addedAt': {'type': 'string'},
+        'category': {'type': 'string'},
+        'equipped': {'type': 'boolean'},
+        'holderCount': {
+          'type': ['integer', 'null'],
+        },
+        'id': {'type': 'integer'},
+        'imageUrl': {'type': 'string'},
+        'key': {'type': 'string'},
+        'kind': {
+          'enum': ['badge', 'background'],
+          'type': 'string',
+        },
+        'name': {'type': 'string'},
+      },
+      'required': [
+        'kind',
+        'id',
+        'key',
+        'name',
+        'imageUrl',
+        'category',
+        'addedAt',
+        'equipped',
+        'acquiredAt',
+        'holderCount',
+      ],
+    };
+    expect(_map(properties['items']), {
+      'items': {...item, 'type': 'object'},
+      'type': 'array',
+    });
+    final nullableItem = {
+      ...item,
+      'type': ['object', 'null'],
+    };
+    expect(_map(properties['equipped']), nullableItem);
+    expect(_map(properties['equippedByKind']), {
+      'properties': {
+        'background': nullableItem,
+        'badge': nullableItem,
+      },
+      'required': ['badge', 'background'],
+      'type': 'object',
+    });
+  });
+
   test('pins the public affiliation board without inferred relations', () {
     final board = _get(contract, '/api/v4/rankings/affiliation-board');
 

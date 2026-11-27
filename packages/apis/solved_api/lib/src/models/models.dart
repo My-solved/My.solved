@@ -48,6 +48,7 @@ export 'source_groups_result.dart';
 export 'source_lookup_result.dart';
 export 'tag_detail_result.dart';
 export 'tag_search_item.dart';
+export 'user_collection_result.dart';
 export 'user_profile.dart';
 export 'user_search_item.dart';
 export 'user_search_result.dart';
