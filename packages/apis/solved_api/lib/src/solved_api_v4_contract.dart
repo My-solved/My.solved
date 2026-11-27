@@ -860,6 +860,32 @@ final class SolvedApiV4Contract {
     );
   }
 
+  SolvedApiEndpoint<PostDetailResult> notice(
+    String slug, {
+    String? language,
+  }) {
+    if (slug.length > 64 ||
+        !RegExp(r'^[a-z0-9]+(?:-[a-z0-9]+)*$').hasMatch(slug)) {
+      throw ArgumentError.value(
+        slug,
+        'slug',
+        'Must be 1 through 64 lowercase letters, digits, and single hyphens',
+      );
+    }
+    if (language != null && language.runes.length > 16) {
+      throw ArgumentError.value(
+        language,
+        'language',
+        'Must not exceed 16 characters',
+      );
+    }
+    return _endpoint(
+      path: 'posts/notice/$slug',
+      queryParameters: {if (language != null) 'lang': language},
+      decode: _decodeV4PostDetail,
+    );
+  }
+
   SolvedApiEndpoint<SiteStatsResult> siteStats() => _endpoint(
         path: 'site/stats',
         decode: _decodeV4SiteStats,
@@ -1695,6 +1721,59 @@ num? _requiredNullableNumber(
 ) {
   final value = _requiredValue(body, wireKey, field);
   return value == null ? null : _number(value, field);
+}
+
+PostDetailResult _decodeV4PostDetail(dynamic json) {
+  final body = _object(json, 'post');
+  final contentValue = _object(body['content'], 'content');
+  if (_string(contentValue['type'], 'content.type') != 'doc') {
+    throw const FormatException('Unsupported content.type');
+  }
+  if (contentValue.containsKey('content') && contentValue['content'] is! List) {
+    throw const FormatException('Expected list for content.content');
+  }
+  final previousValue = _requiredValue(body, 'previous', 'previous');
+  final nextValue = _requiredValue(body, 'next', 'next');
+  return PostDetailResult(
+    board: switch (_string(body['board'], 'board')) {
+      'notice' => PostBoard.notice,
+      'help' => PostBoard.help,
+      _ => throw const FormatException('Unsupported board'),
+    },
+    path: _string(body['path'], 'path'),
+    language: _string(body['language'], 'language'),
+    languages: List<String>.unmodifiable(
+      _list(body['languages'], 'languages').map(
+        (value) => _string(value, 'languages[]'),
+      ),
+    ),
+    title: _string(body['title'], 'title'),
+    summary: _requiredNullableString(body, 'summary'),
+    content:
+        _immutableJsonValue(contentValue, 'content')! as Map<String, Object?>,
+    publishedAt: _string(body['publishedAt'], 'publishedAt'),
+    updatedAt: _string(body['updatedAt'], 'updatedAt'),
+    pinned: _boolean(body['pinned'], 'pinned'),
+    coverImageUrl: _requiredNullableString(body, 'coverImageUrl'),
+    basisDate: _requiredNullableString(body, 'basisDate'),
+    breadcrumbs: List<PostLink>.unmodifiable(
+      _list(body['breadcrumbs'], 'breadcrumbs').map(
+        (value) => _decodeV4PostLink(value, 'breadcrumbs[]'),
+      ),
+    ),
+    previous: previousValue == null
+        ? null
+        : _decodeV4PostLink(previousValue, 'previous'),
+    next: nextValue == null ? null : _decodeV4PostLink(nextValue, 'next'),
+  );
+}
+
+PostLink _decodeV4PostLink(Object? value, String field) {
+  final body = _object(value, field);
+  return PostLink(
+    path: _string(body['path'], '$field.path'),
+    title: _string(body['title'], '$field.title'),
+  );
 }
 
 NoticeListResult _decodeV4NoticeList(dynamic json) {

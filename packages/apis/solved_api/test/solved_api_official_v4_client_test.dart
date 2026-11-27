@@ -90,6 +90,7 @@ void main() {
             '/solved/v4/search/suggest' => 'v4/search_suggestions.json',
             '/solved/v4/site/stats' => 'v4/site_stats.json',
             '/solved/v4/posts/notice' => 'v4/notice_list.json',
+            '/solved/v4/posts/notice/first' => 'v4/post_detail.json',
             '/solved/v4/sources/oj/boj/contests/round-1' =>
               'v4/source_lookup.json',
             '/solved/v4/sources/oj/boj/groups/team-1' =>
@@ -214,6 +215,7 @@ void main() {
             await client.v4RandomProblem(query: '');
         final SiteStatsResult siteStats = await client.v4SiteStats();
         final NoticeListResult notices = await client.v4Notices(page: 1);
+        final PostDetailResult notice = await client.v4Notice('first');
         final SourceLookupResult sourceContest =
             await client.v4SourceContest('boj', 'round-1');
         final SourceLookupResult sourceGroup =
@@ -507,6 +509,8 @@ void main() {
         expect(siteStats.usersByTier, [-3, 0, 0, 31, 7]);
         expect(notices.items.first.summary, 'raw / 한 글');
         expect(notices.items.last.coverImageUrl, isNull);
+        expect(notice.board, PostBoard.notice);
+        expect(notice.content['type'], 'doc');
         expect(sourceContest.id, -42.5);
         expect(sourceContest.id, isA<double>());
         expect(sourceGroup.id, -42.5);
@@ -666,6 +670,7 @@ void main() {
             ),
             _uri('site/stats'),
             _uri('posts/notice', <String, String>{'page': '1'}),
+            _uri('posts/notice/first'),
             _uri('sources/oj/boj/contests/round-1'),
             _uri('sources/oj/boj/groups/team-1'),
             _uri('sources'),
@@ -704,7 +709,7 @@ void main() {
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(48));
+        expect(httpClient.requests, hasLength(49));
         expect(
           httpClient.requests[13].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
@@ -1015,6 +1020,10 @@ void main() {
         isA<SiteRequestFailed>(),
       );
       expect(
+        await _captureFailure(client.v4Notice('first')),
+        isA<SiteRequestFailed>(),
+      );
+      expect(
         await _captureFailure(client.v4SourceContest('boj', 'contest')),
         isA<SourceRequestFailed>(),
       );
@@ -1062,7 +1071,7 @@ void main() {
         await _captureFailure(client.v4ProblemVoteSummary(1000)),
         isA<SearchRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(44));
+      expect(httpClient.requests, hasLength(45));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -3802,6 +3811,62 @@ void main() {
       expect(limited.retryAfter, const Duration(seconds: 9));
       expect(limited.isRetryable, isTrue);
       expect(httpClient.requests, hasLength(2));
+    });
+
+    test('sends notice requests and rejects bad slugs before transport',
+        () async {
+      handler = (_) async => _jsonResponse(fixture('v4/post_detail.json'));
+
+      await client.v4Notice('first');
+      await client.v4Notice('release-1', language: 'ko & en');
+      expect(() => client.v4Notice('First'), throwsArgumentError);
+
+      expect(
+        httpClient.requests.map((request) => request.url.toString()),
+        [
+          'https://proxy.example/solved/v4/posts/notice/first',
+          'https://proxy.example/solved/v4/posts/notice/release-1?'
+              'lang=ko+%26+en',
+        ],
+      );
+      for (final request in httpClient.requests) {
+        expect(request.method, 'GET');
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+        });
+        expect(request.bodyBytes, isEmpty);
+      }
+    });
+
+    test('preserves notice malformed, 404 and 429 failures', () async {
+      handler = (_) async => _jsonResponse(jsonEncode({'board': 'notice'}));
+      final malformed = await _captureFailure(client.v4Notice('first'));
+      expect(malformed, isA<SiteRequestFailed>());
+      expect(malformed.statusCode, 200);
+      expect(malformed.cause, isA<FormatException>());
+
+      for (final status in [404, 429]) {
+        handler = (_) async => _bytesResponse(
+              const <int>[0xff],
+              statusCode: status,
+              headers: <String, String>{
+                'content-type': 'text/plain',
+                if (status == 429) 'retry-after': '9',
+              },
+            );
+
+        final error = await _captureFailure(client.v4Notice('first'));
+
+        expect(error, isA<SiteRequestFailed>());
+        expect(error.statusCode, status);
+        expect(error.cause, isNull);
+        expect(
+          error.retryAfter,
+          status == 429 ? const Duration(seconds: 9) : isNull,
+        );
+        expect(error.isRetryable, status == 429);
+      }
+      expect(httpClient.requests, hasLength(3));
     });
 
     test('preserves public-bookmark 429 failure metadata', () async {
