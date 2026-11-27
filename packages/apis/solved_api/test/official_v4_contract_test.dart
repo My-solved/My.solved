@@ -5694,6 +5694,63 @@ void main() {
     expect(_map(responses['401']), _map(_map(read['responses'])['401']));
   });
 
+  test('pins adding a bookmark favorite as a bodyless POST', () {
+    final item = _map(
+      _map(contract['paths'])[
+          '/api/v4/account/bookmark-favorites/{handle}/{slug}'],
+    );
+    final add = _map(item['post']);
+    final remove = _map(item['delete']);
+    final folders = _get(contract, '/api/v4/account/bookmarks');
+
+    expect(item.keys.toList(growable: false), ['delete', 'post']);
+    expect(_accessClass(add), 'user');
+    expect(_accessScope(add), 'bookmarks.write');
+    expect(add.containsKey('security'), isFalse);
+    expect(add.containsKey('requestBody'), isFalse);
+    expect(
+      add['summary'],
+      "Add someone else's folder to the signed-in user's favorites",
+    );
+    expect(_parameters(add), [
+      {
+        'in': 'path',
+        'name': 'handle',
+        'required': true,
+        'schema': {'maxLength': 64, 'minLength': 1, 'type': 'string'},
+      },
+      {
+        'in': 'path',
+        'name': 'slug',
+        'required': true,
+        'schema': {'pattern': r'^[0-9a-z_]{1,32}$', 'type': 'string'},
+      },
+    ]);
+    final responses = _map(add['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '401', '404']);
+    expect(
+      _map(responses['200'])['description'],
+      'Favorited, or already was.',
+    );
+    expect(
+      _map(responses['404'])['description'],
+      "No such folder, it is private, or it is the caller's own.",
+    );
+    expect(
+      _map(responses['401']),
+      _map(_map(folders['responses'])['401']),
+    );
+    expect(_responseSchema(add), {
+      'properties': {
+        'favoriteCount': {'type': 'number'},
+        'isFavorite': {'type': 'boolean'},
+      },
+      'required': ['isFavorite', 'favoriteCount'],
+      'type': 'object',
+    });
+    expect(_responseSchema(remove), _responseSchema(add));
+  });
+
   test('pins the viewer standing and its shared ban shapes', () {
     final standing = _get(contract, '/api/v4/account/standing');
     final bans = _get(contract, '/api/v4/account/bans');

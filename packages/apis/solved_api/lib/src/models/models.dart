@@ -9,6 +9,7 @@ export 'account_wallet_result.dart';
 export 'achievement_catalog_result.dart';
 export 'achievement_holders_result.dart';
 export 'affiliation_detail_result.dart';
+export 'bookmark_favorite_state.dart';
 export 'bookmark_folder_detail_result.dart';
 export 'bookmark_folders_result.dart';
 export 'official_achievement_item.dart';
