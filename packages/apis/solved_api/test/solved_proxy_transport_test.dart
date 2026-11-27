@@ -176,6 +176,35 @@ void main() {
       expect(request.bodyBytes, isEmpty);
     });
 
+    test('encodes a Bearer GET query without other credentials', () async {
+      final httpClient = _RecordingClient(
+        (_) async => _response(
+          const <int>[],
+          headers: const <String, String>{
+            'content-type': 'application/json',
+          },
+        ),
+      );
+      final transport = _transport(httpClient);
+
+      await transport.getWithBearer(
+        relativePath: 'rankings/rivals',
+        queryParameters: const <String, String>{'page': '2', 'q': 'a b&한'},
+        authorization: SolvedBearerAuthorization.fromAccessToken('token'),
+      );
+
+      final request = httpClient.requests.single;
+      expect(
+        request.url.toString(),
+        'https://proxy.example/solved/v4/rankings/rivals?'
+        'page=2&q=a+b%26%ED%95%9C',
+      );
+      expect(request.headers['authorization'], 'Bearer token');
+      expect(request.headers['accept'], 'application/json');
+      expect(request.headers.containsKey('x-client-secret'), isFalse);
+      expect(request.bodyBytes, isEmpty);
+    });
+
     test('sends one bodyless public GET with an encoded typed query', () async {
       final httpClient = _RecordingClient(
         (_) async => _response(

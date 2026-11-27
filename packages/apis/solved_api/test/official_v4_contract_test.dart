@@ -4965,6 +4965,65 @@ void main() {
     );
   });
 
+  test('pins the user-scoped rival board to the leaderboard shapes', () {
+    final rivals = _get(contract, '/api/v4/rankings/rivals');
+    final users = _get(contract, '/api/v4/rankings/users');
+
+    expect(_accessClass(rivals), 'user');
+    expect(_accessScope(rivals), 'rivals');
+    expect(rivals.containsKey('security'), isFalse);
+    expect(rivals.containsKey('requestBody'), isFalse);
+    expect(rivals['summary'], "The viewer's rivals and the viewer, by rating");
+    expect(_parameters(rivals), [
+      {
+        'in': 'query',
+        'name': 'page',
+        'required': false,
+        'schema': {'default': 1, 'minimum': 1, 'type': 'integer'},
+      },
+    ]);
+    final responses = _map(rivals['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '401']);
+    expect(_map(responses['200'])['description'], 'One page of the board.');
+    expect(
+      _map(responses['401'])['description'],
+      "Not signed in: the board is the viewer's own.",
+    );
+    expect(
+      _jsonResponseSchema(rivals, '401'),
+      _jsonResponseSchema(_get(contract, '/api/v4/affiliations/{id}'), '404'),
+    );
+
+    final schema = _responseSchema(rivals);
+    final board = _responseSchema(users);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    expect(_required(schema), [
+      ..._required(board),
+      'rivalCount',
+      'reverseRivalCount',
+    ]);
+    final properties = Map<String, dynamic>.of(_properties(schema));
+    final boardProperties = _properties(board);
+    expect(properties.remove('rivalCount'), {'type': 'integer'});
+    expect(properties.remove('reverseRivalCount'), {'type': 'integer'});
+    final item = _map(_map(properties.remove('items'))['items']);
+    final boardItem = _map(_map(boardProperties['items'])['items']);
+    expect(
+      properties,
+      Map<String, dynamic>.of(boardProperties)..remove('items'),
+    );
+    expect(item['type'], 'object');
+    expect(_required(item), [
+      ..._required(boardItem),
+      'isRival',
+      'isReverseRival',
+    ]);
+    final itemProperties = Map<String, dynamic>.of(_properties(item));
+    expect(itemProperties.remove('isRival'), {'type': 'boolean'});
+    expect(itemProperties.remove('isReverseRival'), {'type': 'boolean'});
+    expect(itemProperties, _properties(boardItem));
+  });
+
   test('pins the public tag ranking to the shared leaderboard schema', () {
     final tag = _get(contract, '/api/v4/rankings/tags/{key}');
 
