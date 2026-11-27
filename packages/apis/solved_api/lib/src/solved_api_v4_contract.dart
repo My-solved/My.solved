@@ -423,6 +423,25 @@ final class SolvedApiV4Contract {
     );
   }
 
+  /// The raw official document marks [affiliationId] optional and nullable,
+  /// but a path segment cannot be absent or null. This follows the reviewed
+  /// proxy overlay, which requires a non-null integer without bounds.
+  SolvedApiEndpoint<RankingLeaderboardResult> rankingAffiliationUsers(
+    int affiliationId, {
+    int? page,
+  }) {
+    if (page != null) {
+      _positivePage(page);
+    }
+    return _endpoint(
+      path: 'rankings/affiliations/$affiliationId',
+      queryParameters: {
+        if (page != null) 'page': page.toString(),
+      },
+      decode: _decodeV4RankingLeaderboard,
+    );
+  }
+
   SolvedApiEndpoint<AffiliationDetailResult> affiliationDetail(
     int id, {
     String? language,
