@@ -361,6 +361,23 @@ final class SolvedApiV4Contract {
     );
   }
 
+  SolvedApiEndpoint<RankingLeaderboardResult> rankingUsers({
+    int? page,
+    SolvedApiV4UserSort? sort,
+  }) {
+    if (page != null) {
+      _positivePage(page);
+    }
+    return _endpoint(
+      path: 'rankings/users',
+      queryParameters: {
+        if (page != null) 'page': page.toString(),
+        if (sort != null) 'sort': sort.value,
+      },
+      decode: _decodeV4RankingLeaderboard,
+    );
+  }
+
   SolvedApiEndpoint<AffiliationDetailResult> affiliationDetail(
     int id, {
     String? language,
@@ -1516,6 +1533,66 @@ RankingTagsResult _decodeV4RankingTags(dynamic json) {
     ),
   );
 }
+
+RankingLeaderboardResult _decodeV4RankingLeaderboard(dynamic json) {
+  final body = _object(json, 'ranking leaderboard');
+  if (!body.containsKey('me')) {
+    throw const FormatException('Missing required field me');
+  }
+  final meValue = body['me'];
+  return RankingLeaderboardResult(
+    me: meValue == null
+        ? null
+        : _decodeV4RankingLeaderboardUser(
+            _object(meValue, 'me'),
+            'me',
+          ),
+    mePage: _requiredNullableInteger(body, 'mePage', 'mePage'),
+    total: _integer(body['total'], 'total'),
+    page: _integer(body['page'], 'page'),
+    pageSize: _integer(body['pageSize'], 'pageSize'),
+    items: List<RankingLeaderboardUser>.unmodifiable(
+      _list(body['items'], 'items').map(
+        (value) => _decodeV4RankingLeaderboardUser(
+          _object(value, 'items[]'),
+          'items[]',
+        ),
+      ),
+    ),
+  );
+}
+
+RankingLeaderboardUser _decodeV4RankingLeaderboardUser(
+  Map<String, dynamic> body,
+  String field,
+) =>
+    RankingLeaderboardUser(
+      id: _number(body['id'], '$field.id'),
+      handle: _string(body['handle'], '$field.handle'),
+      tier: _requiredNullableTier(body, '$field.tier'),
+      profileImageUrl: _requiredNullableString(
+        body,
+        'profileImageUrl',
+        '$field.profileImageUrl',
+      ),
+      rank: _integer(body['rank'], '$field.rank'),
+      rating: _integer(body['rating'], '$field.rating'),
+      solvedCount: _integer(body['solvedCount'], '$field.solvedCount'),
+      voteCount: _integer(body['voteCount'], '$field.voteCount'),
+      reputation: _integer(body['reputation'], '$field.reputation'),
+      userClass: _integer(body['class'], '$field.class'),
+      classPlus: _boolean(body['classPlus'], '$field.classPlus'),
+      tagRating: _requiredNullableInteger(
+        body,
+        'tagRating',
+        '$field.tagRating',
+      ),
+      globalRank: _requiredNullableInteger(
+        body,
+        'globalRank',
+        '$field.globalRank',
+      ),
+    );
 
 UserSearchResult _decodeV4UserSearch(dynamic json) {
   final body = _object(json, 'user search');

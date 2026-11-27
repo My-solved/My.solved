@@ -1729,6 +1729,231 @@
         }
       }
     },
+    "/api/v4/rankings/users": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "rating",
+              "enum": [
+                "rating",
+                "solved",
+                "contribution"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "properties": {
+                          "class": {
+                            "type": "integer"
+                          },
+                          "classPlus": {
+                            "type": "boolean"
+                          },
+                          "globalRank": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "handle": {
+                            "type": "string"
+                          },
+                          "id": {
+                            "type": "number"
+                          },
+                          "profileImageUrl": {
+                            "format": "uri",
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "rank": {
+                            "type": "integer"
+                          },
+                          "rating": {
+                            "type": "integer"
+                          },
+                          "reputation": {
+                            "type": "integer"
+                          },
+                          "solvedCount": {
+                            "type": "integer"
+                          },
+                          "tagRating": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "tier": {
+                            "maximum": 31,
+                            "minimum": 0,
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "voteCount": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "handle",
+                          "tier",
+                          "profileImageUrl",
+                          "rank",
+                          "rating",
+                          "solvedCount",
+                          "voteCount",
+                          "reputation",
+                          "class",
+                          "classPlus",
+                          "tagRating",
+                          "globalRank"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "me": {
+                      "properties": {
+                        "class": {
+                          "type": "integer"
+                        },
+                        "classPlus": {
+                          "type": "boolean"
+                        },
+                        "globalRank": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
+                        "handle": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "number"
+                        },
+                        "profileImageUrl": {
+                          "format": "uri",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "rank": {
+                          "type": "integer"
+                        },
+                        "rating": {
+                          "type": "integer"
+                        },
+                        "reputation": {
+                          "type": "integer"
+                        },
+                        "solvedCount": {
+                          "type": "integer"
+                        },
+                        "tagRating": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
+                        "tier": {
+                          "maximum": 31,
+                          "minimum": 0,
+                          "type": [
+                            "integer",
+                            "null"
+                          ]
+                        },
+                        "voteCount": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "handle",
+                        "tier",
+                        "profileImageUrl",
+                        "rank",
+                        "rating",
+                        "solvedCount",
+                        "voteCount",
+                        "reputation",
+                        "class",
+                        "classPlus",
+                        "tagRating",
+                        "globalRank"
+                      ],
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    },
+                    "mePage": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ]
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "pageSize": {
+                      "type": "integer"
+                    },
+                    "total": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "me",
+                    "mePage",
+                    "total",
+                    "page",
+                    "pageSize",
+                    "items"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "One page of the board."
+          }
+        },
+        "summary": "The overall ranking, by rating, solved count, or contributions",
+        "x-access": {
+          "class": "public"
+        }
+      }
+    },
     "/api/v4/rankings/users/search": {
       "get": {
         "x-access": {

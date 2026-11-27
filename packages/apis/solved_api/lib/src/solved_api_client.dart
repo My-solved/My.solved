@@ -490,6 +490,17 @@ class SolvedApiClient {
     );
   }
 
+  Future<RankingLeaderboardResult> v4RankingUsers({
+    int? page,
+    SolvedApiV4UserSort? sort,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.rankingUsers(page: page, sort: sort),
+      requestType: _RequestType.ranking,
+    );
+  }
+
   Future<RankingRegionsResult> v4RankingRegions() {
     final contract = _requireV4Contract();
     return _getV4(
