@@ -135,6 +135,23 @@ final class SolvedApiV4Contract {
         decode: _decodeV4AccountConsents,
       );
 
+  /// The viewer's own folders. It requires a user token with `bookmarks`
+  /// scope, so it is only exposed through [SolvedAuthenticatedApiClient].
+  SolvedApiEndpoint<AccountBookmarkFoldersResult> accountBookmarks({
+    int? problemId,
+  }) {
+    if (problemId != null && problemId < 1) {
+      throw ArgumentError.value(problemId, 'problemId', 'Must be at least 1');
+    }
+    return _endpoint(
+      path: 'account/bookmarks',
+      queryParameters: {
+        if (problemId != null) 'problemId': problemId.toString(),
+      },
+      decode: _decodeV4AccountBookmarkFolders,
+    );
+  }
+
   /// The viewer's standing warnings and bans. It requires a user token with
   /// `standing` scope, so it is only exposed through
   /// [SolvedAuthenticatedApiClient].
@@ -3052,6 +3069,24 @@ RankingLeaderboardResult _decodeV4RankingLeaderboard(dynamic json) {
           'items[]',
         ),
       ),
+    ),
+  );
+}
+
+AccountBookmarkFoldersResult _decodeV4AccountBookmarkFolders(dynamic json) {
+  final body = _object(json, 'account bookmark folders');
+  return AccountBookmarkFoldersResult(
+    folders: List<AccountBookmarkFolder>.unmodifiable(
+      _list(body['folders'], 'folders').map((value) {
+        final folder = _object(value, 'folders[]');
+        return AccountBookmarkFolder(
+          folder: _decodeV4BookmarkFolder(folder, 'folders[]'),
+          containsProblem: _boolean(
+            folder['containsProblem'],
+            'folders[].containsProblem',
+          ),
+        );
+      }),
     ),
   );
 }

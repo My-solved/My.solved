@@ -25,6 +25,7 @@ enum SolvedAuthenticatedOperation {
   accountBackgrounds,
   accountBans,
   accountStanding,
+  accountBookmarks,
 }
 
 enum SolvedAuthenticatedFailureKind {
@@ -150,6 +151,17 @@ final class SolvedAuthenticatedApiClient {
   Future<BookmarkFoldersResult> bookmarkFavorites({int? page}) => _get(
         SolvedAuthenticatedOperation.bookmarkFavorites,
         () => _contract.bookmarkFavorites(page: page),
+      );
+
+  /// Every folder the viewer owns, for the add-to-folder menu. The token
+  /// needs the `bookmarks` scope.
+  ///
+  /// An invalid [problemId] fails the returned future with an [ArgumentError]
+  /// before any request is sent.
+  Future<AccountBookmarkFoldersResult> accountBookmarks({int? problemId}) =>
+      _get(
+        SolvedAuthenticatedOperation.accountBookmarks,
+        () => _contract.accountBookmarks(problemId: problemId),
       );
 
   /// The viewer's standing warnings and bans. The token needs the `standing`

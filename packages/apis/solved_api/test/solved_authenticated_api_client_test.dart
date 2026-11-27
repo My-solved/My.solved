@@ -619,6 +619,42 @@ void main() {
       expect(error.kind, SolvedAuthenticatedFailureKind.invalidResponse);
     });
 
+    test('sends one token-bound viewer-folders GET', () async {
+      handler = (_) async =>
+          _jsonResponse(fixture('v4/account_bookmark_folders.json'));
+
+      final omitted = await client.accountBookmarks();
+      await client.accountBookmarks(problemId: 1000);
+
+      expect(omitted.folders.first.containsProblem, isTrue);
+      expect(httpClient.requests.map((request) => request.url.toString()), [
+        'https://proxy.example/solved/v4/account/bookmarks',
+        'https://proxy.example/solved/v4/account/bookmarks?problemId=1000',
+      ]);
+      for (final request in httpClient.requests) {
+        expect(request.followRedirects, isFalse);
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+          'authorization': 'Bearer access-token',
+        });
+        expect(request.bodyBytes, isEmpty);
+      }
+
+      await expectLater(
+        client.accountBookmarks(problemId: 0),
+        throwsA(
+          isA<ArgumentError>()
+              .having((error) => error.name, 'name', 'problemId'),
+        ),
+      );
+      expect(httpClient.requests, hasLength(2));
+
+      handler = (_) async => _jsonResponse('{"folders":[{}]}');
+      final error = await _captureFailure(client.accountBookmarks());
+      expect(error.operation, SolvedAuthenticatedOperation.accountBookmarks);
+      expect(error.kind, SolvedAuthenticatedFailureKind.invalidResponse);
+    });
+
     test('rejects an invalid rivals page before any request', () async {
       await expectLater(
         client.rivals(page: 0),
@@ -692,6 +728,7 @@ void main() {
       await expectLater(client.accountBackgrounds(), throwsStateError);
       await expectLater(client.accountBans(), throwsStateError);
       await expectLater(client.accountStanding(), throwsStateError);
+      await expectLater(client.accountBookmarks(), throwsStateError);
       expect(httpClient.requests, isEmpty);
     });
   });
