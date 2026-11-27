@@ -101,6 +101,7 @@ void main() {
             '/solved/v4/users/index/bookmarks/dp_set' =>
               'v4/bookmark_folder_detail.json',
             '/solved/v4/users/index/collection' => 'v4/user_collection.json',
+            '/solved/v4/problems/1000/reports' => 'v4/problem_reports.json',
             '/solved/v4/achievements' => 'v4/achievement_catalog.json',
             '/solved/v4/achievements/for-problem/1000' =>
               'v4/problem_achievements.json',
@@ -228,6 +229,8 @@ void main() {
           kind: OfficialAchievementItemKind.background,
           offset: 0,
         );
+        final ProblemReportsResult problemReports =
+            await client.v4ProblemReports(1000, sub: '');
         final AchievementCatalogResult achievementCatalog =
             await client.v4AchievementCatalog(language: '');
         final ProblemAchievementsResult problemAchievements =
@@ -512,6 +515,11 @@ void main() {
         expect(bookmarkFolder.problems, hasLength(3));
         expect(collection.counts.background, -2);
         expect(collection.equippedBadge, isNull);
+        expect(problemReports.items, hasLength(3));
+        expect(
+          problemReports.items[1].reason,
+          isA<ProblemReportIssueReason>(),
+        );
         expect(achievementCatalog.userCount, 0);
         expect(achievementCatalog.items, hasLength(2));
         expect(achievementCatalog.items.first.id, -1);
@@ -653,6 +661,9 @@ void main() {
               <String, String>{'kind': 'background', 'offset': '0'},
             ),
             Uri.parse(
+              'https://proxy.example/solved/v4/problems/1000/reports?sub=',
+            ),
+            Uri.parse(
               'https://proxy.example/solved/v4/achievements?lang=',
             ),
             Uri.parse(
@@ -671,7 +682,7 @@ void main() {
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(44));
+        expect(httpClient.requests, hasLength(45));
         expect(
           httpClient.requests[13].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
@@ -1013,7 +1024,11 @@ void main() {
         await _captureFailure(client.v4UserCollection('index')),
         isA<UserRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(40));
+      expect(
+        await _captureFailure(client.v4ProblemReports(1000)),
+        isA<SearchRequestFailed>(),
+      );
+      expect(httpClient.requests, hasLength(41));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -3491,6 +3506,81 @@ void main() {
       expect(httpClient.requests, hasLength(3));
       for (final request in httpClient.requests) {
         expect(request.url, _uri('users/index/collection'));
+      }
+    });
+
+    test('preserves omitted and explicit problem-report queries', () async {
+      handler = (_) async => _jsonResponse(fixture('v4/problem_reports.json'));
+
+      await client.v4ProblemReports(1000);
+      await client.v4ProblemReports(1000, sub: 'a&b', page: 2);
+
+      expect(
+        httpClient.requests.map((request) => request.url.toString()),
+        [
+          'https://proxy.example/solved/v4/problems/1000/reports',
+          'https://proxy.example/solved/v4/problems/1000/reports?'
+              'sub=a%26b&page=2',
+        ],
+      );
+      for (final request in httpClient.requests) {
+        expect(request.method, 'GET');
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+        });
+        expect(request.bodyBytes, isEmpty);
+      }
+    });
+
+    test('rejects invalid problem-report arguments before transport', () {
+      expect(
+        () => client.v4ProblemReports(0),
+        throwsA(
+          isA<ArgumentError>()
+              .having((error) => error.name, 'name', 'problemId'),
+        ),
+      );
+      expect(
+        () => client.v4ProblemReports(1, page: 0),
+        throwsA(
+          isA<ArgumentError>().having((error) => error.name, 'name', 'page'),
+        ),
+      );
+      expect(httpClient.requests, isEmpty);
+    });
+
+    test('preserves problem-report malformed, 404 and 429 failures', () async {
+      handler = (_) async => _jsonResponse(jsonEncode({'items': null}));
+      final malformed = await _captureFailure(client.v4ProblemReports(1000));
+      expect(malformed, isA<SearchRequestFailed>());
+      expect(malformed.statusCode, 200);
+      expect(malformed.cause, isA<FormatException>());
+
+      for (final status in [404, 429]) {
+        handler = (_) async => _bytesResponse(
+              const <int>[0xff],
+              statusCode: status,
+              headers: <String, String>{
+                'content-type': 'text/plain',
+                if (status == 429) 'retry-after': '11',
+              },
+            );
+
+        final error = await _captureFailure(client.v4ProblemReports(1000));
+
+        expect(error, isA<SearchRequestFailed>());
+        expect(error.statusCode, status);
+        expect(error.cause, isNull);
+        expect(error.responseBody, isNull);
+        expect(
+          error.retryAfter,
+          status == 429 ? const Duration(seconds: 11) : isNull,
+        );
+        expect(error.isRetryable, status == 429);
+      }
+      expect(httpClient.requests, hasLength(3));
+      for (final request in httpClient.requests) {
+        expect(request.url, _uri('problems/1000/reports'));
       }
     });
 

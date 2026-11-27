@@ -1382,6 +1382,172 @@ void main() {
     }
   });
 
+  test('pins public problem reports and their reason union', () {
+    final reports = _get(contract, '/api/v4/problems/{problemId}/reports');
+
+    expect(_accessClass(reports), 'public');
+    expect(_map(reports['x-access']).containsKey('scope'), isFalse);
+    expect(reports.containsKey('security'), isFalse);
+    expect(reports.containsKey('requestBody'), isFalse);
+    expect(
+      reports['summary'],
+      "A problem's reports, newest first (page size 10)",
+    );
+    expect(_parameters(reports), [
+      {
+        'in': 'path',
+        'name': 'problemId',
+        'required': true,
+        'schema': {'minimum': 1, 'type': 'integer'},
+      },
+      {
+        'in': 'query',
+        'name': 'sub',
+        'required': false,
+        'schema': {'default': '', 'type': 'string'},
+      },
+      {
+        'in': 'query',
+        'name': 'page',
+        'required': false,
+        'schema': {'default': 1, 'minimum': 1, 'type': 'integer'},
+      },
+    ]);
+    final responses = _map(reports['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '404']);
+    expect(
+      _map(responses['200'])['description'],
+      'One page of reports, with the staff decision on each.',
+    );
+    expect(_map(responses['404'])['description'], 'Problem not found.');
+    expect(
+      _jsonResponseSchema(reports, '404'),
+      _jsonResponseSchema(_get(contract, '/api/v4/affiliations/{id}'), '404'),
+    );
+
+    final schema = _responseSchema(reports);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    expect(_required(schema), ['items', 'total', 'page', 'pageSize']);
+    final properties = _properties(schema);
+    expect(properties.keys.length, 4);
+    for (final field in ['total', 'page', 'pageSize']) {
+      expect(_map(properties[field]), {'type': 'number'});
+    }
+    final item = _map(_map(properties['items'])['items']);
+    expect(item['type'], 'object');
+    expect(item.containsKey('additionalProperties'), isFalse);
+    expect(_required(item), [
+      'id',
+      'user',
+      'reason',
+      'sameProblems',
+      'comment',
+      'status',
+      'statusChange',
+      'createdAt',
+    ]);
+    final itemProperties = _properties(item);
+    expect(itemProperties.keys.length, 8);
+    expect(_map(itemProperties['id']), {'type': 'number'});
+    expect(_map(itemProperties['comment']), {'type': 'string'});
+    expect(_map(itemProperties['createdAt']), {'type': 'string'});
+    expect(_map(itemProperties['status']), {
+      'enum': ['pending', 'accepted', 'rejected', 'resolved'],
+      'type': 'string',
+    });
+
+    final owner = _map(
+      _properties(_map(_map(_properties(_responseSchema(
+        _get(contract, '/api/v4/bookmarks'),
+      ))['folders'])['items']))['owner'],
+    );
+    final nullableUser = {
+      ...owner,
+      'type': ['object', 'null'],
+    };
+    expect(_map(itemProperties['user']), nullableUser);
+    expect(_map(itemProperties['statusChange']), {
+      'properties': {
+        'at': {'type': 'string'},
+        'by': nullableUser,
+        'comment': {
+          'type': ['string', 'null'],
+        },
+      },
+      'required': ['by', 'at', 'comment'],
+      'type': ['object', 'null'],
+    });
+    expect(_map(itemProperties['reason']), {
+      'oneOf': [
+        {
+          'properties': {
+            'problemIds': {
+              'items': {'exclusiveMinimum': 0, 'type': 'integer'},
+              'maxItems': 20,
+              'minItems': 1,
+              'type': 'array',
+            },
+            'type': {
+              'enum': ['same-problem'],
+              'type': 'string',
+            },
+          },
+          'required': ['type', 'problemIds'],
+          'type': 'object',
+        },
+        {
+          'properties': {
+            'type': {
+              'enum': ['issue'],
+              'type': 'string',
+            },
+            'url': {'format': 'uri', 'maxLength': 512, 'type': 'string'},
+          },
+          'required': ['type', 'url'],
+          'type': 'object',
+        },
+        {
+          'properties': {
+            'problemReportId': {'exclusiveMinimum': 0, 'type': 'integer'},
+            'type': {
+              'enum': ['issue-resolved'],
+              'type': 'string',
+            },
+          },
+          'required': ['type', 'problemReportId'],
+          'type': 'object',
+        },
+      ],
+    });
+    expect(_map(itemProperties['sameProblems']), {
+      'items': {
+        'properties': {
+          'effectiveVoteCount': {'type': 'number'},
+          'givesNoRating': {'type': 'boolean'},
+          'isStandard': {'type': 'boolean'},
+          'level': {'type': 'number'},
+          'problemId': {'type': 'number'},
+          'subId': {'type': 'string'},
+          'userStatus': {
+            'enum': ['solved', 'partial', 'tried', null],
+            'type': ['string', 'null'],
+          },
+        },
+        'required': [
+          'problemId',
+          'subId',
+          'level',
+          'effectiveVoteCount',
+          'givesNoRating',
+          'isStandard',
+          'userStatus',
+        ],
+        'type': 'object',
+      },
+      'type': 'array',
+    });
+  });
+
   test('pins the public random-problem operation and complete schema', () {
     final randomProblem = _get(
       contract,

@@ -8,6 +8,7 @@ export 'official_user_profile.dart';
 export 'problem_achievements_result.dart';
 export 'problem_detail_result.dart';
 export 'problem_no_rating_warning.dart';
+export 'problem_reports_result.dart';
 export 'problem_search_analysis_result.dart';
 export 'problem_search_contest.dart';
 export 'problem_search_diagnostic.dart';

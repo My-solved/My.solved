@@ -374,6 +374,27 @@ final class SolvedApiV4Contract {
     );
   }
 
+  SolvedApiEndpoint<ProblemReportsResult> problemReports(
+    int problemId, {
+    String? sub,
+    int? page,
+  }) {
+    if (problemId < 1) {
+      throw ArgumentError.value(problemId, 'problemId', 'Must be at least 1');
+    }
+    if (page != null) {
+      _positivePage(page);
+    }
+    return _endpoint(
+      path: 'problems/$problemId/reports',
+      queryParameters: {
+        if (sub != null) 'sub': sub,
+        if (page != null) 'page': page.toString(),
+      },
+      decode: _decodeV4ProblemReports,
+    );
+  }
+
   SolvedApiEndpoint<ProblemSearchResult> searchProblems(
     String query, {
     int page = 1,
@@ -1687,6 +1708,151 @@ ProblemNoRatingWarningProblem _decodeV4ProblemNoRatingWarningProblem(
       '$field.isStandard',
     ),
     userStatus: userStatus,
+  );
+}
+
+ProblemReportsResult _decodeV4ProblemReports(dynamic json) {
+  final body = _object(json, 'problem reports');
+  return ProblemReportsResult(
+    items: List<ProblemReport>.unmodifiable(
+      _list(body['items'], 'items').map(
+        (value) => _decodeV4ProblemReport(_object(value, 'items[]')),
+      ),
+    ),
+    total: _number(body['total'], 'total'),
+    page: _number(body['page'], 'page'),
+    pageSize: _number(body['pageSize'], 'pageSize'),
+  );
+}
+
+ProblemReport _decodeV4ProblemReport(Map<String, dynamic> body) {
+  const field = 'items[]';
+  final statusChangeValue =
+      _requiredValue(body, 'statusChange', '$field.statusChange');
+  final statusChange = statusChangeValue == null
+      ? null
+      : _object(statusChangeValue, '$field.statusChange');
+  return ProblemReport(
+    id: _number(body['id'], '$field.id'),
+    user: _requiredNullableProblemReportUser(body, 'user', '$field.user'),
+    reason: _decodeV4ProblemReportReason(
+      _object(body['reason'], '$field.reason'),
+    ),
+    sameProblems: List<ProblemReportSameProblem>.unmodifiable(
+      _list(body['sameProblems'], '$field.sameProblems').map(
+        (value) => _decodeV4ProblemReportSameProblem(
+          _object(value, '$field.sameProblems[]'),
+        ),
+      ),
+    ),
+    comment: _string(body['comment'], '$field.comment'),
+    status: switch (_string(body['status'], '$field.status')) {
+      'pending' => ProblemReportStatus.pending,
+      'accepted' => ProblemReportStatus.accepted,
+      'rejected' => ProblemReportStatus.rejected,
+      'resolved' => ProblemReportStatus.resolved,
+      _ => throw const FormatException('Unsupported items[].status'),
+    },
+    statusChange: statusChange == null
+        ? null
+        : ProblemReportStatusChange(
+            by: _requiredNullableProblemReportUser(
+              statusChange,
+              'by',
+              '$field.statusChange.by',
+            ),
+            at: _string(statusChange['at'], '$field.statusChange.at'),
+            comment: _requiredNullableString(
+              statusChange,
+              'comment',
+              '$field.statusChange.comment',
+            ),
+          ),
+    createdAt: _string(body['createdAt'], '$field.createdAt'),
+  );
+}
+
+ProblemReportReason _decodeV4ProblemReportReason(Map<String, dynamic> body) {
+  const field = 'items[].reason';
+  switch (_string(body['type'], '$field.type')) {
+    case 'same-problem':
+      final problemIds = List<int>.unmodifiable(
+        _list(body['problemIds'], '$field.problemIds').map((value) {
+          final id = _integer(value, '$field.problemIds[]');
+          if (id < 1) {
+            throw const FormatException(
+              'Expected positive integer for items[].reason.problemIds[]',
+            );
+          }
+          return id;
+        }),
+      );
+      if (problemIds.isEmpty || problemIds.length > 20) {
+        throw const FormatException(
+          'Expected 1 through 20 items[].reason.problemIds',
+        );
+      }
+      return ProblemReportSameProblemReason(problemIds: problemIds);
+    case 'issue':
+      final url = _string(body['url'], '$field.url');
+      if (url.runes.length > 512) {
+        throw const FormatException(
+          'Expected at most 512 characters for items[].reason.url',
+        );
+      }
+      return ProblemReportIssueReason(url: url);
+    case 'issue-resolved':
+      final id = _integer(body['problemReportId'], '$field.problemReportId');
+      if (id < 1) {
+        throw const FormatException(
+          'Expected positive integer for items[].reason.problemReportId',
+        );
+      }
+      return ProblemReportIssueResolvedReason(problemReportId: id);
+    default:
+      throw const FormatException('Unsupported items[].reason.type');
+  }
+}
+
+ProblemReportSameProblem _decodeV4ProblemReportSameProblem(
+  Map<String, dynamic> body,
+) {
+  const field = 'items[].sameProblems[]';
+  final userStatusValue =
+      _requiredValue(body, 'userStatus', '$field.userStatus');
+  return ProblemReportSameProblem(
+    problemId: _number(body['problemId'], '$field.problemId'),
+    subId: _string(body['subId'], '$field.subId'),
+    level: _number(body['level'], '$field.level'),
+    effectiveVoteCount: _number(
+      body['effectiveVoteCount'],
+      '$field.effectiveVoteCount',
+    ),
+    givesNoRating: _boolean(body['givesNoRating'], '$field.givesNoRating'),
+    isStandard: _boolean(body['isStandard'], '$field.isStandard'),
+    userStatus: userStatusValue == null
+        ? null
+        : _decodeV4ProblemUserStatus(userStatusValue, '$field.userStatus'),
+  );
+}
+
+ProblemReportUser? _requiredNullableProblemReportUser(
+  Map<String, dynamic> body,
+  String wireKey,
+  String field,
+) {
+  final value = _requiredValue(body, wireKey, field);
+  if (value == null) return null;
+  final user = _object(value, field);
+  return ProblemReportUser(
+    id: _number(user['id'], '$field.id'),
+    handle: _string(user['handle'], '$field.handle'),
+    tier: _requiredNullableTier(user, '$field.tier'),
+    profileImageUrl: _requiredNullableString(
+      user,
+      'profileImageUrl',
+      '$field.profileImageUrl',
+    ),
   );
 }
 
