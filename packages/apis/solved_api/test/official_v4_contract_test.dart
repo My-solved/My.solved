@@ -2218,6 +2218,103 @@ void main() {
     }
   });
 
+  test('pins the public source groups without inferred relations', () {
+    final sources = _get(contract, '/api/v4/sources');
+
+    expect(_accessClass(sources), 'public');
+    expect(sources.containsKey('security'), isFalse);
+    expect(sources.containsKey('requestBody'), isFalse);
+    expect(sources.containsKey('parameters'), isFalse);
+    expect(sources['summary'], 'The top-level source groups');
+    final responses = _map(sources['responses']);
+    expect(responses.keys.toList(growable: false), ['200']);
+    expect(
+        _map(responses['200'])['description'], 'Groups with anything in them.');
+
+    final schema = _responseSchema(sources);
+    expect(schema['type'], 'object');
+    expect(_required(schema), ['groups']);
+    expect(_properties(schema).keys.toList(growable: false), ['groups']);
+    final groups = _map(_properties(schema)['groups']);
+    expect(groups['type'], 'array');
+    for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+      expect(groups.containsKey(constraint), isFalse);
+    }
+
+    const order = {
+      'enum': ['ascending', 'random', 'mixed', null],
+      'type': ['string', 'null'],
+    };
+    final group = _map(groups['items']);
+    expect(group['type'], 'object');
+    expect(group.containsKey('additionalProperties'), isFalse);
+    expect(_required(group), [
+      'id',
+      'name',
+      'abbreviation',
+      'groupCount',
+      'contestCount',
+      'problemCount',
+      'solvedCount',
+      'level',
+      'order',
+    ]);
+    final groupProperties = _properties(group);
+    expect(groupProperties.keys.length, 9);
+    for (final field in ['id', 'groupCount', 'contestCount']) {
+      expect(_map(groupProperties[field]), {'type': 'number'});
+    }
+    for (final field in ['problemCount', 'solvedCount']) {
+      expect(_map(groupProperties[field]), {
+        'type': ['number', 'null'],
+      });
+    }
+    expect(_map(groupProperties['name']), {'type': 'string'});
+    expect(_map(groupProperties['abbreviation']), {
+      'type': ['string', 'null'],
+    });
+    expect(_map(groupProperties['order']), order);
+
+    final level = _map(groupProperties['level']);
+    expect(level['type'], ['object', 'null']);
+    expect(level.containsKey('additionalProperties'), isFalse);
+    expect(_required(level), [
+      'q25',
+      'q50',
+      'q75',
+      'tierCounts',
+      'ratedCount',
+      'order',
+      'progress',
+    ]);
+    final levelProperties = _properties(level);
+    expect(levelProperties.keys.length, 7);
+    for (final field in ['q25', 'q50', 'q75', 'ratedCount']) {
+      expect(_map(levelProperties[field]), {'type': 'integer'});
+    }
+    expect(_map(levelProperties['tierCounts']), {
+      'items': {'type': 'integer'},
+      'type': 'array',
+    });
+    expect(_map(levelProperties['order']), order);
+    expect(_map(levelProperties['progress']), {
+      'properties': {
+        'solved': {'type': 'integer'},
+        'through': {
+          'properties': {
+            'q25': {'type': 'boolean'},
+            'q50': {'type': 'boolean'},
+            'q75': {'type': 'boolean'},
+          },
+          'required': ['q25', 'q50', 'q75'],
+          'type': 'object',
+        },
+      },
+      'required': ['solved', 'through'],
+      'type': ['object', 'null'],
+    });
+  });
+
   test('pins the public problem-search analysis schema without inference', () {
     final analysis = _get(contract, '/api/v4/search/analyze');
 

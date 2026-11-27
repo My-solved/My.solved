@@ -620,6 +620,11 @@ final class SolvedApiV4Contract {
         decode: _decodeV4SourceLookup,
       );
 
+  SolvedApiEndpoint<SourceGroupsResult> sourceGroups() => _endpoint(
+        path: 'sources',
+        decode: _decodeV4SourceGroups,
+      );
+
   /// Fetches the complete official tag catalog and filters it locally.
   ///
   /// The v4 `/tags` endpoint accepts no query or page parameters. Matching is
@@ -1161,6 +1166,133 @@ SiteStatsResult _decodeV4SiteStats(dynamic json) {
       ),
     ),
   );
+}
+
+SourceGroupsResult _decodeV4SourceGroups(dynamic json) {
+  final body = _object(json, 'source groups');
+  return SourceGroupsResult(
+    groups: List<SourceGroupSummary>.unmodifiable(
+      _list(body['groups'], 'groups').map(
+        (value) => _decodeV4SourceGroupSummary(
+          _object(value, 'groups[]'),
+          'groups[]',
+        ),
+      ),
+    ),
+  );
+}
+
+SourceGroupSummary _decodeV4SourceGroupSummary(
+  Map<String, dynamic> body,
+  String field,
+) {
+  final levelValue = _requiredValue(body, 'level', '$field.level');
+  return SourceGroupSummary(
+    id: _number(body['id'], '$field.id'),
+    name: _string(body['name'], '$field.name'),
+    abbreviation: _requiredNullableString(
+      body,
+      'abbreviation',
+      '$field.abbreviation',
+    ),
+    groupCount: _number(body['groupCount'], '$field.groupCount'),
+    contestCount: _number(body['contestCount'], '$field.contestCount'),
+    problemCount: _requiredNullableNumber(
+      body,
+      'problemCount',
+      '$field.problemCount',
+    ),
+    solvedCount: _requiredNullableNumber(
+      body,
+      'solvedCount',
+      '$field.solvedCount',
+    ),
+    level: levelValue == null
+        ? null
+        : _decodeV4SourceLevel(
+            _object(levelValue, '$field.level'),
+            '$field.level',
+          ),
+    order: _requiredNullableSourceOrder(body, '$field.order'),
+  );
+}
+
+SourceLevelSummary _decodeV4SourceLevel(
+  Map<String, dynamic> body,
+  String field,
+) {
+  final progressValue = _requiredValue(body, 'progress', '$field.progress');
+  return SourceLevelSummary(
+    q25: _integer(body['q25'], '$field.q25'),
+    q50: _integer(body['q50'], '$field.q50'),
+    q75: _integer(body['q75'], '$field.q75'),
+    tierCounts: List<int>.unmodifiable(
+      _list(body['tierCounts'], '$field.tierCounts').map(
+        (value) => _integer(value, '$field.tierCounts[]'),
+      ),
+    ),
+    ratedCount: _integer(body['ratedCount'], '$field.ratedCount'),
+    order: _requiredNullableSourceOrder(body, '$field.order'),
+    progress: progressValue == null
+        ? null
+        : _decodeV4SourceLevelProgress(
+            _object(progressValue, '$field.progress'),
+            '$field.progress',
+          ),
+  );
+}
+
+SourceLevelProgress _decodeV4SourceLevelProgress(
+  Map<String, dynamic> body,
+  String field,
+) {
+  final through = _object(body['through'], '$field.through');
+  return SourceLevelProgress(
+    solved: _integer(body['solved'], '$field.solved'),
+    through: SourceLevelProgressThrough(
+      q25: _boolean(through['q25'], '$field.through.q25'),
+      q50: _boolean(through['q50'], '$field.through.q50'),
+      q75: _boolean(through['q75'], '$field.through.q75'),
+    ),
+  );
+}
+
+SourceProblemOrder? _requiredNullableSourceOrder(
+  Map<String, dynamic> body,
+  String field,
+) {
+  final value = _requiredValue(body, 'order', field);
+  if (value == null) return null;
+  switch (_string(value, field)) {
+    case 'ascending':
+      return SourceProblemOrder.ascending;
+    case 'random':
+      return SourceProblemOrder.random;
+    case 'mixed':
+      return SourceProblemOrder.mixed;
+    default:
+      throw FormatException('Unknown $field');
+  }
+}
+
+Object? _requiredValue(
+  Map<String, dynamic> body,
+  String wireKey,
+  String field,
+) {
+  if (!body.containsKey(wireKey)) {
+    throw FormatException('Missing required field $field');
+  }
+  return body[wireKey];
+}
+
+num? _requiredNullableNumber(
+  Map<String, dynamic> body,
+  String wireKey,
+  String field,
+) {
+  final value = _requiredValue(body, wireKey, field);
+  return value == null ? null : _number(value, field);
 }
 
 SourceLookupResult _decodeV4SourceLookup(dynamic json) {
