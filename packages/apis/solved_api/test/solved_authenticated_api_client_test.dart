@@ -954,6 +954,44 @@ void main() {
       expect(httpClient.requests, hasLength(5));
     });
 
+    test('sends one folder-order POST with a JSON body', () async {
+      handler = (_) async => _bytesResponse(const <int>[], statusCode: 204);
+
+      await client.reorderBookmarkFolders(['b', 'a']);
+
+      final request = httpClient.requests.single;
+      expect(request.method, 'POST');
+      expect(
+        request.url.toString(),
+        'https://proxy.example/solved/v4/account/bookmarks/order',
+      );
+      expect(request.followRedirects, isFalse);
+      expect(request.headers, const <String, String>{
+        'accept': 'application/json',
+        'authorization': 'Bearer access-token',
+        'content-type': 'application/json',
+      });
+      expect(utf8.decode(request.bodyBytes), '{"slugs":["b","a"]}');
+
+      await expectLater(
+        client.reorderBookmarkFolders(const []),
+        throwsA(
+          isA<ArgumentError>().having((error) => error.name, 'name', 'slugs'),
+        ),
+      );
+      expect(httpClient.requests, hasLength(1));
+
+      handler = (_) async => _jsonResponse('{}', statusCode: 409);
+      final error = await _captureFailure(client.reorderBookmarkFolders(['a']));
+      expect(
+        error.operation,
+        SolvedAuthenticatedOperation.reorderBookmarkFolders,
+      );
+      expect(error.kind, SolvedAuthenticatedFailureKind.unexpectedStatus);
+      expect(error.statusCode, 409);
+      expect(httpClient.requests, hasLength(2));
+    });
+
     test('keeps GET success at exactly 200', () async {
       handler = (_) async => _bytesResponse(const <int>[], statusCode: 204);
 
@@ -1051,6 +1089,7 @@ void main() {
         throwsStateError,
       );
       await expectLater(client.deleteBookmarkFolder('a'), throwsStateError);
+      await expectLater(client.reorderBookmarkFolders(['a']), throwsStateError);
       expect(httpClient.requests, isEmpty);
     });
   });

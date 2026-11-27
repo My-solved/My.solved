@@ -254,6 +254,36 @@ final class SolvedApiV4Contract {
         decode: _ignoreNoContent,
       );
 
+  /// Rearranges the viewer's folders into [slugs] order. It requires a user
+  /// token with `bookmarks.write` scope, so it is only exposed through
+  /// [SolvedAuthenticatedApiClient]. Success is exactly 204 with no content.
+  ///
+  /// [slugs] needs 1 through 20 entries, each matching `[0-9a-z_]{1,32}`.
+  /// Uniqueness and agreement with the viewer's folders are left to the
+  /// server.
+  SolvedApiMutation<void> reorderBookmarkFolders(List<String> slugs) {
+    if (slugs.isEmpty || slugs.length > 20) {
+      throw ArgumentError.value(
+        slugs,
+        'slugs',
+        'Must have 1 through 20 entries',
+      );
+    }
+    final body = <String, Object?>{
+      'slugs': [for (final slug in slugs) _bookmarkSlug(slug, 'slugs')],
+    };
+    return SolvedApiMutation(
+      method: SolvedApiMutationMethod.post,
+      proxy: SolvedApiTarget(
+        baseUri: _proxyBaseUri,
+        path: 'account/bookmarks/order',
+      ),
+      jsonBody: jsonEncode(body),
+      successStatus: 204,
+      decode: _ignoreNoContent,
+    );
+  }
+
   /// The viewer's standing warnings and bans. It requires a user token with
   /// `standing` scope, so it is only exposed through
   /// [SolvedAuthenticatedApiClient].

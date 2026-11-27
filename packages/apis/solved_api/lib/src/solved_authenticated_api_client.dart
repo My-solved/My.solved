@@ -34,6 +34,7 @@ enum SolvedAuthenticatedOperation {
   addBookmarkFavorite,
   removeBookmarkFavorite,
   deleteBookmarkFolder,
+  reorderBookmarkFolders,
 }
 
 enum SolvedAuthenticatedFailureKind {
@@ -351,6 +352,19 @@ final class SolvedAuthenticatedApiClient {
   Future<void> deleteBookmarkFolder(String slug) => _mutate(
         SolvedAuthenticatedOperation.deleteBookmarkFolder,
         () => _contract.deleteBookmarkFolder(slug),
+      );
+
+  /// Rearranges the viewer's folders into [slugs] order. The token needs the
+  /// `bookmarks.write` scope.
+  ///
+  /// Completes only on exactly 204 with no content. A 409 (`STALE_ORDER`:
+  /// [slugs] are not exactly the viewer's folders) fails as
+  /// [SolvedAuthenticatedFailureKind.unexpectedStatus]. Invalid [slugs] fail
+  /// the returned future with an [ArgumentError] before any request. The
+  /// request is sent once and never retried.
+  Future<void> reorderBookmarkFolders(List<String> slugs) => _mutate(
+        SolvedAuthenticatedOperation.reorderBookmarkFolders,
+        () => _contract.reorderBookmarkFolders(slugs),
       );
 
   Future<T> _get<T>(
