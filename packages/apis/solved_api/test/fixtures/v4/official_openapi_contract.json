@@ -6081,6 +6081,70 @@
         }
       }
     },
+    "/api/v4/oauth/revoke": {
+      "post": {
+        "description": "RFC 7009. `token` is an access or refresh token; either ends both, and every token of the same sign-in. The app authenticates as for the token endpoint. Answers 200 whether or not the token was known.",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {},
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Revoked, or never valid."
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "error_description": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "`invalid_request`: no `token`."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "error_description": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "`invalid_client`."
+          }
+        },
+        "summary": "Revoke a token: sign the user out of this app on that device",
+        "x-access": {
+          "class": "app"
+        }
+      }
+    },
     "/api/v4/oauth/token": {
       "post": {
         "x-access": {

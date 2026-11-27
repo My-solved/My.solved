@@ -6105,6 +6105,55 @@ void main() {
     expect(_map(responses['401']), _map(addResponses['401']));
   });
 
+  test('pins token revocation as the app-authenticated OAuth twin', () {
+    final paths = _map(contract['paths']);
+    final revokeItem = _map(paths['/api/v4/oauth/revoke']);
+    final revoke = _map(revokeItem['post']);
+    final token = _map(_map(paths['/api/v4/oauth/token'])['post']);
+
+    expect(revokeItem.keys.toList(growable: false), ['post']);
+    expect(revoke.keys.toList(growable: false), [
+      'description',
+      'responses',
+      'summary',
+      'x-access',
+    ]);
+    expect(revoke['x-access'], {'class': 'app'});
+    expect(
+      revoke['summary'],
+      'Revoke a token: sign the user out of this app on that device',
+    );
+    expect(
+      revoke['description'],
+      'RFC 7009. `token` is an access or refresh token; either ends both, '
+      'and every token of the same sign-in. The app authenticates as for the '
+      'token endpoint. Answers 200 whether or not the token was known.',
+    );
+    final responses = _map(revoke['responses']);
+    final tokenResponses = _map(token['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '400', '401']);
+    expect(_map(responses['200']), {
+      'content': {
+        'application/json': {
+          'schema': {'properties': <String, Object?>{}, 'type': 'object'},
+        },
+      },
+      'description': 'Revoked, or never valid.',
+    });
+    expect(
+      _map(responses['400'])['description'],
+      '`invalid_request`: no `token`.',
+    );
+    expect(_map(responses['401'])['description'], '`invalid_client`.');
+    for (final status in ['400', '401']) {
+      expect(
+        _map(responses[status])['content'],
+        _map(tokenResponses[status])['content'],
+        reason: status,
+      );
+    }
+  });
+
   test('pins the viewer standing and its shared ban shapes', () {
     final standing = _get(contract, '/api/v4/account/standing');
     final bans = _get(contract, '/api/v4/account/bans');
