@@ -67,6 +67,19 @@ enum SolvedApiV4BookmarkSort {
   final String value;
 }
 
+/// Problem sort orders supported by an official v4 bookmark folder.
+enum SolvedApiV4BookmarkProblemSort {
+  order('order'),
+  level('level'),
+  solved('solved'),
+  averageTry('average_try'),
+  id('id');
+
+  const SolvedApiV4BookmarkProblemSort(this.value);
+
+  final String value;
+}
+
 /// Sort orders supported by the official v4 achievement-holder listing.
 enum SolvedApiV4AchievementHolderSort {
   recent('recent'),
@@ -532,6 +545,40 @@ final class SolvedApiV4Contract {
         if (page != null) 'page': page.toString(),
       },
       decode: _decodeV4BookmarkFolders,
+    );
+  }
+
+  SolvedApiEndpoint<BookmarkFolderDetailResult> bookmarkFolderDetail(
+    String handle,
+    String slug, {
+    int? page,
+    SolvedApiV4BookmarkProblemSort? sort,
+    SolvedApiV4SearchDirection? direction,
+    String? query,
+  }) {
+    final handleSegment = _pathSegment(handle, 'handle');
+    if (!RegExp(r'^[0-9a-z_]{1,32}$').hasMatch(slug)) {
+      throw ArgumentError.value(slug, 'slug', 'Must match [0-9a-z_]{1,32}');
+    }
+    if (page != null && (page < 1 || page > 10000)) {
+      throw ArgumentError.value(page, 'page', 'Must be from 1 through 10000');
+    }
+    if (query != null && query.runes.length > 512) {
+      throw ArgumentError.value(
+        query,
+        'query',
+        'Must not exceed 512 characters',
+      );
+    }
+    return _endpoint(
+      path: 'users/$handleSegment/bookmarks/$slug',
+      queryParameters: {
+        if (page != null) 'page': page.toString(),
+        if (sort != null) 'sort': sort.value,
+        if (direction != null) 'direction': direction.value,
+        if (query != null) 'q': query,
+      },
+      decode: _decodeV4BookmarkFolderDetail,
     );
   }
 
@@ -1675,6 +1722,44 @@ BookmarkFoldersResult _decodeV4BookmarkFolders(dynamic json) {
           'folders[]',
         ),
       ),
+    ),
+    total: _number(body['total'], 'total'),
+    page: _number(body['page'], 'page'),
+    pageSize: _number(body['pageSize'], 'pageSize'),
+  );
+}
+
+BookmarkFolderDetailResult _decodeV4BookmarkFolderDetail(dynamic json) {
+  final body = _object(json, 'bookmark folder');
+  final isFavoriteValue = _requiredValue(body, 'isFavorite', 'isFavorite');
+  return BookmarkFolderDetailResult(
+    folder:
+        _decodeV4BookmarkFolder(_object(body['folder'], 'folder'), 'folder'),
+    isOwner: _boolean(body['isOwner'], 'isOwner'),
+    isFavorite: isFavoriteValue == null
+        ? null
+        : _boolean(isFavoriteValue, 'isFavorite'),
+    levels: List<BookmarkFolderLevel>.unmodifiable(
+      _list(body['levels'], 'levels').map((value) {
+        final level = _object(value, 'levels[]');
+        return BookmarkFolderLevel(
+          level: _number(level['level'], 'levels[].level'),
+          count: _number(level['count'], 'levels[].count'),
+          solved: _requiredNullableNumber(level, 'solved', 'levels[].solved'),
+        );
+      }),
+    ),
+    problems: List<BookmarkFolderProblem>.unmodifiable(
+      _list(body['problems'], 'problems').map((value) {
+        final item = _object(value, 'problems[]');
+        return BookmarkFolderProblem(
+          problem: _decodeV4ProblemSearchItem(
+            _object(item['problem'], 'problems[].problem'),
+          ),
+          note: _requiredNullableString(item, 'note', 'problems[].note'),
+          addedAt: _string(item['addedAt'], 'problems[].addedAt'),
+        );
+      }),
     ),
     total: _number(body['total'], 'total'),
     page: _number(body['page'], 'page'),

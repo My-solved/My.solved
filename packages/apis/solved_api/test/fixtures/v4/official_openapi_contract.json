@@ -6791,6 +6791,593 @@
         }
       }
     },
+    "/api/v4/users/{handle}/bookmarks/{slug}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "handle",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-z_]{1,32}$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "maximum": 10000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "default": "order",
+              "enum": [
+                "order",
+                "level",
+                "solved",
+                "average_try",
+                "id"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "direction",
+            "required": false,
+            "schema": {
+              "default": "asc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "maxLength": 512,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "folder": {
+                      "properties": {
+                        "color": {
+                          "enum": [
+                            "red",
+                            "violet",
+                            "blue",
+                            "teal",
+                            "lime",
+                            "yellow",
+                            "orange",
+                            null
+                          ],
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "createdAt": {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "favoriteCount": {
+                          "type": "number"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "owner": {
+                          "properties": {
+                            "handle": {
+                              "type": "string"
+                            },
+                            "id": {
+                              "type": "number"
+                            },
+                            "profileImageUrl": {
+                              "format": "uri",
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "tier": {
+                              "maximum": 31,
+                              "minimum": 0,
+                              "type": [
+                                "integer",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "handle",
+                            "tier",
+                            "profileImageUrl"
+                          ],
+                          "type": "object"
+                        },
+                        "problemCount": {
+                          "type": "number"
+                        },
+                        "slug": {
+                          "type": "string"
+                        },
+                        "solvedCount": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "updatedAt": {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "visibility": {
+                          "enum": [
+                            "private",
+                            "unlisted",
+                            "public"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "slug",
+                        "name",
+                        "description",
+                        "color",
+                        "visibility",
+                        "problemCount",
+                        "favoriteCount",
+                        "solvedCount",
+                        "owner",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "type": "object"
+                    },
+                    "isFavorite": {
+                      "type": [
+                        "boolean",
+                        "null"
+                      ]
+                    },
+                    "isOwner": {
+                      "type": "boolean"
+                    },
+                    "levels": {
+                      "items": {
+                        "properties": {
+                          "count": {
+                            "type": "number"
+                          },
+                          "level": {
+                            "type": "number"
+                          },
+                          "solved": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "level",
+                          "count",
+                          "solved"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "page": {
+                      "type": "number"
+                    },
+                    "pageSize": {
+                      "type": "number"
+                    },
+                    "problems": {
+                      "items": {
+                        "properties": {
+                          "addedAt": {
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "note": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "problem": {
+                            "properties": {
+                              "contests": {
+                                "items": {
+                                  "properties": {
+                                    "abbreviation": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ]
+                                    },
+                                    "displayId": {
+                                      "type": "string"
+                                    },
+                                    "id": {
+                                      "type": "number"
+                                    },
+                                    "name": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "displayId",
+                                    "name",
+                                    "abbreviation"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "effectiveVoteCount": {
+                                "type": "number"
+                              },
+                              "givesNoRating": {
+                                "type": "boolean"
+                              },
+                              "id": {
+                                "type": "number"
+                              },
+                              "isStandard": {
+                                "type": "boolean"
+                              },
+                              "level": {
+                                "type": "number"
+                              },
+                              "levelAverage": {
+                                "type": "number"
+                              },
+                              "levelStdev": {
+                                "type": "number"
+                              },
+                              "noRatingReasons": {
+                                "items": {
+                                  "enum": [
+                                    "unofficial",
+                                    "legacy",
+                                    "staff",
+                                    "unsettled"
+                                  ],
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              },
+                              "noRatingWarnings": {
+                                "items": {
+                                  "properties": {
+                                    "problem": {
+                                      "properties": {
+                                        "effectiveVoteCount": {
+                                          "type": "number"
+                                        },
+                                        "givesNoRating": {
+                                          "type": "boolean"
+                                        },
+                                        "isStandard": {
+                                          "type": "boolean"
+                                        },
+                                        "level": {
+                                          "type": "number"
+                                        },
+                                        "problemId": {
+                                          "type": "number"
+                                        },
+                                        "subId": {
+                                          "type": "string"
+                                        },
+                                        "userStatus": {
+                                          "enum": [
+                                            "solved",
+                                            "partial",
+                                            "tried",
+                                            null
+                                          ],
+                                          "type": [
+                                            "string",
+                                            "null"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "problemId",
+                                        "subId",
+                                        "level",
+                                        "effectiveVoteCount",
+                                        "givesNoRating",
+                                        "isStandard",
+                                        "userStatus"
+                                      ],
+                                      "type": [
+                                        "object",
+                                        "null"
+                                      ]
+                                    },
+                                    "type": {
+                                      "enum": [
+                                        "same",
+                                        "searchable",
+                                        "wrong-inputs",
+                                        "insufficient-conditions",
+                                        "no-special-judge",
+                                        "wrong-conditions",
+                                        "wrong-statement"
+                                      ],
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "type",
+                                    "problem"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "problemId": {
+                                "type": "number"
+                              },
+                              "solvedUserCount": {
+                                "type": "number"
+                              },
+                              "subId": {
+                                "type": "string"
+                              },
+                              "tags": {
+                                "items": {
+                                  "properties": {
+                                    "id": {
+                                      "type": "number"
+                                    },
+                                    "isMeta": {
+                                      "type": "boolean"
+                                    },
+                                    "key": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "key",
+                                    "isMeta"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "titles": {
+                                "items": {
+                                  "properties": {
+                                    "html": {
+                                      "type": "boolean"
+                                    },
+                                    "isOriginal": {
+                                      "type": "boolean"
+                                    },
+                                    "language": {
+                                      "type": "string"
+                                    },
+                                    "latex": {
+                                      "type": "boolean"
+                                    },
+                                    "title": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "language",
+                                    "title",
+                                    "isOriginal",
+                                    "latex",
+                                    "html"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "userStatus": {
+                                "enum": [
+                                  "solved",
+                                  "partial",
+                                  "tried",
+                                  null
+                                ],
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "viewerFolders": {
+                                "items": {
+                                  "properties": {
+                                    "color": {
+                                      "enum": [
+                                        "red",
+                                        "violet",
+                                        "blue",
+                                        "teal",
+                                        "lime",
+                                        "yellow",
+                                        "orange",
+                                        null
+                                      ],
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ]
+                                    },
+                                    "name": {
+                                      "type": "string"
+                                    },
+                                    "slug": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "slug",
+                                    "name",
+                                    "color"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "votedUserCount": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "problemId",
+                              "subId",
+                              "level",
+                              "levelAverage",
+                              "levelStdev",
+                              "isStandard",
+                              "votedUserCount",
+                              "effectiveVoteCount",
+                              "solvedUserCount",
+                              "givesNoRating",
+                              "noRatingReasons",
+                              "noRatingWarnings",
+                              "titles",
+                              "userStatus",
+                              "contests",
+                              "tags",
+                              "viewerFolders"
+                            ],
+                            "type": "object"
+                          }
+                        },
+                        "required": [
+                          "problem",
+                          "note",
+                          "addedAt"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "total": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "folder",
+                    "isOwner",
+                    "isFavorite",
+                    "levels",
+                    "problems",
+                    "total",
+                    "page",
+                    "pageSize"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The folder."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "No such folder, or it is private."
+          }
+        },
+        "summary": "One folder and a page of its problems",
+        "x-access": {
+          "class": "public",
+          "scope": "bookmarks"
+        }
+      }
+    },
     "/api/v4/users/{handle}/activity/days": {
       "get": {
         "x-access": {

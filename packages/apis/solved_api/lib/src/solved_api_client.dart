@@ -580,6 +580,28 @@ class SolvedApiClient {
     );
   }
 
+  Future<BookmarkFolderDetailResult> v4BookmarkFolderDetail(
+    String handle,
+    String slug, {
+    int? page,
+    SolvedApiV4BookmarkProblemSort? sort,
+    SolvedApiV4SearchDirection? direction,
+    String? query,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.bookmarkFolderDetail(
+        handle,
+        slug,
+        page: page,
+        sort: sort,
+        direction: direction,
+        query: query,
+      ),
+      requestType: _RequestType.bookmark,
+    );
+  }
+
   Future<RankingRegionsResult> v4RankingRegions() {
     final contract = _requireV4Contract();
     return _getV4(
