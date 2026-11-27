@@ -312,6 +312,34 @@ final class SolvedApiV4Contract {
     );
   }
 
+  /// Renames, describes, recolors, or changes the visibility of one of the
+  /// viewer's folders. It requires a user token with `bookmarks.write`
+  /// scope, so it is only exposed through [SolvedAuthenticatedApiClient].
+  SolvedApiMutation<BookmarkFolder> updateBookmarkFolder(
+    String slug,
+    BookmarkFolderPatch patch,
+  ) {
+    final path = 'account/bookmarks/${_bookmarkSlug(slug)}';
+    final newSlug = patch.slug;
+    final name = patch.name;
+    final description = patch.description;
+    final visibility = patch.visibility;
+    final body = <String, Object?>{
+      if (newSlug != null) 'slug': _bookmarkSlug(newSlug, 'patch.slug'),
+      if (name != null) 'name': _boundedText(name, 'patch.name', 1, 256),
+      if (description != null)
+        'description': _boundedText(description, 'patch.description', 0, 2048),
+    };
+    _putPatch(body, 'color', patch.color, (value) => value.value);
+    if (visibility != null) body['visibility'] = visibility.value;
+    return SolvedApiMutation(
+      method: SolvedApiMutationMethod.patch,
+      proxy: SolvedApiTarget(baseUri: _proxyBaseUri, path: path),
+      jsonBody: jsonEncode(body),
+      decode: _decodeV4MutatedBookmarkFolder,
+    );
+  }
+
   /// The viewer's standing warnings and bans. It requires a user token with
   /// `standing` scope, so it is only exposed through
   /// [SolvedAuthenticatedApiClient].
