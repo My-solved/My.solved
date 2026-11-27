@@ -5054,6 +5054,53 @@ void main() {
     );
   });
 
+  test('pins the viewer tag progress without joining its lists', () {
+    final progress = _get(contract, '/api/v4/me/tag-progress');
+
+    expect(_accessClass(progress), 'user');
+    expect(_accessScope(progress), 'solves');
+    expect(progress.containsKey('security'), isFalse);
+    expect(progress.containsKey('requestBody'), isFalse);
+    expect(progress.containsKey('parameters'), isFalse);
+    expect(
+      progress['summary'],
+      "The viewer's solved and tried counts per tag",
+    );
+    final responses = _map(progress['responses']);
+    expect(responses.keys.toList(growable: false), ['200']);
+    expect(
+      _map(responses['200'])['description'],
+      'Per tag the viewer has a problem row in.',
+    );
+    final schema = _responseSchema(progress);
+    expect(schema['type'], 'object');
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    expect(_required(schema), ['counts', 'items', 'ratings']);
+    Map<String, Object?> list(Map<String, Object?> properties) => {
+          'items': {
+            'properties': properties,
+            'required': properties.keys.toList(),
+            'type': 'object',
+          },
+          'type': 'array',
+        };
+    expect(_properties(schema), {
+      'counts': list({
+        'key': {'type': 'string'},
+        'problemCount': {'type': 'integer'},
+      }),
+      'items': list({
+        'key': {'type': 'string'},
+        'solved': {'type': 'integer'},
+        'tried': {'type': 'integer'},
+      }),
+      'ratings': list({
+        'key': {'type': 'string'},
+        'rating': {'type': 'integer'},
+      }),
+    });
+  });
+
   test('pins the user-scoped rival board to the leaderboard shapes', () {
     final rivals = _get(contract, '/api/v4/rankings/rivals');
     final users = _get(contract, '/api/v4/rankings/users');

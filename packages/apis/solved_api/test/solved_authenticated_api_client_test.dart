@@ -445,6 +445,31 @@ void main() {
       expect(error.statusCode, 403);
     });
 
+    test('sends one token-bound tag-progress GET', () async {
+      handler = (_) async => _jsonResponse(fixture('v4/tag_progress.json'));
+
+      final actual = await client.tagProgress();
+
+      expect(actual.ratings.single.rating, -50);
+      final request = httpClient.requests.single;
+      expect(
+        request.url,
+        Uri.parse('https://proxy.example/solved/v4/me/tag-progress'),
+      );
+      expect(request.method, 'GET');
+      expect(request.followRedirects, isFalse);
+      expect(request.headers, const <String, String>{
+        'accept': 'application/json',
+        'authorization': 'Bearer access-token',
+      });
+      expect(request.bodyBytes, isEmpty);
+
+      handler = (_) async => _jsonResponse('{"counts":[]}');
+      final error = await _captureFailure(client.tagProgress());
+      expect(error.operation, SolvedAuthenticatedOperation.tagProgress);
+      expect(error.kind, SolvedAuthenticatedFailureKind.invalidResponse);
+    });
+
     test('rejects an invalid rivals page before any request', () async {
       await expectLater(
         client.rivals(page: 0),
@@ -511,6 +536,7 @@ void main() {
       await expectLater(client.bookmarkFavorites(), throwsStateError);
       await expectLater(client.collection(), throwsStateError);
       await expectLater(client.myProblemVote(1), throwsStateError);
+      await expectLater(client.tagProgress(), throwsStateError);
       expect(httpClient.requests, isEmpty);
     });
   });
