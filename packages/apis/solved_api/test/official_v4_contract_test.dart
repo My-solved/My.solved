@@ -6018,6 +6018,33 @@ void main() {
     );
   });
 
+  test('pins removing bookmark problems with the shared add shapes', () {
+    final paths = _map(contract['paths']);
+    final item =
+        _map(paths['/api/v4/account/bookmarks/{slug}/problems/remove']);
+    final remove = _map(item['post']);
+    final add =
+        _map(_map(paths['/api/v4/account/bookmarks/{slug}/problems'])['post']);
+
+    expect(item.keys.toList(growable: false), ['post']);
+    expect(_accessClass(remove), 'user');
+    expect(_accessScope(remove), 'bookmarks.write');
+    expect(remove.containsKey('security'), isFalse);
+    expect(remove['summary'], 'Remove problems from a folder');
+    expect(_parameters(remove), _parameters(add));
+    expect(_map(remove['requestBody']), _map(add['requestBody']));
+    final responses = _map(remove['responses']);
+    final addResponses = _map(add['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '401', '404']);
+    expect(_map(responses['200'])['description'], 'Removed.');
+    expect(
+      _map(responses['200'])['content'],
+      _map(addResponses['200'])['content'],
+    );
+    expect(_map(responses['401']), _map(addResponses['401']));
+    expect(_map(responses['404']), _map(addResponses['404']));
+  });
+
   test('pins the viewer standing and its shared ban shapes', () {
     final standing = _get(contract, '/api/v4/account/standing');
     final bans = _get(contract, '/api/v4/account/bans');

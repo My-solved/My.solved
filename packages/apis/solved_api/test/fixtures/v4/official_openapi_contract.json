@@ -2215,6 +2215,265 @@
         }
       }
     },
+    "/api/v4/account/bookmarks/{slug}/problems/remove": {
+      "post": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "pattern": "^[0-9a-z_]{1,32}$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "problemIds": {
+                    "items": {
+                      "exclusiveMinimum": 0,
+                      "type": "integer"
+                    },
+                    "maxItems": 100,
+                    "minItems": 1,
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "problemIds"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "changed": {
+                      "type": "number"
+                    },
+                    "folder": {
+                      "properties": {
+                        "color": {
+                          "enum": [
+                            "red",
+                            "violet",
+                            "blue",
+                            "teal",
+                            "lime",
+                            "yellow",
+                            "orange",
+                            null
+                          ],
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "createdAt": {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "favoriteCount": {
+                          "type": "number"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "owner": {
+                          "properties": {
+                            "handle": {
+                              "type": "string"
+                            },
+                            "id": {
+                              "type": "number"
+                            },
+                            "profileImageUrl": {
+                              "format": "uri",
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "tier": {
+                              "maximum": 31,
+                              "minimum": 0,
+                              "type": [
+                                "integer",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "handle",
+                            "tier",
+                            "profileImageUrl"
+                          ],
+                          "type": "object"
+                        },
+                        "problemCount": {
+                          "type": "number"
+                        },
+                        "slug": {
+                          "type": "string"
+                        },
+                        "solvedCount": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "updatedAt": {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "visibility": {
+                          "enum": [
+                            "private",
+                            "unlisted",
+                            "public"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "slug",
+                        "name",
+                        "description",
+                        "color",
+                        "visibility",
+                        "problemCount",
+                        "favoriteCount",
+                        "solvedCount",
+                        "owner",
+                        "createdAt",
+                        "updatedAt"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "folder",
+                    "changed"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Removed."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Not signed in."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "No such folder."
+          }
+        },
+        "summary": "Remove problems from a folder",
+        "x-access": {
+          "class": "user",
+          "scope": "bookmarks.write"
+        }
+      }
+    },
     "/api/v4/account/collection": {
       "get": {
         "parameters": [
