@@ -59,6 +59,7 @@ void main() {
             '/solved/v4/users/index/activity/feed' =>
               'v4/user_activity_feed.json',
             '/solved/v4/users/index/reputation' => 'v4/user_reputation.json',
+            '/solved/v4/users/index/reputation/log' => 'v4/reputation_log.json',
             '/solved/v4/users/index/rating/history' =>
               'v4/user_rating_history.json',
             '/solved/v4/users/index/tags/number_theory/histogram' =>
@@ -128,6 +129,8 @@ void main() {
           'index',
           range: SolvedApiV4ReputationRange.year,
         );
+        final ProfileReputationLogResult reputationLog =
+            await client.v4UserReputationLog('index', month: '2026-11');
         final ProfileRatingHistoryResult ratingHistory =
             await client.v4UserRatingHistory(
           'index',
@@ -328,6 +331,8 @@ void main() {
         expect(activityFeed.nextCursor, '');
         expect(reputation.reputation, 314);
         expect(reputation.history.single.day, '2026-11-17');
+        expect(reputationLog.firstDay, '9999-99-99');
+        expect(reputationLog.days.first.items.first.problem?.level, 30);
         expect(reputation.history.single.value, 314);
         expect(reputation.today.contributions.count, 2);
         expect(reputation.today.contributions.max, 10);
@@ -532,6 +537,10 @@ void main() {
             ),
             _uri('users/index/reputation', <String, String>{'range': '1y'}),
             _uri(
+              'users/index/reputation/log',
+              <String, String>{'month': '2026-11'},
+            ),
+            _uri(
               'users/index/rating/history',
               <String, String>{'range': '90d'},
             ),
@@ -632,23 +641,23 @@ void main() {
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(39));
+        expect(httpClient.requests, hasLength(40));
         expect(
-          httpClient.requests[12].url.toString(),
+          httpClient.requests[13].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
         );
         expect(
-          httpClient.requests[24].url.toString(),
+          httpClient.requests[25].url.toString(),
           'https://proxy.example/solved/v4/search/suggest?'
           'topic=tag%26%ED%95%9C&value=',
         );
         expect(
-          httpClient.requests[25].url.toString(),
+          httpClient.requests[26].url.toString(),
           'https://proxy.example/solved/v4/search/analyze?'
           'q=tag%26%ED%95%9C',
         );
         expect(
-          httpClient.requests[26].url.toString(),
+          httpClient.requests[27].url.toString(),
           'https://proxy.example/solved/v4/search/random-problem?q=',
         );
         for (final request in httpClient.requests) {
@@ -810,6 +819,10 @@ void main() {
         isA<UserRequestFailed>(),
       );
       expect(
+        await _captureFailure(client.v4UserReputationLog('index')),
+        isA<UserRequestFailed>(),
+      );
+      expect(
         await _captureFailure(
           client.v4UserTagLevelHistogram('index', 'number_theory'),
         ),
@@ -954,7 +967,7 @@ void main() {
         await _captureFailure(client.v4SourceContestDetail(1)),
         isA<SourceRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(35));
+      expect(httpClient.requests, hasLength(36));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -1140,6 +1153,93 @@ void main() {
         _uri('users/index/tags/number_theory/histogram'),
       );
       expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves omitted and pattern reputation-log requests', () async {
+      handler = (_) async => _jsonResponse(fixture('v4/reputation_log.json'));
+
+      final omitted = await client.v4UserReputationLog('index');
+      final month = await client.v4UserReputationLog('a b&한', month: '0000-12');
+
+      expect(omitted.days, hasLength(2));
+      expect(month.firstDay, '9999-99-99');
+      expect(
+        httpClient.requests.map((request) => request.url.toString()),
+        [
+          'https://proxy.example/solved/v4/users/index/reputation/log',
+          'https://proxy.example/solved/v4/users/a%20b%26%ED%95%9C/'
+              'reputation/log?month=0000-12',
+        ],
+      );
+      for (final request in httpClient.requests) {
+        expect(request.method, 'GET');
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+        });
+        expect(request.bodyBytes, isEmpty);
+      }
+    });
+
+    test('rejects invalid reputation-log arguments before transport', () {
+      for (final month in ['', '2026-13', '2026-1']) {
+        expect(
+          () => client.v4UserReputationLog('index', month: month),
+          throwsA(
+            isA<ArgumentError>().having((error) => error.name, 'name', 'month'),
+          ),
+        );
+      }
+      expect(
+        () => client.v4UserReputationLog('a/b'),
+        throwsA(
+          isA<ArgumentError>().having((error) => error.name, 'name', 'handle'),
+        ),
+      );
+      expect(httpClient.requests, isEmpty);
+    });
+
+    test('wraps a malformed reputation log as a user failure', () async {
+      handler = (_) async => _jsonResponse(
+            jsonEncode({'days': <Object?>[]}),
+          );
+
+      final error = await _captureFailure(client.v4UserReputationLog('index'));
+
+      expect(error, isA<UserRequestFailed>());
+      expect(error.statusCode, 200);
+      expect(error.cause, isA<FormatException>());
+      expect(error.responseBody, isNull);
+      expect(
+        httpClient.requests.single.url,
+        _uri('users/index/reputation/log'),
+      );
+    });
+
+    test('preserves reputation-log 404 and 429 failures', () async {
+      for (final status in [404, 429]) {
+        handler = (_) async => _bytesResponse(
+              const <int>[0xff],
+              statusCode: status,
+              headers: <String, String>{
+                'content-type': 'text/plain',
+                if (status == 429) 'retry-after': '23',
+              },
+            );
+
+        final error =
+            await _captureFailure(client.v4UserReputationLog('index'));
+
+        expect(error, isA<UserRequestFailed>());
+        expect(error.statusCode, status);
+        expect(error.cause, isNull);
+        expect(error.responseBody, isNull);
+        expect(
+          error.retryAfter,
+          status == 429 ? const Duration(seconds: 23) : isNull,
+        );
+        expect(error.isRetryable, status == 429);
+      }
+      expect(httpClient.requests, hasLength(2));
     });
 
     test('preserves user-tag histogram 404 and 429 failures', () async {

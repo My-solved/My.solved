@@ -328,6 +328,17 @@ class SolvedApiClient {
     );
   }
 
+  Future<ProfileReputationLogResult> v4UserReputationLog(
+    String handle, {
+    String? month,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.userReputationLog(handle, month: month),
+      requestType: _RequestType.user,
+    );
+  }
+
   Future<ProfileRatingHistoryResult> v4UserRatingHistory(
     String handle, {
     SolvedApiV4RatingHistoryRange? range,
