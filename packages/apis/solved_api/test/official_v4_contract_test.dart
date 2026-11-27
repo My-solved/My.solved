@@ -3321,6 +3321,50 @@ void main() {
     );
   });
 
+  test('pins the affiliation ranking and its raw path anomaly', () {
+    final affiliation = _get(
+      contract,
+      '/api/v4/rankings/affiliations/{affiliationId}',
+    );
+
+    expect(_accessClass(affiliation), 'public');
+    expect(affiliation.containsKey('security'), isFalse);
+    expect(affiliation.containsKey('requestBody'), isFalse);
+    expect(affiliation['summary'], 'The ranking within one affiliation');
+    expect(_parameterNames(affiliation), ['affiliationId', 'page']);
+
+    // The raw document marks this path parameter optional and nullable. The
+    // client follows the reviewed proxy overlay: required non-null integer.
+    final parameters = _parameters(affiliation);
+    expect(parameters.first, {
+      'in': 'path',
+      'name': 'affiliationId',
+      'required': false,
+      'schema': {
+        'type': ['integer', 'null'],
+      },
+    });
+    expect(parameters.last, {
+      'in': 'query',
+      'name': 'page',
+      'required': false,
+      'schema': {'default': 1, 'minimum': 1, 'type': 'integer'},
+    });
+
+    final responses = _map(affiliation['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '404']);
+    expect(_map(responses['200'])['description'], 'One page of the board.');
+    expect(_map(responses['404'])['description'], 'No such affiliation.');
+    expect(
+      _responseSchema(affiliation),
+      _responseSchema(_get(contract, '/api/v4/rankings/users')),
+    );
+    expect(
+      _jsonResponseSchema(affiliation, '404'),
+      _jsonResponseSchema(_get(contract, '/api/v4/affiliations/{id}'), '404'),
+    );
+  });
+
   test('pins the tag catalog and standalone asset item envelope', () {
     final tags = _get(contract, '/api/v4/tags');
     expect(_parameterNames(tags), isEmpty);
