@@ -418,6 +418,20 @@ final class SolvedApiV4Contract {
     );
   }
 
+  SolvedApiEndpoint<ProblemVoteSummaryResult> problemVoteSummary(
+    int problemId, {
+    String? sub,
+  }) {
+    if (problemId < 1) {
+      throw ArgumentError.value(problemId, 'problemId', 'Must be at least 1');
+    }
+    return _endpoint(
+      path: 'problems/$problemId/votes/summary',
+      queryParameters: {if (sub != null) 'sub': sub},
+      decode: _decodeV4ProblemVoteSummary,
+    );
+  }
+
   SolvedApiEndpoint<ProblemSearchResult> searchProblems(
     String query, {
     int page = 1,
@@ -1731,6 +1745,45 @@ ProblemNoRatingWarningProblem _decodeV4ProblemNoRatingWarningProblem(
       '$field.isStandard',
     ),
     userStatus: userStatus,
+  );
+}
+
+ProblemVoteSummaryResult _decodeV4ProblemVoteSummary(dynamic json) {
+  final body = _object(json, 'problem vote summary');
+  return ProblemVoteSummaryResult(
+    items: List<ProblemVoteSummaryPoint>.unmodifiable(
+      _list(body['items'], 'items').map((value) {
+        final point = _object(value, 'items[]');
+        return ProblemVoteSummaryPoint(
+          votedAt: _string(point['votedAt'], 'items[].votedAt'),
+          level: _requiredNullableNumber(point, 'level', 'items[].level'),
+          weight: _number(point['weight'], 'items[].weight'),
+          invalidated: _boolean(point['invalidated'], 'items[].invalidated'),
+          notInCalculation: _boolean(
+            point['notInCalculation'],
+            'items[].notInCalculation',
+          ),
+          banned: _boolean(point['banned'], 'items[].banned'),
+          cutoff: _boolean(point['cutoff'], 'items[].cutoff'),
+        );
+      }),
+    ),
+    tagDistribution: List<ProblemVoteTagShare>.unmodifiable(
+      _list(body['tagDistribution'], 'tagDistribution').map((value) {
+        final share = _object(value, 'tagDistribution[]');
+        return ProblemVoteTagShare(
+          tag: _decodeV4ProblemSearchTag(
+            _object(share['tag'], 'tagDistribution[].tag'),
+            'tagDistribution[].tag',
+          ),
+          count: _number(share['count'], 'tagDistribution[].count'),
+          denominator: _number(
+            share['denominator'],
+            'tagDistribution[].denominator',
+          ),
+        );
+      }),
+    ),
   );
 }
 

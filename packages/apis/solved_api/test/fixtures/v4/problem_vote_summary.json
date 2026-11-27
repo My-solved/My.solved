@@ -1,0 +1,42 @@
+{
+  "items": [
+    {
+      "votedAt": "not a date",
+      "level": 12.5,
+      "weight": -1,
+      "invalidated": true,
+      "notInCalculation": false,
+      "banned": true,
+      "cutoff": false
+    },
+    {
+      "votedAt": "",
+      "level": null,
+      "weight": 0,
+      "invalidated": false,
+      "notInCalculation": true,
+      "banned": false,
+      "cutoff": true
+    }
+  ],
+  "tagDistribution": [
+    {
+      "tag": {
+        "id": 1,
+        "key": "math",
+        "isMeta": false
+      },
+      "count": 2.5,
+      "denominator": 0
+    },
+    {
+      "tag": {
+        "id": 1.5,
+        "key": "",
+        "isMeta": true
+      },
+      "count": -1,
+      "denominator": 3
+    }
+  ]
+}

@@ -103,6 +103,8 @@ void main() {
             '/solved/v4/users/index/collection' => 'v4/user_collection.json',
             '/solved/v4/problems/1000/reports' => 'v4/problem_reports.json',
             '/solved/v4/problems/1000/votes' => 'v4/problem_votes.json',
+            '/solved/v4/problems/1000/votes/summary' =>
+              'v4/problem_vote_summary.json',
             '/solved/v4/achievements' => 'v4/achievement_catalog.json',
             '/solved/v4/achievements/for-problem/1000' =>
               'v4/problem_achievements.json',
@@ -236,6 +238,8 @@ void main() {
           1000,
           sort: ProblemVoteSort.weight,
         );
+        final ProblemVoteSummaryResult voteSummary =
+            await client.v4ProblemVoteSummary(1000, sub: '');
         final AchievementCatalogResult achievementCatalog =
             await client.v4AchievementCatalog(language: '');
         final ProblemAchievementsResult problemAchievements =
@@ -527,6 +531,8 @@ void main() {
         );
         expect(problemVotes.markRefusal, ProblemVoteMarkRefusal.notSolved);
         expect(problemVotes.items.first.marks?.mine, ProblemVoteMark.unhelpful);
+        expect(voteSummary.items.last.level, isNull);
+        expect(voteSummary.tagDistribution.first.tag.key, 'math');
         expect(achievementCatalog.userCount, 0);
         expect(achievementCatalog.items, hasLength(2));
         expect(achievementCatalog.items.first.id, -1);
@@ -672,6 +678,9 @@ void main() {
             ),
             _uri('problems/1000/votes', <String, String>{'sort': 'weight'}),
             Uri.parse(
+              'https://proxy.example/solved/v4/problems/1000/votes/summary?sub=',
+            ),
+            Uri.parse(
               'https://proxy.example/solved/v4/achievements?lang=',
             ),
             Uri.parse(
@@ -690,7 +699,7 @@ void main() {
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(46));
+        expect(httpClient.requests, hasLength(47));
         expect(
           httpClient.requests[13].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
@@ -1040,7 +1049,11 @@ void main() {
         await _captureFailure(client.v4ProblemVotes(1000)),
         isA<SearchRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(42));
+      expect(
+        await _captureFailure(client.v4ProblemVoteSummary(1000)),
+        isA<SearchRequestFailed>(),
+      );
+      expect(httpClient.requests, hasLength(43));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -3675,6 +3688,63 @@ void main() {
         expect(request.url, _uri('problems/1000/votes'));
         expect(request.headers.containsKey('authorization'), isFalse);
       }
+    });
+
+    test('sends anonymous vote-summary requests and rejects bad ids', () async {
+      handler =
+          (_) async => _jsonResponse(fixture('v4/problem_vote_summary.json'));
+
+      await client.v4ProblemVoteSummary(1000);
+      await client.v4ProblemVoteSummary(1000, sub: 'a&b');
+      expect(() => client.v4ProblemVoteSummary(0), throwsArgumentError);
+
+      expect(
+        httpClient.requests.map((request) => request.url.toString()),
+        [
+          'https://proxy.example/solved/v4/problems/1000/votes/summary',
+          'https://proxy.example/solved/v4/problems/1000/votes/summary?'
+              'sub=a%26b',
+        ],
+      );
+      for (final request in httpClient.requests) {
+        expect(request.method, 'GET');
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+        });
+        expect(request.bodyBytes, isEmpty);
+      }
+    });
+
+    test('preserves vote-summary malformed and official failures', () async {
+      handler = (_) async => _jsonResponse(jsonEncode({'items': <Object?>[]}));
+      final malformed =
+          await _captureFailure(client.v4ProblemVoteSummary(1000));
+      expect(malformed, isA<SearchRequestFailed>());
+      expect(malformed.statusCode, 200);
+      expect(malformed.cause, isA<FormatException>());
+
+      for (final status in [401, 403, 404, 429]) {
+        handler = (_) async => _bytesResponse(
+              const <int>[0xff],
+              statusCode: status,
+              headers: <String, String>{
+                'content-type': 'text/plain',
+                if (status == 429) 'retry-after': '11',
+              },
+            );
+
+        final error = await _captureFailure(client.v4ProblemVoteSummary(1000));
+
+        expect(error, isA<SearchRequestFailed>(), reason: '$status');
+        expect(error.statusCode, status);
+        expect(error.cause, isNull);
+        expect(
+          error.retryAfter,
+          status == 429 ? const Duration(seconds: 11) : isNull,
+        );
+        expect(error.isRetryable, status == 429);
+      }
+      expect(httpClient.requests, hasLength(5));
     });
 
     test('preserves public-bookmark 429 failure metadata', () async {
