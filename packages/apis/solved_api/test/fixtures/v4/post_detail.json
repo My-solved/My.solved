@@ -1,0 +1,59 @@
+{
+  "board": "notice",
+  "path": "notice/first",
+  "language": "en",
+  "languages": [
+    "ko",
+    "en",
+    "ko"
+  ],
+  "title": "",
+  "summary": "raw / 한 글",
+  "content": {
+    "type": "doc",
+    "content": [
+      {
+        "type": "paragraph",
+        "content": [
+          {
+            "type": "text",
+            "text": "hello",
+            "marks": [
+              {
+                "type": "bold"
+              }
+            ]
+          }
+        ]
+      },
+      1,
+      null,
+      true
+    ],
+    "attrs": {
+      "future": [
+        1.5
+      ]
+    }
+  },
+  "publishedAt": "not a date",
+  "updatedAt": "",
+  "pinned": true,
+  "coverImageUrl": "not a URI",
+  "basisDate": "2026-13-45",
+  "breadcrumbs": [
+    {
+      "path": "notice",
+      "title": "Notices"
+    },
+    {
+      "path": "",
+      "title": ""
+    }
+  ],
+  "previous": {
+    "path": "notice/zero",
+    "title": "Zero"
+  },
+  "next": null
+}

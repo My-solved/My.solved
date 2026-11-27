@@ -3109,6 +3109,122 @@ void main() {
     });
   });
 
+  test('pins the public notice post and its open document shape', () {
+    final notice = _get(contract, '/api/v4/posts/notice/{slug}');
+
+    expect(_accessClass(notice), 'public');
+    expect(_map(notice['x-access']).containsKey('scope'), isFalse);
+    expect(notice.containsKey('security'), isFalse);
+    expect(notice.containsKey('requestBody'), isFalse);
+    expect(notice['summary'], 'Read a notice');
+    expect(_parameters(notice), [
+      {
+        'in': 'path',
+        'name': 'slug',
+        'required': true,
+        'schema': {
+          'maxLength': 64,
+          'minLength': 1,
+          'pattern': r'^[a-z0-9]+(?:-[a-z0-9]+)*$',
+          'type': 'string',
+        },
+      },
+      _parameters(_get(contract, '/api/v4/posts/notice')).first,
+    ]);
+    final responses = _map(notice['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '404']);
+    expect(
+      _map(responses['200'])['description'],
+      'The post. `language` reports what was served, which may differ from '
+      '`lang`.',
+    );
+    expect(
+      _map(responses['404'])['description'],
+      "No such post, or it isn't published.",
+    );
+    expect(
+      _jsonResponseSchema(notice, '404'),
+      _jsonResponseSchema(_get(contract, '/api/v4/affiliations/{id}'), '404'),
+    );
+
+    final schema = _responseSchema(notice);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    expect(_required(schema), [
+      'board',
+      'path',
+      'language',
+      'languages',
+      'title',
+      'summary',
+      'content',
+      'publishedAt',
+      'updatedAt',
+      'pinned',
+      'coverImageUrl',
+      'basisDate',
+      'breadcrumbs',
+      'previous',
+      'next',
+    ]);
+    final properties = _properties(schema);
+    expect(properties.keys.length, 15);
+    expect(_map(properties['board']), {
+      'enum': ['notice', 'help'],
+      'type': 'string',
+    });
+    for (final field in [
+      'path',
+      'language',
+      'title',
+      'publishedAt',
+      'updatedAt',
+    ]) {
+      expect(_map(properties[field]), {'type': 'string'});
+    }
+    for (final field in ['summary', 'coverImageUrl', 'basisDate']) {
+      expect(_map(properties[field]), {
+        'type': ['string', 'null'],
+      });
+    }
+    expect(_map(properties['pinned']), {'type': 'boolean'});
+    expect(_map(properties['languages']), {
+      'items': {'type': 'string'},
+      'type': 'array',
+    });
+    expect(_map(properties['content']), {
+      'additionalProperties': <String, Object?>{},
+      'properties': {
+        'content': {
+          'items': <String, Object?>{},
+          'type': 'array',
+        },
+        'type': {
+          'enum': ['doc'],
+          'type': 'string',
+        },
+      },
+      'required': ['type'],
+      'type': 'object',
+    });
+    const link = {
+      'properties': {
+        'path': {'type': 'string'},
+        'title': {'type': 'string'},
+      },
+      'required': ['path', 'title'],
+    };
+    expect(_map(properties['breadcrumbs']), {
+      'items': {...link, 'type': 'object'},
+      'type': 'array',
+    });
+    for (final field in ['previous', 'next']) {
+      expect(_map(properties[field]), {
+        ...link,
+        'type': ['object', 'null'],
+      });
+    }
+  });
+
   test('pins public OJ source lookups and their exact shared response', () {
     const operations = {
       '/api/v4/sources/oj/{ojId}/contests/{nativeId}':
