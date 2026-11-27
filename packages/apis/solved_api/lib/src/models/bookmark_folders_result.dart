@@ -187,3 +187,21 @@ final class BookmarkFolderChangeResult {
   /// inferred.
   final num changed;
 }
+
+/// A move or note change for one problem in one of the viewer's folders.
+///
+/// Fields left `null` are omitted. The official contract names the fields but
+/// does not document how `after` and `before` position the problem, so they
+/// are sent as raw ids without inferred meaning.
+final class BookmarkProblemPatch {
+  const BookmarkProblemPatch({this.after, this.before, this.note});
+
+  /// A positive problem id when set. It cannot be sent as `null`.
+  final int? after;
+
+  /// A positive problem id, or [NullablePatch.toNull].
+  final NullablePatch<int>? before;
+
+  /// A note of at most 2048 code points, or [NullablePatch.toNull].
+  final NullablePatch<String>? note;
+}
