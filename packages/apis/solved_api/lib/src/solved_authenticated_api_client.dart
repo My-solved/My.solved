@@ -11,7 +11,12 @@ import 'solved_bearer_authorization.dart';
 import 'solved_oauth_contract.dart';
 import 'solved_proxy_transport.dart';
 
-enum SolvedAuthenticatedOperation { currentUser, rivals, reverseRivals }
+enum SolvedAuthenticatedOperation {
+  currentUser,
+  rivals,
+  reverseRivals,
+  bookmarkFavorites,
+}
 
 enum SolvedAuthenticatedFailureKind {
   timeout,
@@ -126,6 +131,16 @@ final class SolvedAuthenticatedApiClient {
   Future<RivalLeaderboardResult> reverseRivals({int? page}) => _get(
         SolvedAuthenticatedOperation.reverseRivals,
         () => _contract.reverseRivals(page: page),
+      );
+
+  /// One page of other people's folders the viewer favorited. The token needs
+  /// the `bookmarks` scope.
+  ///
+  /// An invalid [page] fails the returned future with an [ArgumentError]
+  /// before any request is sent.
+  Future<BookmarkFoldersResult> bookmarkFavorites({int? page}) => _get(
+        SolvedAuthenticatedOperation.bookmarkFavorites,
+        () => _contract.bookmarkFavorites(page: page),
       );
 
   Future<T> _get<T>(

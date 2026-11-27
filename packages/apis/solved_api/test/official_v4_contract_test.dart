@@ -2312,6 +2312,29 @@ void main() {
     });
   });
 
+  test('pins favorited folders to the shared folder-list schema', () {
+    final favorites = _get(contract, '/api/v4/account/bookmark-favorites');
+    final public = _get(contract, '/api/v4/bookmarks');
+
+    expect(_accessClass(favorites), 'user');
+    expect(_accessScope(favorites), 'bookmarks');
+    expect(favorites.containsKey('security'), isFalse);
+    expect(favorites.containsKey('requestBody'), isFalse);
+    expect(
+      favorites['summary'],
+      "Other people's folders the signed-in user favorited",
+    );
+    expect(_parameters(favorites), [_parameters(public).first]);
+    final responses = _map(favorites['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '401']);
+    expect(_map(responses['200']), _map(_map(public['responses'])['200']));
+    expect(_map(responses['401'])['description'], 'Not signed in.');
+    expect(
+      _jsonResponseSchema(favorites, '401'),
+      _jsonResponseSchema(_get(contract, '/api/v4/affiliations/{id}'), '404'),
+    );
+  });
+
   test('pins user bookmark folders to the shared folder-list schema', () {
     final bookmarks = _get(contract, '/api/v4/users/{handle}/bookmarks');
     final public = _get(contract, '/api/v4/bookmarks');

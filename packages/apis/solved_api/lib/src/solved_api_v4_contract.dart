@@ -140,6 +140,20 @@ final class SolvedApiV4Contract {
     );
   }
 
+  /// Other people's folders the viewer favorited. It requires a user token
+  /// with `bookmarks` scope, so it is only exposed through
+  /// [SolvedAuthenticatedApiClient].
+  SolvedApiEndpoint<BookmarkFoldersResult> bookmarkFavorites({int? page}) {
+    if (page != null && (page < 1 || page > 10000)) {
+      throw ArgumentError.value(page, 'page', 'Must be from 1 through 10000');
+    }
+    return _endpoint(
+      path: 'account/bookmark-favorites',
+      queryParameters: {if (page != null) 'page': page.toString()},
+      decode: _decodeV4BookmarkFolders,
+    );
+  }
+
   /// Those who have the viewer as a rival. It requires a user token with
   /// `rivals` scope, so it is only exposed through
   /// [SolvedAuthenticatedApiClient].

@@ -66,6 +66,32 @@ void main() {
     );
   });
 
+  test('builds favorited folders with the shared strict decoder', () {
+    final omitted = contract.bookmarkFavorites();
+    expect(omitted.proxy.path, 'account/bookmark-favorites');
+    expect(omitted.proxy.queryParameters, isEmpty);
+    expect(
+      contract.bookmarkFavorites(page: 1).proxy.queryParameters,
+      {'page': '1'},
+    );
+    for (final page in [0, 10001]) {
+      expect(
+        () => contract.bookmarkFavorites(page: page),
+        throwsA(
+          isA<ArgumentError>().having((error) => error.name, 'name', 'page'),
+        ),
+      );
+    }
+    final actual = omitted.decode(
+      jsonDecode(fixture('v4/bookmark_folders.json')),
+    );
+    expect(actual.folders.last.color, isNull);
+    expect(
+      () => omitted.decode(_response()..remove('pageSize')),
+      throwsFormatException,
+    );
+  });
+
   test('decodes the complete fixture without inferred relationships', () {
     final actual = contract.publicBookmarks().decode(
           jsonDecode(fixture('v4/bookmark_folders.json')),
