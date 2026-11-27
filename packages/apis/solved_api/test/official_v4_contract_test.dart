@@ -5155,6 +5155,65 @@ void main() {
     });
   });
 
+  test('pins the viewer bans to the shared profile ban fields', () {
+    final bans = _get(contract, '/api/v4/account/bans');
+    final profile = _get(contract, '/api/v4/users/{handle}');
+
+    expect(_accessClass(bans), 'user');
+    expect(_accessScope(bans), 'standing');
+    expect(bans.containsKey('security'), isFalse);
+    expect(bans.containsKey('requestBody'), isFalse);
+    expect(bans.containsKey('parameters'), isFalse);
+    expect(
+      bans['summary'],
+      "The viewer's bans that can be or have been appealed",
+    );
+    final responses = _map(bans['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '401']);
+    expect(
+      _map(responses['200'])['description'],
+      'Those still binding, and any appealed; no warning bans.',
+    );
+    expect(_map(responses['401'])['description'], 'Not signed in.');
+    expect(
+      _jsonResponseSchema(bans, '401'),
+      _jsonResponseSchema(_get(contract, '/api/v4/affiliations/{id}'), '404'),
+    );
+
+    final schema = _responseSchema(bans);
+    expect(_required(schema), ['items']);
+    final item = _map(_map(_properties(schema)['items'])['items']);
+    final profileBan = _map(
+      _map(_properties(_responseSchema(profile))['bans'])['items'],
+    );
+    expect(item['type'], 'object');
+    expect(_required(item), [
+      ..._required(profileBan),
+      'id',
+      'appealable',
+      'appeal',
+    ]);
+    final itemProperties = Map<String, dynamic>.of(_properties(item));
+    expect(itemProperties.remove('id'), {'type': 'integer'});
+    expect(itemProperties.remove('appealable'), {'type': 'boolean'});
+    expect(itemProperties.remove('appeal'), {
+      'properties': {
+        'appealedAt': {'type': 'string'},
+        'response': {
+          'type': ['string', 'null'],
+        },
+        'status': {
+          'enum': ['pending', 'granted', 'denied'],
+          'type': 'string',
+        },
+        'text': {'type': 'string'},
+      },
+      'required': ['status', 'text', 'appealedAt', 'response'],
+      'type': ['object', 'null'],
+    });
+    expect(itemProperties, _properties(profileBan));
+  });
+
   test('pins the viewer equippable backgrounds', () {
     final backgrounds = _get(contract, '/api/v4/account/backgrounds');
 

@@ -1,0 +1,41 @@
+{
+  "items": [
+    {
+      "banType": "vote",
+      "banReason": "vote_profanity",
+      "reason": "raw / 한 글",
+      "until": "not a date",
+      "id": -1,
+      "appealable": false,
+      "appeal": {
+        "status": "denied",
+        "text": "",
+        "appealedAt": "x",
+        "response": "no"
+      }
+    },
+    {
+      "banType": "rating",
+      "banReason": null,
+      "reason": "",
+      "until": "",
+      "id": 2,
+      "appealable": true,
+      "appeal": null
+    },
+    {
+      "banType": "vote",
+      "banReason": "vote_profanity",
+      "reason": "raw / 한 글",
+      "until": "not a date",
+      "id": -1,
+      "appealable": false,
+      "appeal": {
+        "status": "denied",
+        "text": "",
+        "appealedAt": "x",
+        "response": "no"
+      }
+    }
+  ]
+}

@@ -135,6 +135,14 @@ final class SolvedApiV4Contract {
         decode: _decodeV4AccountConsents,
       );
 
+  /// The viewer's appealable or appealed bans. It requires a user token with
+  /// `standing` scope, so it is only exposed through
+  /// [SolvedAuthenticatedApiClient].
+  SolvedApiEndpoint<AccountBansResult> accountBans() => _endpoint(
+        path: 'account/bans',
+        decode: _decodeV4AccountBans,
+      );
+
   /// Backgrounds the viewer may equip. It requires a user token with
   /// `collection` scope, so it is only exposed through
   /// [SolvedAuthenticatedApiClient].
@@ -3039,6 +3047,38 @@ RankingLeaderboardResult _decodeV4RankingLeaderboard(dynamic json) {
     ),
   );
 }
+
+AccountBansResult _decodeV4AccountBans(dynamic json) {
+  final body = _object(json, 'account bans');
+  return AccountBansResult(
+    items: List<AccountBan>.unmodifiable(
+      _list(body['items'], 'items').map((value) {
+        final item = _object(value, 'items[]');
+        final appealValue = _requiredValue(item, 'appeal', 'items[].appeal');
+        return AccountBan(
+          ban: _decodeV4OfficialUserProfileBan(item),
+          id: _integer(item['id'], 'items[].id'),
+          appealable: _boolean(item['appealable'], 'items[].appealable'),
+          appeal: appealValue == null
+              ? null
+              : _decodeV4BanAppeal(_object(appealValue, 'items[].appeal')),
+        );
+      }),
+    ),
+  );
+}
+
+BanAppeal _decodeV4BanAppeal(Map<String, dynamic> body) => BanAppeal(
+      status: switch (_string(body['status'], 'appeal.status')) {
+        'pending' => BanAppealStatus.pending,
+        'granted' => BanAppealStatus.granted,
+        'denied' => BanAppealStatus.denied,
+        _ => throw const FormatException('Unsupported appeal.status'),
+      },
+      text: _string(body['text'], 'appeal.text'),
+      appealedAt: _string(body['appealedAt'], 'appeal.appealedAt'),
+      response: _requiredNullableString(body, 'response', 'appeal.response'),
+    );
 
 AccountBackgroundsResult _decodeV4AccountBackgrounds(dynamic json) {
   final body = _object(json, 'account backgrounds');

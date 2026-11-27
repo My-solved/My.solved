@@ -233,6 +233,169 @@
         }
       }
     },
+    "/api/v4/account/bans": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "properties": {
+                          "appeal": {
+                            "properties": {
+                              "appealedAt": {
+                                "type": "string"
+                              },
+                              "response": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "status": {
+                                "enum": [
+                                  "pending",
+                                  "granted",
+                                  "denied"
+                                ],
+                                "type": "string"
+                              },
+                              "text": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "status",
+                              "text",
+                              "appealedAt",
+                              "response"
+                            ],
+                            "type": [
+                              "object",
+                              "null"
+                            ]
+                          },
+                          "appealable": {
+                            "type": "boolean"
+                          },
+                          "banReason": {
+                            "enum": [
+                              "vote_troll_level",
+                              "vote_hate_speech",
+                              "vote_disparagement",
+                              "vote_profanity",
+                              "vote_multi_account",
+                              "vote_repeat_offence",
+                              "rating_copied_code",
+                              "other",
+                              "rating_auto_pace",
+                              "vote_automated",
+                              "vote_comment_strikes",
+                              "vote_mark_abuse",
+                              null
+                            ],
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "banType": {
+                            "enum": [
+                              "rating",
+                              "vote"
+                            ],
+                            "type": "string"
+                          },
+                          "id": {
+                            "type": "integer"
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "until": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "banType",
+                          "banReason",
+                          "reason",
+                          "until",
+                          "id",
+                          "appealable",
+                          "appeal"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Those still binding, and any appealed; no warning bans."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Not signed in."
+          }
+        },
+        "summary": "The viewer's bans that can be or have been appealed",
+        "x-access": {
+          "class": "user",
+          "scope": "standing"
+        }
+      }
+    },
     "/api/v4/account/bookmark-favorites": {
       "get": {
         "parameters": [

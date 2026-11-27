@@ -571,6 +571,30 @@ void main() {
       expect(error.kind, SolvedAuthenticatedFailureKind.invalidResponse);
     });
 
+    test('sends one token-bound bans GET', () async {
+      handler = (_) async => _jsonResponse(fixture('v4/account_bans.json'));
+
+      final actual = await client.accountBans();
+
+      expect(actual.items, hasLength(3));
+      final request = httpClient.requests.single;
+      expect(
+        request.url,
+        Uri.parse('https://proxy.example/solved/v4/account/bans'),
+      );
+      expect(request.followRedirects, isFalse);
+      expect(request.headers, const <String, String>{
+        'accept': 'application/json',
+        'authorization': 'Bearer access-token',
+      });
+      expect(request.bodyBytes, isEmpty);
+
+      handler = (_) async => _jsonResponse('{"items":[{}]}');
+      final error = await _captureFailure(client.accountBans());
+      expect(error.operation, SolvedAuthenticatedOperation.accountBans);
+      expect(error.kind, SolvedAuthenticatedFailureKind.invalidResponse);
+    });
+
     test('rejects an invalid rivals page before any request', () async {
       await expectLater(
         client.rivals(page: 0),
@@ -642,6 +666,7 @@ void main() {
       await expectLater(client.accountWallet(), throwsStateError);
       await expectLater(client.emoticons(), throwsStateError);
       await expectLater(client.accountBackgrounds(), throwsStateError);
+      await expectLater(client.accountBans(), throwsStateError);
       expect(httpClient.requests, isEmpty);
     });
   });

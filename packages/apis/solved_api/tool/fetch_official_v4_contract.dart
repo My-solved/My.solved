@@ -9,6 +9,7 @@ const _maximumDocumentBytes = 2 * 1024 * 1024;
 
 const _relevantPaths = <String>[
   '/api/v4/account/backgrounds',
+  '/api/v4/account/bans',
   '/api/v4/account/bookmark-favorites',
   '/api/v4/account/collection',
   '/api/v4/account/consents',
