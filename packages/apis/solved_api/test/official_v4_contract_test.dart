@@ -1919,6 +1919,125 @@ void main() {
     );
   });
 
+  test('pins the bookmark folder detail and its shared shapes', () {
+    final detail = _get(contract, '/api/v4/users/{handle}/bookmarks/{slug}');
+    final list = _get(contract, '/api/v4/users/{handle}/bookmarks');
+
+    expect(_accessClass(detail), 'public');
+    expect(_accessScope(detail), 'bookmarks');
+    expect(detail.containsKey('security'), isFalse);
+    expect(detail.containsKey('requestBody'), isFalse);
+    expect(detail['summary'], 'One folder and a page of its problems');
+    final parameters = _parameters(detail);
+    expect(parameters, [
+      _parameters(list).first,
+      {
+        'in': 'path',
+        'name': 'slug',
+        'required': true,
+        'schema': {'pattern': r'^[0-9a-z_]{1,32}$', 'type': 'string'},
+      },
+      _parameters(list).last,
+      {
+        'in': 'query',
+        'name': 'sort',
+        'required': false,
+        'schema': {
+          'default': 'order',
+          'enum': ['order', 'level', 'solved', 'average_try', 'id'],
+          'type': 'string',
+        },
+      },
+      {
+        'in': 'query',
+        'name': 'direction',
+        'required': false,
+        'schema': {
+          'default': 'asc',
+          'enum': ['asc', 'desc'],
+          'type': 'string',
+        },
+      },
+      {
+        'in': 'query',
+        'name': 'q',
+        'required': false,
+        'schema': {'maxLength': 512, 'type': 'string'},
+      },
+    ]);
+    final responses = _map(detail['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '404']);
+    expect(_map(responses['200'])['description'], 'The folder.');
+    expect(
+      _map(responses['404'])['description'],
+      'No such folder, or it is private.',
+    );
+    expect(
+      _jsonResponseSchema(detail, '404'),
+      _jsonResponseSchema(list, '404'),
+    );
+
+    final schema = _responseSchema(detail);
+    final listProperties = _properties(_responseSchema(list));
+    expect(schema['type'], 'object');
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    expect(_required(schema), [
+      'folder',
+      'isOwner',
+      'isFavorite',
+      'levels',
+      'problems',
+      'total',
+      'page',
+      'pageSize',
+    ]);
+    final properties = _properties(schema);
+    expect(properties.keys.length, 8);
+    expect(
+      _map(properties['folder']),
+      _map(_map(listProperties['folders'])['items']),
+    );
+    for (final field in ['total', 'page', 'pageSize']) {
+      expect(properties[field], listProperties[field]);
+    }
+    expect(_map(properties['isOwner']), {'type': 'boolean'});
+    expect(_map(properties['isFavorite']), {
+      'type': ['boolean', 'null'],
+    });
+    expect(_map(properties['levels']), {
+      'items': {
+        'properties': {
+          'count': {'type': 'number'},
+          'level': {'type': 'number'},
+          'solved': {
+            'type': ['number', 'null'],
+          },
+        },
+        'required': ['level', 'count', 'solved'],
+        'type': 'object',
+      },
+      'type': 'array',
+    });
+    final problems = _map(properties['problems']);
+    expect(problems['type'], 'array');
+    final item = _map(problems['items']);
+    expect(item['type'], 'object');
+    expect(item.containsKey('additionalProperties'), isFalse);
+    expect(_required(item), ['problem', 'note', 'addedAt']);
+    final itemProperties = Map<String, dynamic>.of(_properties(item));
+    final searchItem = _map(
+      _map(_properties(_responseSchema(_get(contract, '/api/v4/problems')))[
+          'problems'])['items'],
+    );
+    expect(itemProperties.remove('problem'), searchItem);
+    expect(itemProperties, {
+      'addedAt': {'format': 'date-time', 'type': 'string'},
+      'note': {
+        'type': ['string', 'null'],
+      },
+    });
+  });
+
   test('pins the public affiliation board without inferred relations', () {
     final board = _get(contract, '/api/v4/rankings/affiliation-board');
 
