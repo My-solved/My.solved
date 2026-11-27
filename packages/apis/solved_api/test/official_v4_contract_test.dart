@@ -1887,6 +1887,38 @@ void main() {
     });
   });
 
+  test('pins user bookmark folders to the shared folder-list schema', () {
+    final bookmarks = _get(contract, '/api/v4/users/{handle}/bookmarks');
+    final public = _get(contract, '/api/v4/bookmarks');
+
+    expect(_accessClass(bookmarks), 'public');
+    expect(_accessScope(bookmarks), 'bookmarks');
+    expect(_map(public['x-access']).containsKey('scope'), isFalse);
+    expect(bookmarks.containsKey('security'), isFalse);
+    expect(bookmarks.containsKey('requestBody'), isFalse);
+    expect(
+      bookmarks['summary'],
+      'A user\'s folders: public ones, or all of them for the owner',
+    );
+    expect(_parameters(bookmarks), [
+      {
+        'in': 'path',
+        'name': 'handle',
+        'required': true,
+        'schema': {'maxLength': 64, 'minLength': 1, 'type': 'string'},
+      },
+      _parameters(public).first,
+    ]);
+    final responses = _map(bookmarks['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '404']);
+    expect(_map(responses['200']), _map(_map(public['responses'])['200']));
+    expect(_map(responses['404'])['description'], 'No such user.');
+    expect(
+      _jsonResponseSchema(bookmarks, '404'),
+      _jsonResponseSchema(_get(contract, '/api/v4/affiliations/{id}'), '404'),
+    );
+  });
+
   test('pins the public affiliation board without inferred relations', () {
     final board = _get(contract, '/api/v4/rankings/affiliation-board');
 
