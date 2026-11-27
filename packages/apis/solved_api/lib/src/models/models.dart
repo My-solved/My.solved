@@ -1,3 +1,4 @@
+export 'account_backgrounds_result.dart';
 export 'account_consents_result.dart';
 export 'account_wallet_result.dart';
 export 'achievement_catalog_result.dart';

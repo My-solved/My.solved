@@ -5155,6 +5155,72 @@ void main() {
     });
   });
 
+  test('pins the viewer equippable backgrounds', () {
+    final backgrounds = _get(contract, '/api/v4/account/backgrounds');
+
+    expect(_accessClass(backgrounds), 'user');
+    expect(_accessScope(backgrounds), 'collection');
+    expect(backgrounds.containsKey('security'), isFalse);
+    expect(backgrounds.containsKey('requestBody'), isFalse);
+    expect(backgrounds.containsKey('parameters'), isFalse);
+    expect(
+      backgrounds['summary'],
+      'Backgrounds the signed-in user may equip',
+    );
+    final responses = _map(backgrounds['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '401']);
+    expect(
+      _map(responses['200'])['description'],
+      'Owned backgrounds and those everyone has, in picker order.',
+    );
+    expect(_map(responses['401'])['description'], 'Not signed in.');
+    expect(
+      _jsonResponseSchema(backgrounds, '401'),
+      _jsonResponseSchema(_get(contract, '/api/v4/affiliations/{id}'), '404'),
+    );
+    const nullableString = {
+      'type': ['string', 'null'],
+    };
+    expect(_responseSchema(backgrounds), {
+      'properties': {
+        'backgrounds': {
+          'items': {
+            'properties': {
+              'acquiredAt': nullableString,
+              'backgroundImageUrl': {'type': 'string'},
+              'category': {'type': 'string'},
+              'createdAt': {'type': 'string'},
+              'fallbackBackgroundImageUrl': nullableString,
+              'id': {'type': 'integer'},
+              'isIllust': {'type': 'boolean'},
+              'key': {'type': 'string'},
+              'ownedUserCount': {'type': 'integer'},
+              'thumbnailImageUrl': nullableString,
+              'thumbnailPlaceholder': nullableString,
+            },
+            'required': [
+              'id',
+              'key',
+              'backgroundImageUrl',
+              'fallbackBackgroundImageUrl',
+              'thumbnailImageUrl',
+              'thumbnailPlaceholder',
+              'isIllust',
+              'category',
+              'createdAt',
+              'acquiredAt',
+              'ownedUserCount',
+            ],
+            'type': 'object',
+          },
+          'type': 'array',
+        },
+      },
+      'required': ['backgrounds'],
+      'type': 'object',
+    });
+  });
+
   test('pins the viewer emoticon catalog and ownership flags', () {
     final emoticons = _get(contract, '/api/v4/me/emoticons');
 

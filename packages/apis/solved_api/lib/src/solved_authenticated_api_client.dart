@@ -22,6 +22,7 @@ enum SolvedAuthenticatedOperation {
   accountConsents,
   accountWallet,
   emoticons,
+  accountBackgrounds,
 }
 
 enum SolvedAuthenticatedFailureKind {
@@ -147,6 +148,13 @@ final class SolvedAuthenticatedApiClient {
   Future<BookmarkFoldersResult> bookmarkFavorites({int? page}) => _get(
         SolvedAuthenticatedOperation.bookmarkFavorites,
         () => _contract.bookmarkFavorites(page: page),
+      );
+
+  /// Backgrounds the viewer may equip, in picker order. The token needs the
+  /// `collection` scope.
+  Future<AccountBackgroundsResult> accountBackgrounds() => _get(
+        SolvedAuthenticatedOperation.accountBackgrounds,
+        _contract.accountBackgrounds,
       );
 
   /// The emoticon catalog with the viewer's ownership flags. The token needs
