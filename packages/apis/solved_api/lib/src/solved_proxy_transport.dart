@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
@@ -134,6 +135,63 @@ final class SolvedProxyTransport {
       ..maxRedirects = 0
       ..headers['accept'] = 'application/json'
       ..headers['authorization'] = authorization.headerValue;
+
+    return _sendAndRead(
+      request,
+      maximumResponseBytes: maximumPayloadBytes,
+    ).timeout(
+      requestTimeout,
+      onTimeout: () {
+        abortTrigger.complete();
+        throw const SolvedProxyDeadlineExceeded();
+      },
+    );
+  }
+
+  /// Sends one bounded authenticated mutation without following redirects,
+  /// retrying, or interpreting its response.
+  ///
+  /// [jsonBody] is sent verbatim as `application/json` when present.
+  Future<SolvedProxyResponse> sendJsonWithBearer({
+    required String method,
+    required String relativePath,
+    required SolvedBearerAuthorization authorization,
+    Map<String, String> queryParameters = const <String, String>{},
+    String? jsonBody,
+  }) {
+    if (_isClosed) {
+      throw StateError('SolvedProxyTransport is closed');
+    }
+    if (method != 'POST' && method != 'PATCH' && method != 'DELETE') {
+      throw ArgumentError.value(
+        method,
+        'method',
+        'Must be POST, PATCH, or DELETE',
+      );
+    }
+
+    final uri = _withQueryParameters(
+      _resolveRelativePath(relativePath),
+      queryParameters,
+    );
+    final abortTrigger = Completer<void>();
+    final request = http.AbortableRequest(
+      method,
+      uri,
+      abortTrigger: abortTrigger.future,
+    )
+      ..followRedirects = false
+      ..maxRedirects = 0
+      ..headers['accept'] = 'application/json'
+      ..headers['authorization'] = authorization.headerValue;
+    if (jsonBody != null) {
+      request
+        ..headers['content-type'] = 'application/json'
+        ..bodyBytes = utf8.encode(jsonBody);
+      if (request.bodyBytes.length > maximumPayloadBytes) {
+        throw const SolvedProxyRequestTooLarge();
+      }
+    }
 
     return _sendAndRead(
       request,

@@ -31,6 +31,36 @@ final class SolvedApiTarget {
   final Map<String, String> queryParameters;
 }
 
+/// HTTP methods of token-bound mutations.
+enum SolvedApiMutationMethod {
+  post('POST'),
+  patch('PATCH'),
+  delete('DELETE');
+
+  const SolvedApiMutationMethod(this.value);
+
+  final String value;
+}
+
+/// One token-bound mutation: its method, proxy target, exact JSON body, and
+/// response decoder.
+final class SolvedApiMutation<T> {
+  const SolvedApiMutation({
+    required this.method,
+    required this.proxy,
+    required this.jsonBody,
+    required this.decode,
+  });
+
+  final SolvedApiMutationMethod method;
+  final SolvedApiTarget proxy;
+
+  /// The exact JSON text sent as the request body, or `null` for no body.
+  final String? jsonBody;
+
+  final SolvedApiDecoder<T> decode;
+}
+
 /// Direct and proxy request targets plus the decoder for one endpoint.
 final class SolvedApiEndpoint<T> {
   const SolvedApiEndpoint({

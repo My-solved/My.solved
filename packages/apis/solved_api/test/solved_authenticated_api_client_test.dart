@@ -763,6 +763,57 @@ void main() {
       expect(error.kind, SolvedAuthenticatedFailureKind.invalidResponse);
     });
 
+    test('sends one token-bound settings PATCH and never retries', () async {
+      handler = (_) async => _jsonResponse(fixture('v4/account_settings.json'));
+
+      final actual = await client.updateAccountSettings(
+        const AccountSettingsPatch(
+          theme: NullablePatch.value(AccountSettingTheme.light),
+          iconTheme: NullablePatch.toNull(),
+        ),
+      );
+
+      expect(actual.settings.theme, AccountSettingTheme.dark);
+      final request = httpClient.requests.single;
+      expect(request.method, 'PATCH');
+      expect(
+        request.url.toString(),
+        'https://proxy.example/solved/v4/account/settings',
+      );
+      expect(request.followRedirects, isFalse);
+      expect(request.headers, const <String, String>{
+        'accept': 'application/json',
+        'authorization': 'Bearer access-token',
+        'content-type': 'application/json',
+      });
+      expect(
+        utf8.decode(request.bodyBytes),
+        '{"theme":"light","iconTheme":null}',
+      );
+
+      await expectLater(
+        client.updateAccountSettings(
+          const AccountSettingsPatch(iconWarnAbsolute: NullablePatch.value(31)),
+        ),
+        throwsA(
+          isA<ArgumentError>()
+              .having((error) => error.name, 'name', 'iconWarnAbsolute'),
+        ),
+      );
+      expect(httpClient.requests, hasLength(1));
+
+      handler = (_) async => _jsonResponse('{}', statusCode: 503);
+      final error = await _captureFailure(
+        client.updateAccountSettings(const AccountSettingsPatch()),
+      );
+      expect(
+          error.operation, SolvedAuthenticatedOperation.updateAccountSettings);
+      expect(error.kind, SolvedAuthenticatedFailureKind.unexpectedStatus);
+      expect(error.statusCode, 503);
+      expect(httpClient.requests, hasLength(2));
+      expect(httpClient.requests.last.bodyBytes, utf8.encode('{}'));
+    });
+
     test('rejects an invalid rivals page before any request', () async {
       await expectLater(
         client.rivals(page: 0),
@@ -841,6 +892,10 @@ void main() {
       await expectLater(client.accountItems(), throwsStateError);
       await expectLater(client.accountProfile(), throwsStateError);
       await expectLater(client.accountSettings(), throwsStateError);
+      await expectLater(
+        client.updateAccountSettings(const AccountSettingsPatch()),
+        throwsStateError,
+      );
       expect(httpClient.requests, isEmpty);
     });
   });

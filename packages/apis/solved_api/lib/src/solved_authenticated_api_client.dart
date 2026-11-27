@@ -30,6 +30,7 @@ enum SolvedAuthenticatedOperation {
   accountItems,
   accountProfile,
   accountSettings,
+  updateAccountSettings,
 }
 
 enum SolvedAuthenticatedFailureKind {
@@ -290,16 +291,69 @@ final class SolvedAuthenticatedApiClient {
         ),
       );
 
+  /// Changes some of the viewer's settings and returns every setting after
+  /// the patch. The token needs the `settings.write` scope.
+  ///
+  /// Fields left `null` in [patch] are not sent. An out-of-range integer
+  /// fails the returned future with an [ArgumentError] before any request.
+  /// The request is sent once and never retried; after a timeout or
+  /// transport failure the change may or may not have been applied.
+  Future<AccountSettingsResult> updateAccountSettings(
+    AccountSettingsPatch patch,
+  ) =>
+      _mutate(
+        SolvedAuthenticatedOperation.updateAccountSettings,
+        () => _contract.updateAccountSettings(patch),
+      );
+
   Future<T> _get<T>(
     SolvedAuthenticatedOperation operation,
     SolvedApiEndpoint<T> Function() buildEndpoint,
+  ) =>
+      _execute(operation, () {
+        final endpoint = buildEndpoint();
+        final target = endpoint.proxy;
+        return (
+          target: target,
+          decode: endpoint.decode,
+          send: () => _transport.getWithBearer(
+                relativePath: target.path,
+                queryParameters: target.queryParameters,
+                authorization: _authorization,
+              ),
+        );
+      });
+
+  Future<T> _mutate<T>(
+    SolvedAuthenticatedOperation operation,
+    SolvedApiMutation<T> Function() buildMutation,
+  ) =>
+      _execute(operation, () {
+        final mutation = buildMutation();
+        final target = mutation.proxy;
+        return (
+          target: target,
+          decode: mutation.decode,
+          send: () => _transport.sendJsonWithBearer(
+                method: mutation.method.value,
+                relativePath: target.path,
+                queryParameters: target.queryParameters,
+                authorization: _authorization,
+                jsonBody: mutation.jsonBody,
+              ),
+        );
+      });
+
+  Future<T> _execute<T>(
+    SolvedAuthenticatedOperation operation,
+    _PreparedRequest<T> Function() prepare,
   ) async {
     if (_isClosed) {
       throw StateError('SolvedAuthenticatedApiClient is closed');
     }
 
-    final endpoint = buildEndpoint();
-    final target = endpoint.proxy;
+    final request = prepare();
+    final target = request.target;
     final resolved = _transport.proxyBaseUri.resolve(target.path);
     final uri = target.queryParameters.isEmpty
         ? resolved
@@ -307,11 +361,9 @@ final class SolvedAuthenticatedApiClient {
 
     late SolvedProxyResponse response;
     try {
-      response = await _transport.getWithBearer(
-        relativePath: target.path,
-        queryParameters: target.queryParameters,
-        authorization: _authorization,
-      );
+      response = await request.send();
+    } on SolvedProxyRequestTooLarge {
+      throw ArgumentError('The request body must not exceed 64 KiB');
     } on SolvedProxyDeadlineExceeded catch (_, stackTrace) {
       throw SolvedAuthenticatedRequestFailed(
         operation: operation,
@@ -395,7 +447,7 @@ final class SolvedAuthenticatedApiClient {
     try {
       _requireJsonContentType(response.headers);
       final json = jsonDecode(utf8.decode(response.bodyBytes));
-      return endpoint.decode(json);
+      return request.decode(json);
     } on Object catch (_, stackTrace) {
       throw SolvedAuthenticatedRequestFailed(
         operation: operation,
@@ -420,6 +472,12 @@ final class SolvedAuthenticatedApiClient {
   @override
   String toString() => 'SolvedAuthenticatedApiClient(<redacted>)';
 }
+
+typedef _PreparedRequest<T> = ({
+  SolvedApiTarget target,
+  SolvedApiDecoder<T> decode,
+  Future<SolvedProxyResponse> Function() send,
+});
 
 void _requireJsonContentType(Map<String, String> headers) {
   String? value;

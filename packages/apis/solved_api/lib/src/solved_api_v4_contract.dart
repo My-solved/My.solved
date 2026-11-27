@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'models/models.dart';
 import 'solved_api_contract.dart';
 
@@ -182,6 +184,23 @@ final class SolvedApiV4Contract {
   /// [SolvedAuthenticatedApiClient].
   SolvedApiEndpoint<AccountSettingsResult> accountSettings() => _endpoint(
         path: 'account/settings',
+        decode: _decodeV4AccountSettings,
+      );
+
+  /// Changes some of the viewer's settings. It requires a user token with
+  /// `settings.write` scope, so it is only exposed through
+  /// [SolvedAuthenticatedApiClient].
+  ///
+  /// Throws an [ArgumentError] for an out-of-range integer before any
+  /// request is built.
+  SolvedApiMutation<AccountSettingsResult> updateAccountSettings(
+    AccountSettingsPatch patch,
+  ) =>
+      SolvedApiMutation(
+        method: SolvedApiMutationMethod.patch,
+        proxy:
+            SolvedApiTarget(baseUri: _proxyBaseUri, path: 'account/settings'),
+        jsonBody: jsonEncode(_encodeAccountSettingsPatch(patch)),
         decode: _decodeV4AccountSettings,
       );
 
@@ -3303,6 +3322,80 @@ int? _boundedNullableInteger(
   final value = _requiredNullableInteger(body, wireKey, field);
   if (value != null && (value < minimum || value > maximum)) {
     throw FormatException('Expected $minimum through $maximum for $field');
+  }
+  return value;
+}
+
+Map<String, Object?> _encodeAccountSettingsPatch(AccountSettingsPatch patch) {
+  final body = <String, Object?>{};
+  _putPatch(body, 'theme', patch.theme, (value) => value.value);
+  _putPatch(body, 'iconTheme', patch.iconTheme, (value) => value.value);
+  _putPatch(
+      body, 'iconSchemeSolved', patch.iconSchemeSolved, (value) => value.value);
+  _putPatch(body, 'iconSchemeUnsolved', patch.iconSchemeUnsolved,
+      (value) => value.value);
+  _putPatch(
+      body, 'iconSchemeHover', patch.iconSchemeHover, (value) => value.value);
+  _putPatch(body, 'iconWarnMode', patch.iconWarnMode, (value) => value.value);
+  _putPatch(body, 'iconWarnRelative', patch.iconWarnRelative,
+      (value) => _patchInteger(value, 'iconWarnRelative', -30, 30));
+  _putPatch(body, 'iconWarnAbsolute', patch.iconWarnAbsolute,
+      (value) => _patchInteger(value, 'iconWarnAbsolute', 0, 30));
+  _putPatch(
+      body, 'alwaysShowUnrated', patch.alwaysShowUnrated, (value) => value);
+  _putPatch(
+      body, 'alwaysShowUnratable', patch.alwaysShowUnratable, (value) => value);
+  _putPatch(body, 'showSolvedUserCount', patch.showSolvedUserCount,
+      (value) => value.value);
+  _putPatch(body, 'showVotedUserCount', patch.showVotedUserCount,
+      (value) => value.value);
+  _putPatch(body, 'showTagButton', patch.showTagButton, (value) => value.value);
+  _putPatch(body, 'tagDisplayLanguage', patch.tagDisplayLanguage,
+      (value) => value.value);
+  _putPatch(body, 'problemSort', patch.problemSort, (value) => value.value);
+  _putPatch(body, 'problemSortDirection', patch.problemSortDirection,
+      (value) => value.value);
+  _putPatch(
+      body, 'showOriginalTitle', patch.showOriginalTitle, (value) => value);
+  _putPatch(
+      body, 'showOriginalContest', patch.showOriginalContest, (value) => value);
+  _putPatch(body, 'sourceLevelAllSolved', patch.sourceLevelAllSolved,
+      (value) => value.value);
+  _putPatch(body, 'sourceLevelPartlySolved', patch.sourceLevelPartlySolved,
+      (value) => value.value);
+  _putPatch(body, 'sourceLevelUnsolved', patch.sourceLevelUnsolved,
+      (value) => value.value);
+  _putPatch(
+      body, 'sourceLevelHover', patch.sourceLevelHover, (value) => value.value);
+  _putPatch(body, 'sourceLevelDisplay', patch.sourceLevelDisplay,
+      (value) => value.value);
+  _putPatch(body, 'sourceSort', patch.sourceSort, (value) => value.value);
+  _putPatch(body, 'sourceSortDirection', patch.sourceSortDirection,
+      (value) => value.value);
+  _putPatch(
+      body, 'sourceOrderType', patch.sourceOrderType, (value) => value.value);
+  _putPatch(
+      body, 'sourceOrderHover', patch.sourceOrderHover, (value) => value.value);
+  return body;
+}
+
+void _putPatch<T extends Object>(
+  Map<String, Object?> body,
+  String key,
+  NullablePatch<T>? patch,
+  Object Function(T value) encode,
+) {
+  if (patch == null) return;
+  body[key] = patch.isNull ? null : encode(patch.value as T);
+}
+
+int _patchInteger(int value, String name, int minimum, int maximum) {
+  if (value < minimum || value > maximum) {
+    throw ArgumentError.value(
+      value,
+      name,
+      'Must be from $minimum through $maximum',
+    );
   }
   return value;
 }
