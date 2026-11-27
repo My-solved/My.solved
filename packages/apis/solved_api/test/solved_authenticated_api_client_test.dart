@@ -404,6 +404,47 @@ void main() {
       expect(error.kind, SolvedAuthenticatedFailureKind.invalidResponse);
     });
 
+    test('sends one token-bound viewer-vote GET', () async {
+      handler = (_) async => _jsonResponse('{"vote":null}');
+
+      final none = await client.myProblemVote(1000);
+      await client.myProblemVote(1000, sub: 'a&b');
+
+      expect(none.vote, isNull);
+      expect(httpClient.requests.map((request) => request.url.toString()), [
+        'https://proxy.example/solved/v4/problems/1000/votes/me',
+        'https://proxy.example/solved/v4/problems/1000/votes/me?sub=a%26b',
+      ]);
+      for (final request in httpClient.requests) {
+        expect(request.method, 'GET');
+        expect(request.followRedirects, isFalse);
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+          'authorization': 'Bearer access-token',
+        });
+        expect(request.bodyBytes, isEmpty);
+      }
+
+      await expectLater(
+        client.myProblemVote(0),
+        throwsA(
+          isA<ArgumentError>()
+              .having((error) => error.name, 'name', 'problemId'),
+        ),
+      );
+      expect(httpClient.requests, hasLength(2));
+
+      handler = (_) async => _bytesResponse(
+            const <int>[],
+            statusCode: 403,
+            headers: const <String, String>{'content-type': 'text/plain'},
+          );
+      final error = await _captureFailure(client.myProblemVote(1000));
+      expect(error.operation, SolvedAuthenticatedOperation.myProblemVote);
+      expect(error.kind, SolvedAuthenticatedFailureKind.forbidden);
+      expect(error.statusCode, 403);
+    });
+
     test('rejects an invalid rivals page before any request', () async {
       await expectLater(
         client.rivals(page: 0),
@@ -469,6 +510,7 @@ void main() {
       await expectLater(client.reverseRivals(), throwsStateError);
       await expectLater(client.bookmarkFavorites(), throwsStateError);
       await expectLater(client.collection(), throwsStateError);
+      await expectLater(client.myProblemVote(1), throwsStateError);
       expect(httpClient.requests, isEmpty);
     });
   });

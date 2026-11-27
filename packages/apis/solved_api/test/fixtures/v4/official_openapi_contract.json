@@ -4147,6 +4147,414 @@
         }
       }
     },
+    "/api/v4/problems/{problemId}/votes/me": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "problemId",
+            "required": true,
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sub",
+            "required": false,
+            "schema": {
+              "default": "",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "vote": {
+                      "properties": {
+                        "banned": {
+                          "type": "boolean"
+                        },
+                        "comment": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "commentLanguage": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "cutoff": {
+                          "type": "boolean"
+                        },
+                        "emoticon": {
+                          "properties": {
+                            "key": {
+                              "type": "string"
+                            },
+                            "url": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "key",
+                            "url"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        },
+                        "emoticonId": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "id": {
+                          "type": "number"
+                        },
+                        "invalidated": {
+                          "type": "boolean"
+                        },
+                        "isStandard": {
+                          "type": "boolean"
+                        },
+                        "level": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "marks": {
+                          "properties": {
+                            "counts": {
+                              "properties": {
+                                "helpful": {
+                                  "type": "integer"
+                                },
+                                "unhelpful": {
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "helpful",
+                                "unhelpful"
+                              ],
+                              "type": [
+                                "object",
+                                "null"
+                              ]
+                            },
+                            "mine": {
+                              "enum": [
+                                "helpful",
+                                "unhelpful",
+                                null
+                              ],
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "own": {
+                              "type": "boolean"
+                            },
+                            "score": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "score",
+                            "counts",
+                            "mine",
+                            "own"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        },
+                        "notInCalculation": {
+                          "type": "boolean"
+                        },
+                        "source": {
+                          "type": "string"
+                        },
+                        "superseded": {
+                          "type": "boolean"
+                        },
+                        "tags": {
+                          "items": {
+                            "properties": {
+                              "legacyKey": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "tag": {
+                                "properties": {
+                                  "id": {
+                                    "type": "number"
+                                  },
+                                  "isMeta": {
+                                    "type": "boolean"
+                                  },
+                                  "key": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "key",
+                                  "isMeta"
+                                ],
+                                "type": [
+                                  "object",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "tag",
+                              "legacyKey"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "user": {
+                          "properties": {
+                            "handle": {
+                              "type": "string"
+                            },
+                            "id": {
+                              "type": "number"
+                            },
+                            "profileImageUrl": {
+                              "format": "uri",
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "tier": {
+                              "maximum": 31,
+                              "minimum": 0,
+                              "type": [
+                                "integer",
+                                "null"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "handle",
+                            "tier",
+                            "profileImageUrl"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        },
+                        "votedAt": {
+                          "type": "string"
+                        },
+                        "weight": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "user",
+                        "votedAt",
+                        "level",
+                        "weight",
+                        "invalidated",
+                        "notInCalculation",
+                        "banned",
+                        "superseded",
+                        "cutoff",
+                        "comment",
+                        "commentLanguage",
+                        "emoticonId",
+                        "emoticon",
+                        "source",
+                        "tags",
+                        "isStandard",
+                        "marks"
+                      ],
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "vote"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Viewer's vote."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Sign in required."
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Viewer hasn't solved this problem."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Problem not found."
+          }
+        },
+        "summary": "Viewer's own vote on this problem (null if none)",
+        "x-access": {
+          "class": "user",
+          "scope": "votes"
+        }
+      }
+    },
     "/api/v4/problems/{problemId}/votes/summary": {
       "get": {
         "parameters": [
