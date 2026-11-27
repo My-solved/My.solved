@@ -1,0 +1,87 @@
+{
+  "items": [
+    {
+      "id": 1.5,
+      "user": {
+        "id": 7,
+        "handle": "voter",
+        "tier": 31,
+        "profileImageUrl": "not a URI"
+      },
+      "votedAt": "not a date",
+      "level": 12.5,
+      "weight": -1,
+      "invalidated": true,
+      "notInCalculation": false,
+      "banned": true,
+      "superseded": false,
+      "cutoff": true,
+      "comment": "raw / 한 글",
+      "commentLanguage": "ko",
+      "emoticonId": "smile",
+      "emoticon": {
+        "key": "other",
+        "url": "not a URI"
+      },
+      "source": "",
+      "tags": [
+        {
+          "tag": {
+            "id": 1,
+            "key": "math",
+            "isMeta": false
+          },
+          "legacyKey": "legacy"
+        },
+        {
+          "tag": null,
+          "legacyKey": null
+        },
+        {
+          "tag": {
+            "id": 1,
+            "key": "math",
+            "isMeta": false
+          },
+          "legacyKey": "legacy"
+        }
+      ],
+      "isStandard": false,
+      "marks": {
+        "score": -3,
+        "counts": {
+          "helpful": 0,
+          "unhelpful": 5
+        },
+        "mine": "unhelpful",
+        "own": true
+      }
+    },
+    {
+      "id": 2,
+      "user": null,
+      "votedAt": "",
+      "level": null,
+      "weight": 0,
+      "invalidated": false,
+      "notInCalculation": true,
+      "banned": false,
+      "superseded": true,
+      "cutoff": false,
+      "comment": null,
+      "commentLanguage": null,
+      "emoticonId": null,
+      "emoticon": null,
+      "source": "web",
+      "tags": [],
+      "isStandard": true,
+      "marks": null
+    }
+  ],
+  "total": -1,
+  "page": 3.0,
+  "pageSize": 30,
+  "sort": "weight",
+  "markRefusal": "NOT_SOLVED",
+  "unhelpfulLocked": true
+}

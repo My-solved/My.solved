@@ -1548,6 +1548,185 @@ void main() {
     });
   });
 
+  test('pins public problem votes and their official auth failures', () {
+    final votes = _get(contract, '/api/v4/problems/{problemId}/votes');
+    final reports = _get(contract, '/api/v4/problems/{problemId}/reports');
+
+    expect(_accessClass(votes), 'public');
+    expect(_map(votes['x-access']).containsKey('scope'), isFalse);
+    expect(votes.containsKey('security'), isFalse);
+    expect(votes.containsKey('requestBody'), isFalse);
+    expect(votes['summary'], 'Paginated votes (page size fixed at 30)');
+    expect(_parameters(votes), [
+      ..._parameters(reports),
+      {
+        'in': 'query',
+        'name': 'sort',
+        'required': false,
+        'schema': {
+          'default': 'recent',
+          'enum': ['recent', 'level', 'weight'],
+          'type': 'string',
+        },
+      },
+    ]);
+    final responses = _map(votes['responses']);
+    expect(responses.keys.toList(growable: false), [
+      '200',
+      '401',
+      '403',
+      '404',
+    ]);
+    expect(_map(responses['200'])['description'], 'One page of votes.');
+    expect(_map(responses['401'])['description'], 'Sign in required.');
+    expect(
+      _map(responses['403'])['description'],
+      "Viewer hasn't solved this problem.",
+    );
+    expect(_map(responses['404'])['description'], 'Problem not found.');
+    for (final status in ['401', '403', '404']) {
+      expect(
+        _jsonResponseSchema(votes, status),
+        _jsonResponseSchema(reports, '404'),
+        reason: status,
+      );
+    }
+
+    final schema = _responseSchema(votes);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    expect(_required(schema), [
+      'items',
+      'total',
+      'page',
+      'pageSize',
+      'sort',
+      'markRefusal',
+      'unhelpfulLocked',
+    ]);
+    final properties = _properties(schema);
+    expect(properties.keys.length, 7);
+    for (final field in ['total', 'page', 'pageSize']) {
+      expect(_map(properties[field]), {'type': 'number'});
+    }
+    expect(_map(properties['sort']), {
+      'enum': ['recent', 'level', 'weight'],
+      'type': 'string',
+    });
+    expect(_map(properties['markRefusal']), {
+      'enum': [
+        'UNAUTHENTICATED',
+        'REPUTATION_TOO_LOW',
+        'TIER_TOO_LOW',
+        'ACCOUNT_TOO_NEW',
+        'NOT_SOLVED',
+        'BANNED',
+        null,
+      ],
+      'type': ['string', 'null'],
+    });
+    expect(_map(properties['unhelpfulLocked']), {'type': 'boolean'});
+
+    final vote = _map(_map(properties['items'])['items']);
+    expect(vote['type'], 'object');
+    expect(vote.containsKey('additionalProperties'), isFalse);
+    expect(_required(vote), [
+      'id',
+      'user',
+      'votedAt',
+      'level',
+      'weight',
+      'invalidated',
+      'notInCalculation',
+      'banned',
+      'superseded',
+      'cutoff',
+      'comment',
+      'commentLanguage',
+      'emoticonId',
+      'emoticon',
+      'source',
+      'tags',
+      'isStandard',
+      'marks',
+    ]);
+    final voteProperties = _properties(vote);
+    expect(voteProperties.keys.length, 18);
+    final reportItem = _map(
+      _map(_properties(_responseSchema(reports))['items'])['items'],
+    );
+    expect(voteProperties['user'], _properties(reportItem)['user']);
+    expect(_map(voteProperties['id']), {'type': 'number'});
+    expect(_map(voteProperties['weight']), {'type': 'number'});
+    expect(_map(voteProperties['level']), {
+      'type': ['number', 'null'],
+    });
+    for (final field in ['votedAt', 'source']) {
+      expect(_map(voteProperties[field]), {'type': 'string'});
+    }
+    for (final field in [
+      'invalidated',
+      'notInCalculation',
+      'banned',
+      'superseded',
+      'cutoff',
+      'isStandard',
+    ]) {
+      expect(_map(voteProperties[field]), {'type': 'boolean'});
+    }
+    for (final field in ['comment', 'commentLanguage', 'emoticonId']) {
+      expect(_map(voteProperties[field]), {
+        'type': ['string', 'null'],
+      });
+    }
+    expect(_map(voteProperties['emoticon']), {
+      'properties': {
+        'key': {'type': 'string'},
+        'url': {'type': 'string'},
+      },
+      'required': ['key', 'url'],
+      'type': ['object', 'null'],
+    });
+    final searchTag = _map(_map(_properties(_map(_map(_properties(
+      _responseSchema(_get(contract, '/api/v4/problems')),
+    )['problems'])['items']))['tags'])['items']);
+    expect(_map(voteProperties['tags']), {
+      'items': {
+        'properties': {
+          'legacyKey': {
+            'type': ['string', 'null'],
+          },
+          'tag': {
+            ...searchTag,
+            'type': ['object', 'null'],
+          },
+        },
+        'required': ['tag', 'legacyKey'],
+        'type': 'object',
+      },
+      'type': 'array',
+    });
+    expect(_map(voteProperties['marks']), {
+      'properties': {
+        'counts': {
+          'properties': {
+            'helpful': {'type': 'integer'},
+            'unhelpful': {'type': 'integer'},
+          },
+          'required': ['helpful', 'unhelpful'],
+          'type': ['object', 'null'],
+        },
+        'mine': {
+          'enum': ['helpful', 'unhelpful', null],
+          'type': ['string', 'null'],
+        },
+        'own': {'type': 'boolean'},
+        'score': {'type': 'integer'},
+      },
+      'required': ['score', 'counts', 'mine', 'own'],
+      'type': ['object', 'null'],
+    });
+  });
+
   test('pins the public random-problem operation and complete schema', () {
     final randomProblem = _get(
       contract,
