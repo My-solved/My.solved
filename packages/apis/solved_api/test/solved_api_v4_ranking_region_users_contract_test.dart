@@ -56,6 +56,8 @@ void main() {
       r'K\',
       'K\u0000',
       '\u007fK',
+      'K\u0080',
+      '\u009fK',
     ]) {
       expect(
         () => contract.rankingRegionUsers(invalid),
