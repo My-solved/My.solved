@@ -4,50 +4,80 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-release
+  cancel-in-progress: false
 
 env:
-  JAVA_VERSION: "21.x"
   FLUTTER_VERSION: "3.29.0"
-  MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
 
 jobs:
-  build_and_release:
-    runs-on: macos-latest
+  release:
+    name: Build and submit to the App Store
+    # A manual run must also be started from a release tag.
+    if: github.ref_type == 'tag' && startsWith(github.ref_name, 'v')
+    runs-on: macos-15
+    timeout-minutes: 60
 
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Java ☕
-        uses: actions/setup-java@v4
-        with:
-          distribution: "zulu"
-          java-version: ${{ env.JAVA_VERSION }}
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Setup Flutter 🐦
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
 
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build iOS app 📱
+      - name: Prepare the iOS release build (unsigned)
         run: flutter build ios --release --no-codesign
 
       - name: Setup Ruby & Fastlane 💎
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.2
+          ruby-version: "3.3"
+          bundler-cache: true
+          working-directory: ios
 
-      - name: Install Fastlane
-        run: cd ios && bundle install
+      - name: Write the App Store Connect API key
+        env:
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        run: |
+          umask 077
+          printf '%s' "$APP_STORE_CONNECT_API_KEY" | base64 --decode > "$RUNNER_TEMP/AuthKey.p8"
 
-      - name: Release to App Store
+      - name: Build, upload, and submit for review
+        id: fastlane
+        working-directory: ios
         env:
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+          APP_STORE_CONNECT_KEY_PATH: ${{ runner.temp }}/AuthKey.p8
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          RELEASE_NOTES: ${{ vars.APP_STORE_RELEASE_NOTES }}
+        run: bundle exec fastlane release
+
+      # fastlane reports its own outcome; this covers failures before it ran.
+      - name: Notify Discord of an earlier failure
+        if: failure() && steps.fastlane.outcome != 'failure'
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          cd ios
-          bundle exec fastlane release
+          [ -n "$DISCORD_WEBHOOK_URL" ] || exit 0
+          jq -n --arg content "❌ App Store 배포 실패 ($REF_NAME): fastlane 이전 단계" \
+            '{username: "GitHub Actions", content: $content}' |
+            curl -fsS -H 'Content-Type: application/json' -d @- "$DISCORD_WEBHOOK_URL" > /dev/null || true
+
+      - name: Remove the App Store Connect API key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/AuthKey.p8"
