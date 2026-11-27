@@ -24,6 +24,7 @@ enum SolvedAuthenticatedOperation {
   emoticons,
   accountBackgrounds,
   accountBans,
+  accountStanding,
 }
 
 enum SolvedAuthenticatedFailureKind {
@@ -149,6 +150,13 @@ final class SolvedAuthenticatedApiClient {
   Future<BookmarkFoldersResult> bookmarkFavorites({int? page}) => _get(
         SolvedAuthenticatedOperation.bookmarkFavorites,
         () => _contract.bookmarkFavorites(page: page),
+      );
+
+  /// The viewer's standing warnings and bans. The token needs the `standing`
+  /// scope.
+  Future<AccountStandingResult> accountStanding() => _get(
+        SolvedAuthenticatedOperation.accountStanding,
+        _contract.accountStanding,
       );
 
   /// The viewer's bans that can be or have been appealed. The token needs the

@@ -1,0 +1,84 @@
+{
+  "strikes": [
+    {
+      "id": -1,
+      "problem": {
+        "problemId": 1000.5,
+        "subId": "",
+        "level": -1,
+        "effectiveVoteCount": 0,
+        "givesNoRating": true,
+        "isStandard": false,
+        "userStatus": "tried",
+        "title": "raw / 한 글"
+      },
+      "category": "personal-info",
+      "text": "",
+      "action": "hidden",
+      "createdAt": "not a date",
+      "seen": true,
+      "restored": false,
+      "appeal": {
+        "text": "please",
+        "status": "pending",
+        "appealedAt": "x",
+        "response": null
+      },
+      "appealable": false,
+      "strikeCleared": true,
+      "strikeExpiresAt": "later"
+    },
+    {
+      "id": 2,
+      "problem": null,
+      "category": "spam",
+      "text": "t",
+      "action": "removed",
+      "createdAt": "",
+      "seen": false,
+      "restored": true,
+      "appeal": null,
+      "appealable": true,
+      "strikeCleared": false,
+      "strikeExpiresAt": null
+    },
+    {
+      "id": -1,
+      "problem": {
+        "problemId": 1000.5,
+        "subId": "",
+        "level": -1,
+        "effectiveVoteCount": 0,
+        "givesNoRating": true,
+        "isStandard": false,
+        "userStatus": "tried",
+        "title": "raw / 한 글"
+      },
+      "category": "personal-info",
+      "text": "",
+      "action": "hidden",
+      "createdAt": "not a date",
+      "seen": true,
+      "restored": false,
+      "appeal": {
+        "text": "please",
+        "status": "pending",
+        "appealedAt": "x",
+        "response": null
+      },
+      "appealable": false,
+      "strikeCleared": true,
+      "strikeExpiresAt": "later"
+    }
+  ],
+  "bans": [
+    {
+      "banType": "vote",
+      "banReason": null,
+      "reason": "",
+      "until": "x"
+    }
+  ],
+  "priorStrikeBans": -1,
+  "nextBanDays": 0
+}
