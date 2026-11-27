@@ -37,6 +37,7 @@ enum SolvedAuthenticatedOperation {
   reorderBookmarkFolders,
   createBookmarkFolder,
   updateBookmarkFolder,
+  addBookmarkProblems,
 }
 
 enum SolvedAuthenticatedFailureKind {
@@ -398,6 +399,22 @@ final class SolvedAuthenticatedApiClient {
       _mutate(
         SolvedAuthenticatedOperation.updateBookmarkFolder,
         () => _contract.updateBookmarkFolder(slug, patch),
+      );
+
+  /// Adds [problemIds] to the end of the viewer's folder [slug]. The token
+  /// needs the `bookmarks.write` scope.
+  ///
+  /// A 404 (no such folder) or 422 (folder would be too large) fails as
+  /// [SolvedAuthenticatedFailureKind.unexpectedStatus]. Invalid arguments
+  /// fail the returned future with an [ArgumentError] before any request.
+  /// The request is sent once and never retried.
+  Future<BookmarkFolderChangeResult> addBookmarkProblems(
+    String slug,
+    List<int> problemIds,
+  ) =>
+      _mutate(
+        SolvedAuthenticatedOperation.addBookmarkProblems,
+        () => _contract.addBookmarkProblems(slug, problemIds),
       );
 
   Future<T> _get<T>(

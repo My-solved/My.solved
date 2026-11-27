@@ -340,6 +340,26 @@ final class SolvedApiV4Contract {
     );
   }
 
+  /// Adds problems to the end of one of the viewer's folders. It requires a
+  /// user token with `bookmarks.write` scope, so it is only exposed through
+  /// [SolvedAuthenticatedApiClient].
+  ///
+  /// [problemIds] needs 1 through 100 positive ids. They are sent in order,
+  /// duplicates included; the server skips repeats.
+  SolvedApiMutation<BookmarkFolderChangeResult> addBookmarkProblems(
+    String slug,
+    List<int> problemIds,
+  ) =>
+      SolvedApiMutation(
+        method: SolvedApiMutationMethod.post,
+        proxy: SolvedApiTarget(
+          baseUri: _proxyBaseUri,
+          path: 'account/bookmarks/${_bookmarkSlug(slug)}/problems',
+        ),
+        jsonBody: _bookmarkProblemIdsBody(problemIds),
+        decode: _decodeV4BookmarkFolderChange,
+      );
+
   /// The viewer's standing warnings and bans. It requires a user token with
   /// `standing` scope, so it is only exposed through
   /// [SolvedAuthenticatedApiClient].
@@ -3486,6 +3506,31 @@ String _boundedText(String value, String name, int minimum, int maximum) {
     );
   }
   return value;
+}
+
+String _bookmarkProblemIdsBody(List<int> problemIds) {
+  if (problemIds.isEmpty || problemIds.length > 100) {
+    throw ArgumentError.value(
+      problemIds,
+      'problemIds',
+      'Must have 1 through 100 entries',
+    );
+  }
+  for (final id in problemIds) {
+    if (id < 1) {
+      throw ArgumentError.value(id, 'problemIds', 'Must be positive');
+    }
+  }
+  return jsonEncode({'problemIds': List<int>.of(problemIds)});
+}
+
+BookmarkFolderChangeResult _decodeV4BookmarkFolderChange(dynamic json) {
+  final body = _object(json, 'bookmark folder change');
+  return BookmarkFolderChangeResult(
+    folder:
+        _decodeV4BookmarkFolder(_object(body['folder'], 'folder'), 'folder'),
+    changed: _number(body['changed'], 'changed'),
+  );
 }
 
 BookmarkFolder _decodeV4MutatedBookmarkFolder(dynamic json) =>
