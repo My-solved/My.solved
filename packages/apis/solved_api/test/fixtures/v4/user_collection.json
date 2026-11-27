@@ -1,0 +1,66 @@
+{
+  "items": [
+    {
+      "kind": "badge",
+      "id": -1,
+      "key": "first",
+      "name": "Badge",
+      "imageUrl": "not necessarily a URI",
+      "category": "event",
+      "addedAt": "not a date",
+      "equipped": true,
+      "acquiredAt": "set",
+      "holderCount": 5
+    },
+    {
+      "kind": "background",
+      "id": 0,
+      "key": "",
+      "name": "",
+      "imageUrl": "not necessarily a URI",
+      "category": "",
+      "addedAt": "not a date",
+      "equipped": false,
+      "acquiredAt": "2026-01-01",
+      "holderCount": -3
+    }
+  ],
+  "total": -5,
+  "nextOffset": null,
+  "counts": {
+    "badge": 0,
+    "background": -2
+  },
+  "categories": [
+    "event",
+    "",
+    "event"
+  ],
+  "equipped": {
+    "kind": "badge",
+    "id": 7,
+    "key": "equipped",
+    "name": "Equipped",
+    "imageUrl": "not necessarily a URI",
+    "category": "raw / 한 글",
+    "addedAt": "not a date",
+    "equipped": false,
+    "acquiredAt": "raw",
+    "holderCount": 12
+  },
+  "equippedByKind": {
+    "badge": null,
+    "background": {
+      "kind": "background",
+      "id": 8,
+      "key": "bg",
+      "name": "Badge",
+      "imageUrl": "not necessarily a URI",
+      "category": "event",
+      "addedAt": "not a date",
+      "equipped": true,
+      "acquiredAt": null,
+      "holderCount": 0
+    }
+  }
+}

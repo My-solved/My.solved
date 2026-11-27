@@ -1,0 +1,74 @@
+{
+  "kind": "background",
+  "id": 101,
+  "key": "anniversary_1st",
+  "name": "First Anniversary",
+  "imageUrl": "https://example.com/background-thumbnail.png",
+  "category": "event",
+  "addedAt": "2020-01-01T00:00:00Z",
+  "unlockedByDefault": false,
+  "owned": null,
+  "equipped": null,
+  "background": {
+    "key": "anniversary_1st",
+    "backgroundImageUrl": "https://example.com/background.png",
+    "fallbackBackgroundImageUrl": "https://example.com/background-fallback.png",
+    "backgroundVideoUrl": null,
+    "thumbnailPlaceholder": null,
+    "isIllust": true,
+    "displayName": "First Anniversary",
+    "authors": [
+      {
+        "key": "illustrator",
+        "displayName": "Illustrator",
+        "role": "Illustration",
+        "authorUrl": "https://example.com/illustrator",
+        "handle": null,
+        "twitter": "artist",
+        "instagram": null
+      }
+    ]
+  },
+  "credits": [
+    {
+      "key": "designer",
+      "displayName": null,
+      "role": "Design",
+      "authorUrl": null,
+      "handle": "designer",
+      "twitter": null,
+      "instagram": "designer"
+    }
+  ],
+  "userCount": 1,
+  "achievements": [
+    {
+      "key": "first_solve",
+      "name": "First Solve",
+      "condition": null,
+      "historic": false,
+      "hidden": false,
+      "holderCount": 1,
+      "earnedAt": "2026-11-25T00:00:00Z",
+      "problems": [
+        {
+          "problemId": 1000,
+          "level": 1,
+          "effectiveVoteCount": 3,
+          "givesNoRating": false,
+          "isStandard": true,
+          "titles": [
+            {
+              "language": "ko",
+              "title": "A+B",
+              "isOriginal": true,
+              "latex": false,
+              "html": false
+            }
+          ],
+          "userStatus": "solved"
+        }
+      ]
+    }
+  ]
+}

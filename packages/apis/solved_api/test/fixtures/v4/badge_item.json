@@ -1,0 +1,26 @@
+{
+  "kind": "badge",
+  "id": 202,
+  "key": "boardgame",
+  "name": "Board Game",
+  "imageUrl": "https://example.com/badge.png",
+  "category": "event",
+  "addedAt": "2020-01-01T00:00:00Z",
+  "unlockedByDefault": false,
+  "owned": null,
+  "equipped": null,
+  "background": null,
+  "credits": [
+    {
+      "key": "badge-designer",
+      "displayName": "Badge Designer",
+      "role": "Design",
+      "authorUrl": null,
+      "handle": null,
+      "twitter": null,
+      "instagram": null
+    }
+  ],
+  "userCount": 1,
+  "achievements": []
+}

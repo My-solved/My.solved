@@ -1,0 +1,25 @@
+{
+  "backgroundId": "anniversary_1st",
+  "backgroundImageUrl": "https://static.solved.ac/profile_bg/anniversary_1st/anniversary_1st.png",
+  "fallbackBackgroundImageUrl": null,
+  "backgroundVideoUrl": null,
+  "unlockedUserCount": 5041,
+  "displayName": "Standard Library",
+  "displayDescription": "Celebrated the 1st anniversary of solved.ac",
+  "conditions": "Solved previously unsolved problem at between May 31st, 2021 00:00 and June 8th, 2021 00:00 (KST)",
+  "hiddenConditions": false,
+  "isIllust": true,
+  "backgroundCategory": "season",
+  "solvedCompanyRights": true,
+  "authors": [
+    {
+      "authorId": "havana723",
+      "role": "Illustration",
+      "authorUrl": null,
+      "handle": "havana723",
+      "twitter": null,
+      "instagram": null,
+      "displayName": "havana723"
+    }
+  ]
+}

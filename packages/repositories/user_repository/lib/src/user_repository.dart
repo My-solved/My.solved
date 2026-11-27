@@ -3,48 +3,60 @@ import 'dart:async';
 import 'package:solved_api/solved_api.dart';
 
 class UserRepository {
-  UserRepository({SolvedApiClient? solvedApiClient})
-      : _solvedApiClient = solvedApiClient ?? SolvedApiClient();
+  UserRepository({required SolvedApiClient solvedApiClient})
+      : _solvedApiClient = solvedApiClient;
 
   final SolvedApiClient _solvedApiClient;
 
-  Future<User> getUser(String handle) async {
+  bool get supportsV4 => _solvedApiClient.supportsV4;
+
+  Future<UserProfile> getUser(String handle) async {
+    if (supportsV4) return await _solvedApiClient.v4UserProfile(handle);
     return await _solvedApiClient.userShow(handle);
   }
 
-  Future<List<Organization>> getOrganizations(String handle) async {
-    return await _solvedApiClient.userOrganizations(handle);
+  Future<ProfileStreak> getStreak(
+    String handle, {
+    required DateTime from,
+    required DateTime to,
+  }) async {
+    if (supportsV4) {
+      return await _solvedApiClient.v4UserActivity(
+        handle,
+        from: from,
+        to: to,
+      );
+    }
+    return await _solvedApiClient.userGrass(handle, 'default');
   }
 
-  Future<List<Badge>> getBadges(String handle) async {
-    return await _solvedApiClient.userAvailableBadges(handle);
+  /// Returns the legacy tier distribution when using the v3 fallback.
+  ///
+  /// Official solved.ac v4 does not expose an equivalent distribution. In
+  /// particular, its rating histogram must not be reinterpreted as tier data.
+  Future<List<ProfileTierStat>> getProblemStats(String handle) async {
+    if (supportsV4) {
+      throw UnsupportedError(
+        'Official solved.ac v4 does not expose a tier distribution',
+      );
+    }
+    return _solvedApiClient.userProblemStats(handle);
   }
 
-  Future<Streak> getStreak(String handle, String? topic) async {
-    return await _solvedApiClient.userGrass(handle, topic);
+  Future<List<ProfileTagRating>> getTagRatings(String handle) async {
+    if (supportsV4) {
+      return (await _solvedApiClient.v4UserProfile(handle)).tagRatings;
+    }
+    return _solvedApiClient.userTagRatings(handle);
   }
 
-  Future<List<Problem>> getTopProblems(String handle) async {
-    return await _solvedApiClient.userTop100(handle);
+  Future<ProfileBackgroundAsset?> getBackground(String backgroundId) {
+    if (supportsV4) return _solvedApiClient.v4BackgroundShow(backgroundId);
+    return _solvedApiClient.backgroundShow(backgroundId);
   }
 
-  Future<List<ProblemStat>> getProblemStats(String handle) async {
-    return await _solvedApiClient.userProblemStats(handle);
-  }
-
-  Future<List<TagRating>> getTagRatings(String handle) async {
-    return await _solvedApiClient.userTagRatings(handle);
-  }
-
-  Future<Background> getBackground(String backgroundId) async {
-    return await _solvedApiClient.backgroundShow(backgroundId);
-  }
-
-  Future<Badge> getBadge(String badgeId) async {
-    return await _solvedApiClient.badgeShow(badgeId);
-  }
-
-  Future<SiteStats> getSiteStats() async {
-    return await _solvedApiClient.siteStats();
+  Future<ProfileBadgeAsset> getBadge(String badgeId) {
+    if (supportsV4) return _solvedApiClient.v4BadgeShow(badgeId);
+    return _solvedApiClient.badgeShow(badgeId);
   }
 }

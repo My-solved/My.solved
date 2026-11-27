@@ -1,0 +1,19 @@
+{
+  "slug": "other-slug",
+  "language": "en",
+  "title": "",
+  "content": {
+    "type": "doc",
+    "content": [
+      {
+        "type": "heading",
+        "attrs": {
+          "level": 1
+        }
+      },
+      null
+    ],
+    "future": true
+  },
+  "updatedAt": "not a date"
+}

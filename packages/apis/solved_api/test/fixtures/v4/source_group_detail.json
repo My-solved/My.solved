@@ -1,0 +1,75 @@
+{
+  "group": {
+    "id": 10,
+    "name": "Regional",
+    "abbreviation": null,
+    "groupCount": 1,
+    "contestCount": 2.5,
+    "problemCount": null,
+    "solvedCount": 3,
+    "level": null,
+    "order": "random"
+  },
+  "path": [
+    { "id": 1, "name": "Root" },
+    { "id": -2.5, "name": "" },
+    { "id": 1, "name": "Root" }
+  ],
+  "links": [
+    { "ojId": "boj", "ojName": "Example Judge", "url": "not necessarily a URI" },
+    { "ojId": "", "ojName": "", "url": "" }
+  ],
+  "query": "raw & 한 글",
+  "groups": [
+    {
+      "id": 11.0,
+      "name": "child",
+      "abbreviation": "C",
+      "groupCount": 0,
+      "contestCount": 0,
+      "problemCount": -1,
+      "solvedCount": null,
+      "level": {
+        "q25": -1,
+        "q50": 5,
+        "q75": 2,
+        "tierCounts": [1, 1],
+        "ratedCount": 0,
+        "order": "ascending",
+        "progress": null
+      },
+      "order": null
+    }
+  ],
+  "contests": [
+    {
+      "id": 100,
+      "name": "Round 1",
+      "abbreviation": "R1",
+      "startsAt": "not a date",
+      "problemCount": 7.5,
+      "solvedCount": null,
+      "level": {
+        "q25": 0,
+        "q50": 0,
+        "q75": 0,
+        "tierCounts": [],
+        "ratedCount": -4,
+        "order": null,
+        "progress": {
+          "solved": -1,
+          "through": { "q25": true, "q50": true, "q75": true }
+        }
+      }
+    },
+    {
+      "id": -100.5,
+      "name": "",
+      "abbreviation": null,
+      "startsAt": null,
+      "problemCount": 0,
+      "solvedCount": 9,
+      "level": null
+    }
+  ]
+}

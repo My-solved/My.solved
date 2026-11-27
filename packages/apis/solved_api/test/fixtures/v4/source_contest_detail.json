@@ -1,0 +1,180 @@
+{
+  "contest": {
+    "id": 100,
+    "name": "Round 1",
+    "abbreviation": null,
+    "startsAt": "not a date",
+    "problemCount": 2.5,
+    "solvedCount": null,
+    "level": {
+      "q25": 1,
+      "q50": -1,
+      "q75": 0,
+      "tierCounts": [
+        2,
+        0
+      ],
+      "ratedCount": 9,
+      "order": "mixed",
+      "progress": null
+    },
+    "url": "not necessarily a URI",
+    "venue": ""
+  },
+  "path": [
+    {
+      "id": 1,
+      "name": "Root"
+    },
+    {
+      "id": 2.5,
+      "name": ""
+    }
+  ],
+  "links": [
+    {
+      "ojId": "boj",
+      "ojName": "Example Judge",
+      "url": ""
+    }
+  ],
+  "query": null,
+  "problems": [
+    {
+      "numberInContest": "A",
+      "problem": {
+        "id": 1001,
+        "problemId": 1001,
+        "subId": "",
+        "level": 10,
+        "levelAverage": 10.25,
+        "levelStdev": 0.5,
+        "isStandard": true,
+        "votedUserCount": 42,
+        "effectiveVoteCount": 40,
+        "solvedUserCount": 1234,
+        "givesNoRating": false,
+        "noRatingReasons": [],
+        "noRatingWarnings": [],
+        "titles": [
+          {
+            "language": "en",
+            "title": "English original",
+            "isOriginal": true,
+            "latex": false,
+            "html": false
+          },
+          {
+            "language": "ko",
+            "title": "한국어 제목",
+            "isOriginal": false,
+            "latex": false,
+            "html": false
+          }
+        ],
+        "userStatus": null,
+        "contests": [],
+        "tags": [
+          {
+            "id": 1,
+            "key": "math",
+            "isMeta": false
+          },
+          {
+            "id": 2,
+            "key": "number_theory",
+            "isMeta": false
+          }
+        ],
+        "viewerFolders": []
+      }
+    },
+    {
+      "numberInContest": "",
+      "problem": {
+        "id": 1002,
+        "problemId": 1002,
+        "subId": "",
+        "level": 11,
+        "levelAverage": 11,
+        "levelStdev": 0,
+        "isStandard": true,
+        "votedUserCount": 12,
+        "effectiveVoteCount": 12,
+        "solvedUserCount": 500,
+        "givesNoRating": false,
+        "noRatingReasons": [],
+        "noRatingWarnings": [],
+        "titles": [
+          {
+            "language": "ja",
+            "title": "最初の翻訳",
+            "isOriginal": false,
+            "latex": false,
+            "html": false
+          },
+          {
+            "language": "en",
+            "title": "Original title",
+            "isOriginal": true,
+            "latex": false,
+            "html": false
+          }
+        ],
+        "userStatus": "solved",
+        "contests": [],
+        "tags": [],
+        "viewerFolders": []
+      }
+    },
+    {
+      "numberInContest": "A",
+      "problem": {
+        "id": 1001,
+        "problemId": 1001,
+        "subId": "",
+        "level": 10,
+        "levelAverage": 10.25,
+        "levelStdev": 0.5,
+        "isStandard": true,
+        "votedUserCount": 42,
+        "effectiveVoteCount": 40,
+        "solvedUserCount": 1234,
+        "givesNoRating": false,
+        "noRatingReasons": [],
+        "noRatingWarnings": [],
+        "titles": [
+          {
+            "language": "en",
+            "title": "English original",
+            "isOriginal": true,
+            "latex": false,
+            "html": false
+          },
+          {
+            "language": "ko",
+            "title": "한국어 제목",
+            "isOriginal": false,
+            "latex": false,
+            "html": false
+          }
+        ],
+        "userStatus": null,
+        "contests": [],
+        "tags": [
+          {
+            "id": 1,
+            "key": "math",
+            "isMeta": false
+          },
+          {
+            "id": 2,
+            "key": "number_theory",
+            "isMeta": false
+          }
+        ],
+        "viewerFolders": []
+      }
+    }
+  ]
+}

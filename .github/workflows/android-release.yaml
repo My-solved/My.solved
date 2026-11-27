@@ -10,7 +10,7 @@ permissions:
 
 env:
   JAVA_VERSION: "21.x"
-  FLUTTER_VERSION: "3.29.x"
+  FLUTTER_VERSION: "3.29.0"
 
 jobs:
   build:
@@ -18,7 +18,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -81,6 +81,22 @@ jobs:
           releaseFiles: ./build/app-release.aab
           track: production
           status: completed
+
+      - name: Notify Discord
+        if: always()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          JOB_STATUS: ${{ job.status }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          [ -n "$DISCORD_WEBHOOK_URL" ] || exit 0
+          if [ "$JOB_STATUS" = "success" ]; then
+            message="✅ Play Store 배포 완료 ($REF_NAME)"
+          else
+            message="❌ Play Store 배포 실패 ($REF_NAME)"
+          fi
+          jq -n --arg content "$message" '{username: "GitHub Actions", content: $content}' |
+            curl -fsS -H 'Content-Type: application/json' -d @- "$DISCORD_WEBHOOK_URL" > /dev/null || true
 
   release:
     runs-on: ubuntu-latest

@@ -5,11 +5,6 @@ import 'package:test/test.dart';
 
 class MockSolvedApiClient extends Mock implements solved_api.SolvedApiClient {}
 
-class MockSearchSuggestion extends Mock
-    implements solved_api.SearchSuggestion {}
-
-class MockSearchObject extends Mock implements solved_api.SearchObject {}
-
 void main() {
   group('SearchRepository', () {
     late solved_api.SolvedApiClient solvedApiClient;
@@ -17,91 +12,189 @@ void main() {
 
     setUp(() {
       solvedApiClient = MockSolvedApiClient();
+      when(() => solvedApiClient.supportsV4).thenReturn(false);
       searchRepository = SearchRepository(solvedApiClient: solvedApiClient);
-    });
-
-    group('getSuggestions', () {
-      const query = 'rsa';
-
-      test('calls searchSuggestion with correct query', () async {
-        try {
-          await searchRepository.getSuggestions(query);
-        } catch (_) {}
-        verify(() => solvedApiClient.searchSuggestion(query)).called(1);
-      });
-
-      test('returns correct searchSuggestion on success', () async {
-        final searchSuggestion = MockSearchSuggestion();
-        when(() => solvedApiClient.searchSuggestion(query))
-            .thenAnswer((_) async => searchSuggestion);
-
-        expect(await searchRepository.getSuggestions(query), searchSuggestion);
-      });
     });
 
     group('getProblems', () {
       const query = 'rsa';
       const page = 1;
-      const sort = 'id';
-      const direction = 'asc';
+      const sort = solved_api.SolvedApiV4ProblemSort.level;
+      const direction = solved_api.SolvedApiV4SearchDirection.desc;
+      const legacyResult =
+          solved_api.SearchObject<solved_api.ProblemSearchItem>(
+            count: 0,
+            items: [],
+          );
+      const v4Result = solved_api.ProblemSearchResult(
+        count: 0,
+        items: [],
+        page: 1,
+        pageSize: 50,
+        diagnostics: null,
+        seed: null,
+      );
 
-      test('calls searchProblem with correct query, page, sort, direction',
-          () async {
-        try {
-          await searchRepository.getProblems(query, page, sort, direction);
-        } catch (_) {}
-        verify(() =>
-                solvedApiClient.searchProblem(query, page, sort, direction))
-            .called(1);
+      test('maps typed options to the legacy v3 request', () async {
+        when(
+          () => solvedApiClient.searchProblem(
+            query,
+            page,
+            sort.value,
+            direction.value,
+          ),
+        ).thenAnswer((_) async => legacyResult);
+
+        expect(
+          await searchRepository.getProblems(
+            query,
+            page: page,
+            sort: sort,
+            direction: direction,
+          ),
+          same(legacyResult),
+        );
+        verify(
+          () => solvedApiClient.searchProblem(
+            query,
+            page,
+            sort.value,
+            direction.value,
+          ),
+        ).called(1);
+        verifyNever(
+          () => solvedApiClient.v4SearchProblems(
+            query,
+            page: page,
+            sort: sort,
+            direction: direction,
+          ),
+        );
       });
 
-      test('returns correct searchObject on success', () async {
-        final searchObject = MockSearchObject();
-        when(() => solvedApiClient.searchProblem(query, page, sort, direction))
-            .thenAnswer((_) async => searchObject);
+      test('uses the v4 problem endpoint when configured', () async {
+        when(() => solvedApiClient.supportsV4).thenReturn(true);
+        when(
+          () => solvedApiClient.v4SearchProblems(
+            query,
+            page: page,
+            sort: sort,
+            direction: direction,
+          ),
+        ).thenAnswer((_) async => v4Result);
 
-        expect(await searchRepository.getProblems(query, page, sort, direction),
-            searchObject);
+        expect(
+          await searchRepository.getProblems(
+            query,
+            page: page,
+            sort: sort,
+            direction: direction,
+          ),
+          same(v4Result),
+        );
+        verify(
+          () => solvedApiClient.v4SearchProblems(
+            query,
+            page: page,
+            sort: sort,
+            direction: direction,
+          ),
+        ).called(1);
+        verifyNever(
+          () => solvedApiClient.searchProblem(
+            any(),
+            any(),
+            any(),
+            any(),
+          ),
+        );
       });
     });
 
     group('getUsers', () {
       const query = 'fdsa';
       const page = 1;
+      const item = solved_api.UserSearchItem(
+        handle: 'fdsa',
+        profileImageUrl: null,
+        tier: null,
+      );
 
-      test('calls searchUser with correct query, page', () async {
-        try {
-          await searchRepository.getUsers(query, page);
-        } catch (_) {}
+      test('normalizes v3 items without inventing an exact match', () async {
+        final items = <solved_api.UserSearchItem>[item];
+        when(
+          () => solvedApiClient.searchUser(query, page),
+        ).thenAnswer(
+          (_) async => solved_api.SearchObject(
+            count: 1,
+            items: items,
+          ),
+        );
+
+        final actual = await searchRepository.getUsers(query, page: page);
+
+        expect(actual.exact, isNull);
+        expect(actual.items, same(items));
         verify(() => solvedApiClient.searchUser(query, page)).called(1);
+        verifyNever(() => solvedApiClient.v4SearchUsers(any()));
       });
 
-      test('returns correct searchObject on success', () async {
-        final searchObject = MockSearchObject();
-        when(() => solvedApiClient.searchUser(query, page))
-            .thenAnswer((_) async => searchObject);
+      test('preserves the separate v4 exact and item results', () async {
+        when(() => solvedApiClient.supportsV4).thenReturn(true);
+        const result = solved_api.UserSearchResult(
+          exact: item,
+          items: [item],
+        );
+        when(
+          () => solvedApiClient.v4SearchUsers(query),
+        ).thenAnswer((_) async => result);
 
-        expect(await searchRepository.getUsers(query, page), searchObject);
+        expect(
+          await searchRepository.getUsers(query, page: page),
+          same(result),
+        );
+        verify(() => solvedApiClient.v4SearchUsers(query)).called(1);
+        verifyNever(() => solvedApiClient.searchUser(any(), any()));
       });
     });
 
     group('getTags', () {
       const query = 'graph';
       const page = 1;
+      const result = solved_api.SearchObject<solved_api.TagSearchItem>(
+        count: 0,
+        items: [],
+      );
 
-      test('calls searchTag with correct query, page', () async {
-        try {
-          await searchRepository.getTags(query, page);
-        } catch (_) {}
+      test('uses the v3 tag endpoint when v4 is unavailable', () async {
+        when(
+          () => solvedApiClient.searchTag(query, page),
+        ).thenAnswer((_) async => result);
+
+        expect(
+          await searchRepository.getTags(query, page: page),
+          same(result),
+        );
         verify(() => solvedApiClient.searchTag(query, page)).called(1);
+        verifyNever(
+          () => solvedApiClient.v4SearchTags(query, page: page),
+        );
       });
 
-      test('returns correct searchObject on success', () async {
-        final searchObject = MockSearchObject();
-        when(() => solvedApiClient.searchTag(query, page))
-            .thenAnswer((_) async => searchObject);
+      test('uses the v4 tag endpoint with explicit page one', () async {
+        when(() => solvedApiClient.supportsV4).thenReturn(true);
+        when(
+          () => solvedApiClient.v4SearchTags(query, page: page),
+        ).thenAnswer((_) async => result);
 
-        expect(await searchRepository.getTags(query, page), searchObject);
+        expect(
+          await searchRepository.getTags(query, page: page),
+          same(result),
+        );
+        verify(
+          () => solvedApiClient.v4SearchTags(query, page: page),
+        ).called(1);
+        verifyNever(() => solvedApiClient.searchTag(any(), any()));
       });
     });
   });

@@ -1,0 +1,19 @@
+{
+  "tags": [
+    {
+      "key": "math",
+      "ratingTagIndex": 0,
+      "displayName": "수학"
+    },
+    {
+      "key": "",
+      "ratingTagIndex": -7,
+      "displayName": ""
+    },
+    {
+      "key": "math",
+      "ratingTagIndex": 42,
+      "displayName": "Mathematics"
+    }
+  ]
+}

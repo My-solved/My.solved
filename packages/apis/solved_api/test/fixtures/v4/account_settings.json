@@ -1,0 +1,31 @@
+{
+  "settings": {
+    "theme": "dark",
+    "iconTheme": "legacy",
+    "iconSchemeSolved": "hide",
+    "iconSchemeUnsolved": "hide",
+    "iconSchemeHover": "hide",
+    "iconWarnMode": "absolute",
+    "iconWarnRelative": -30,
+    "iconWarnAbsolute": 0,
+    "alwaysShowUnrated": true,
+    "alwaysShowUnratable": false,
+    "showSolvedUserCount": "hide",
+    "showVotedUserCount": "hide",
+    "showTagButton": "hide",
+    "tagDisplayLanguage": "ja",
+    "problemSort": "random",
+    "problemSortDirection": "desc",
+    "showOriginalTitle": true,
+    "showOriginalContest": false,
+    "sourceLevelAllSolved": "hide",
+    "sourceLevelPartlySolved": "hide",
+    "sourceLevelUnsolved": "hide",
+    "sourceLevelHover": "hide",
+    "sourceLevelDisplay": "none",
+    "sourceSort": "p75",
+    "sourceSortDirection": "desc",
+    "sourceOrderType": "hide",
+    "sourceOrderHover": "hide"
+  }
+}

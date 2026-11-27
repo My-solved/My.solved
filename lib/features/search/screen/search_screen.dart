@@ -9,6 +9,7 @@ import 'package:my_solved/components/styles/color.dart';
 import 'package:my_solved/components/styles/font.dart';
 import 'package:my_solved/features/search/bloc/search_bloc.dart';
 import 'package:my_solved/features/search_filter/screen/search_filter_screen.dart';
+import 'package:solved_api/solved_api.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class SearchScreen extends StatelessWidget {
@@ -342,31 +343,55 @@ class _SearchViewState extends State<SearchView> {
                                             "${state.problems!.items[index].problemId}번",
                                             style: MySolvedTextStyle.body2,
                                           ),
+                                          if (state
+                                                  .problems!
+                                                  .items[index]
+                                                  .givesNoRating ==
+                                              true) ...[
+                                            SizedBox(width: 8),
+                                            Flexible(
+                                              child: Text(
+                                                "레이팅 미반영",
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: MySolvedTextStyle
+                                                    .caption1
+                                                    .copyWith(
+                                                      color:
+                                                          MySolvedColor
+                                                              .secondaryFont,
+                                                    ),
+                                              ),
+                                            ),
+                                          ],
                                         ],
                                       ),
                                       SizedBox(height: 4),
                                       // 문제 제목에 HTML 태그가 포함되어 있을 경우
-                                      state.problems!.items[index].titleKo
-                                              .contains("</")
+                                      _problemTitle(
+                                        state.problems!.items[index],
+                                      ).contains("</")
                                           ? HtmlWidget(
-                                              state.problems!.items[index]
-                                                  .titleKo,
+                                              _problemTitle(
+                                                state.problems!.items[index],
+                                              ),
                                               textStyle:
                                                   MySolvedTextStyle.body1,
                                             )
                                           : Text(
-                                              state.problems!.items[index]
-                                                  .titleKo,
+                                              _problemTitle(
+                                                state.problems!.items[index],
+                                              ),
                                               style: MySolvedTextStyle.body1,
                                             ),
                                       SizedBox(height: 8),
                                       if (state.showProblemTag)
                                         Wrap(
                                           children: List.generate(
-                                            state.problems!.items[index].tags
+                                            state.problems!.items[index].tagNames
                                                 .length,
                                             (subIndex) => Text(
-                                              "#${state.problems!.items[index].tags[subIndex].displayNames[0]["name"]} ",
+                                              "#${state.problems!.items[index].tagNames[subIndex]} ",
                                               style: MySolvedTextStyle.caption1
                                                   .copyWith(
                                                 color:
@@ -384,56 +409,7 @@ class _SearchViewState extends State<SearchView> {
                           ),
                         ),
                       if (state.currentIndex == 1 && state.users != null)
-                        Column(
-                          children: List.generate(
-                            state.users!.items.length,
-                            (index) => Column(
-                              children: [
-                                ElevatedButton(
-                                  onPressed: () {},
-                                  style: ElevatedButton.styleFrom(
-                                    alignment: Alignment.centerLeft,
-                                    padding: EdgeInsets.all(16),
-                                    backgroundColor: MySolvedColor.background,
-                                    foregroundColor: MySolvedColor.font,
-                                    elevation: 0,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    minimumSize: Size.fromHeight(52),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      SvgPicture.asset(
-                                        "assets/images/tiers/${state.users!.items[index].tier}.svg",
-                                        width: 24,
-                                        height: 24,
-                                      ),
-                                      SizedBox(width: 8),
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: ExtendedImage.network(
-                                          state.users!.items[index]
-                                                  .profileImageUrl ??
-                                              "https://static.solved.ac/misc/360x360/default_profile.png",
-                                          width: 24,
-                                          height: 24,
-                                        ),
-                                      ),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        state.users!.items[index].handle,
-                                        style: MySolvedTextStyle.body1,
-                                      ),
-                                      SizedBox(width: 8),
-                                    ],
-                                  ),
-                                ),
-                                SizedBox(height: 16),
-                              ],
-                            ),
-                          ),
-                        ),
+                        _userSearchResults(state.users!),
                       if (state.currentIndex == 2 && state.tags != null)
                         Column(
                           children: List.generate(
@@ -458,7 +434,7 @@ class _SearchViewState extends State<SearchView> {
                                     minimumSize: Size.fromHeight(52),
                                   ),
                                   child: Text(
-                                    "${state.tags!.items[index].key}:${state.tags!.items[index].problemCount}",
+                                    _tagLabel(state.tags!.items[index]),
                                     style: MySolvedTextStyle.body1,
                                   ),
                                 ),
@@ -478,6 +454,130 @@ class _SearchViewState extends State<SearchView> {
     );
     // return
   }
+}
+
+Widget _userSearchResults(UserSearchResult users) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      if (users.exact != null) ...[
+        _userSearchSectionTitle(
+          '정확히 일치',
+          key: const Key('user-search-exact-section'),
+        ),
+        _userSearchCard(
+          users.exact!,
+          key: ValueKey('user-search-exact-${users.exact!.handle}'),
+        ),
+      ],
+      if (users.items.isNotEmpty) ...[
+        _userSearchSectionTitle(
+          '검색 결과',
+          key: const Key('user-search-items-section'),
+        ),
+        for (var index = 0; index < users.items.length; index++)
+          _userSearchCard(
+            users.items[index],
+            key: ValueKey(
+              'user-search-item-$index-${users.items[index].handle}',
+            ),
+          ),
+      ],
+    ],
+  );
+}
+
+Widget _userSearchSectionTitle(String title, {required Key key}) {
+  return Padding(
+    key: key,
+    padding: const EdgeInsets.only(bottom: 8),
+    child: Text(title, style: MySolvedTextStyle.body2),
+  );
+}
+
+Widget _userSearchCard(UserSearchItem user, {required Key key}) {
+  final summary = _userSearchSummary(user);
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 16),
+    child: ElevatedButton(
+      key: key,
+      onPressed: () {},
+      style: ElevatedButton.styleFrom(
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.all(16),
+        backgroundColor: MySolvedColor.background,
+        foregroundColor: MySolvedColor.font,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        minimumSize: const Size.fromHeight(52),
+      ),
+      child: Row(
+        children: [
+          SvgPicture.asset(
+            'assets/images/tiers/${user.tier ?? 0}.svg',
+            width: 24,
+            height: 24,
+          ),
+          const SizedBox(width: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: ExtendedImage.network(
+              user.profileImageUrl ??
+                  'https://static.solved.ac/misc/360x360/default_profile.png',
+              width: 24,
+              height: 24,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  user.handle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: MySolvedTextStyle.body1,
+                ),
+                if (summary != null)
+                  Text(
+                    summary,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: MySolvedTextStyle.caption1,
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+String? _userSearchSummary(UserSearchItem user) {
+  final parts = <String>[
+    if (user.rank != null) '${user.rank}위',
+    if (user.userClass != null)
+      'CLASS ${user.userClass}${user.classPlus == true ? '+' : ''}',
+    if (user.rating != null) '레이팅 ${user.rating}',
+    if (user.solvedCount != null) '${user.solvedCount}문제',
+    if (user.reputation != null) '평판 ${user.reputation}',
+  ];
+  return parts.isEmpty ? null : parts.join(' · ');
+}
+
+String _problemTitle(ProblemSearchItem item) => item.title ?? '제목 없음';
+
+String _tagLabel(TagSearchItem item) {
+  final displayName = item.displayName?.trim();
+  final name = displayName == null ||
+          displayName.isEmpty ||
+          displayName.toLowerCase() == item.key.toLowerCase()
+      ? item.key
+      : '$displayName (${item.key})';
+  return item.problemCount == null ? name : '$name:${item.problemCount}';
 }
 
 class SearchHeaderDelegate extends SliverPersistentHeaderDelegate {

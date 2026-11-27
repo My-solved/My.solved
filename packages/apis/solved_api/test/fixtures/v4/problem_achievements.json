@@ -1,0 +1,43 @@
+{
+  "items": [
+    {
+      "key": "problem-streak",
+      "name": "문제 연속 기록",
+      "condition": "",
+      "rewards": [
+        {
+          "kind": "badge",
+          "id": -3,
+          "key": "reward",
+          "name": "보상",
+          "imageUrl": "not necessarily a URI",
+          "category": "",
+          "addedAt": "not-a-date"
+        },
+        {
+          "kind": "background",
+          "id": 4,
+          "key": "reward",
+          "name": "Background",
+          "imageUrl": "",
+          "category": "event",
+          "addedAt": ""
+        }
+      ],
+      "holderCount": -7,
+      "earnedAt": "",
+      "relation": "unlocks",
+      "byLevel": true
+    },
+    {
+      "key": "problem-streak",
+      "name": "",
+      "condition": null,
+      "rewards": [],
+      "holderCount": 0,
+      "earnedAt": null,
+      "relation": "counts",
+      "byLevel": false
+    }
+  ]
+}

@@ -88,6 +88,6 @@ class NotificationApiClient {
   }
 
   Future<void> cancelScheduledNotificationById({required int id}) async {
-    _flutterLocalNotificationsPlugin.cancel(id);
+    await _flutterLocalNotificationsPlugin.cancel(id);
   }
 }

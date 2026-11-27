@@ -1,0 +1,133 @@
+{
+  "id": 1,
+  "handle": "index",
+  "tier": null,
+  "profileImageUrl": null,
+  "bio": null,
+  "rating": 2417,
+  "solvedCount": 2048,
+  "voteCount": 37,
+  "reputation": 314,
+  "maxStreak": 365,
+  "currentStreak": 12,
+  "streakVacation": null,
+  "streakCountedToday": true,
+  "streakFrozenYesterday": false,
+  "noRatingSolvedCount": 4,
+  "streakTheme": null,
+  "background": {
+    "key": "anniversary_1st",
+    "backgroundImageUrl": "https://example.com/background.png",
+    "fallbackBackgroundImageUrl": "https://example.com/background-fallback.png",
+    "backgroundVideoUrl": null,
+    "thumbnailPlaceholder": null,
+    "isIllust": true,
+    "displayName": "First Anniversary",
+    "authors": []
+  },
+  "isRival": false,
+  "isReverseRival": false,
+  "ojAccounts": [
+    {
+      "ojId": "boj",
+      "ojName": "Baekjoon Online Judge",
+      "handle": "index",
+      "profileUrl": "https://www.acmicpc.net/user/index",
+      "logoUrl": null,
+      "verified": true
+    },
+    {
+      "ojId": "codeforces",
+      "ojName": "Codeforces",
+      "handle": "tourist",
+      "profileUrl": null,
+      "logoUrl": "https://example.com/codeforces.svg",
+      "verified": false
+    }
+  ],
+  "linkedAccounts": [
+    {
+      "provider": "discord",
+      "name": "index",
+      "url": "https://discord.com/users/123456789"
+    },
+    {
+      "provider": "icpc",
+      "name": "Index Team",
+      "url": "https://icpc.global/ICPCID/INDEX"
+    }
+  ],
+  "affiliations": [
+    {
+      "id": 901,
+      "affiliationId": 101,
+      "name": "Example University",
+      "type": "university",
+      "logoThumbnailUrl": "https://example.com/university.png",
+      "color": "#336699"
+    },
+    {
+      "id": 902,
+      "affiliationId": 202,
+      "name": "Algorithm Community",
+      "type": "community",
+      "logoThumbnailUrl": null,
+      "color": null
+    }
+  ],
+  "class": 6,
+  "classPlus": true,
+  "badge": {
+    "key": "boardgame",
+    "name": "Board Game",
+    "imageUrl": "https://example.com/badge.png"
+  },
+  "ratingByProblemsSum": 2010,
+  "ratingByClass": 200,
+  "ratingBySolvedCount": 207,
+  "ratingProblemsCutoff": 100,
+  "ratingProblemsHistogram": [2, 7, 15],
+  "bans": [
+    {
+      "banType": "rating",
+      "banReason": "rating_copied_code",
+      "reason": "Copied code",
+      "until": "2027-01-01"
+    },
+    {
+      "banType": "vote",
+      "banReason": null,
+      "reason": "Manual review",
+      "until": "2027-12-31"
+    }
+  ],
+  "tagRatings": [
+    {
+      "key": "dp",
+      "rating": 1750,
+      "solvedCount": 120,
+      "ratingByProblemsSum": 1600,
+      "ratingBySolvedCount": 150,
+      "ratingProblemsCutoff": 50
+    },
+    {
+      "key": "math",
+      "rating": 1650,
+      "solvedCount": 100,
+      "ratingByProblemsSum": 1525,
+      "ratingBySolvedCount": 125,
+      "ratingProblemsCutoff": 50
+    }
+  ],
+  "metadata": {
+    "countryCode": "KR",
+    "pronouns": "they/them",
+    "name": "Index",
+    "nameNative": "인덱스",
+    "birthday": {
+      "year": 1999,
+      "month": 12,
+      "day": 31
+    }
+  }
+}

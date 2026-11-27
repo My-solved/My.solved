@@ -118,38 +118,51 @@ class _HomeViewState extends State<HomeView> {
       },
       builder: (context, state) {
         if (state.status.isSuccess && state.user != null) {
-          final slideItem = [
+          final ratingBreakdown = state.user!.ratingBreakdown;
+          final slideItem = <List<String>>[
             [
               "문제 해결",
               state.user!.solvedCount.toString(),
               "https://solved.ac/profile/${state.handle}/solved"
             ],
-            [
-              "기여",
-              state.user!.voteCount.toString(),
-              "https://solved.ac/profile/${state.handle}/votes"
-            ],
-            [
-              "라이벌",
-              state.user!.reverseRivalCount.toString(),
-              "https://solved.ac/ranking/reverse_rival"
-            ],
+            if (state.user!.legacyContributionCount != null)
+              [
+                "기여",
+                state.user!.legacyContributionCount.toString(),
+                "https://solved.ac/profile/${state.handle}/votes"
+              ],
+            if (state.user!.reverseRivalCount != null)
+              [
+                "라이벌",
+                state.user!.reverseRivalCount.toString(),
+                "https://solved.ac/ranking/reverse_rival"
+              ],
           ];
 
           final solvedToday = state.solvedToday ?? false;
           final tags = state.tagRatings ?? [];
-          final stats = state.problemStats ?? [];
           final gridItem = [
             GridItem(
               title: "레이팅",
               value: "${_tierText(state.user!.tier)} ${state.user!.rating}",
-              onPressed: () {},
+              onPressed: ratingBreakdown == null
+                  ? null
+                  : () {
+                      _showRatingBreakdownDialog(ratingBreakdown);
+                    },
               backgroundColor: _ratingColor(state.user!.rating),
               foregroundColor: MySolvedColor.background,
+              icon: ratingBreakdown == null
+                  ? null
+                  : Icon(
+                      Icons.info_outline,
+                      color: MySolvedColor.background,
+                      size: 20,
+                    ),
             ),
             GridItem(
                 title: "스트릭",
-                value: state.streak!.currentStreak.toString(),
+                value: state.currentStreak?.toString() ?? "—",
                 unit: "일",
                 onPressed: () async {
                   Fluttertoast.showToast(
@@ -179,7 +192,7 @@ class _HomeViewState extends State<HomeView> {
                         color: Colors.white, size: 20)
                     : null),
             GridItem(
-              title: "클래스",
+              title: state.user!.classPlus == true ? "클래스+" : "클래스",
               onPressed: () {},
               foregroundColor: MySolvedColor.background,
               backgroundColor: _classColor(state.user!.userClass),
@@ -194,7 +207,7 @@ class _HomeViewState extends State<HomeView> {
               onPressed: () {},
               widget: state.badge != null
                   ? ExtendedImage.network(
-                      state.badge!.badgeImageUrl,
+                      state.badge!.imageUrl,
                       width: 60,
                       height: 60,
                     )
@@ -203,13 +216,20 @@ class _HomeViewState extends State<HomeView> {
             GridItem(
               onPressed: () {},
               title: "배경",
-              backgroundImageUrl: state.background?.backgroundImageUrl,
+              backgroundImageUrl: state.background?.imageUrl,
             ),
-            GridItem(
-              onPressed: () {},
-              title: "난이도 분포",
-              widget: _pieChart(stats: stats),
-            ),
+            if (state.user!.reputation != null)
+              GridItem(
+                onPressed: () {},
+                title: "평판",
+                value: state.user!.reputation.toString(),
+              )
+            else if (state.problemStats != null)
+              GridItem(
+                onPressed: () {},
+                title: "난이도 분포",
+                widget: _pieChart(stats: state.problemStats!),
+              ),
             GridItem(
               onPressed: () {},
               title: "태그 분포",
@@ -282,13 +302,56 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
+  Future<void> _showRatingBreakdownDialog(
+    ProfileRatingBreakdown breakdown,
+  ) {
+    return showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        semanticLabel: '레이팅 상세',
+        title: const Text('레이팅 상세'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _RatingDetailRow(label: '현재 레이팅', value: breakdown.rating),
+              _RatingDetailRow(
+                label: '문제 레이팅 합',
+                value: breakdown.ratingByProblemsSum,
+              ),
+              _RatingDetailRow(
+                label: 'CLASS 레이팅',
+                value: breakdown.ratingByClass,
+              ),
+              _RatingDetailRow(
+                label: '해결 수 레이팅',
+                value: breakdown.ratingBySolvedCount,
+              ),
+              if (breakdown.noRatingSolvedCount != null)
+                _RatingDetailRow(
+                  label: '레이팅 미반영 문제',
+                  value: breakdown.noRatingSolvedCount!,
+                ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('닫기'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _backgroundImage({
     required bool isShowIllustBackground,
-    required solved_api.Background? background,
+    required solved_api.ProfileBackgroundAsset? background,
   }) {
-    final backgroundImageUrl = background?.backgroundImageUrl ??
+    final backgroundImageUrl = background?.imageUrl ??
         "https://static.solved.ac/profile_bg/abstract_001/abstract_001_light.png";
-    final illustBackgroundImageUrl = background?.fallbackBackgroundImageUrl;
+    final illustBackgroundImageUrl = background?.fallbackImageUrl;
     final url = isShowIllustBackground && illustBackgroundImageUrl != null
         ? illustBackgroundImageUrl
         : backgroundImageUrl;
@@ -355,13 +418,12 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  Widget _pieChart({required List<ProblemStat> stats}) {
+  Widget _pieChart({required List<ProfileTierStat> stats}) {
     Map<String, double> dataMap = {};
     for (var stat in stats) {
-      dataMap[stat.level.toString()] = stat.solved.toDouble();
+      dataMap[stat.tier.toString()] = stat.solvedCount.toDouble();
     }
 
-    stats.fold(0, (sum, stat) => sum + stat.solved);
     List<Color> colorList = [];
     for (var i = 0; i <= 30; i++) {
       colorList.add(MySolvedColor.tier[i]!);
@@ -389,19 +451,22 @@ class _HomeViewState extends State<HomeView> {
         ));
   }
 
-  Widget _tagChart({required List<TagRating> tags, required int rating}) {
-    tags.sort((a, b) => b.rating.compareTo(a.rating));
+  Widget _tagChart({
+    required List<ProfileTagRating> tags,
+    required int rating,
+  }) {
+    final sortedTags = [...tags]
+      ..sort((a, b) => b.rating.compareTo(a.rating));
 
     List<int> ticks = [];
     List<String> features = [];
     List<List<num>> data = [[]];
 
-    int? length = min(8, tags.length);
+    int? length = min(8, sortedTags.length);
     int maxTick = 0;
     for (var i = 0; i < length; i++) {
-      // features.add(tags[i].tag.key);
       features.add("");
-      data[0].add(tags[i].rating);
+      data[0].add(sortedTags[i].rating);
       maxTick = max(maxTick, data[0][i].toInt());
     }
     maxTick = (maxTick + 500) ~/ 500 * 500;
@@ -444,7 +509,7 @@ class _HomeViewState extends State<HomeView> {
     return Color.fromARGB(255, 79, 82, 87);
   }
 
-  String _tierText(int tier) {
+  String _tierText(int? tier) {
     if (tier == 1) return 'Bronze V';
     if (tier == 2) return 'Bronze IV';
     if (tier == 3) return 'Bronze III';
@@ -477,6 +542,40 @@ class _HomeViewState extends State<HomeView> {
     if (tier == 30) return 'Ruby I';
     if (tier == 31) return 'Master';
     return 'Unrated';
+  }
+}
+
+class _RatingDetailRow extends StatelessWidget {
+  const _RatingDetailRow({required this.label, required this.value});
+
+  final String label;
+  final int value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Flexible(
+            child: Text(
+              value.toString(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.end,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -548,6 +647,8 @@ Widget _gridItem({required GridItem item}) {
   return OutlinedButton(
       style: OutlinedButton.styleFrom(
         backgroundColor: item.backgroundColor,
+        disabledBackgroundColor: item.backgroundColor,
+        disabledForegroundColor: item.foregroundColor,
         padding: EdgeInsets.only(top: 20, left: 16, right: 16, bottom: 20),
         side: BorderSide(
           color: MySolvedColor.background,

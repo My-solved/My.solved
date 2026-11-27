@@ -105,6 +105,11 @@ unlinked_spec.ds
 **/ios/ServiceDefinitions.json
 **/ios/Runner/GeneratedPluginRegistrant.*
 
+# fastlane generated artifacts and local App Store Connect credentials
+**/ios/fastlane/AppStoreConnectAPIKey.p8
+**/ios/fastlane/report.xml
+**/ios/fastlane/README.md
+
 # macOS
 **/Flutter/ephemeral/
 **/Pods/
@@ -127,6 +132,11 @@ unlinked_spec.ds
 # Coverage
 coverage/
 
+# Public API contract capture input may contain browser metadata.
+*.[hH][aA][rR]
+*.[hH][aA][rR].[gG][zZ]
+*.[hH][aA][rR].[zZ][iI][pP]
+
 # Symbols
 app.*.symbols
 
@@ -138,3 +148,9 @@ app.*.symbols
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 !/dev/ci/**/Gemfile.lock
 !.vscode/settings.json
+
+# fastlane: keep the Ruby lockfile, ignore generated files and local keys
+!/ios/Gemfile.lock
+**/ios/fastlane/*.p8
+**/ios/fastlane/report.xml
+**/ios/fastlane/README.md

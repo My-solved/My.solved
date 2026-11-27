@@ -1,26 +1,95 @@
+require "shellwords"
+require "tmpdir"
+
 default_platform(:ios)
 
+# Apple Developer team that owns com.jeehoukjung.mySolved.
+TEAM_ID = "3PFDRPLY6N"
+
+def notify_discord(message, success)
+  webhook_url = ENV["DISCORD_WEBHOOK_URL"].to_s
+  return if webhook_url.empty?
+
+  discord(
+    webhook_url: webhook_url,
+    username: "Fastlane",
+    message: message,
+    success: success
+  )
+rescue StandardError => e
+  UI.important("Discord notification failed: #{e.class}")
+end
+
 platform :ios do
-  desc "Deploy to App Store directly 🚀"
+  desc "Build, upload, and submit the release to the App Store"
   lane :release do
-    app_store_connect_api_key(
-      key_id:       ENV["APP_STORE_CONNECT_KEY_ID"],
-      issuer_id:    ENV["APP_STORE_CONNECT_ISSUER_ID"],
-      key_filepath: "./fastlane/AppStoreConnectAPIKey.p8",
+    key_id = ENV.fetch("APP_STORE_CONNECT_KEY_ID")
+    issuer_id = ENV.fetch("APP_STORE_CONNECT_ISSUER_ID")
+    key_path = ENV.fetch("APP_STORE_CONNECT_KEY_PATH")
+
+    api_key = app_store_connect_api_key(
+      key_id: key_id,
+      issuer_id: issuer_id,
+      key_filepath: key_path
     )
+
+    # Temporary keychain on CI so automatic signing can install certificates.
+    setup_ci
+
+    # The project keeps manual signing for local release builds. CI switches
+    # to automatic, cloud-managed signing through the App Store Connect key.
+    auth_args = [
+      "-allowProvisioningUpdates",
+      "-authenticationKeyPath", key_path,
+      "-authenticationKeyID", key_id,
+      "-authenticationKeyIssuerID", issuer_id
+    ].shelljoin
+    signing_args = [
+      "CODE_SIGN_STYLE=Automatic",
+      "DEVELOPMENT_TEAM=#{TEAM_ID}",
+      "CODE_SIGN_IDENTITY=Apple Development",
+      "PROVISIONING_PROFILE_SPECIFIER="
+    ].shelljoin
+
+    build_app(
+      workspace: "Runner.xcworkspace",
+      scheme: "Runner",
+      configuration: "Release",
+      export_method: "app-store",
+      export_options: { signingStyle: "automatic", teamID: TEAM_ID },
+      xcargs: "#{auth_args} #{signing_args}",
+      export_xcargs: auth_args,
+      output_directory: File.join(ENV.fetch("RUNNER_TEMP", Dir.tmpdir), "ipa")
+    )
+
+    # Only "What's New" is uploaded: App Store Connect requires it for an
+    # update, and every other listing field stays as edited in the console.
+    release_notes = ENV["RELEASE_NOTES"].to_s.strip
+    release_notes = "버그 수정 및 성능 개선" if release_notes.empty?
 
     upload_to_app_store(
+      api_key: api_key,
       skip_screenshots: true,
-      skip_metadata: true,
+      skip_metadata: false,
+      metadata_path: Dir.mktmpdir("deliver-metadata"),
+      release_notes: { "default" => release_notes },
       submit_for_review: true,
       automatic_release: true,
+      force: true,
+      run_precheck_before_submit: false,
+      submission_information: {
+        add_id_info_uses_idfa: false,
+        export_compliance_uses_encryption: false
+      }
     )
+  end
 
-    discord(
-      webhook_url: "https://discord.com/api/webhooks/1362457088433066316/3xKTs3n6_DP0p1BCwFu_xjPiecBrKq0mg8f_gaU9uRSLRJCwjfueTVKQkhMI1zXzSW3p",
-      username: "Fastlane",
-      message: "✅ App Store 배포 완료! 🎉",
-      success: true
-    )
+  after_all do |lane|
+    tag = ENV["GITHUB_REF_NAME"].to_s
+    notify_discord("✅ App Store 심사 제출 완료#{tag.empty? ? "" : " (#{tag})"}", true) if lane == :release
+  end
+
+  error do |lane, exception|
+    notify_discord("❌ App Store 배포 실패 (#{lane}): #{exception.class}", false)
   end
 end

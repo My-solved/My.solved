@@ -1,0 +1,49 @@
+{
+  "mine": [
+    {
+      "id": -100,
+      "affiliationId": 999,
+      "name": "mine only",
+      "type": "company",
+      "logoThumbnailUrl": null,
+      "color": "",
+      "rank": -3,
+      "globalRank": null,
+      "rating": -4,
+      "userCount": 0,
+      "solvedCount": -5,
+      "page": -7
+    }
+  ],
+  "total": -11,
+  "page": 0,
+  "pageSize": -2,
+  "items": [
+    {
+      "id": -1,
+      "affiliationId": 0,
+      "name": "",
+      "type": "undefined",
+      "logoThumbnailUrl": "not necessarily a URI",
+      "color": null,
+      "rank": -9,
+      "globalRank": 0,
+      "rating": -10,
+      "userCount": -7,
+      "solvedCount": 0
+    },
+    {
+      "id": -1,
+      "affiliationId": 42,
+      "name": "duplicate",
+      "type": "community",
+      "logoThumbnailUrl": "",
+      "color": "not necessarily a color",
+      "rank": 99,
+      "globalRank": -8,
+      "rating": 100,
+      "userCount": 123,
+      "solvedCount": -1
+    }
+  ]
+}

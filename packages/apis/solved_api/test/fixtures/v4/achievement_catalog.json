@@ -1,0 +1,59 @@
+{
+  "items": [
+    {
+      "id": -1,
+      "key": "streak",
+      "series": "",
+      "seriesOrder": -2,
+      "historic": true,
+      "hidden": false,
+      "name": "연속 기록",
+      "condition": "",
+      "searchQuery": "solved:100",
+      "shopKey": "",
+      "rewards": [
+        {
+          "kind": "badge",
+          "id": -3,
+          "key": "reward",
+          "name": "보상",
+          "imageUrl": "not necessarily a URI",
+          "category": "",
+          "addedAt": "not-a-date"
+        },
+        {
+          "kind": "background",
+          "id": 4,
+          "key": "reward",
+          "name": "Background",
+          "imageUrl": "",
+          "category": "event",
+          "addedAt": ""
+        }
+      ],
+      "holderCount": -7,
+      "earnedAt": "",
+      "progress": {
+        "current": -1,
+        "target": 0
+      }
+    },
+    {
+      "id": 1,
+      "key": "streak",
+      "series": "series",
+      "seriesOrder": 99,
+      "historic": false,
+      "hidden": true,
+      "name": "",
+      "condition": null,
+      "searchQuery": null,
+      "shopKey": null,
+      "rewards": [],
+      "holderCount": 0,
+      "earnedAt": null,
+      "progress": null
+    }
+  ],
+  "userCount": 0
+}

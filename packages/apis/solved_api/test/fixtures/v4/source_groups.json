@@ -1,0 +1,60 @@
+{
+  "groups": [
+    {
+      "id": 1,
+      "name": "Olympiad",
+      "abbreviation": "OI",
+      "groupCount": 12,
+      "contestCount": 0,
+      "problemCount": 2.5,
+      "solvedCount": -1,
+      "level": {
+        "q25": 31,
+        "q50": -2,
+        "q75": 0,
+        "tierCounts": [0, -1, 7, 7],
+        "ratedCount": -3,
+        "order": "mixed",
+        "progress": {
+          "solved": 99,
+          "through": {
+            "q25": false,
+            "q50": true,
+            "q75": false
+          }
+        }
+      },
+      "order": "ascending"
+    },
+    {
+      "id": 2.0,
+      "name": "",
+      "abbreviation": null,
+      "groupCount": -0.5,
+      "contestCount": 3,
+      "problemCount": null,
+      "solvedCount": null,
+      "level": null,
+      "order": null
+    },
+    {
+      "id": -7.25,
+      "name": "raw / 한 글",
+      "abbreviation": "",
+      "groupCount": 0,
+      "contestCount": 1e3,
+      "problemCount": 0,
+      "solvedCount": 4,
+      "level": {
+        "q25": 0,
+        "q50": 0,
+        "q75": 0,
+        "tierCounts": [],
+        "ratedCount": 0,
+        "order": null,
+        "progress": null
+      },
+      "order": "random"
+    }
+  ]
+}

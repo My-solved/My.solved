@@ -1,15 +1,14 @@
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:my_solved/app/bloc/app_bloc.dart';
+import 'package:meta/meta.dart';
 import 'package:user_repository/user_repository.dart';
 
 part 'login_event.dart';
 part 'login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
-  LoginBloc()
-      : _userRepository = UserRepository(),
+  LoginBloc({required UserRepository userRepository})
+      : _userRepository = userRepository,
         super(LoginInitial(handle: "")) {
     on<HandleTextFieldOnChanged>(_onChangeHandleTextField);
     on<HandleTextFieldOnSummited>(_onSummitHandleTextField);
@@ -36,13 +35,12 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     LoginButtonTapped event,
     Emitter<LoginState> emit,
   ) async {
+    emit(LoginLoading(handle: event.handle));
     try {
       await _userRepository.getUser(event.handle);
-      emit(LoginLoading(handle: event.handle));
-      event.context.read<AppBloc>().add(Login(handle: event.handle));
+      emit(LoginSuccess(handle: event.handle));
     } catch (e) {
       emit(LoginFailure(handle: "", errorMessage: "User not found"));
-      return;
     }
   }
 }

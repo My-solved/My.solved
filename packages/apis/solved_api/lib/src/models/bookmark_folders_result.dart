@@ -1,0 +1,207 @@
+import 'account_settings_result.dart' show NullablePatch;
+import 'problem_search_viewer_folder.dart';
+
+/// One page of official v4 bookmark folders.
+final class BookmarkFoldersResult {
+  const BookmarkFoldersResult({
+    required this.folders,
+    required this.total,
+    required this.page,
+    required this.pageSize,
+  });
+
+  /// Folders in wire order, including duplicates.
+  ///
+  /// Decoder-produced lists are eagerly validated, source-isolated, and
+  /// unmodifiable.
+  final List<BookmarkFolder> folders;
+
+  /// Raw finite numbers. No bounds or relation to [folders] are implied, and
+  /// the response page need not equal the requested page.
+  final num total;
+  final num page;
+  final num pageSize;
+}
+
+/// Visibility of an official v4 bookmark folder.
+enum BookmarkFolderVisibility {
+  private('private'),
+  unlisted('unlisted'),
+  public('public');
+
+  const BookmarkFolderVisibility(this.value);
+
+  final String value;
+}
+
+/// One official v4 bookmark folder summary.
+final class BookmarkFolder {
+  const BookmarkFolder({
+    required this.slug,
+    required this.name,
+    required this.description,
+    required this.color,
+    required this.visibility,
+    required this.problemCount,
+    required this.favoriteCount,
+    required this.solvedCount,
+    required this.owner,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  /// Raw response slug. No request-side slug pattern is applied.
+  final String slug;
+  final String name;
+  final String description;
+
+  /// Required nullable color in the exact viewer-folder color set.
+  final ProblemSearchViewerFolderColor? color;
+
+  final BookmarkFolderVisibility visibility;
+
+  /// Raw finite counts. The schema declares no bounds or relationships.
+  final num problemCount;
+  final num favoriteCount;
+
+  /// Raw required nullable finite count.
+  final num? solvedCount;
+
+  final BookmarkFolderOwner owner;
+
+  /// Raw `date-time` strings. They are not parsed or ordered.
+  final String createdAt;
+  final String updatedAt;
+}
+
+/// The owner of an official v4 bookmark folder.
+final class BookmarkFolderOwner {
+  const BookmarkFolderOwner({
+    required this.id,
+    required this.handle,
+    required this.tier,
+    required this.profileImageUrl,
+  });
+
+  /// Raw finite response number. Integer semantics and bounds are not implied.
+  final num id;
+
+  final String handle;
+
+  /// Required nullable official tier. Non-null values are in the range 0..31.
+  final int? tier;
+
+  /// Raw required nullable response value. URI validity is not implied.
+  final String? profileImageUrl;
+}
+
+/// The viewer's own bookmark folders, for the add-to-folder menu.
+final class AccountBookmarkFoldersResult {
+  const AccountBookmarkFoldersResult({required this.folders});
+
+  /// Folders in wire order, including duplicates. No ordering is enforced.
+  ///
+  /// Decoder-produced lists are eagerly validated, source-isolated, and
+  /// unmodifiable.
+  final List<AccountBookmarkFolder> folders;
+}
+
+/// One of the viewer's own bookmark folders.
+final class AccountBookmarkFolder {
+  const AccountBookmarkFolder({
+    required this.folder,
+    required this.containsProblem,
+  });
+
+  /// The fields shared exactly with a public bookmark folder.
+  final BookmarkFolder folder;
+
+  /// Raw flag. No meaning is inferred when no problem was requested.
+  final bool containsProblem;
+}
+
+/// A folder to create for the viewer.
+///
+/// Optional fields left `null` are omitted, so the server applies its
+/// documented defaults: an empty description, no color, and private
+/// visibility.
+final class NewBookmarkFolder {
+  const NewBookmarkFolder({
+    required this.slug,
+    required this.name,
+    this.description,
+    this.color,
+    this.visibility,
+  });
+
+  /// Must match `[0-9a-z_]{1,32}`.
+  final String slug;
+
+  /// 1 through 256 code points.
+  final String name;
+
+  /// At most 2048 code points when set.
+  final String? description;
+
+  final ProblemSearchViewerFolderColor? color;
+  final BookmarkFolderVisibility? visibility;
+}
+
+/// A partial change to one of the viewer's folders.
+///
+/// Fields left `null` are omitted. An empty patch sends `{}`.
+final class BookmarkFolderPatch {
+  const BookmarkFolderPatch({
+    this.slug,
+    this.name,
+    this.description,
+    this.color,
+    this.visibility,
+  });
+
+  /// A new slug matching `[0-9a-z_]{1,32}` when set.
+  final String? slug;
+
+  /// 1 through 256 code points when set.
+  final String? name;
+
+  /// At most 2048 code points when set.
+  final String? description;
+
+  /// A new color, or [NullablePatch.toNull] to clear it.
+  final NullablePatch<ProblemSearchViewerFolderColor>? color;
+
+  final BookmarkFolderVisibility? visibility;
+}
+
+/// A folder after its problem list changed.
+final class BookmarkFolderChangeResult {
+  const BookmarkFolderChangeResult({
+    required this.folder,
+    required this.changed,
+  });
+
+  final BookmarkFolder folder;
+
+  /// Raw finite number. No relation to the request or to [folder] counts is
+  /// inferred.
+  final num changed;
+}
+
+/// A move or note change for one problem in one of the viewer's folders.
+///
+/// Fields left `null` are omitted. The official contract names the fields but
+/// does not document how `after` and `before` position the problem, so they
+/// are sent as raw ids without inferred meaning.
+final class BookmarkProblemPatch {
+  const BookmarkProblemPatch({this.after, this.before, this.note});
+
+  /// A positive problem id when set. It cannot be sent as `null`.
+  final int? after;
+
+  /// A positive problem id, or [NullablePatch.toNull].
+  final NullablePatch<int>? before;
+
+  /// A note of at most 2048 code points, or [NullablePatch.toNull].
+  final NullablePatch<String>? note;
+}

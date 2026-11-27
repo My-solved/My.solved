@@ -1,0 +1,183 @@
+{
+  "folder": {
+    "slug": "dp_set",
+    "name": "DP practice",
+    "description": "",
+    "color": "teal",
+    "visibility": "public",
+    "problemCount": 12,
+    "favoriteCount": -1,
+    "solvedCount": 2.5,
+    "owner": {
+      "id": 1.5,
+      "handle": "folder-owner",
+      "tier": 31,
+      "profileImageUrl": "not necessarily a URI"
+    },
+    "createdAt": "not a date",
+    "updatedAt": "2026-01-01T00:00:00Z"
+  },
+  "isOwner": false,
+  "isFavorite": null,
+  "levels": [
+    {
+      "level": 0,
+      "count": 2.5,
+      "solved": null
+    },
+    {
+      "level": -1,
+      "count": 0,
+      "solved": 3
+    },
+    {
+      "level": 0,
+      "count": 2.5,
+      "solved": null
+    }
+  ],
+  "problems": [
+    {
+      "problem": {
+        "id": 1001,
+        "problemId": 1001,
+        "subId": "",
+        "level": 10,
+        "levelAverage": 10.25,
+        "levelStdev": 0.5,
+        "isStandard": true,
+        "votedUserCount": 42,
+        "effectiveVoteCount": 40,
+        "solvedUserCount": 1234,
+        "givesNoRating": false,
+        "noRatingReasons": [],
+        "noRatingWarnings": [],
+        "titles": [
+          {
+            "language": "en",
+            "title": "English original",
+            "isOriginal": true,
+            "latex": false,
+            "html": false
+          },
+          {
+            "language": "ko",
+            "title": "한국어 제목",
+            "isOriginal": false,
+            "latex": false,
+            "html": false
+          }
+        ],
+        "userStatus": null,
+        "contests": [],
+        "tags": [
+          {
+            "id": 1,
+            "key": "math",
+            "isMeta": false
+          },
+          {
+            "id": 2,
+            "key": "number_theory",
+            "isMeta": false
+          }
+        ],
+        "viewerFolders": []
+      },
+      "note": null,
+      "addedAt": "not a date"
+    },
+    {
+      "problem": {
+        "id": 1002,
+        "problemId": 1002,
+        "subId": "",
+        "level": 11,
+        "levelAverage": 11,
+        "levelStdev": 0,
+        "isStandard": true,
+        "votedUserCount": 12,
+        "effectiveVoteCount": 12,
+        "solvedUserCount": 500,
+        "givesNoRating": false,
+        "noRatingReasons": [],
+        "noRatingWarnings": [],
+        "titles": [
+          {
+            "language": "ja",
+            "title": "最初の翻訳",
+            "isOriginal": false,
+            "latex": false,
+            "html": false
+          },
+          {
+            "language": "en",
+            "title": "Original title",
+            "isOriginal": true,
+            "latex": false,
+            "html": false
+          }
+        ],
+        "userStatus": "solved",
+        "contests": [],
+        "tags": [],
+        "viewerFolders": []
+      },
+      "note": "",
+      "addedAt": ""
+    },
+    {
+      "problem": {
+        "id": 1001,
+        "problemId": 1001,
+        "subId": "",
+        "level": 10,
+        "levelAverage": 10.25,
+        "levelStdev": 0.5,
+        "isStandard": true,
+        "votedUserCount": 42,
+        "effectiveVoteCount": 40,
+        "solvedUserCount": 1234,
+        "givesNoRating": false,
+        "noRatingReasons": [],
+        "noRatingWarnings": [],
+        "titles": [
+          {
+            "language": "en",
+            "title": "English original",
+            "isOriginal": true,
+            "latex": false,
+            "html": false
+          },
+          {
+            "language": "ko",
+            "title": "한국어 제목",
+            "isOriginal": false,
+            "latex": false,
+            "html": false
+          }
+        ],
+        "userStatus": null,
+        "contests": [],
+        "tags": [
+          {
+            "id": 1,
+            "key": "math",
+            "isMeta": false
+          },
+          {
+            "id": 2,
+            "key": "number_theory",
+            "isMeta": false
+          }
+        ],
+        "viewerFolders": []
+      },
+      "note": "raw / 한 글",
+      "addedAt": "2026-01-01T00:00:00Z"
+    }
+  ],
+  "total": -1,
+  "page": 7,
+  "pageSize": 30.5
+}

@@ -1,0 +1,52 @@
+{
+  "exact": {
+    "id": 1,
+    "handle": "index",
+    "tier": null,
+    "profileImageUrl": null,
+    "rank": 1,
+    "rating": 3000,
+    "solvedCount": 5000,
+    "voteCount": 100,
+    "reputation": 500,
+    "class": 10,
+    "classPlus": true,
+    "tagRating": null,
+    "globalRank": null,
+    "page": 1
+  },
+  "items": [
+    {
+      "id": 1,
+      "handle": "index",
+      "tier": null,
+      "profileImageUrl": null,
+      "rank": 1,
+      "rating": 3000,
+      "solvedCount": 5000,
+      "voteCount": 100,
+      "reputation": 500,
+      "class": 10,
+      "classPlus": true,
+      "tagRating": null,
+      "globalRank": null,
+      "page": 1
+    },
+    {
+      "id": 2,
+      "handle": "index2",
+      "tier": 20,
+      "profileImageUrl": "https://example.com/index2.png",
+      "rank": 2,
+      "rating": 2500,
+      "solvedCount": 2500,
+      "voteCount": 50,
+      "reputation": 250,
+      "class": 8,
+      "classPlus": false,
+      "tagRating": 2400,
+      "globalRank": 100,
+      "page": 1
+    }
+  ]
+}

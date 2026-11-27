@@ -1,16 +1,7 @@
-class SearchObject {
-  final int count;
-  final List<dynamic> items;
+class SearchObject<T> {
+  /// The result count reported by the active API contract.
+  final num count;
+  final List<T> items;
 
-  const SearchObject({
-    required this.count,
-    required this.items,
-  });
-
-  factory SearchObject.fromJson(Map<String, dynamic> json) {
-    return SearchObject(
-      count: json['count'],
-      items: json['items'],
-    );
-  }
+  const SearchObject({required this.count, required this.items});
 }

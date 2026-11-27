@@ -1,0 +1,31 @@
+{
+  "count": 1,
+  "items": [
+    {
+      "key": "number_theory",
+      "isMeta": false,
+      "bojTagId": 95,
+      "problemCount": 1314,
+      "displayNames": [
+        {
+          "language": "ko",
+          "name": "정수론",
+          "short": "정수론"
+        },
+        {
+          "language": "en",
+          "name": "number theory",
+          "short": "number theory"
+        },
+        {
+          "language": "ja",
+          "name": "整数論",
+          "short": "整数論"
+        }
+      ],
+      "aliases": [
+
+      ]
+    }
+  ]
+}
