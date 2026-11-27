@@ -5959,6 +5959,65 @@ void main() {
     );
   });
 
+  test('pins adding bookmark problems and the folder-change shape', () {
+    final paths = _map(contract['paths']);
+    final item = _map(paths['/api/v4/account/bookmarks/{slug}/problems']);
+    final add = _map(item['post']);
+    final folder = _map(paths['/api/v4/account/bookmarks/{slug}']);
+    final create = _map(_map(paths['/api/v4/account/bookmarks'])['post']);
+
+    expect(item.keys.toList(growable: false), ['post']);
+    expect(_accessClass(add), 'user');
+    expect(_accessScope(add), 'bookmarks.write');
+    expect(add.containsKey('security'), isFalse);
+    expect(add['summary'], 'Add problems to the end of a folder');
+    expect(_parameters(add), _parameters(_map(folder['delete'])));
+    expect(_map(add['requestBody']), {
+      'content': {
+        'application/json': {
+          'schema': {
+            'properties': {
+              'problemIds': {
+                'items': {'exclusiveMinimum': 0, 'type': 'integer'},
+                'maxItems': 100,
+                'minItems': 1,
+                'type': 'array',
+              },
+            },
+            'required': ['problemIds'],
+            'type': 'object',
+          },
+        },
+      },
+    });
+    final responses = _map(add['responses']);
+    expect(
+      responses.keys.toList(growable: false),
+      ['200', '401', '404', '422'],
+    );
+    expect(_map(responses['200'])['description'], 'Added; repeats skipped.');
+    expect(_map(responses['404'])['description'], 'No such folder.');
+    expect(
+      _map(responses['422'])['description'],
+      'The folder would be too large.',
+    );
+    expect(
+      _map(responses['401']),
+      _map(_map(_map(folder['delete'])['responses'])['401']),
+    );
+    final schema = _responseSchema(add);
+    expect(schema['type'], 'object');
+    expect(_required(schema), ['folder', 'changed']);
+    final properties = _properties(schema);
+    expect(properties.keys.toSet(), {'folder', 'changed'});
+    expect(_map(properties['changed']), {'type': 'number'});
+    expect(
+      _map(properties['folder']),
+      _map(_map(_map(_map(create['responses'])['201'])['content'])[
+          'application/json'])['schema'],
+    );
+  });
+
   test('pins the viewer standing and its shared ban shapes', () {
     final standing = _get(contract, '/api/v4/account/standing');
     final bans = _get(contract, '/api/v4/account/bans');

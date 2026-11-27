@@ -173,3 +173,17 @@ final class BookmarkFolderPatch {
 
   final BookmarkFolderVisibility? visibility;
 }
+
+/// A folder after its problem list changed.
+final class BookmarkFolderChangeResult {
+  const BookmarkFolderChangeResult({
+    required this.folder,
+    required this.changed,
+  });
+
+  final BookmarkFolder folder;
+
+  /// Raw finite number. No relation to the request or to [folder] counts is
+  /// inferred.
+  final num changed;
+}

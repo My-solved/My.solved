@@ -1,0 +1,21 @@
+{
+  "folder": {
+    "slug": "dp_set",
+    "name": "DP practice",
+    "description": "",
+    "color": "teal",
+    "visibility": "public",
+    "problemCount": 12,
+    "favoriteCount": -1,
+    "solvedCount": 2.5,
+    "owner": {
+      "id": 1.5,
+      "handle": "folder-owner",
+      "tier": 31,
+      "profileImageUrl": "not necessarily a URI"
+    },
+    "createdAt": "not a date",
+    "updatedAt": "2026-01-01T00:00:00Z"
+  },
+  "changed": -0.5
+}
