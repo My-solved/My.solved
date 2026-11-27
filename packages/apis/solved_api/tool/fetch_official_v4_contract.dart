@@ -19,6 +19,7 @@ const _relevantPaths = <String>[
   '/api/v4/rankings/regions',
   '/api/v4/rankings/regions/{countryCode}',
   '/api/v4/rankings/tags',
+  '/api/v4/rankings/tags/{key}',
   '/api/v4/rankings/users',
   '/api/v4/rankings/users/search',
   '/api/v4/search/analyze',

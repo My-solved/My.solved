@@ -3281,6 +3281,46 @@ void main() {
     );
   });
 
+  test('pins the public tag ranking to the shared leaderboard schema', () {
+    final tag = _get(contract, '/api/v4/rankings/tags/{key}');
+
+    expect(_accessClass(tag), 'public');
+    expect(tag.containsKey('security'), isFalse);
+    expect(tag.containsKey('requestBody'), isFalse);
+    expect(tag['summary'], 'The ranking within one tag');
+    expect(_parameterNames(tag), ['key', 'page']);
+
+    final parameters = _parameters(tag);
+    expect(parameters.first, {
+      'in': 'path',
+      'name': 'key',
+      'required': true,
+      'schema': {'maxLength': 64, 'minLength': 1, 'type': 'string'},
+    });
+    expect(parameters.last, {
+      'in': 'query',
+      'name': 'page',
+      'required': false,
+      'schema': {'default': 1, 'minimum': 1, 'type': 'integer'},
+    });
+
+    final responses = _map(tag['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '404']);
+    expect(_map(responses['200'])['description'], 'One page of the board.');
+    expect(
+      _map(responses['404'])['description'],
+      'No such tag, or it has no ranking.',
+    );
+    expect(
+      _responseSchema(tag),
+      _responseSchema(_get(contract, '/api/v4/rankings/users')),
+    );
+    expect(
+      _jsonResponseSchema(tag, '404'),
+      _jsonResponseSchema(_get(contract, '/api/v4/affiliations/{id}'), '404'),
+    );
+  });
+
   test('pins the tag catalog and standalone asset item envelope', () {
     final tags = _get(contract, '/api/v4/tags');
     expect(_parameterNames(tags), isEmpty);
