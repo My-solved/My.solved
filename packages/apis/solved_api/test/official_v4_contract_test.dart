@@ -5098,6 +5098,90 @@ void main() {
     );
   });
 
+  test('pins the viewer wallet history and its shared shapes', () {
+    final history = _get(contract, '/api/v4/account/wallet/history');
+    final wallet = _get(contract, '/api/v4/account/wallet');
+    final log = _get(contract, '/api/v4/users/{handle}/reputation/log');
+    final reports = _get(contract, '/api/v4/problems/{problemId}/reports');
+    final search = _get(contract, '/api/v4/problems');
+
+    expect(_accessClass(history), 'user');
+    expect(_accessScope(history), 'wallet');
+    expect(history.containsKey('security'), isFalse);
+    expect(history.containsKey('requestBody'), isFalse);
+    expect(
+      history['summary'],
+      "A month of the signed-in user's Stardust history",
+    );
+    expect(_parameters(history), [
+      _parameters(log).last,
+      {
+        'in': 'query',
+        'name': 'lang',
+        'required': false,
+        'schema': {'default': 'ko', 'maxLength': 16, 'type': 'string'},
+      },
+    ]);
+    final responses = _map(history['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '401']);
+    expect(_map(responses['200'])['description'], 'Newest first.');
+    expect(_map(responses['401']), _map(_map(wallet['responses'])['401']));
+
+    final schema = _responseSchema(history);
+    expect(_required(schema), ['month', 'moves']);
+    final properties = _properties(schema);
+    expect(properties.keys.length, 2);
+    expect(_map(properties['month']), {'type': 'string'});
+    final move = _map(_map(properties['moves'])['items']);
+    expect(_required(move), [
+      'id',
+      'delta',
+      'balanceAfter',
+      'reason',
+      'at',
+      'day',
+      'problem',
+      'label',
+    ]);
+    final moveProperties = _properties(move);
+    expect(moveProperties.keys.length, 8);
+    for (final field in ['id', 'delta', 'balanceAfter']) {
+      expect(_map(moveProperties[field]), {'type': 'integer'});
+    }
+    expect(_map(moveProperties['at']), {'type': 'string'});
+    for (final field in ['day', 'label']) {
+      expect(_map(moveProperties[field]), {
+        'type': ['string', 'null'],
+      });
+    }
+    expect(_map(moveProperties['reason']), {
+      'enum': [
+        'migration',
+        'welcome',
+        'first_solve',
+        'solve',
+        'contribute',
+        'shop_purchase',
+        'redeem',
+        'admin',
+      ],
+      'type': 'string',
+    });
+    final reportItem =
+        _map(_map(_properties(_responseSchema(reports))['items'])['items']);
+    final sameProblem =
+        _map(_map(_properties(reportItem)['sameProblems'])['items']);
+    final searchItem =
+        _map(_map(_properties(_responseSchema(search))['problems'])['items']);
+    final problem = _map(moveProperties['problem']);
+    expect(problem['type'], ['object', 'null']);
+    expect(_required(problem), [..._required(sameProblem), 'titles']);
+    final problemProperties = Map<String, dynamic>.of(_properties(problem));
+    expect(
+        problemProperties.remove('titles'), _properties(searchItem)['titles']);
+    expect(problemProperties, _properties(sameProblem));
+  });
+
   test('pins the viewer wallet without inferred relationships', () {
     final wallet = _get(contract, '/api/v4/account/wallet');
 
