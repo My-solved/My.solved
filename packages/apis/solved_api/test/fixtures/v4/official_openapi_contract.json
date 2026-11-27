@@ -1124,6 +1124,292 @@
         }
       }
     },
+    "/api/v4/account/standing": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "bans": {
+                      "items": {
+                        "properties": {
+                          "banReason": {
+                            "enum": [
+                              "vote_troll_level",
+                              "vote_hate_speech",
+                              "vote_disparagement",
+                              "vote_profanity",
+                              "vote_multi_account",
+                              "vote_repeat_offence",
+                              "rating_copied_code",
+                              "other",
+                              "rating_auto_pace",
+                              "vote_automated",
+                              "vote_comment_strikes",
+                              "vote_mark_abuse",
+                              null
+                            ],
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "banType": {
+                            "enum": [
+                              "rating",
+                              "vote"
+                            ],
+                            "type": "string"
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "until": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "banType",
+                          "banReason",
+                          "reason",
+                          "until"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "nextBanDays": {
+                      "type": "integer"
+                    },
+                    "priorStrikeBans": {
+                      "type": "integer"
+                    },
+                    "strikes": {
+                      "items": {
+                        "properties": {
+                          "action": {
+                            "enum": [
+                              "hidden",
+                              "removed"
+                            ],
+                            "type": "string"
+                          },
+                          "appeal": {
+                            "properties": {
+                              "appealedAt": {
+                                "type": "string"
+                              },
+                              "response": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "status": {
+                                "enum": [
+                                  "pending",
+                                  "granted",
+                                  "denied"
+                                ],
+                                "type": "string"
+                              },
+                              "text": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "text",
+                              "status",
+                              "appealedAt",
+                              "response"
+                            ],
+                            "type": [
+                              "object",
+                              "null"
+                            ]
+                          },
+                          "appealable": {
+                            "type": "boolean"
+                          },
+                          "category": {
+                            "enum": [
+                              "hate",
+                              "disparagement",
+                              "profanity",
+                              "spam",
+                              "personal-info",
+                              "off-topic",
+                              "troll-level",
+                              "irrelevant-tags"
+                            ],
+                            "type": "string"
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "id": {
+                            "type": "integer"
+                          },
+                          "problem": {
+                            "properties": {
+                              "effectiveVoteCount": {
+                                "type": "number"
+                              },
+                              "givesNoRating": {
+                                "type": "boolean"
+                              },
+                              "isStandard": {
+                                "type": "boolean"
+                              },
+                              "level": {
+                                "type": "number"
+                              },
+                              "problemId": {
+                                "type": "number"
+                              },
+                              "subId": {
+                                "type": "string"
+                              },
+                              "title": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "userStatus": {
+                                "enum": [
+                                  "solved",
+                                  "partial",
+                                  "tried",
+                                  null
+                                ],
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "problemId",
+                              "subId",
+                              "level",
+                              "effectiveVoteCount",
+                              "givesNoRating",
+                              "isStandard",
+                              "userStatus",
+                              "title"
+                            ],
+                            "type": [
+                              "object",
+                              "null"
+                            ]
+                          },
+                          "restored": {
+                            "type": "boolean"
+                          },
+                          "seen": {
+                            "type": "boolean"
+                          },
+                          "strikeCleared": {
+                            "type": "boolean"
+                          },
+                          "strikeExpiresAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "text": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "problem",
+                          "category",
+                          "text",
+                          "action",
+                          "createdAt",
+                          "seen",
+                          "restored",
+                          "appeal",
+                          "appealable",
+                          "strikeCleared",
+                          "strikeExpiresAt"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "strikes",
+                    "bans",
+                    "priorStrikeBans",
+                    "nextBanDays"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "What the account standing page shows."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Not signed in."
+          }
+        },
+        "summary": "The viewer's standing warnings and bans",
+        "x-access": {
+          "class": "user",
+          "scope": "standing"
+        }
+      }
+    },
     "/api/v4/account/wallet": {
       "get": {
         "responses": {

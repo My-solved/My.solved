@@ -135,6 +135,14 @@ final class SolvedApiV4Contract {
         decode: _decodeV4AccountConsents,
       );
 
+  /// The viewer's standing warnings and bans. It requires a user token with
+  /// `standing` scope, so it is only exposed through
+  /// [SolvedAuthenticatedApiClient].
+  SolvedApiEndpoint<AccountStandingResult> accountStanding() => _endpoint(
+        path: 'account/standing',
+        decode: _decodeV4AccountStanding,
+      );
+
   /// The viewer's appealable or appealed bans. It requires a user token with
   /// `standing` scope, so it is only exposed through
   /// [SolvedAuthenticatedApiClient].
@@ -3044,6 +3052,75 @@ RankingLeaderboardResult _decodeV4RankingLeaderboard(dynamic json) {
           'items[]',
         ),
       ),
+    ),
+  );
+}
+
+AccountStandingResult _decodeV4AccountStanding(dynamic json) {
+  final body = _object(json, 'account standing');
+  return AccountStandingResult(
+    strikes: List<AccountStrike>.unmodifiable(
+      _list(body['strikes'], 'strikes').map(
+        (value) => _decodeV4AccountStrike(_object(value, 'strikes[]')),
+      ),
+    ),
+    bans: List<OfficialUserProfileBan>.unmodifiable(
+      _list(body['bans'], 'bans').map(
+        (value) => _decodeV4OfficialUserProfileBan(_object(value, 'bans[]')),
+      ),
+    ),
+    priorStrikeBans: _integer(body['priorStrikeBans'], 'priorStrikeBans'),
+    nextBanDays: _integer(body['nextBanDays'], 'nextBanDays'),
+  );
+}
+
+AccountStrike _decodeV4AccountStrike(Map<String, dynamic> body) {
+  const field = 'strikes[]';
+  final problemValue = _requiredValue(body, 'problem', '$field.problem');
+  final problem =
+      problemValue == null ? null : _object(problemValue, '$field.problem');
+  final appealValue = _requiredValue(body, 'appeal', '$field.appeal');
+  return AccountStrike(
+    id: _integer(body['id'], '$field.id'),
+    problem: problem == null
+        ? null
+        : AccountStrikeProblem(
+            problem: _decodeV4ProblemReportSameProblem(problem),
+            title: _requiredNullableString(
+              problem,
+              'title',
+              '$field.problem.title',
+            ),
+          ),
+    category: switch (_string(body['category'], '$field.category')) {
+      'hate' => AccountStrikeCategory.hate,
+      'disparagement' => AccountStrikeCategory.disparagement,
+      'profanity' => AccountStrikeCategory.profanity,
+      'spam' => AccountStrikeCategory.spam,
+      'personal-info' => AccountStrikeCategory.personalInfo,
+      'off-topic' => AccountStrikeCategory.offTopic,
+      'troll-level' => AccountStrikeCategory.trollLevel,
+      'irrelevant-tags' => AccountStrikeCategory.irrelevantTags,
+      _ => throw const FormatException('Unsupported strikes[].category'),
+    },
+    text: _string(body['text'], '$field.text'),
+    action: switch (_string(body['action'], '$field.action')) {
+      'hidden' => AccountStrikeAction.hidden,
+      'removed' => AccountStrikeAction.removed,
+      _ => throw const FormatException('Unsupported strikes[].action'),
+    },
+    createdAt: _string(body['createdAt'], '$field.createdAt'),
+    seen: _boolean(body['seen'], '$field.seen'),
+    restored: _boolean(body['restored'], '$field.restored'),
+    appeal: appealValue == null
+        ? null
+        : _decodeV4BanAppeal(_object(appealValue, '$field.appeal')),
+    appealable: _boolean(body['appealable'], '$field.appealable'),
+    strikeCleared: _boolean(body['strikeCleared'], '$field.strikeCleared'),
+    strikeExpiresAt: _requiredNullableString(
+      body,
+      'strikeExpiresAt',
+      '$field.strikeExpiresAt',
     ),
   );
 }

@@ -5155,6 +5155,116 @@ void main() {
     });
   });
 
+  test('pins the viewer standing and its shared ban shapes', () {
+    final standing = _get(contract, '/api/v4/account/standing');
+    final bans = _get(contract, '/api/v4/account/bans');
+    final profile = _get(contract, '/api/v4/users/{handle}');
+    final reports = _get(contract, '/api/v4/problems/{problemId}/reports');
+
+    expect(_accessClass(standing), 'user');
+    expect(_accessScope(standing), 'standing');
+    expect(standing.containsKey('security'), isFalse);
+    expect(standing.containsKey('requestBody'), isFalse);
+    expect(standing.containsKey('parameters'), isFalse);
+    expect(standing['summary'], "The viewer's standing warnings and bans");
+    final responses = _map(standing['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '401']);
+    expect(
+      _map(responses['200'])['description'],
+      'What the account standing page shows.',
+    );
+    expect(_map(responses['401']), _map(_map(bans['responses'])['401']));
+
+    final schema = _responseSchema(standing);
+    expect(_required(schema), [
+      'strikes',
+      'bans',
+      'priorStrikeBans',
+      'nextBanDays',
+    ]);
+    final properties = _properties(schema);
+    expect(properties.keys.length, 4);
+    expect(_map(properties['priorStrikeBans']), {'type': 'integer'});
+    expect(_map(properties['nextBanDays']), {'type': 'integer'});
+    expect(
+      _map(properties['bans']),
+      _map(_properties(_responseSchema(profile))['bans']),
+    );
+
+    final strike = _map(_map(properties['strikes'])['items']);
+    expect(strike['type'], 'object');
+    expect(_required(strike), [
+      'id',
+      'problem',
+      'category',
+      'text',
+      'action',
+      'createdAt',
+      'seen',
+      'restored',
+      'appeal',
+      'appealable',
+      'strikeCleared',
+      'strikeExpiresAt',
+    ]);
+    final strikeProperties = _properties(strike);
+    expect(strikeProperties.keys.length, 12);
+    expect(_map(strikeProperties['category']), {
+      'enum': [
+        'hate',
+        'disparagement',
+        'profanity',
+        'spam',
+        'personal-info',
+        'off-topic',
+        'troll-level',
+        'irrelevant-tags',
+      ],
+      'type': 'string',
+    });
+    expect(_map(strikeProperties['action']), {
+      'enum': ['hidden', 'removed'],
+      'type': 'string',
+    });
+    expect(_map(strikeProperties['id']), {'type': 'integer'});
+    for (final field in ['text', 'createdAt']) {
+      expect(_map(strikeProperties[field]), {'type': 'string'});
+    }
+    for (final field in [
+      'seen',
+      'restored',
+      'appealable',
+      'strikeCleared',
+    ]) {
+      expect(_map(strikeProperties[field]), {'type': 'boolean'});
+    }
+    expect(_map(strikeProperties['strikeExpiresAt']), {
+      'type': ['string', 'null'],
+    });
+    final banItem =
+        _map(_map(_properties(_responseSchema(bans))['items'])['items']);
+    final banAppeal = _map(_properties(banItem)['appeal']);
+    final appeal = _map(strikeProperties['appeal']);
+    expect(appeal['type'], banAppeal['type']);
+    expect(appeal['properties'], banAppeal['properties']);
+    expect(
+      (appeal['required'] as List).toSet(),
+      (banAppeal['required'] as List).toSet(),
+    );
+    final reportItem =
+        _map(_map(_properties(_responseSchema(reports))['items'])['items']);
+    final sameProblem =
+        _map(_map(_properties(reportItem)['sameProblems'])['items']);
+    final problem = _map(strikeProperties['problem']);
+    expect(problem['type'], ['object', 'null']);
+    expect(_required(problem), [..._required(sameProblem), 'title']);
+    final problemProperties = Map<String, dynamic>.of(_properties(problem));
+    expect(problemProperties.remove('title'), {
+      'type': ['string', 'null'],
+    });
+    expect(problemProperties, _properties(sameProblem));
+  });
+
   test('pins the viewer bans to the shared profile ban fields', () {
     final bans = _get(contract, '/api/v4/account/bans');
     final profile = _get(contract, '/api/v4/users/{handle}');
