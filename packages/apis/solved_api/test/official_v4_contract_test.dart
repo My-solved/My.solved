@@ -5650,6 +5650,50 @@ void main() {
     });
   });
 
+  test('pins the viewer settings patch as the nullable read schema', () {
+    final item = _map(_map(contract['paths'])['/api/v4/account/settings']);
+    final read = _map(item['get']);
+    final patch = _map(item['patch']);
+
+    expect(_accessClass(patch), 'user');
+    expect(_accessScope(patch), 'settings.write');
+    expect(patch.containsKey('security'), isFalse);
+    expect(patch.containsKey('parameters'), isFalse);
+    expect(patch['summary'], "Change some of the signed-in user's settings");
+    final requestBody = _map(patch['requestBody']);
+    expect(requestBody.keys.toList(growable: false), ['content']);
+    final content = _map(requestBody['content']);
+    expect(content.keys.toList(growable: false), ['application/json']);
+    final body = _map(_map(content['application/json'])['schema']);
+    expect(body['type'], 'object');
+    expect(body['additionalProperties'], isFalse);
+    expect(body.containsKey('required'), isFalse);
+    final readSettings = _map(_properties(_responseSchema(read))['settings']);
+    final readProperties = _properties(readSettings);
+    final patchProperties = _properties(body);
+    expect(patchProperties.keys.toSet(), readProperties.keys.toSet());
+    for (final MapEntry(key: field, value: value) in readProperties.entries) {
+      final schema = Map<String, dynamic>.of(_map(value));
+      schema['type'] = [schema['type'], 'null'];
+      if (schema['enum'] case final List<dynamic> values) {
+        schema['enum'] = [...values, null];
+      }
+      expect(_map(patchProperties[field]), schema, reason: field);
+    }
+
+    final responses = _map(patch['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '401']);
+    expect(
+      _map(responses['200'])['description'],
+      'Every setting after the patch, resolved.',
+    );
+    expect(
+      _map(responses['200'])['content'],
+      _map(_map(read['responses'])['200'])['content'],
+    );
+    expect(_map(responses['401']), _map(_map(read['responses'])['401']));
+  });
+
   test('pins the viewer standing and its shared ban shapes', () {
     final standing = _get(contract, '/api/v4/account/standing');
     final bans = _get(contract, '/api/v4/account/bans');

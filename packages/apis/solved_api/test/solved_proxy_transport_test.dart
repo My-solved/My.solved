@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:solved_api/src/solved_bearer_authorization.dart';
@@ -402,6 +403,118 @@ void main() {
         maximumResponseBytes: SolvedProxyTransport.maximumPublicResponseBytes,
       );
       expect(httpClient.requests, hasLength(1));
+    });
+
+    test('sends one Bearer JSON mutation with an exact body', () async {
+      final httpClient = _RecordingClient(
+        (_) async => _response(
+          const <int>[1],
+          statusCode: 302,
+          headers: const <String, String>{'location': 'https://x.example/'},
+        ),
+      );
+      final transport = _transport(httpClient);
+
+      final response = await transport.sendJsonWithBearer(
+        method: 'PATCH',
+        relativePath: 'account/settings',
+        authorization: SolvedBearerAuthorization.fromAccessToken('token'),
+        jsonBody: '{"name":"한 글"}',
+      );
+      await transport.sendJsonWithBearer(
+        method: 'DELETE',
+        relativePath: 'account/bookmarks/a',
+        queryParameters: const <String, String>{'q': 'a b'},
+        authorization: SolvedBearerAuthorization.fromAccessToken('token'),
+      );
+
+      expect(response.statusCode, 302);
+      expect(response.bodyBytes, <int>[1]);
+      final [patch, delete] = httpClient.requests;
+      expect(patch.method, 'PATCH');
+      expect(
+        patch.url,
+        Uri.parse('https://proxy.example/solved/v4/account/settings'),
+      );
+      expect(patch.followRedirects, isFalse);
+      expect(patch.maxRedirects, 0);
+      expect(patch.headers, const <String, String>{
+        'accept': 'application/json',
+        'authorization': 'Bearer token',
+        'content-type': 'application/json',
+      });
+      expect(patch.bodyBytes, utf8.encode('{"name":"한 글"}'));
+      expect(delete.method, 'DELETE');
+      expect(
+        delete.url.toString(),
+        'https://proxy.example/solved/v4/account/bookmarks/a?q=a+b',
+      );
+      expect(delete.headers, const <String, String>{
+        'accept': 'application/json',
+        'authorization': 'Bearer token',
+      });
+      expect(delete.bodyBytes, isEmpty);
+    });
+
+    test('accepts only mutation methods and a bounded JSON body', () async {
+      final httpClient = _RecordingClient(
+        (_) async => _response(const <int>[]),
+      );
+      final transport = _transport(httpClient);
+      final authorization = SolvedBearerAuthorization.fromAccessToken('t');
+
+      for (final method in ['GET', 'patch', 'PUT', 'HEAD', '']) {
+        expect(
+          () => transport.sendJsonWithBearer(
+            method: method,
+            relativePath: 'account/settings',
+            authorization: authorization,
+          ),
+          throwsA(
+            isA<ArgumentError>()
+                .having((error) => error.name, 'name', 'method'),
+          ),
+          reason: method,
+        );
+      }
+      final exact = '"${List<String>.filled(
+        SolvedProxyTransport.maximumPayloadBytes - 2,
+        'a',
+      ).join()}"';
+      await transport.sendJsonWithBearer(
+        method: 'POST',
+        relativePath: 'account/bookmarks',
+        authorization: authorization,
+        jsonBody: exact,
+      );
+      expect(httpClient.requests.single.bodyBytes, hasLength(64 * 1024));
+      expect(
+        () => transport.sendJsonWithBearer(
+          method: 'POST',
+          relativePath: 'account/bookmarks',
+          authorization: authorization,
+          jsonBody: '$exact ',
+        ),
+        throwsA(isA<SolvedProxyRequestTooLarge>()),
+      );
+      expect(
+        () => transport.sendJsonWithBearer(
+          method: 'POST',
+          relativePath: '../oauth/token',
+          authorization: authorization,
+        ),
+        throwsArgumentError,
+      );
+      expect(httpClient.requests, hasLength(1));
+      transport.close();
+      expect(
+        () => transport.sendJsonWithBearer(
+          method: 'POST',
+          relativePath: 'account/bookmarks',
+          authorization: authorization,
+        ),
+        throwsStateError,
+      );
     });
 
     test('rejects relative paths that can escape or change the request target',
