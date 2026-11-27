@@ -395,6 +395,29 @@ final class SolvedApiV4Contract {
     );
   }
 
+  SolvedApiEndpoint<ProblemVotesResult> problemVotes(
+    int problemId, {
+    String? sub,
+    int? page,
+    ProblemVoteSort? sort,
+  }) {
+    if (problemId < 1) {
+      throw ArgumentError.value(problemId, 'problemId', 'Must be at least 1');
+    }
+    if (page != null) {
+      _positivePage(page);
+    }
+    return _endpoint(
+      path: 'problems/$problemId/votes',
+      queryParameters: {
+        if (sub != null) 'sub': sub,
+        if (page != null) 'page': page.toString(),
+        if (sort != null) 'sort': sort.value,
+      },
+      decode: _decodeV4ProblemVotes,
+    );
+  }
+
   SolvedApiEndpoint<ProblemSearchResult> searchProblems(
     String query, {
     int page = 1,
@@ -1708,6 +1731,145 @@ ProblemNoRatingWarningProblem _decodeV4ProblemNoRatingWarningProblem(
       '$field.isStandard',
     ),
     userStatus: userStatus,
+  );
+}
+
+ProblemVotesResult _decodeV4ProblemVotes(dynamic json) {
+  final body = _object(json, 'problem votes');
+  final markRefusalValue = _requiredValue(body, 'markRefusal', 'markRefusal');
+  return ProblemVotesResult(
+    items: List<ProblemVote>.unmodifiable(
+      _list(body['items'], 'items').map(
+        (value) => _decodeV4ProblemVote(_object(value, 'items[]'), 'items[]'),
+      ),
+    ),
+    total: _number(body['total'], 'total'),
+    page: _number(body['page'], 'page'),
+    pageSize: _number(body['pageSize'], 'pageSize'),
+    sort: switch (_string(body['sort'], 'sort')) {
+      'recent' => ProblemVoteSort.recent,
+      'level' => ProblemVoteSort.level,
+      'weight' => ProblemVoteSort.weight,
+      _ => throw const FormatException('Unsupported sort'),
+    },
+    markRefusal: markRefusalValue == null
+        ? null
+        : switch (_string(markRefusalValue, 'markRefusal')) {
+            'UNAUTHENTICATED' => ProblemVoteMarkRefusal.unauthenticated,
+            'REPUTATION_TOO_LOW' => ProblemVoteMarkRefusal.reputationTooLow,
+            'TIER_TOO_LOW' => ProblemVoteMarkRefusal.tierTooLow,
+            'ACCOUNT_TOO_NEW' => ProblemVoteMarkRefusal.accountTooNew,
+            'NOT_SOLVED' => ProblemVoteMarkRefusal.notSolved,
+            'BANNED' => ProblemVoteMarkRefusal.banned,
+            _ => throw const FormatException('Unsupported markRefusal'),
+          },
+    unhelpfulLocked: _boolean(body['unhelpfulLocked'], 'unhelpfulLocked'),
+  );
+}
+
+ProblemVote _decodeV4ProblemVote(Map<String, dynamic> body, String field) {
+  final userValue = _requiredValue(body, 'user', '$field.user');
+  final user = userValue == null ? null : _object(userValue, '$field.user');
+  final emoticonValue = _requiredValue(body, 'emoticon', '$field.emoticon');
+  final emoticon =
+      emoticonValue == null ? null : _object(emoticonValue, '$field.emoticon');
+  final marksValue = _requiredValue(body, 'marks', '$field.marks');
+  return ProblemVote(
+    id: _number(body['id'], '$field.id'),
+    user: user == null
+        ? null
+        : ProblemVoteUser(
+            id: _number(user['id'], '$field.user.id'),
+            handle: _string(user['handle'], '$field.user.handle'),
+            tier: _requiredNullableTier(user, '$field.user.tier'),
+            profileImageUrl: _requiredNullableString(
+              user,
+              'profileImageUrl',
+              '$field.user.profileImageUrl',
+            ),
+          ),
+    votedAt: _string(body['votedAt'], '$field.votedAt'),
+    level: _requiredNullableNumber(body, 'level', '$field.level'),
+    weight: _number(body['weight'], '$field.weight'),
+    invalidated: _boolean(body['invalidated'], '$field.invalidated'),
+    notInCalculation: _boolean(
+      body['notInCalculation'],
+      '$field.notInCalculation',
+    ),
+    banned: _boolean(body['banned'], '$field.banned'),
+    superseded: _boolean(body['superseded'], '$field.superseded'),
+    cutoff: _boolean(body['cutoff'], '$field.cutoff'),
+    comment: _requiredNullableString(body, 'comment', '$field.comment'),
+    commentLanguage: _requiredNullableString(
+      body,
+      'commentLanguage',
+      '$field.commentLanguage',
+    ),
+    emoticonId: _requiredNullableString(
+      body,
+      'emoticonId',
+      '$field.emoticonId',
+    ),
+    emoticon: emoticon == null
+        ? null
+        : ProblemVoteEmoticon(
+            key: _string(emoticon['key'], '$field.emoticon.key'),
+            url: _string(emoticon['url'], '$field.emoticon.url'),
+          ),
+    source: _string(body['source'], '$field.source'),
+    tags: List<ProblemVoteTag>.unmodifiable(
+      _list(body['tags'], '$field.tags').map((value) {
+        final entry = _object(value, '$field.tags[]');
+        final tagValue = _requiredValue(entry, 'tag', '$field.tags[].tag');
+        return ProblemVoteTag(
+          tag: tagValue == null
+              ? null
+              : _decodeV4ProblemSearchTag(
+                  _object(tagValue, '$field.tags[].tag'),
+                  '$field.tags[].tag',
+                ),
+          legacyKey: _requiredNullableString(
+            entry,
+            'legacyKey',
+            '$field.tags[].legacyKey',
+          ),
+        );
+      }),
+    ),
+    isStandard: _boolean(body['isStandard'], '$field.isStandard'),
+    marks: marksValue == null
+        ? null
+        : _decodeV4ProblemVoteMarks(
+            _object(marksValue, '$field.marks'),
+            '$field.marks',
+          ),
+  );
+}
+
+ProblemVoteMarks _decodeV4ProblemVoteMarks(
+  Map<String, dynamic> body,
+  String field,
+) {
+  final countsValue = _requiredValue(body, 'counts', '$field.counts');
+  final counts =
+      countsValue == null ? null : _object(countsValue, '$field.counts');
+  final mineValue = _requiredValue(body, 'mine', '$field.mine');
+  return ProblemVoteMarks(
+    score: _integer(body['score'], '$field.score'),
+    counts: counts == null
+        ? null
+        : ProblemVoteMarkCounts(
+            helpful: _integer(counts['helpful'], '$field.counts.helpful'),
+            unhelpful: _integer(counts['unhelpful'], '$field.counts.unhelpful'),
+          ),
+    mine: mineValue == null
+        ? null
+        : switch (_string(mineValue, '$field.mine')) {
+            'helpful' => ProblemVoteMark.helpful,
+            'unhelpful' => ProblemVoteMark.unhelpful,
+            _ => throw FormatException('Unsupported $field.mine'),
+          },
+    own: _boolean(body['own'], '$field.own'),
   );
 }
 

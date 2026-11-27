@@ -16,6 +16,7 @@ const _relevantPaths = <String>[
   '/api/v4/problems',
   '/api/v4/problems/{problemId}',
   '/api/v4/problems/{problemId}/reports',
+  '/api/v4/problems/{problemId}/votes',
   '/api/v4/rankings/affiliation-board',
   '/api/v4/rankings/affiliations',
   '/api/v4/rankings/affiliations/{affiliationId}',

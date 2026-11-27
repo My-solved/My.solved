@@ -494,6 +494,19 @@ class SolvedApiClient {
     );
   }
 
+  Future<ProblemVotesResult> v4ProblemVotes(
+    int problemId, {
+    String? sub,
+    int? page,
+    ProblemVoteSort? sort,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.problemVotes(problemId, sub: sub, page: page, sort: sort),
+      requestType: _RequestType.search,
+    );
+  }
+
   Future<ProblemSearchResult> v4SearchProblems(
     String query, {
     int page = 1,
