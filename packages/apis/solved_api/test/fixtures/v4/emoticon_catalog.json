@@ -1,0 +1,25 @@
+{
+  "items": [
+    {
+      "key": "smile",
+      "url": "not a URI",
+      "category": "",
+      "displayName": "Smile 😀",
+      "owned": true
+    },
+    {
+      "key": "",
+      "url": "",
+      "category": "basic",
+      "displayName": null,
+      "owned": false
+    },
+    {
+      "key": "smile",
+      "url": "not a URI",
+      "category": "",
+      "displayName": "Smile 😀",
+      "owned": true
+    }
+  ]
+}

@@ -1590,6 +1590,65 @@
         }
       }
     },
+    "/api/v4/me/emoticons": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "properties": {
+                          "category": {
+                            "type": "string"
+                          },
+                          "displayName": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "key": {
+                            "type": "string"
+                          },
+                          "owned": {
+                            "type": "boolean"
+                          },
+                          "url": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "url",
+                          "category",
+                          "displayName",
+                          "owned"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Catalog with `owned` flag per item."
+          }
+        },
+        "summary": "List the emoticon catalog with viewer ownership flags",
+        "x-access": {
+          "class": "user",
+          "scope": "collection"
+        }
+      }
+    },
     "/api/v4/me/tag-progress": {
       "get": {
         "responses": {

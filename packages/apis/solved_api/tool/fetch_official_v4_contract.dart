@@ -17,6 +17,7 @@ const _relevantPaths = <String>[
   '/api/v4/health',
   '/api/v4/help/{slug}',
   '/api/v4/me',
+  '/api/v4/me/emoticons',
   '/api/v4/me/tag-progress',
   '/api/v4/oauth/token',
   '/api/v4/policies/{slug}',

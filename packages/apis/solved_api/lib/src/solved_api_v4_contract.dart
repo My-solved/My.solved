@@ -135,6 +135,14 @@ final class SolvedApiV4Contract {
         decode: _decodeV4AccountConsents,
       );
 
+  /// The emoticon catalog with the viewer's ownership flags. It requires a
+  /// user token with `collection` scope, so it is only exposed through
+  /// [SolvedAuthenticatedApiClient].
+  SolvedApiEndpoint<EmoticonCatalogResult> emoticons() => _endpoint(
+        path: 'me/emoticons',
+        decode: _decodeV4EmoticonCatalog,
+      );
+
   /// The viewer's Stardust wallet. It requires a user token with `wallet`
   /// scope, so it is only exposed through [SolvedAuthenticatedApiClient].
   SolvedApiEndpoint<AccountWalletResult> accountWallet() => _endpoint(
@@ -3020,6 +3028,28 @@ RankingLeaderboardResult _decodeV4RankingLeaderboard(dynamic json) {
           'items[]',
         ),
       ),
+    ),
+  );
+}
+
+EmoticonCatalogResult _decodeV4EmoticonCatalog(dynamic json) {
+  final body = _object(json, 'emoticon catalog');
+  return EmoticonCatalogResult(
+    items: List<EmoticonCatalogItem>.unmodifiable(
+      _list(body['items'], 'items').map((value) {
+        final item = _object(value, 'items[]');
+        return EmoticonCatalogItem(
+          key: _string(item['key'], 'items[].key'),
+          url: _string(item['url'], 'items[].url'),
+          category: _string(item['category'], 'items[].category'),
+          displayName: _requiredNullableString(
+            item,
+            'displayName',
+            'items[].displayName',
+          ),
+          owned: _boolean(item['owned'], 'items[].owned'),
+        );
+      }),
     ),
   );
 }

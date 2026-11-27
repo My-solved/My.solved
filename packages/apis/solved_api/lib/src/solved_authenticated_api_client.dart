@@ -21,6 +21,7 @@ enum SolvedAuthenticatedOperation {
   tagProgress,
   accountConsents,
   accountWallet,
+  emoticons,
 }
 
 enum SolvedAuthenticatedFailureKind {
@@ -146,6 +147,13 @@ final class SolvedAuthenticatedApiClient {
   Future<BookmarkFoldersResult> bookmarkFavorites({int? page}) => _get(
         SolvedAuthenticatedOperation.bookmarkFavorites,
         () => _contract.bookmarkFavorites(page: page),
+      );
+
+  /// The emoticon catalog with the viewer's ownership flags. The token needs
+  /// the `collection` scope.
+  Future<EmoticonCatalogResult> emoticons() => _get(
+        SolvedAuthenticatedOperation.emoticons,
+        _contract.emoticons,
       );
 
   /// The viewer's Stardust balance and today's capped earnings. The token

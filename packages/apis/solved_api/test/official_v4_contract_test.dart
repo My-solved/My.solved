@@ -5155,6 +5155,48 @@ void main() {
     });
   });
 
+  test('pins the viewer emoticon catalog and ownership flags', () {
+    final emoticons = _get(contract, '/api/v4/me/emoticons');
+
+    expect(_accessClass(emoticons), 'user');
+    expect(_accessScope(emoticons), 'collection');
+    expect(emoticons.containsKey('security'), isFalse);
+    expect(emoticons.containsKey('requestBody'), isFalse);
+    expect(emoticons.containsKey('parameters'), isFalse);
+    expect(
+      emoticons['summary'],
+      'List the emoticon catalog with viewer ownership flags',
+    );
+    final responses = _map(emoticons['responses']);
+    expect(responses.keys.toList(growable: false), ['200']);
+    expect(
+      _map(responses['200'])['description'],
+      'Catalog with `owned` flag per item.',
+    );
+    expect(_responseSchema(emoticons), {
+      'properties': {
+        'items': {
+          'items': {
+            'properties': {
+              'category': {'type': 'string'},
+              'displayName': {
+                'type': ['string', 'null'],
+              },
+              'key': {'type': 'string'},
+              'owned': {'type': 'boolean'},
+              'url': {'type': 'string'},
+            },
+            'required': ['key', 'url', 'category', 'displayName', 'owned'],
+            'type': 'object',
+          },
+          'type': 'array',
+        },
+      },
+      'required': ['items'],
+      'type': 'object',
+    });
+  });
+
   test('pins the viewer tag progress without joining its lists', () {
     final progress = _get(contract, '/api/v4/me/tag-progress');
 
