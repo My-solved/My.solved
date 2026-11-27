@@ -2115,6 +2115,900 @@
         }
       }
     },
+    "/api/v4/account/settings": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "settings": {
+                      "properties": {
+                        "alwaysShowUnratable": {
+                          "type": "boolean"
+                        },
+                        "alwaysShowUnrated": {
+                          "type": "boolean"
+                        },
+                        "iconSchemeHover": {
+                          "enum": [
+                            "show",
+                            "warn",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "iconSchemeSolved": {
+                          "enum": [
+                            "show",
+                            "warn",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "iconSchemeUnsolved": {
+                          "enum": [
+                            "show",
+                            "warn",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "iconTheme": {
+                          "enum": [
+                            "default",
+                            "legacy"
+                          ],
+                          "type": "string"
+                        },
+                        "iconWarnAbsolute": {
+                          "maximum": 30,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "iconWarnMode": {
+                          "enum": [
+                            "relative",
+                            "absolute"
+                          ],
+                          "type": "string"
+                        },
+                        "iconWarnRelative": {
+                          "maximum": 30,
+                          "minimum": -30,
+                          "type": "integer"
+                        },
+                        "problemSort": {
+                          "enum": [
+                            "id",
+                            "level",
+                            "solved",
+                            "average_try",
+                            "random"
+                          ],
+                          "type": "string"
+                        },
+                        "problemSortDirection": {
+                          "enum": [
+                            "asc",
+                            "desc"
+                          ],
+                          "type": "string"
+                        },
+                        "showOriginalContest": {
+                          "type": "boolean"
+                        },
+                        "showOriginalTitle": {
+                          "type": "boolean"
+                        },
+                        "showSolvedUserCount": {
+                          "enum": [
+                            "show",
+                            "solved-only",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "showTagButton": {
+                          "enum": [
+                            "show",
+                            "solved-only",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "showVotedUserCount": {
+                          "enum": [
+                            "show",
+                            "solved-only",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "sourceLevelAllSolved": {
+                          "enum": [
+                            "show",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "sourceLevelDisplay": {
+                          "enum": [
+                            "dots",
+                            "gradient",
+                            "none"
+                          ],
+                          "type": "string"
+                        },
+                        "sourceLevelHover": {
+                          "enum": [
+                            "show",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "sourceLevelPartlySolved": {
+                          "enum": [
+                            "show",
+                            "partial-if-ascending",
+                            "partial",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "sourceLevelUnsolved": {
+                          "enum": [
+                            "show",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "sourceOrderHover": {
+                          "enum": [
+                            "show",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "sourceOrderType": {
+                          "enum": [
+                            "show",
+                            "partly-solved",
+                            "all-solved",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "sourceSort": {
+                          "enum": [
+                            "default",
+                            "name",
+                            "size",
+                            "p25",
+                            "p50",
+                            "p75"
+                          ],
+                          "type": "string"
+                        },
+                        "sourceSortDirection": {
+                          "enum": [
+                            "asc",
+                            "desc"
+                          ],
+                          "type": "string"
+                        },
+                        "tagDisplayLanguage": {
+                          "enum": [
+                            "identifier",
+                            "ko",
+                            "en",
+                            "ja"
+                          ],
+                          "type": "string"
+                        },
+                        "theme": {
+                          "enum": [
+                            "system",
+                            "light",
+                            "dark"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "theme",
+                        "iconTheme",
+                        "iconSchemeSolved",
+                        "iconSchemeUnsolved",
+                        "iconSchemeHover",
+                        "iconWarnMode",
+                        "iconWarnRelative",
+                        "iconWarnAbsolute",
+                        "alwaysShowUnrated",
+                        "alwaysShowUnratable",
+                        "showSolvedUserCount",
+                        "showVotedUserCount",
+                        "showTagButton",
+                        "tagDisplayLanguage",
+                        "problemSort",
+                        "problemSortDirection",
+                        "showOriginalTitle",
+                        "showOriginalContest",
+                        "sourceLevelAllSolved",
+                        "sourceLevelPartlySolved",
+                        "sourceLevelUnsolved",
+                        "sourceLevelHover",
+                        "sourceLevelDisplay",
+                        "sourceSort",
+                        "sourceSortDirection",
+                        "sourceOrderType",
+                        "sourceOrderHover"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "settings"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Every setting, resolved."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Not signed in."
+          }
+        },
+        "summary": "The signed-in user's settings, defaults applied",
+        "x-access": {
+          "class": "user",
+          "scope": "settings"
+        }
+      },
+      "patch": {
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "alwaysShowUnratable": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "alwaysShowUnrated": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "iconSchemeHover": {
+                    "enum": [
+                      "show",
+                      "warn",
+                      "hide",
+                      null
+                    ],
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "iconSchemeSolved": {
+                    "enum": [
+                      "show",
+                      "warn",
+                      "hide",
+                      null
+                    ],
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "iconSchemeUnsolved": {
+                    "enum": [
+                      "show",
+                      "warn",
+                      "hide",
+                      null
+                    ],
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "iconTheme": {
+                    "enum": [
+                      "default",
+                      "legacy",
+                      null
+                    ],
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "iconWarnAbsolute": {
+                    "maximum": 30,
+                    "minimum": 0,
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "iconWarnMode": {
+                    "enum": [
+                      "relative",
+                      "absolute",
+                      null
+                    ],
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "iconWarnRelative": {
+                    "maximum": 30,
+                    "minimum": -30,
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "problemSort": {
+                    "enum": [
+                      "id",
+                      "level",
+                      "solved",
+                      "average_try",
+                      "random",
+                      null
+                    ],
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "problemSortDirection": {
+                    "enum": [
+                      "asc",
+                      "desc",
+                      null
+                    ],
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "showOriginalContest": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "showOriginalTitle": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "showSolvedUserCount": {
+                    "enum": [
+                      "show",
+                      "solved-only",
+                      "hide",
+                      null
+                    ],
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "showTagButton": {
+                    "enum": [
+                      "show",
+                      "solved-only",
+                      "hide",
+                      null
+                    ],
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "showVotedUserCount": {
+                    "enum": [
+                      "show",
+                      "solved-only",
+                      "hide",
+                      null
+                    ],
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "sourceLevelAllSolved": {
+                    "enum": [
+                      "show",
+                      "hide",
+                      null
+                    ],
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "sourceLevelDisplay": {
+                    "enum": [
+                      "dots",
+                      "gradient",
+                      "none",
+                      null
+                    ],
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "sourceLevelHover": {
+                    "enum": [
+                      "show",
+                      "hide",
+                      null
+                    ],
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "sourceLevelPartlySolved": {
+                    "enum": [
+                      "show",
+                      "partial-if-ascending",
+                      "partial",
+                      "hide",
+                      null
+                    ],
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "sourceLevelUnsolved": {
+                    "enum": [
+                      "show",
+                      "hide",
+                      null
+                    ],
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "sourceOrderHover": {
+                    "enum": [
+                      "show",
+                      "hide",
+                      null
+                    ],
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "sourceOrderType": {
+                    "enum": [
+                      "show",
+                      "partly-solved",
+                      "all-solved",
+                      "hide",
+                      null
+                    ],
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "sourceSort": {
+                    "enum": [
+                      "default",
+                      "name",
+                      "size",
+                      "p25",
+                      "p50",
+                      "p75",
+                      null
+                    ],
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "sourceSortDirection": {
+                    "enum": [
+                      "asc",
+                      "desc",
+                      null
+                    ],
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "tagDisplayLanguage": {
+                    "enum": [
+                      "identifier",
+                      "ko",
+                      "en",
+                      "ja",
+                      null
+                    ],
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "theme": {
+                    "enum": [
+                      "system",
+                      "light",
+                      "dark",
+                      null
+                    ],
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "settings": {
+                      "properties": {
+                        "alwaysShowUnratable": {
+                          "type": "boolean"
+                        },
+                        "alwaysShowUnrated": {
+                          "type": "boolean"
+                        },
+                        "iconSchemeHover": {
+                          "enum": [
+                            "show",
+                            "warn",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "iconSchemeSolved": {
+                          "enum": [
+                            "show",
+                            "warn",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "iconSchemeUnsolved": {
+                          "enum": [
+                            "show",
+                            "warn",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "iconTheme": {
+                          "enum": [
+                            "default",
+                            "legacy"
+                          ],
+                          "type": "string"
+                        },
+                        "iconWarnAbsolute": {
+                          "maximum": 30,
+                          "minimum": 0,
+                          "type": "integer"
+                        },
+                        "iconWarnMode": {
+                          "enum": [
+                            "relative",
+                            "absolute"
+                          ],
+                          "type": "string"
+                        },
+                        "iconWarnRelative": {
+                          "maximum": 30,
+                          "minimum": -30,
+                          "type": "integer"
+                        },
+                        "problemSort": {
+                          "enum": [
+                            "id",
+                            "level",
+                            "solved",
+                            "average_try",
+                            "random"
+                          ],
+                          "type": "string"
+                        },
+                        "problemSortDirection": {
+                          "enum": [
+                            "asc",
+                            "desc"
+                          ],
+                          "type": "string"
+                        },
+                        "showOriginalContest": {
+                          "type": "boolean"
+                        },
+                        "showOriginalTitle": {
+                          "type": "boolean"
+                        },
+                        "showSolvedUserCount": {
+                          "enum": [
+                            "show",
+                            "solved-only",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "showTagButton": {
+                          "enum": [
+                            "show",
+                            "solved-only",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "showVotedUserCount": {
+                          "enum": [
+                            "show",
+                            "solved-only",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "sourceLevelAllSolved": {
+                          "enum": [
+                            "show",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "sourceLevelDisplay": {
+                          "enum": [
+                            "dots",
+                            "gradient",
+                            "none"
+                          ],
+                          "type": "string"
+                        },
+                        "sourceLevelHover": {
+                          "enum": [
+                            "show",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "sourceLevelPartlySolved": {
+                          "enum": [
+                            "show",
+                            "partial-if-ascending",
+                            "partial",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "sourceLevelUnsolved": {
+                          "enum": [
+                            "show",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "sourceOrderHover": {
+                          "enum": [
+                            "show",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "sourceOrderType": {
+                          "enum": [
+                            "show",
+                            "partly-solved",
+                            "all-solved",
+                            "hide"
+                          ],
+                          "type": "string"
+                        },
+                        "sourceSort": {
+                          "enum": [
+                            "default",
+                            "name",
+                            "size",
+                            "p25",
+                            "p50",
+                            "p75"
+                          ],
+                          "type": "string"
+                        },
+                        "sourceSortDirection": {
+                          "enum": [
+                            "asc",
+                            "desc"
+                          ],
+                          "type": "string"
+                        },
+                        "tagDisplayLanguage": {
+                          "enum": [
+                            "identifier",
+                            "ko",
+                            "en",
+                            "ja"
+                          ],
+                          "type": "string"
+                        },
+                        "theme": {
+                          "enum": [
+                            "system",
+                            "light",
+                            "dark"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "theme",
+                        "iconTheme",
+                        "iconSchemeSolved",
+                        "iconSchemeUnsolved",
+                        "iconSchemeHover",
+                        "iconWarnMode",
+                        "iconWarnRelative",
+                        "iconWarnAbsolute",
+                        "alwaysShowUnrated",
+                        "alwaysShowUnratable",
+                        "showSolvedUserCount",
+                        "showVotedUserCount",
+                        "showTagButton",
+                        "tagDisplayLanguage",
+                        "problemSort",
+                        "problemSortDirection",
+                        "showOriginalTitle",
+                        "showOriginalContest",
+                        "sourceLevelAllSolved",
+                        "sourceLevelPartlySolved",
+                        "sourceLevelUnsolved",
+                        "sourceLevelHover",
+                        "sourceLevelDisplay",
+                        "sourceSort",
+                        "sourceSortDirection",
+                        "sourceOrderType",
+                        "sourceOrderHover"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "settings"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Every setting after the patch, resolved."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Not signed in."
+          }
+        },
+        "summary": "Change some of the signed-in user's settings",
+        "x-access": {
+          "class": "user",
+          "scope": "settings.write"
+        }
+      }
+    },
     "/api/v4/account/standing": {
       "get": {
         "responses": {

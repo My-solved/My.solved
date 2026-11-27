@@ -29,6 +29,7 @@ enum SolvedAuthenticatedOperation {
   walletHistory,
   accountItems,
   accountProfile,
+  accountSettings,
 }
 
 enum SolvedAuthenticatedFailureKind {
@@ -182,6 +183,13 @@ final class SolvedAuthenticatedApiClient {
   Future<AccountProfileResult> accountProfile() => _get(
         SolvedAuthenticatedOperation.accountProfile,
         _contract.accountProfile,
+      );
+
+  /// The viewer's resolved settings, defaults applied. The token needs the
+  /// `settings` scope.
+  Future<AccountSettingsResult> accountSettings() => _get(
+        SolvedAuthenticatedOperation.accountSettings,
+        _contract.accountSettings,
       );
 
   /// The viewer's standing warnings and bans. The token needs the `standing`

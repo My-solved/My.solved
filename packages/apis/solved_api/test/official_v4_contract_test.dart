@@ -5503,6 +5503,153 @@ void main() {
     }
   });
 
+  test('pins the viewer settings and their exact value sets', () {
+    final path = _map(_map(contract['paths'])['/api/v4/account/settings']);
+    final settings = _get(contract, '/api/v4/account/settings');
+
+    expect(path.keys.toList(growable: false), ['get', 'patch']);
+    expect(_accessClass(settings), 'user');
+    expect(_accessScope(settings), 'settings');
+    expect(settings.containsKey('security'), isFalse);
+    expect(settings.containsKey('requestBody'), isFalse);
+    expect(settings.containsKey('parameters'), isFalse);
+    expect(
+      settings['summary'],
+      "The signed-in user's settings, defaults applied",
+    );
+    final responses = _map(settings['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '401']);
+    expect(_map(responses['200'])['description'], 'Every setting, resolved.');
+    expect(_map(responses['401'])['description'], 'Not signed in.');
+
+    final schema = _responseSchema(settings);
+    expect(_required(schema), ['settings']);
+    expect(_properties(schema).keys.length, 1);
+    final body = _map(_properties(schema)['settings']);
+    expect(body['type'], 'object');
+    expect(_required(body), [
+      'theme',
+      'iconTheme',
+      'iconSchemeSolved',
+      'iconSchemeUnsolved',
+      'iconSchemeHover',
+      'iconWarnMode',
+      'iconWarnRelative',
+      'iconWarnAbsolute',
+      'alwaysShowUnrated',
+      'alwaysShowUnratable',
+      'showSolvedUserCount',
+      'showVotedUserCount',
+      'showTagButton',
+      'tagDisplayLanguage',
+      'problemSort',
+      'problemSortDirection',
+      'showOriginalTitle',
+      'showOriginalContest',
+      'sourceLevelAllSolved',
+      'sourceLevelPartlySolved',
+      'sourceLevelUnsolved',
+      'sourceLevelHover',
+      'sourceLevelDisplay',
+      'sourceSort',
+      'sourceSortDirection',
+      'sourceOrderType',
+      'sourceOrderHover',
+    ]);
+    expect(_properties(body), {
+      'alwaysShowUnratable': {'type': 'boolean'},
+      'alwaysShowUnrated': {'type': 'boolean'},
+      'iconSchemeHover': {
+        'enum': ['show', 'warn', 'hide'],
+        'type': 'string'
+      },
+      'iconSchemeSolved': {
+        'enum': ['show', 'warn', 'hide'],
+        'type': 'string'
+      },
+      'iconSchemeUnsolved': {
+        'enum': ['show', 'warn', 'hide'],
+        'type': 'string'
+      },
+      'iconTheme': {
+        'enum': ['default', 'legacy'],
+        'type': 'string'
+      },
+      'iconWarnAbsolute': {'maximum': 30, 'minimum': 0, 'type': 'integer'},
+      'iconWarnMode': {
+        'enum': ['relative', 'absolute'],
+        'type': 'string'
+      },
+      'iconWarnRelative': {'maximum': 30, 'minimum': -30, 'type': 'integer'},
+      'problemSort': {
+        'enum': ['id', 'level', 'solved', 'average_try', 'random'],
+        'type': 'string'
+      },
+      'problemSortDirection': {
+        'enum': ['asc', 'desc'],
+        'type': 'string'
+      },
+      'showOriginalContest': {'type': 'boolean'},
+      'showOriginalTitle': {'type': 'boolean'},
+      'showSolvedUserCount': {
+        'enum': ['show', 'solved-only', 'hide'],
+        'type': 'string'
+      },
+      'showTagButton': {
+        'enum': ['show', 'solved-only', 'hide'],
+        'type': 'string'
+      },
+      'showVotedUserCount': {
+        'enum': ['show', 'solved-only', 'hide'],
+        'type': 'string'
+      },
+      'sourceLevelAllSolved': {
+        'enum': ['show', 'hide'],
+        'type': 'string'
+      },
+      'sourceLevelDisplay': {
+        'enum': ['dots', 'gradient', 'none'],
+        'type': 'string'
+      },
+      'sourceLevelHover': {
+        'enum': ['show', 'hide'],
+        'type': 'string'
+      },
+      'sourceLevelPartlySolved': {
+        'enum': ['show', 'partial-if-ascending', 'partial', 'hide'],
+        'type': 'string'
+      },
+      'sourceLevelUnsolved': {
+        'enum': ['show', 'hide'],
+        'type': 'string'
+      },
+      'sourceOrderHover': {
+        'enum': ['show', 'hide'],
+        'type': 'string'
+      },
+      'sourceOrderType': {
+        'enum': ['show', 'partly-solved', 'all-solved', 'hide'],
+        'type': 'string'
+      },
+      'sourceSort': {
+        'enum': ['default', 'name', 'size', 'p25', 'p50', 'p75'],
+        'type': 'string'
+      },
+      'sourceSortDirection': {
+        'enum': ['asc', 'desc'],
+        'type': 'string'
+      },
+      'tagDisplayLanguage': {
+        'enum': ['identifier', 'ko', 'en', 'ja'],
+        'type': 'string'
+      },
+      'theme': {
+        'enum': ['system', 'light', 'dark'],
+        'type': 'string'
+      },
+    });
+  });
+
   test('pins the viewer standing and its shared ban shapes', () {
     final standing = _get(contract, '/api/v4/account/standing');
     final bans = _get(contract, '/api/v4/account/bans');

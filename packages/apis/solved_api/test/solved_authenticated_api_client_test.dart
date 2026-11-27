@@ -739,6 +739,30 @@ void main() {
       expect(error.kind, SolvedAuthenticatedFailureKind.invalidResponse);
     });
 
+    test('sends one token-bound settings GET', () async {
+      handler = (_) async => _jsonResponse(fixture('v4/account_settings.json'));
+
+      final actual = await client.accountSettings();
+
+      expect(actual.settings.theme, AccountSettingTheme.dark);
+      expect(httpClient.requests.map((request) => request.url.toString()), [
+        'https://proxy.example/solved/v4/account/settings',
+      ]);
+      final request = httpClient.requests.single;
+      expect(request.method, 'GET');
+      expect(request.followRedirects, isFalse);
+      expect(request.headers, const <String, String>{
+        'accept': 'application/json',
+        'authorization': 'Bearer access-token',
+      });
+      expect(request.bodyBytes, isEmpty);
+
+      handler = (_) async => _jsonResponse('{"settings":{}}');
+      final error = await _captureFailure(client.accountSettings());
+      expect(error.operation, SolvedAuthenticatedOperation.accountSettings);
+      expect(error.kind, SolvedAuthenticatedFailureKind.invalidResponse);
+    });
+
     test('rejects an invalid rivals page before any request', () async {
       await expectLater(
         client.rivals(page: 0),
@@ -816,6 +840,7 @@ void main() {
       await expectLater(client.walletHistory(), throwsStateError);
       await expectLater(client.accountItems(), throwsStateError);
       await expectLater(client.accountProfile(), throwsStateError);
+      await expectLater(client.accountSettings(), throwsStateError);
       expect(httpClient.requests, isEmpty);
     });
   });
