@@ -6741,6 +6741,48 @@
         }
       }
     },
+    "/api/v4/posts/help": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "lang",
+            "required": false,
+            "schema": {
+              "maxLength": 16,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "$ref": "#/components/schemas/HelpTreeNode"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Every published document, in reading order."
+          }
+        },
+        "summary": "The help center's documents, as a tree",
+        "x-access": {
+          "class": "public"
+        }
+      }
+    },
     "/api/v4/posts/help/page": {
       "get": {
         "parameters": [
@@ -19070,6 +19112,34 @@
           "class": "public"
         }
       }
+    }
+  },
+  "schemas": {
+    "HelpTreeNode": {
+      "properties": {
+        "children": {
+          "items": {
+            "$ref": "#/components/schemas/HelpTreeNode"
+          },
+          "type": "array"
+        },
+        "hasPage": {
+          "type": "boolean"
+        },
+        "path": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "title",
+        "hasPage",
+        "children"
+      ],
+      "type": "object"
     }
   }
 }

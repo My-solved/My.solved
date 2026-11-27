@@ -6154,6 +6154,57 @@ void main() {
     }
   });
 
+  test('pins the recursive help tree and its referenced schema', () {
+    final tree = _get(contract, '/api/v4/posts/help');
+    final page = _get(contract, '/api/v4/posts/help/page');
+
+    expect(_accessClass(tree), 'public');
+    expect(tree.containsKey('security'), isFalse);
+    expect(tree.containsKey('requestBody'), isFalse);
+    expect(tree['summary'], "The help center's documents, as a tree");
+    expect(_parameters(tree), [
+      {
+        'in': 'query',
+        'name': 'lang',
+        'required': false,
+        'schema': {'maxLength': 16, 'type': 'string'},
+      },
+    ]);
+    expect(_parameters(page).first, _parameters(tree).single);
+    final responses = _map(tree['responses']);
+    expect(responses.keys.toList(growable: false), ['200']);
+    expect(
+      _map(responses['200'])['description'],
+      'Every published document, in reading order.',
+    );
+    expect(_responseSchema(tree), {
+      'properties': {
+        'items': {
+          'items': {r'$ref': '#/components/schemas/HelpTreeNode'},
+          'type': 'array',
+        },
+      },
+      'required': ['items'],
+      'type': 'object',
+    });
+
+    expect(_map(contract['schemas']), {
+      'HelpTreeNode': {
+        'properties': {
+          'children': {
+            'items': {r'$ref': '#/components/schemas/HelpTreeNode'},
+            'type': 'array',
+          },
+          'hasPage': {'type': 'boolean'},
+          'path': {'type': 'string'},
+          'title': {'type': 'string'},
+        },
+        'required': ['path', 'title', 'hasPage', 'children'],
+        'type': 'object',
+      },
+    });
+  });
+
   test('pins the viewer standing and its shared ban shapes', () {
     final standing = _get(contract, '/api/v4/account/standing');
     final bans = _get(contract, '/api/v4/account/bans');

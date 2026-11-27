@@ -37,6 +37,7 @@ const _relevantPaths = <String>[
   '/api/v4/oauth/token',
   '/api/v4/policies/{slug}',
   '/api/v4/policies/{slug}/{ref}',
+  '/api/v4/posts/help',
   '/api/v4/posts/help/page',
   '/api/v4/posts/notice',
   '/api/v4/posts/notice/{slug}',
@@ -161,7 +162,44 @@ Map<String, dynamic> _buildSnapshot(Map<String, dynamic> source) {
     'securitySchemes': (source['components'] as Map?)?['securitySchemes'],
     'allPaths': allPaths,
     'paths': selectedPaths,
+    'schemas': _referencedSchemas(source, selectedPaths),
   };
+}
+
+/// Component schemas reachable from [selectedPaths], so local `$ref`s in the
+/// snapshot (including recursive ones) stay resolvable.
+Map<String, dynamic> _referencedSchemas(
+  Map<String, dynamic> source,
+  Map<String, dynamic> selectedPaths,
+) {
+  const prefix = '#/components/schemas/';
+  final schemas = Map<String, dynamic>.from(
+    ((source['components'] as Map?)?['schemas'] as Map?) ?? const {},
+  );
+  final names = <String>{};
+  final pending = <Object?>[selectedPaths];
+  while (pending.isNotEmpty) {
+    final value = pending.removeLast();
+    if (value is Map) {
+      final ref = value[r'$ref'];
+      if (ref != null) {
+        if (ref is! String || !ref.startsWith(prefix)) {
+          throw FormatException('unsupported reference: $ref');
+        }
+        final name = ref.substring(prefix.length);
+        final schema = schemas[name];
+        if (schema == null) {
+          throw FormatException('missing referenced schema: $name');
+        }
+        if (names.add(name)) pending.add(schema);
+      }
+      pending.addAll(value.values);
+    } else if (value is List) {
+      pending.addAll(value);
+    }
+  }
+  final sorted = names.toList()..sort();
+  return {for (final name in sorted) name: schemas[name]};
 }
 
 String _parseOutputPath(List<String> arguments) {
