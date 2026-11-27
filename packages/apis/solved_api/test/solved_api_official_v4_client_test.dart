@@ -91,6 +91,7 @@ void main() {
             '/solved/v4/site/stats' => 'v4/site_stats.json',
             '/solved/v4/posts/notice' => 'v4/notice_list.json',
             '/solved/v4/posts/notice/first' => 'v4/post_detail.json',
+            '/solved/v4/posts/help' => 'v4/help_tree.json',
             '/solved/v4/posts/help/page' => 'v4/post_detail.json',
             '/solved/v4/help/tiers' => 'v4/help_article.json',
             '/solved/v4/policies/privacy' => 'v4/policy.json',
@@ -220,6 +221,7 @@ void main() {
         final SiteStatsResult siteStats = await client.v4SiteStats();
         final NoticeListResult notices = await client.v4Notices(page: 1);
         final PostDetailResult notice = await client.v4Notice('first');
+        final HelpTreeResult helpTree = await client.v4HelpTree();
         final PostDetailResult helpPage = await client.v4HelpPage('a/b');
         final HelpArticleResult helpArticle =
             await client.v4HelpArticle('tiers');
@@ -521,6 +523,7 @@ void main() {
         expect(notices.items.last.coverImageUrl, isNull);
         expect(notice.board, PostBoard.notice);
         expect(notice.content['type'], 'doc');
+        expect(helpTree.items.first.children[1].children.single.path, 'deep');
         expect(helpPage.previous?.path, 'notice/zero');
         expect(helpArticle.slug, 'other-slug');
         expect(policy.content, isA<PolicyMarkdownContent>());
@@ -685,6 +688,7 @@ void main() {
             _uri('site/stats'),
             _uri('posts/notice', <String, String>{'page': '1'}),
             _uri('posts/notice/first'),
+            _uri('posts/help'),
             _uri('posts/help/page', <String, String>{'path': 'a/b'}),
             _uri('help/tiers'),
             _uri('policies/privacy'),
@@ -727,7 +731,7 @@ void main() {
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(53));
+        expect(httpClient.requests, hasLength(54));
         expect(
           httpClient.requests[13].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
@@ -1042,6 +1046,10 @@ void main() {
         isA<SiteRequestFailed>(),
       );
       expect(
+        await _captureFailure(client.v4HelpTree()),
+        isA<SiteRequestFailed>(),
+      );
+      expect(
         await _captureFailure(client.v4HelpPage('a')),
         isA<SiteRequestFailed>(),
       );
@@ -1105,7 +1113,7 @@ void main() {
         await _captureFailure(client.v4ProblemVoteSummary(1000)),
         isA<SearchRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(49));
+      expect(httpClient.requests, hasLength(50));
     });
 
     test('wraps malformed rating history as a user failure', () async {

@@ -1344,6 +1344,22 @@ final class SolvedApiV4Contract {
     );
   }
 
+  /// Every published help document, as a tree in reading order.
+  SolvedApiEndpoint<HelpTreeResult> helpTree({String? language}) {
+    if (language != null && language.runes.length > 16) {
+      throw ArgumentError.value(
+        language,
+        'language',
+        'Must not exceed 16 characters',
+      );
+    }
+    return _endpoint(
+      path: 'posts/help',
+      queryParameters: {if (language != null) 'lang': language},
+      decode: _decodeV4HelpTree,
+    );
+  }
+
   SolvedApiEndpoint<PostDetailResult> helpPage(
     String path, {
     String? language,
@@ -3549,6 +3565,27 @@ String _bookmarkSlug(String slug, [String name = 'slug']) {
 }
 
 void _ignoreNoContent(dynamic _) {}
+
+HelpTreeResult _decodeV4HelpTree(dynamic json) {
+  final body = _object(json, 'help tree');
+  return HelpTreeResult(items: _decodeV4HelpTreeNodes(body['items'], 'items'));
+}
+
+List<HelpTreeNode> _decodeV4HelpTreeNodes(Object? value, String field) =>
+    List<HelpTreeNode>.unmodifiable(
+      _list(value, field).map((item) {
+        final node = _object(item, '$field[]');
+        return HelpTreeNode(
+          path: _string(node['path'], '$field[].path'),
+          title: _string(node['title'], '$field[].title'),
+          hasPage: _boolean(node['hasPage'], '$field[].hasPage'),
+          children: _decodeV4HelpTreeNodes(
+            node['children'],
+            '$field[].children',
+          ),
+        );
+      }),
+    );
 
 String _boundedText(String value, String name, int minimum, int maximum) {
   final length = value.runes.length;

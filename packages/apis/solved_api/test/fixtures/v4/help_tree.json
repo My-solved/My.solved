@@ -1,0 +1,48 @@
+{
+  "items": [
+    {
+      "path": "a",
+      "title": "",
+      "hasPage": false,
+      "children": [
+        {
+          "path": "a/b",
+          "title": "한 글",
+          "hasPage": true,
+          "children": []
+        },
+        {
+          "path": "not/a/child",
+          "title": "x",
+          "hasPage": true,
+          "children": [
+            {
+              "path": "deep",
+              "title": "d",
+              "hasPage": false,
+              "children": []
+            }
+          ]
+        },
+        {
+          "path": "a/b",
+          "title": "한 글",
+          "hasPage": true,
+          "children": []
+        }
+      ]
+    },
+    {
+      "path": "other",
+      "title": "o",
+      "hasPage": true,
+      "children": []
+    },
+    {
+      "path": "a",
+      "title": "",
+      "hasPage": false,
+      "children": []
+    }
+  ]
+}

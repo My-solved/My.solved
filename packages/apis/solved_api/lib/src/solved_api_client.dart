@@ -793,6 +793,14 @@ class SolvedApiClient {
     );
   }
 
+  Future<HelpTreeResult> v4HelpTree({String? language}) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.helpTree(language: language),
+      requestType: _RequestType.site,
+    );
+  }
+
   Future<PostDetailResult> v4HelpPage(String path, {String? language}) {
     final contract = _requireV4Contract();
     return _getV4(
