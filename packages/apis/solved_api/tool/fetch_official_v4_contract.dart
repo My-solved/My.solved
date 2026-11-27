@@ -28,6 +28,7 @@ const _relevantPaths = <String>[
   '/api/v4/search/suggest',
   '/api/v4/site/stats',
   '/api/v4/sources',
+  '/api/v4/sources/contests/{id}',
   '/api/v4/sources/groups/{id}',
   '/api/v4/sources/oj/{ojId}/contests/{nativeId}',
   '/api/v4/sources/oj/{ojId}/groups/{nativeId}',

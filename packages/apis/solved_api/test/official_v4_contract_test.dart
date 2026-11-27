@@ -2422,6 +2422,73 @@ void main() {
     });
   });
 
+  test('pins the public source contest detail and its shared shapes', () {
+    final detail = _get(contract, '/api/v4/sources/contests/{id}');
+    final group = _get(contract, '/api/v4/sources/groups/{id}');
+
+    expect(_accessClass(detail), 'public');
+    expect(detail.containsKey('security'), isFalse);
+    expect(detail.containsKey('requestBody'), isFalse);
+    expect(
+      detail['summary'],
+      'A contest and its problems, in contest order',
+    );
+    expect(_parameters(detail), _parameters(group));
+    final responses = _map(detail['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '404']);
+    expect(_map(responses['200'])['description'], 'The contest.');
+    expect(_map(responses['404'])['description'], 'No such contest.');
+    expect(
+      _jsonResponseSchema(detail, '404'),
+      _jsonResponseSchema(group, '404'),
+    );
+
+    final schema = _responseSchema(detail);
+    final groupProperties = _properties(_responseSchema(group));
+    expect(schema['type'], 'object');
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    expect(_required(schema), [
+      'contest',
+      'path',
+      'links',
+      'query',
+      'problems',
+    ]);
+    final properties = _properties(schema);
+    expect(properties.keys.length, 5);
+    for (final field in ['path', 'links', 'query']) {
+      expect(properties[field], groupProperties[field], reason: field);
+    }
+
+    final contest = _map(properties['contest']);
+    final groupContest = _map(_map(groupProperties['contests'])['items']);
+    expect(contest['type'], 'object');
+    expect(contest.containsKey('additionalProperties'), isFalse);
+    expect(_required(contest), [..._required(groupContest), 'url', 'venue']);
+    final contestProperties = Map<String, dynamic>.of(_properties(contest));
+    expect(contestProperties.remove('url'), {
+      'type': ['string', 'null'],
+    });
+    expect(contestProperties.remove('venue'), {
+      'type': ['string', 'null'],
+    });
+    expect(contestProperties, _properties(groupContest));
+
+    final problems = _map(properties['problems']);
+    expect(problems['type'], 'array');
+    final item = _map(problems['items']);
+    expect(item['type'], 'object');
+    expect(item.containsKey('additionalProperties'), isFalse);
+    expect(_required(item), ['numberInContest', 'problem']);
+    expect(_properties(item).keys.length, 2);
+    expect(_map(_properties(item)['numberInContest']), {'type': 'string'});
+    final searchItem = _map(
+      _map(_properties(_responseSchema(_get(contract, '/api/v4/problems')))[
+          'problems'])['items'],
+    );
+    expect(_map(_properties(item)['problem']), searchItem);
+  });
+
   test('pins the public problem-search analysis schema without inference', () {
     final analysis = _get(contract, '/api/v4/search/analyze');
 

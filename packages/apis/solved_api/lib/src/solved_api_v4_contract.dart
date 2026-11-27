@@ -625,6 +625,16 @@ final class SolvedApiV4Contract {
         decode: _decodeV4SourceGroups,
       );
 
+  SolvedApiEndpoint<SourceContestDetailResult> sourceContestDetail(int id) {
+    if (id < 1) {
+      throw ArgumentError.value(id, 'id', 'Must be at least 1');
+    }
+    return _endpoint(
+      path: 'sources/contests/$id',
+      decode: _decodeV4SourceContestDetail,
+    );
+  }
+
   SolvedApiEndpoint<SourceGroupDetailResult> sourceGroupDetail(int id) {
     if (id < 1) {
       throw ArgumentError.value(id, 'id', 'Must be at least 1');
@@ -1215,6 +1225,42 @@ SourceGroupDetailResult _decodeV4SourceGroupDetail(dynamic json) {
           'contests[]',
         ),
       ),
+    ),
+  );
+}
+
+SourceContestDetailResult _decodeV4SourceContestDetail(dynamic json) {
+  final body = _object(json, 'source contest');
+  final contestBody = _object(body['contest'], 'contest');
+  final contest = _decodeV4SourceContestSummary(contestBody, 'contest');
+  return SourceContestDetailResult(
+    contest: SourceContestDetail(
+      id: contest.id,
+      name: contest.name,
+      abbreviation: contest.abbreviation,
+      startsAt: contest.startsAt,
+      problemCount: contest.problemCount,
+      solvedCount: contest.solvedCount,
+      level: contest.level,
+      url: _requiredNullableString(contestBody, 'url', 'contest.url'),
+      venue: _requiredNullableString(contestBody, 'venue', 'contest.venue'),
+    ),
+    path: _decodeV4SourcePath(body),
+    links: _decodeV4SourceLinks(body),
+    query: _requiredNullableString(body, 'query'),
+    problems: List<SourceContestProblem>.unmodifiable(
+      _list(body['problems'], 'problems').map((value) {
+        final item = _object(value, 'problems[]');
+        return SourceContestProblem(
+          numberInContest: _string(
+            item['numberInContest'],
+            'problems[].numberInContest',
+          ),
+          problem: _decodeV4ProblemSearchItem(
+            _object(item['problem'], 'problems[].problem'),
+          ),
+        );
+      }),
     ),
   );
 }
