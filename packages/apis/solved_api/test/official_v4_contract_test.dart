@@ -3225,6 +3225,34 @@ void main() {
     }
   });
 
+  test('pins the public help page to the shared post schema', () {
+    final page = _get(contract, '/api/v4/posts/help/page');
+    final notice = _get(contract, '/api/v4/posts/notice/{slug}');
+
+    expect(_accessClass(page), 'public');
+    expect(_map(page['x-access']).containsKey('scope'), isFalse);
+    expect(page.containsKey('security'), isFalse);
+    expect(page.containsKey('requestBody'), isFalse);
+    expect(page['summary'], 'Read a help center document');
+    expect(_parameters(page), [
+      _parameters(notice).last,
+      {
+        'in': 'query',
+        'name': 'path',
+        'required': true,
+        'schema': {
+          'maxLength': 255,
+          'minLength': 1,
+          'pattern':
+              r'^[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)*$',
+          'type': 'string',
+        },
+      },
+    ]);
+    final responses = _map(page['responses']);
+    expect(responses, _map(notice['responses']));
+  });
+
   test('pins public OJ source lookups and their exact shared response', () {
     const operations = {
       '/api/v4/sources/oj/{ojId}/contests/{nativeId}':

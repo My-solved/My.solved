@@ -701,6 +701,235 @@
         }
       }
     },
+    "/api/v4/posts/help/page": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "lang",
+            "required": false,
+            "schema": {
+              "maxLength": 16,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "path",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*(?:\\/[a-z0-9]+(?:-[a-z0-9]+)*)*$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "basisDate": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "board": {
+                      "enum": [
+                        "notice",
+                        "help"
+                      ],
+                      "type": "string"
+                    },
+                    "breadcrumbs": {
+                      "items": {
+                        "properties": {
+                          "path": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "path",
+                          "title"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "content": {
+                      "additionalProperties": {},
+                      "properties": {
+                        "content": {
+                          "items": {},
+                          "type": "array"
+                        },
+                        "type": {
+                          "enum": [
+                            "doc"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "type"
+                      ],
+                      "type": "object"
+                    },
+                    "coverImageUrl": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "language": {
+                      "type": "string"
+                    },
+                    "languages": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "next": {
+                      "properties": {
+                        "path": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "path",
+                        "title"
+                      ],
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "pinned": {
+                      "type": "boolean"
+                    },
+                    "previous": {
+                      "properties": {
+                        "path": {
+                          "type": "string"
+                        },
+                        "title": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "path",
+                        "title"
+                      ],
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    },
+                    "publishedAt": {
+                      "type": "string"
+                    },
+                    "summary": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "board",
+                    "path",
+                    "language",
+                    "languages",
+                    "title",
+                    "summary",
+                    "content",
+                    "publishedAt",
+                    "updatedAt",
+                    "pinned",
+                    "coverImageUrl",
+                    "basisDate",
+                    "breadcrumbs",
+                    "previous",
+                    "next"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The post. `language` reports what was served, which may differ from `lang`."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "No such post, or it isn't published."
+          }
+        },
+        "summary": "Read a help center document",
+        "x-access": {
+          "class": "public"
+        }
+      }
+    },
     "/api/v4/posts/notice": {
       "get": {
         "parameters": [

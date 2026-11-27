@@ -860,6 +860,36 @@ final class SolvedApiV4Contract {
     );
   }
 
+  SolvedApiEndpoint<PostDetailResult> helpPage(
+    String path, {
+    String? language,
+  }) {
+    if (path.length > 255 ||
+        !RegExp(r'^[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)*$')
+            .hasMatch(path)) {
+      throw ArgumentError.value(
+        path,
+        'path',
+        'Must be 1 through 255 characters of slug segments separated by /',
+      );
+    }
+    if (language != null && language.runes.length > 16) {
+      throw ArgumentError.value(
+        language,
+        'language',
+        'Must not exceed 16 characters',
+      );
+    }
+    return _endpoint(
+      path: 'posts/help/page',
+      queryParameters: {
+        if (language != null) 'lang': language,
+        'path': path,
+      },
+      decode: _decodeV4PostDetail,
+    );
+  }
+
   SolvedApiEndpoint<PostDetailResult> notice(
     String slug, {
     String? language,
