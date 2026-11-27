@@ -394,6 +394,32 @@ final class SolvedApiV4Contract {
     );
   }
 
+  SolvedApiEndpoint<RankingAffiliationBoardResult> rankingAffiliationBoard({
+    int? page,
+    OfficialUserProfileAffiliationType? affiliationType,
+    String? language,
+  }) {
+    if (page != null) {
+      _positivePage(page);
+    }
+    if (language != null && language.runes.length > 16) {
+      throw ArgumentError.value(
+        language,
+        'language',
+        'Must not exceed 16 characters',
+      );
+    }
+    return _endpoint(
+      path: 'rankings/affiliation-board',
+      queryParameters: {
+        if (page != null) 'page': page.toString(),
+        if (affiliationType != null) 'type': affiliationType.value,
+        if (language != null) 'lang': language,
+      },
+      decode: _decodeV4RankingAffiliationBoard,
+    );
+  }
+
   SolvedApiEndpoint<RankingTagsResult> rankingTags({String? language}) =>
       _endpoint(
         path: 'rankings/tags',
@@ -1253,32 +1279,141 @@ RankingAffiliationsResult _decodeV4RankingAffiliations(dynamic json) {
       _list(body['affiliations'], 'affiliations').map(
         (value) {
           final affiliation = _object(value, 'affiliations[]');
+          final fields = _decodeV4RankingAffiliationFields(
+            affiliation,
+            'affiliations[]',
+          );
           return RankingAffiliationItem(
-            id: _integer(affiliation['id'], 'affiliations[].id'),
-            affiliationId: _integer(
-              affiliation['affiliationId'],
-              'affiliations[].affiliationId',
-            ),
-            name: _string(affiliation['name'], 'affiliations[].name'),
-            type: _decodeV4AffiliationType(affiliation['type']),
-            userCount: _integer(
-              affiliation['userCount'],
-              'affiliations[].userCount',
-            ),
-            logoThumbnailUrl: _requiredNullableString(
-              affiliation,
-              'logoThumbnailUrl',
-              'affiliations[].logoThumbnailUrl',
-            ),
-            color: _requiredNullableString(
-              affiliation,
-              'color',
-              'affiliations[].color',
-            ),
+            id: fields.id,
+            affiliationId: fields.affiliationId,
+            name: fields.name,
+            type: fields.type,
+            userCount: fields.userCount,
+            logoThumbnailUrl: fields.logoThumbnailUrl,
+            color: fields.color,
           );
         },
       ),
     ),
+  );
+}
+
+typedef _RankingAffiliationFields = ({
+  int id,
+  int affiliationId,
+  String name,
+  OfficialUserProfileAffiliationType type,
+  int userCount,
+  String? logoThumbnailUrl,
+  String? color,
+});
+
+_RankingAffiliationFields _decodeV4RankingAffiliationFields(
+  Map<String, dynamic> body,
+  String field,
+) =>
+    (
+      id: _integer(body['id'], '$field.id'),
+      affiliationId: _integer(
+        body['affiliationId'],
+        '$field.affiliationId',
+      ),
+      name: _string(body['name'], '$field.name'),
+      type: _decodeV4AffiliationType(body['type'], '$field.type'),
+      userCount: _integer(body['userCount'], '$field.userCount'),
+      logoThumbnailUrl: _requiredNullableString(
+        body,
+        'logoThumbnailUrl',
+        '$field.logoThumbnailUrl',
+      ),
+      color: _requiredNullableString(body, 'color', '$field.color'),
+    );
+
+typedef _RankingAffiliationBoardFields = ({
+  _RankingAffiliationFields affiliation,
+  int rank,
+  int? globalRank,
+  int rating,
+  int solvedCount,
+});
+
+_RankingAffiliationBoardFields _decodeV4RankingAffiliationBoardFields(
+  Map<String, dynamic> body,
+  String field,
+) =>
+    (
+      affiliation: _decodeV4RankingAffiliationFields(body, field),
+      rank: _integer(body['rank'], '$field.rank'),
+      globalRank: _requiredNullableInteger(
+        body,
+        'globalRank',
+        '$field.globalRank',
+      ),
+      rating: _integer(body['rating'], '$field.rating'),
+      solvedCount: _integer(body['solvedCount'], '$field.solvedCount'),
+    );
+
+RankingAffiliationBoardResult _decodeV4RankingAffiliationBoard(dynamic json) {
+  final body = _object(json, 'ranking affiliation board');
+  return RankingAffiliationBoardResult(
+    mine: List<RankingAffiliationBoardMineItem>.unmodifiable(
+      _list(body['mine'], 'mine').map(
+        (value) => _decodeV4RankingAffiliationBoardMineItem(
+          _object(value, 'mine[]'),
+        ),
+      ),
+    ),
+    total: _integer(body['total'], 'total'),
+    page: _integer(body['page'], 'page'),
+    pageSize: _integer(body['pageSize'], 'pageSize'),
+    items: List<RankingAffiliationBoardItem>.unmodifiable(
+      _list(body['items'], 'items').map(
+        (value) => _decodeV4RankingAffiliationBoardItem(
+          _object(value, 'items[]'),
+        ),
+      ),
+    ),
+  );
+}
+
+RankingAffiliationBoardItem _decodeV4RankingAffiliationBoardItem(
+  Map<String, dynamic> body,
+) {
+  final fields = _decodeV4RankingAffiliationBoardFields(body, 'items[]');
+  final affiliation = fields.affiliation;
+  return RankingAffiliationBoardItem(
+    id: affiliation.id,
+    affiliationId: affiliation.affiliationId,
+    name: affiliation.name,
+    type: affiliation.type,
+    logoThumbnailUrl: affiliation.logoThumbnailUrl,
+    color: affiliation.color,
+    rank: fields.rank,
+    globalRank: fields.globalRank,
+    rating: fields.rating,
+    userCount: affiliation.userCount,
+    solvedCount: fields.solvedCount,
+  );
+}
+
+RankingAffiliationBoardMineItem _decodeV4RankingAffiliationBoardMineItem(
+  Map<String, dynamic> body,
+) {
+  final fields = _decodeV4RankingAffiliationBoardFields(body, 'mine[]');
+  final affiliation = fields.affiliation;
+  return RankingAffiliationBoardMineItem(
+    id: affiliation.id,
+    affiliationId: affiliation.affiliationId,
+    name: affiliation.name,
+    type: affiliation.type,
+    logoThumbnailUrl: affiliation.logoThumbnailUrl,
+    color: affiliation.color,
+    rank: fields.rank,
+    globalRank: fields.globalRank,
+    rating: fields.rating,
+    userCount: affiliation.userCount,
+    solvedCount: fields.solvedCount,
+    page: _integer(body['page'], 'mine[].page'),
   );
 }
 
@@ -1674,7 +1809,7 @@ OfficialUserProfileAffiliation _decodeV4OfficialUserProfileAffiliation(
       'affiliations[].affiliationId',
     ),
     name: _string(body['name'], 'affiliations[].name'),
-    type: _decodeV4AffiliationType(body['type']),
+    type: _decodeV4AffiliationType(body['type'], 'affiliations[].type'),
     logoThumbnailUrl: _requiredNullableString(
       body,
       'logoThumbnailUrl',
@@ -1688,8 +1823,11 @@ OfficialUserProfileAffiliation _decodeV4OfficialUserProfileAffiliation(
   );
 }
 
-OfficialUserProfileAffiliationType _decodeV4AffiliationType(Object? value) {
-  switch (_string(value, 'affiliations[].type')) {
+OfficialUserProfileAffiliationType _decodeV4AffiliationType(
+  Object? value,
+  String field,
+) {
+  switch (_string(value, field)) {
     case 'undefined':
       return OfficialUserProfileAffiliationType.undefined;
     case 'university':
@@ -1705,7 +1843,7 @@ OfficialUserProfileAffiliationType _decodeV4AffiliationType(Object? value) {
     case 'community':
       return OfficialUserProfileAffiliationType.community;
     default:
-      throw const FormatException('Unknown affiliations[].type');
+      throw FormatException('Unknown $field');
   }
 }
 

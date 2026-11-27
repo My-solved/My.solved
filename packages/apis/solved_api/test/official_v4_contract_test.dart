@@ -1502,6 +1502,194 @@ void main() {
     expect(schema, problemItem);
   });
 
+  test('pins the public affiliation board without inferred relations', () {
+    final board = _get(contract, '/api/v4/rankings/affiliation-board');
+
+    expect(_accessClass(board), 'public');
+    expect(_parameterNames(board), ['page', 'type', 'lang']);
+    final parameters = _parameters(board);
+    for (final parameter in parameters) {
+      expect(parameter['in'], 'query');
+      expect(parameter['required'], isFalse);
+    }
+    expect(_map(parameters[0]['schema']), {
+      'default': 1,
+      'minimum': 1,
+      'type': 'integer',
+    });
+    expect(_map(parameters[1]['schema']), {
+      'enum': [
+        'undefined',
+        'university',
+        'high_school',
+        'middle_school',
+        'elementary_school',
+        'company',
+        'community',
+      ],
+      'type': 'string',
+    });
+    expect(_map(parameters[2]['schema']), {
+      'default': 'ko',
+      'maxLength': 16,
+      'type': 'string',
+    });
+    expect(board.containsKey('requestBody'), isFalse);
+    expect(_map(board['responses']).keys.toList(), ['200']);
+    expect(board['summary'], 'Affiliations themselves, by rating');
+    expect(
+      _map(_map(board['responses'])['200'])['description'],
+      'One page of the board.',
+    );
+
+    final schema = _responseSchema(board);
+    expect(schema['type'], 'object');
+    expect(_required(schema), ['mine', 'total', 'page', 'pageSize', 'items']);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    final outerProperties = _properties(schema);
+    expect(outerProperties.keys.toList(growable: false), [
+      'items',
+      'mine',
+      'page',
+      'pageSize',
+      'total',
+    ]);
+    for (final field in ['total', 'page', 'pageSize']) {
+      expect(_map(outerProperties[field]), {'type': 'integer'});
+    }
+
+    final items = _map(outerProperties['items']);
+    final mine = _map(outerProperties['mine']);
+    for (final array in [items, mine]) {
+      expect(array['type'], 'array');
+      for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+        expect(array.containsKey(constraint), isFalse);
+      }
+    }
+
+    final item = _map(items['items']);
+    expect(item['type'], 'object');
+    expect(_required(item), [
+      'id',
+      'affiliationId',
+      'name',
+      'type',
+      'logoThumbnailUrl',
+      'color',
+      'rank',
+      'globalRank',
+      'rating',
+      'userCount',
+      'solvedCount',
+    ]);
+    expect(item.containsKey('additionalProperties'), isFalse);
+    final itemProperties = _properties(item);
+    expect(itemProperties.keys.toList(growable: false), [
+      'affiliationId',
+      'color',
+      'globalRank',
+      'id',
+      'logoThumbnailUrl',
+      'name',
+      'rank',
+      'rating',
+      'solvedCount',
+      'type',
+      'userCount',
+    ]);
+    for (final field in [
+      'id',
+      'affiliationId',
+      'rank',
+      'rating',
+      'userCount',
+      'solvedCount',
+    ]) {
+      expect(_map(itemProperties[field]), {'type': 'integer'});
+    }
+    expect(_map(itemProperties['globalRank']), {
+      'type': ['integer', 'null'],
+    });
+
+    final mineItem = _map(mine['items']);
+    expect(mineItem['type'], 'object');
+    expect(_required(mineItem), [
+      'id',
+      'affiliationId',
+      'name',
+      'type',
+      'logoThumbnailUrl',
+      'color',
+      'rank',
+      'globalRank',
+      'rating',
+      'userCount',
+      'solvedCount',
+      'page',
+    ]);
+    expect(mineItem.containsKey('additionalProperties'), isFalse);
+    final mineProperties = _properties(mineItem);
+    expect(mineProperties.keys.toList(growable: false), [
+      'affiliationId',
+      'color',
+      'globalRank',
+      'id',
+      'logoThumbnailUrl',
+      'name',
+      'page',
+      'rank',
+      'rating',
+      'solvedCount',
+      'type',
+      'userCount',
+    ]);
+    expect(_map(mineProperties['page']), {'type': 'integer'});
+    final mineWithoutPage = Map<String, dynamic>.from(mineProperties)
+      ..remove('page');
+    expect(mineWithoutPage, itemProperties);
+    expect(
+      _required(mineItem).where((field) => field != 'page').toList(),
+      _required(item),
+    );
+
+    final catalog = _get(contract, '/api/v4/rankings/affiliations');
+    final catalogAffiliations =
+        _map(_properties(_responseSchema(catalog))['affiliations']);
+    final catalogItem = _map(catalogAffiliations['items']);
+    final catalogProperties = _properties(catalogItem);
+    const commonFields = {
+      'id',
+      'affiliationId',
+      'name',
+      'type',
+      'userCount',
+      'logoThumbnailUrl',
+      'color',
+    };
+    for (final field in commonFields) {
+      expect(itemProperties[field], catalogProperties[field]);
+      expect(mineProperties[field], catalogProperties[field]);
+    }
+    expect(
+      _required(item).where(commonFields.contains).toSet(),
+      commonFields,
+    );
+    expect(
+      _required(mineItem).where(commonFields.contains).toSet(),
+      commonFields,
+    );
+    expect(_required(catalogItem).toSet(), commonFields);
+
+    final profile = _get(contract, '/api/v4/users/{handle}');
+    final profileAffiliations =
+        _map(_properties(_responseSchema(profile))['affiliations']);
+    final profileItem = _map(profileAffiliations['items']);
+    expect(
+      _map(itemProperties['type']),
+      _map(_properties(profileItem)['type']),
+    );
+  });
+
   test('pins public ranking affiliations without inferred relations', () {
     final rankingAffiliations =
         _get(contract, '/api/v4/rankings/affiliations');

@@ -14,6 +14,7 @@ export 'problem_search_tag.dart';
 export 'problem_search_title.dart';
 export 'problem_search_viewer_folder.dart';
 export 'random_problem_result.dart';
+export 'ranking_affiliation_board_result.dart';
 export 'ranking_affiliations_result.dart';
 export 'ranking_regions_result.dart';
 export 'ranking_tags_result.dart';

@@ -509,6 +509,22 @@ class SolvedApiClient {
     );
   }
 
+  Future<RankingAffiliationBoardResult> v4RankingAffiliationBoard({
+    int? page,
+    OfficialUserProfileAffiliationType? affiliationType,
+    String? language,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.rankingAffiliationBoard(
+        page: page,
+        affiliationType: affiliationType,
+        language: language,
+      ),
+      requestType: _RequestType.ranking,
+    );
+  }
+
   Future<RankingTagsResult> v4RankingTags({String? language}) {
     final contract = _requireV4Contract();
     return _getV4(
