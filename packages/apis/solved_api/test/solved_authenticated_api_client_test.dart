@@ -851,6 +851,48 @@ void main() {
       expect(httpClient.requests, hasLength(2));
     });
 
+    test('sends one bodyless favorite DELETE and never retries', () async {
+      handler = (_) async => _jsonResponse(
+            '{"isFavorite":false,"favoriteCount":0}',
+          );
+
+      final actual = await client.removeBookmarkFavorite('a b', 'z_9');
+
+      expect(actual.isFavorite, isFalse);
+      expect(actual.favoriteCount, 0);
+      final request = httpClient.requests.single;
+      expect(request.method, 'DELETE');
+      expect(
+        request.url.toString(),
+        'https://proxy.example/solved/v4/account/bookmark-favorites/a%20b/z_9',
+      );
+      expect(request.followRedirects, isFalse);
+      expect(request.headers, const <String, String>{
+        'accept': 'application/json',
+        'authorization': 'Bearer access-token',
+      });
+      expect(request.bodyBytes, isEmpty);
+
+      await expectLater(
+        client.removeBookmarkFavorite('', 'b'),
+        throwsA(
+          isA<ArgumentError>().having((error) => error.name, 'name', 'handle'),
+        ),
+      );
+      expect(httpClient.requests, hasLength(1));
+
+      handler = (_) async => _jsonResponse('{}', statusCode: 401);
+      final error = await _captureFailure(
+        client.removeBookmarkFavorite('a', 'b'),
+      );
+      expect(
+        error.operation,
+        SolvedAuthenticatedOperation.removeBookmarkFavorite,
+      );
+      expect(error.kind, SolvedAuthenticatedFailureKind.unauthorized);
+      expect(httpClient.requests, hasLength(2));
+    });
+
     test('rejects an invalid rivals page before any request', () async {
       await expectLater(
         client.rivals(page: 0),
@@ -934,6 +976,10 @@ void main() {
         throwsStateError,
       );
       await expectLater(client.addBookmarkFavorite('a', 'b'), throwsStateError);
+      await expectLater(
+        client.removeBookmarkFavorite('a', 'b'),
+        throwsStateError,
+      );
       expect(httpClient.requests, isEmpty);
     });
   });

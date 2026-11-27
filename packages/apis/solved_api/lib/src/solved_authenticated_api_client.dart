@@ -32,6 +32,7 @@ enum SolvedAuthenticatedOperation {
   accountSettings,
   updateAccountSettings,
   addBookmarkFavorite,
+  removeBookmarkFavorite,
 }
 
 enum SolvedAuthenticatedFailureKind {
@@ -321,6 +322,22 @@ final class SolvedAuthenticatedApiClient {
       _mutate(
         SolvedAuthenticatedOperation.addBookmarkFavorite,
         () => _contract.addBookmarkFavorite(handle, slug),
+      );
+
+  /// Removes [handle]'s folder [slug] from the viewer's favorites. The token
+  /// needs the `bookmarks.write` scope.
+  ///
+  /// Invalid arguments fail the returned future with an [ArgumentError]
+  /// before any request. The request is sent once and never retried; after a
+  /// timeout or transport failure the change may or may not have been
+  /// applied.
+  Future<BookmarkFavoriteState> removeBookmarkFavorite(
+    String handle,
+    String slug,
+  ) =>
+      _mutate(
+        SolvedAuthenticatedOperation.removeBookmarkFavorite,
+        () => _contract.removeBookmarkFavorite(handle, slug),
       );
 
   Future<T> _get<T>(

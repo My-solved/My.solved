@@ -5751,6 +5751,29 @@ void main() {
     expect(_responseSchema(remove), _responseSchema(add));
   });
 
+  test('pins removing a bookmark favorite as a bodyless DELETE', () {
+    final item = _map(
+      _map(contract['paths'])[
+          '/api/v4/account/bookmark-favorites/{handle}/{slug}'],
+    );
+    final add = _map(item['post']);
+    final remove = _map(item['delete']);
+
+    expect(_accessClass(remove), 'user');
+    expect(_accessScope(remove), 'bookmarks.write');
+    expect(remove.containsKey('security'), isFalse);
+    expect(remove.containsKey('requestBody'), isFalse);
+    expect(
+      remove['summary'],
+      "Remove a folder from the signed-in user's favorites",
+    );
+    expect(_parameters(remove), _parameters(add));
+    final responses = _map(remove['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '401']);
+    expect(_map(responses['200'])['description'], 'Not favorited, now.');
+    expect(_map(responses['401']), _map(_map(add['responses'])['401']));
+  });
+
   test('pins the viewer standing and its shared ban shapes', () {
     final standing = _get(contract, '/api/v4/account/standing');
     final bans = _get(contract, '/api/v4/account/bans');

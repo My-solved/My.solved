@@ -221,6 +221,23 @@ final class SolvedApiV4Contract {
         decode: _decodeV4BookmarkFavoriteState,
       );
 
+  /// Removes a folder from the viewer's favorites. It requires a user token
+  /// with `bookmarks.write` scope, so it is only exposed through
+  /// [SolvedAuthenticatedApiClient]. The request has no body.
+  SolvedApiMutation<BookmarkFavoriteState> removeBookmarkFavorite(
+    String handle,
+    String slug,
+  ) =>
+      SolvedApiMutation(
+        method: SolvedApiMutationMethod.delete,
+        proxy: SolvedApiTarget(
+          baseUri: _proxyBaseUri,
+          path: _bookmarkFavoritePath(handle, slug),
+        ),
+        jsonBody: null,
+        decode: _decodeV4BookmarkFavoriteState,
+      );
+
   /// The viewer's standing warnings and bans. It requires a user token with
   /// `standing` scope, so it is only exposed through
   /// [SolvedAuthenticatedApiClient].
