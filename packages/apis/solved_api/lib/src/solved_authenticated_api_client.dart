@@ -11,7 +11,7 @@ import 'solved_bearer_authorization.dart';
 import 'solved_oauth_contract.dart';
 import 'solved_proxy_transport.dart';
 
-enum SolvedAuthenticatedOperation { currentUser, rivals }
+enum SolvedAuthenticatedOperation { currentUser, rivals, reverseRivals }
 
 enum SolvedAuthenticatedFailureKind {
   timeout,
@@ -116,6 +116,16 @@ final class SolvedAuthenticatedApiClient {
   Future<RivalLeaderboardResult> rivals({int? page}) => _get(
         SolvedAuthenticatedOperation.rivals,
         () => _contract.rivals(page: page),
+      );
+
+  /// One page of those who have the viewer as a rival. The token needs the
+  /// `rivals` scope.
+  ///
+  /// An invalid [page] fails the returned future with an [ArgumentError]
+  /// before any request is sent.
+  Future<RivalLeaderboardResult> reverseRivals({int? page}) => _get(
+        SolvedAuthenticatedOperation.reverseRivals,
+        () => _contract.reverseRivals(page: page),
       );
 
   Future<T> _get<T>(
