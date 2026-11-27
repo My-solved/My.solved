@@ -206,3 +206,12 @@ final class ProblemVoteMarkCounts {
   final int helpful;
   final int unhelpful;
 }
+
+/// The viewer's own official v4 vote on one problem.
+final class ProblemVoteMineResult {
+  const ProblemVoteMineResult({required this.vote});
+
+  /// Required nullable vote in the exact vote-listing item shape. Null means
+  /// the viewer has not voted.
+  final ProblemVote? vote;
+}

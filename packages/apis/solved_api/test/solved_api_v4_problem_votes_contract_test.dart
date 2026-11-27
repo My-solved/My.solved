@@ -55,6 +55,38 @@ void main() {
     );
   });
 
+  test('decodes the viewer vote with the shared strict vote decoder', () {
+    final endpoint = contract.myProblemVote(1000, sub: '');
+    expect(endpoint.proxy.path, 'problems/1000/votes/me');
+    expect(endpoint.proxy.queryParameters, {'sub': ''});
+    expect(contract.myProblemVote(1).proxy.queryParameters, isEmpty);
+    expect(
+      () => contract.myProblemVote(0),
+      throwsA(
+        isA<ArgumentError>().having((error) => error.name, 'name', 'problemId'),
+      ),
+    );
+
+    final vote = _vote(_response());
+    final actual = endpoint.decode(<String, Object?>{'vote': vote});
+    expect(actual.vote!.id, 1.5);
+    expect(actual.vote!.marks!.mine, ProblemVoteMark.unhelpful);
+    expect(endpoint.decode(<String, Object?>{'vote': null}).vote, isNull);
+    for (final invalid in <Object?>[
+      <String, Object?>{},
+      <String, Object?>{'vote': 1},
+      <String, Object?>{'vote': Map<String, dynamic>.of(vote)..remove('id')},
+      null,
+      const <Object?>[],
+    ]) {
+      expect(
+        () => endpoint.decode(invalid),
+        throwsFormatException,
+        reason: '$invalid',
+      );
+    }
+  });
+
   test('decodes the complete fixture without inferred relationships', () {
     final actual = contract.problemVotes(1).decode(
           jsonDecode(fixture('v4/problem_votes.json')),

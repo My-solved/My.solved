@@ -1727,6 +1727,49 @@ void main() {
     });
   });
 
+  test('pins the viewer vote to the shared vote item shape', () {
+    final mine = _get(contract, '/api/v4/problems/{problemId}/votes/me');
+    final votes = _get(contract, '/api/v4/problems/{problemId}/votes');
+
+    expect(_accessClass(mine), 'user');
+    expect(_accessScope(mine), 'votes');
+    expect(mine.containsKey('security'), isFalse);
+    expect(mine.containsKey('requestBody'), isFalse);
+    expect(
+      mine['summary'],
+      "Viewer's own vote on this problem (null if none)",
+    );
+    expect(_parameters(mine), _parameters(votes).take(2).toList());
+    final responses = _map(mine['responses']);
+    expect(responses.keys.toList(growable: false), [
+      '200',
+      '401',
+      '403',
+      '404',
+    ]);
+    expect(_map(responses['200'])['description'], "Viewer's vote.");
+    for (final status in ['401', '403', '404']) {
+      expect(
+        _map(responses[status]),
+        _map(_map(votes['responses'])[status]),
+        reason: status,
+      );
+    }
+
+    final schema = _responseSchema(mine);
+    expect(schema['type'], 'object');
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    expect(_required(schema), ['vote']);
+    expect(_properties(schema).keys.toList(growable: false), ['vote']);
+    final vote = _map(_properties(schema)['vote']);
+    final item =
+        _map(_map(_properties(_responseSchema(votes))['items'])['items']);
+    expect(vote, {
+      ...item,
+      'type': ['object', 'null'],
+    });
+  });
+
   test('pins the public vote summary and its shared shapes', () {
     final summary = _get(
       contract,

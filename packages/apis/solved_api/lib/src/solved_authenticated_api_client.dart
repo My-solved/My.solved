@@ -17,6 +17,7 @@ enum SolvedAuthenticatedOperation {
   reverseRivals,
   bookmarkFavorites,
   collection,
+  myProblemVote,
 }
 
 enum SolvedAuthenticatedFailureKind {
@@ -142,6 +143,16 @@ final class SolvedAuthenticatedApiClient {
   Future<BookmarkFoldersResult> bookmarkFavorites({int? page}) => _get(
         SolvedAuthenticatedOperation.bookmarkFavorites,
         () => _contract.bookmarkFavorites(page: page),
+      );
+
+  /// The viewer's own vote on one problem. The token needs the `votes` scope.
+  ///
+  /// Invalid arguments fail the returned future with an [ArgumentError]
+  /// before any request is sent.
+  Future<ProblemVoteMineResult> myProblemVote(int problemId, {String? sub}) =>
+      _get(
+        SolvedAuthenticatedOperation.myProblemVote,
+        () => _contract.myProblemVote(problemId, sub: sub),
       );
 
   /// One page of the badges or backgrounds the viewer owns. The token needs

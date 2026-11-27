@@ -459,6 +459,22 @@ final class SolvedApiV4Contract {
     );
   }
 
+  /// The viewer's own vote. It requires a user token with `votes` scope, so
+  /// it is only exposed through [SolvedAuthenticatedApiClient].
+  SolvedApiEndpoint<ProblemVoteMineResult> myProblemVote(
+    int problemId, {
+    String? sub,
+  }) {
+    if (problemId < 1) {
+      throw ArgumentError.value(problemId, 'problemId', 'Must be at least 1');
+    }
+    return _endpoint(
+      path: 'problems/$problemId/votes/me',
+      queryParameters: {if (sub != null) 'sub': sub},
+      decode: _decodeV4ProblemVoteMine,
+    );
+  }
+
   SolvedApiEndpoint<ProblemVoteSummaryResult> problemVoteSummary(
     int problemId, {
     String? sub,
@@ -2097,6 +2113,16 @@ ProblemNoRatingWarningProblem _decodeV4ProblemNoRatingWarningProblem(
       '$field.isStandard',
     ),
     userStatus: userStatus,
+  );
+}
+
+ProblemVoteMineResult _decodeV4ProblemVoteMine(dynamic json) {
+  final body = _object(json, 'problem vote');
+  final voteValue = _requiredValue(body, 'vote', 'vote');
+  return ProblemVoteMineResult(
+    vote: voteValue == null
+        ? null
+        : _decodeV4ProblemVote(_object(voteValue, 'vote'), 'vote'),
   );
 }
 
