@@ -1,0 +1,43 @@
+{
+  "backgrounds": [
+    {
+      "id": -1,
+      "key": "default",
+      "backgroundImageUrl": "not a URI",
+      "fallbackBackgroundImageUrl": "fallback",
+      "thumbnailImageUrl": "thumb",
+      "thumbnailPlaceholder": "LKO2?U%2Tw=w]~RBVZRi};RPxuwH",
+      "isIllust": true,
+      "category": "",
+      "createdAt": "not a date",
+      "acquiredAt": "2026-01-01",
+      "ownedUserCount": 0
+    },
+    {
+      "id": 2,
+      "key": "",
+      "backgroundImageUrl": "",
+      "fallbackBackgroundImageUrl": null,
+      "thumbnailImageUrl": null,
+      "thumbnailPlaceholder": null,
+      "isIllust": false,
+      "category": "event",
+      "createdAt": "",
+      "acquiredAt": null,
+      "ownedUserCount": -3
+    },
+    {
+      "id": -1,
+      "key": "default",
+      "backgroundImageUrl": "not a URI",
+      "fallbackBackgroundImageUrl": "fallback",
+      "thumbnailImageUrl": "thumb",
+      "thumbnailPlaceholder": "LKO2?U%2Tw=w]~RBVZRi};RPxuwH",
+      "isIllust": true,
+      "category": "",
+      "createdAt": "not a date",
+      "acquiredAt": "2026-01-01",
+      "ownedUserCount": 0
+    }
+  ]
+}

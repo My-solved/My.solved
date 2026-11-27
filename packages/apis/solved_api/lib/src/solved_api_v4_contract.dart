@@ -135,6 +135,14 @@ final class SolvedApiV4Contract {
         decode: _decodeV4AccountConsents,
       );
 
+  /// Backgrounds the viewer may equip. It requires a user token with
+  /// `collection` scope, so it is only exposed through
+  /// [SolvedAuthenticatedApiClient].
+  SolvedApiEndpoint<AccountBackgroundsResult> accountBackgrounds() => _endpoint(
+        path: 'account/backgrounds',
+        decode: _decodeV4AccountBackgrounds,
+      );
+
   /// The emoticon catalog with the viewer's ownership flags. It requires a
   /// user token with `collection` scope, so it is only exposed through
   /// [SolvedAuthenticatedApiClient].
@@ -3028,6 +3036,53 @@ RankingLeaderboardResult _decodeV4RankingLeaderboard(dynamic json) {
           'items[]',
         ),
       ),
+    ),
+  );
+}
+
+AccountBackgroundsResult _decodeV4AccountBackgrounds(dynamic json) {
+  final body = _object(json, 'account backgrounds');
+  return AccountBackgroundsResult(
+    backgrounds: List<AccountBackground>.unmodifiable(
+      _list(body['backgrounds'], 'backgrounds').map((value) {
+        const field = 'backgrounds[]';
+        final item = _object(value, field);
+        return AccountBackground(
+          id: _integer(item['id'], '$field.id'),
+          key: _string(item['key'], '$field.key'),
+          backgroundImageUrl: _string(
+            item['backgroundImageUrl'],
+            '$field.backgroundImageUrl',
+          ),
+          fallbackBackgroundImageUrl: _requiredNullableString(
+            item,
+            'fallbackBackgroundImageUrl',
+            '$field.fallbackBackgroundImageUrl',
+          ),
+          thumbnailImageUrl: _requiredNullableString(
+            item,
+            'thumbnailImageUrl',
+            '$field.thumbnailImageUrl',
+          ),
+          thumbnailPlaceholder: _requiredNullableString(
+            item,
+            'thumbnailPlaceholder',
+            '$field.thumbnailPlaceholder',
+          ),
+          isIllust: _boolean(item['isIllust'], '$field.isIllust'),
+          category: _string(item['category'], '$field.category'),
+          createdAt: _string(item['createdAt'], '$field.createdAt'),
+          acquiredAt: _requiredNullableString(
+            item,
+            'acquiredAt',
+            '$field.acquiredAt',
+          ),
+          ownedUserCount: _integer(
+            item['ownedUserCount'],
+            '$field.ownedUserCount',
+          ),
+        );
+      }),
     ),
   );
 }

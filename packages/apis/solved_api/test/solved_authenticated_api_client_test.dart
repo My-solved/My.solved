@@ -546,6 +546,31 @@ void main() {
       expect(error.kind, SolvedAuthenticatedFailureKind.invalidResponse);
     });
 
+    test('sends one token-bound backgrounds GET', () async {
+      handler =
+          (_) async => _jsonResponse(fixture('v4/account_backgrounds.json'));
+
+      final actual = await client.accountBackgrounds();
+
+      expect(actual.backgrounds, hasLength(3));
+      final request = httpClient.requests.single;
+      expect(
+        request.url,
+        Uri.parse('https://proxy.example/solved/v4/account/backgrounds'),
+      );
+      expect(request.followRedirects, isFalse);
+      expect(request.headers, const <String, String>{
+        'accept': 'application/json',
+        'authorization': 'Bearer access-token',
+      });
+      expect(request.bodyBytes, isEmpty);
+
+      handler = (_) async => _jsonResponse('{"backgrounds":[{}]}');
+      final error = await _captureFailure(client.accountBackgrounds());
+      expect(error.operation, SolvedAuthenticatedOperation.accountBackgrounds);
+      expect(error.kind, SolvedAuthenticatedFailureKind.invalidResponse);
+    });
+
     test('rejects an invalid rivals page before any request', () async {
       await expectLater(
         client.rivals(page: 0),
@@ -616,6 +641,7 @@ void main() {
       await expectLater(client.accountConsents(), throwsStateError);
       await expectLater(client.accountWallet(), throwsStateError);
       await expectLater(client.emoticons(), throwsStateError);
+      await expectLater(client.accountBackgrounds(), throwsStateError);
       expect(httpClient.requests, isEmpty);
     });
   });

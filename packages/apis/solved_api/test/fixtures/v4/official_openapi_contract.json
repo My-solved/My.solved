@@ -95,6 +95,144 @@
     "/api/v4/users/{handle}/tags/{key}/histogram"
   ],
   "paths": {
+    "/api/v4/account/backgrounds": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "backgrounds": {
+                      "items": {
+                        "properties": {
+                          "acquiredAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "backgroundImageUrl": {
+                            "type": "string"
+                          },
+                          "category": {
+                            "type": "string"
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "fallbackBackgroundImageUrl": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "id": {
+                            "type": "integer"
+                          },
+                          "isIllust": {
+                            "type": "boolean"
+                          },
+                          "key": {
+                            "type": "string"
+                          },
+                          "ownedUserCount": {
+                            "type": "integer"
+                          },
+                          "thumbnailImageUrl": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "thumbnailPlaceholder": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "key",
+                          "backgroundImageUrl",
+                          "fallbackBackgroundImageUrl",
+                          "thumbnailImageUrl",
+                          "thumbnailPlaceholder",
+                          "isIllust",
+                          "category",
+                          "createdAt",
+                          "acquiredAt",
+                          "ownedUserCount"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "backgrounds"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Owned backgrounds and those everyone has, in picker order."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Not signed in."
+          }
+        },
+        "summary": "Backgrounds the signed-in user may equip",
+        "x-access": {
+          "class": "user",
+          "scope": "collection"
+        }
+      }
+    },
     "/api/v4/account/bookmark-favorites": {
       "get": {
         "parameters": [
