@@ -326,6 +326,44 @@ void main() {
       );
     });
 
+    test('sends one token-bound bookmark-favorites GET', () async {
+      handler = (_) async => _jsonResponse(fixture('v4/bookmark_folders.json'));
+
+      final omitted = await client.bookmarkFavorites();
+      await client.bookmarkFavorites(page: 10000);
+
+      expect(omitted.folders.first.slug, 'dp_set');
+      expect(httpClient.requests.map((request) => request.url.toString()), [
+        'https://proxy.example/solved/v4/account/bookmark-favorites',
+        'https://proxy.example/solved/v4/account/bookmark-favorites?'
+            'page=10000',
+      ]);
+      for (final request in httpClient.requests) {
+        expect(request.method, 'GET');
+        expect(request.followRedirects, isFalse);
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+          'authorization': 'Bearer access-token',
+        });
+        expect(request.bodyBytes, isEmpty);
+      }
+
+      for (final page in [0, 10001]) {
+        await expectLater(
+          client.bookmarkFavorites(page: page),
+          throwsA(
+            isA<ArgumentError>().having((error) => error.name, 'name', 'page'),
+          ),
+        );
+      }
+      expect(httpClient.requests, hasLength(2));
+
+      handler = (_) async => _jsonResponse('{"folders":null}');
+      final error = await _captureFailure(client.bookmarkFavorites());
+      expect(error.operation, SolvedAuthenticatedOperation.bookmarkFavorites);
+      expect(error.kind, SolvedAuthenticatedFailureKind.invalidResponse);
+    });
+
     test('rejects an invalid rivals page before any request', () async {
       await expectLater(
         client.rivals(page: 0),
@@ -389,6 +427,7 @@ void main() {
       );
       await expectLater(client.rivals(), throwsStateError);
       await expectLater(client.reverseRivals(), throwsStateError);
+      await expectLater(client.bookmarkFavorites(), throwsStateError);
       expect(httpClient.requests, isEmpty);
     });
   });

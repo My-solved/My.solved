@@ -95,6 +95,209 @@
     "/api/v4/users/{handle}/tags/{key}/histogram"
   ],
   "paths": {
+    "/api/v4/account/bookmark-favorites": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "maximum": 10000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "folders": {
+                      "items": {
+                        "properties": {
+                          "color": {
+                            "enum": [
+                              "red",
+                              "violet",
+                              "blue",
+                              "teal",
+                              "lime",
+                              "yellow",
+                              "orange",
+                              null
+                            ],
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "createdAt": {
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          },
+                          "favoriteCount": {
+                            "type": "number"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "owner": {
+                            "properties": {
+                              "handle": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "number"
+                              },
+                              "profileImageUrl": {
+                                "format": "uri",
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "tier": {
+                                "maximum": 31,
+                                "minimum": 0,
+                                "type": [
+                                  "integer",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "handle",
+                              "tier",
+                              "profileImageUrl"
+                            ],
+                            "type": "object"
+                          },
+                          "problemCount": {
+                            "type": "number"
+                          },
+                          "slug": {
+                            "type": "string"
+                          },
+                          "solvedCount": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "updatedAt": {
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "visibility": {
+                            "enum": [
+                              "private",
+                              "unlisted",
+                              "public"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "slug",
+                          "name",
+                          "description",
+                          "color",
+                          "visibility",
+                          "problemCount",
+                          "favoriteCount",
+                          "solvedCount",
+                          "owner",
+                          "createdAt",
+                          "updatedAt"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "page": {
+                      "type": "number"
+                    },
+                    "pageSize": {
+                      "type": "number"
+                    },
+                    "total": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "folders",
+                    "total",
+                    "page",
+                    "pageSize"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "One page of folders."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Not signed in."
+          }
+        },
+        "summary": "Other people's folders the signed-in user favorited",
+        "x-access": {
+          "class": "user",
+          "scope": "bookmarks"
+        }
+      }
+    },
     "/api/v4/affiliations/{id}": {
       "get": {
         "parameters": [
