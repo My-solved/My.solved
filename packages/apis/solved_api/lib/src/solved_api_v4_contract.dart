@@ -625,6 +625,16 @@ final class SolvedApiV4Contract {
         decode: _decodeV4SourceGroups,
       );
 
+  SolvedApiEndpoint<SourceGroupDetailResult> sourceGroupDetail(int id) {
+    if (id < 1) {
+      throw ArgumentError.value(id, 'id', 'Must be at least 1');
+    }
+    return _endpoint(
+      path: 'sources/groups/$id',
+      decode: _decodeV4SourceGroupDetail,
+    );
+  }
+
   /// Fetches the complete official tag catalog and filters it locally.
   ///
   /// The v4 `/tags` endpoint accepts no query or page parameters. Matching is
@@ -1179,6 +1189,85 @@ SourceGroupsResult _decodeV4SourceGroups(dynamic json) {
         ),
       ),
     ),
+  );
+}
+
+SourceGroupDetailResult _decodeV4SourceGroupDetail(dynamic json) {
+  final body = _object(json, 'source group');
+  return SourceGroupDetailResult(
+    group:
+        _decodeV4SourceGroupSummary(_object(body['group'], 'group'), 'group'),
+    path: _decodeV4SourcePath(body),
+    links: _decodeV4SourceLinks(body),
+    query: _requiredNullableString(body, 'query'),
+    groups: List<SourceGroupSummary>.unmodifiable(
+      _list(body['groups'], 'groups').map(
+        (value) => _decodeV4SourceGroupSummary(
+          _object(value, 'groups[]'),
+          'groups[]',
+        ),
+      ),
+    ),
+    contests: List<SourceContestSummary>.unmodifiable(
+      _list(body['contests'], 'contests').map(
+        (value) => _decodeV4SourceContestSummary(
+          _object(value, 'contests[]'),
+          'contests[]',
+        ),
+      ),
+    ),
+  );
+}
+
+List<SourcePathEntry> _decodeV4SourcePath(Map<String, dynamic> body) =>
+    List<SourcePathEntry>.unmodifiable(
+      _list(body['path'], 'path').map((value) {
+        final entry = _object(value, 'path[]');
+        return SourcePathEntry(
+          id: _number(entry['id'], 'path[].id'),
+          name: _string(entry['name'], 'path[].name'),
+        );
+      }),
+    );
+
+List<SourceLink> _decodeV4SourceLinks(Map<String, dynamic> body) =>
+    List<SourceLink>.unmodifiable(
+      _list(body['links'], 'links').map((value) {
+        final link = _object(value, 'links[]');
+        return SourceLink(
+          ojId: _string(link['ojId'], 'links[].ojId'),
+          ojName: _string(link['ojName'], 'links[].ojName'),
+          url: _string(link['url'], 'links[].url'),
+        );
+      }),
+    );
+
+SourceContestSummary _decodeV4SourceContestSummary(
+  Map<String, dynamic> body,
+  String field,
+) {
+  final levelValue = _requiredValue(body, 'level', '$field.level');
+  return SourceContestSummary(
+    id: _number(body['id'], '$field.id'),
+    name: _string(body['name'], '$field.name'),
+    abbreviation: _requiredNullableString(
+      body,
+      'abbreviation',
+      '$field.abbreviation',
+    ),
+    startsAt: _requiredNullableString(body, 'startsAt', '$field.startsAt'),
+    problemCount: _number(body['problemCount'], '$field.problemCount'),
+    solvedCount: _requiredNullableNumber(
+      body,
+      'solvedCount',
+      '$field.solvedCount',
+    ),
+    level: levelValue == null
+        ? null
+        : _decodeV4SourceLevel(
+            _object(levelValue, '$field.level'),
+            '$field.level',
+          ),
   );
 }
 
