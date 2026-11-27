@@ -361,6 +361,29 @@ final class SolvedApiV4Contract {
     );
   }
 
+  SolvedApiEndpoint<AffiliationDetailResult> affiliationDetail(
+    int id, {
+    String? language,
+  }) {
+    if (id < 1) {
+      throw ArgumentError.value(id, 'id', 'Must be at least 1');
+    }
+    if (language != null && language.runes.length > 16) {
+      throw ArgumentError.value(
+        language,
+        'language',
+        'Must not exceed 16 characters',
+      );
+    }
+    return _endpoint(
+      path: 'affiliations/$id',
+      queryParameters: {
+        if (language != null) 'lang': language,
+      },
+      decode: _decodeV4AffiliationDetail,
+    );
+  }
+
   SolvedApiEndpoint<RankingRegionsResult> rankingRegions() => _endpoint(
         path: 'rankings/regions',
         decode: _decodeV4RankingRegions,
@@ -1250,6 +1273,59 @@ String? _selectV4ProblemTitle(List<ProblemSearchTitle> titles) {
     if (title.isOriginal) original ??= title.title;
   }
   return original ?? first;
+}
+
+AffiliationDetailResult _decodeV4AffiliationDetail(dynamic json) {
+  final body = _object(json, 'affiliation detail');
+  return AffiliationDetailResult(
+    id: _number(body['id'], 'id'),
+    affiliationId: _integer(body['affiliationId'], 'affiliationId'),
+    name: _string(body['name'], 'name'),
+    type: _decodeV4AffiliationType(body['type'], 'type'),
+    countryCode: _requiredNullableString(body, 'countryCode', 'countryCode'),
+    logoImageUrl: _requiredNullableString(
+      body,
+      'logoImageUrl',
+      'logoImageUrl',
+    ),
+    logoThumbnailUrl: _requiredNullableString(
+      body,
+      'logoThumbnailUrl',
+      'logoThumbnailUrl',
+    ),
+    color: _requiredNullableString(body, 'color', 'color'),
+    website: _requiredNullableString(body, 'website', 'website'),
+    rating: _integer(body['rating'], 'rating'),
+    userCount: _integer(body['userCount'], 'userCount'),
+    solvedCount: _integer(body['solvedCount'], 'solvedCount'),
+    voteCount: _integer(body['voteCount'], 'voteCount'),
+    displayName: _string(body['displayName'], 'displayName'),
+    rank: _integer(body['rank'], 'rank'),
+    rankedOf: _integer(body['rankedOf'], 'rankedOf'),
+    typeRank: _integer(body['typeRank'], 'typeRank'),
+    typeRankedOf: _integer(body['typeRankedOf'], 'typeRankedOf'),
+    tierCounts: List<int>.unmodifiable(
+      _list(body['tierCounts'], 'tierCounts').map(
+        (value) => _integer(value, 'tierCounts[]'),
+      ),
+    ),
+    ratingByProblemsSum: _integer(
+      body['ratingByProblemsSum'],
+      'ratingByProblemsSum',
+    ),
+    ratingByClass: _integer(body['ratingByClass'], 'ratingByClass'),
+    ratingBySolvedCount: _integer(
+      body['ratingBySolvedCount'],
+      'ratingBySolvedCount',
+    ),
+    ratingProblemsHistogram: List<int>.unmodifiable(
+      _list(body['ratingProblemsHistogram'], 'ratingProblemsHistogram').map(
+        (value) => _integer(value, 'ratingProblemsHistogram[]'),
+      ),
+    ),
+    ratingClass: _integer(body['ratingClass'], 'ratingClass'),
+    ratingClassPlus: _boolean(body['ratingClassPlus'], 'ratingClassPlus'),
+  );
 }
 
 RankingRegionsResult _decodeV4RankingRegions(dynamic json) {

@@ -1502,6 +1502,271 @@ void main() {
     expect(schema, problemItem);
   });
 
+  test('pins the public affiliation detail without inferred relations', () {
+    final affiliation = _get(contract, '/api/v4/affiliations/{id}');
+
+    expect(_map(affiliation['x-access']), {'class': 'public'});
+    expect(affiliation.containsKey('security'), isFalse);
+    expect(affiliation.containsKey('requestBody'), isFalse);
+    expect(affiliation['summary'], 'Public affiliation detail');
+    expect(_parameterNames(affiliation), ['id', 'lang']);
+
+    final parameters = _parameters(affiliation);
+    final id = parameters.first;
+    expect(id['in'], 'path');
+    expect(id['required'], isTrue);
+    expect(_map(id['schema']), {
+      'exclusiveMinimum': 0,
+      'type': 'integer',
+    });
+    final language = parameters.last;
+    expect(language['in'], 'query');
+    expect(language['required'], isFalse);
+    expect(_map(language['schema']), {
+      'default': 'ko',
+      'maxLength': 16,
+      'type': 'string',
+    });
+
+    final responses = _map(affiliation['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '404']);
+    expect(_map(responses['200'])['description'], 'Affiliation.');
+    expect(_map(responses['404'])['description'], 'Affiliation not found.');
+
+    const fields = [
+      'id',
+      'affiliationId',
+      'name',
+      'type',
+      'countryCode',
+      'logoImageUrl',
+      'logoThumbnailUrl',
+      'color',
+      'website',
+      'rating',
+      'userCount',
+      'solvedCount',
+      'voteCount',
+      'displayName',
+      'rank',
+      'rankedOf',
+      'typeRank',
+      'typeRankedOf',
+      'tierCounts',
+      'ratingByProblemsSum',
+      'ratingByClass',
+      'ratingBySolvedCount',
+      'ratingProblemsHistogram',
+      'ratingClass',
+      'ratingClassPlus',
+    ];
+    expect(fields, hasLength(25));
+    final schema = _responseSchema(affiliation);
+    expect(schema['type'], 'object');
+    expect(_required(schema), fields);
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    final properties = _properties(schema);
+    expect(properties.keys.toList(growable: false), [
+      'affiliationId',
+      'color',
+      'countryCode',
+      'displayName',
+      'id',
+      'logoImageUrl',
+      'logoThumbnailUrl',
+      'name',
+      'rank',
+      'rankedOf',
+      'rating',
+      'ratingByClass',
+      'ratingByProblemsSum',
+      'ratingBySolvedCount',
+      'ratingClass',
+      'ratingClassPlus',
+      'ratingProblemsHistogram',
+      'solvedCount',
+      'tierCounts',
+      'type',
+      'typeRank',
+      'typeRankedOf',
+      'userCount',
+      'voteCount',
+      'website',
+    ]);
+
+    expect(_map(properties['id']), {'type': 'number'});
+    const integerFields = [
+      'affiliationId',
+      'rating',
+      'userCount',
+      'solvedCount',
+      'voteCount',
+      'rank',
+      'rankedOf',
+      'typeRank',
+      'typeRankedOf',
+      'ratingByProblemsSum',
+      'ratingByClass',
+      'ratingBySolvedCount',
+      'ratingClass',
+    ];
+    for (final field in integerFields) {
+      expect(_map(properties[field]), {'type': 'integer'});
+    }
+    for (final field in ['name', 'displayName']) {
+      expect(_map(properties[field]), {'type': 'string'});
+    }
+    expect(_map(properties['type']), {
+      'enum': [
+        'undefined',
+        'university',
+        'high_school',
+        'middle_school',
+        'elementary_school',
+        'company',
+        'community',
+      ],
+      'type': 'string',
+    });
+    for (final field in [
+      'countryCode',
+      'logoImageUrl',
+      'logoThumbnailUrl',
+      'color',
+      'website',
+    ]) {
+      expect(_map(properties[field]), {
+        'type': ['string', 'null'],
+      });
+    }
+    for (final field in ['tierCounts', 'ratingProblemsHistogram']) {
+      final array = _map(properties[field]);
+      expect(array['type'], 'array');
+      expect(_map(array['items']), {'type': 'integer'});
+      for (final constraint in ['minItems', 'maxItems', 'uniqueItems']) {
+        expect(array.containsKey(constraint), isFalse);
+      }
+    }
+    expect(_map(properties['ratingClassPlus']), {'type': 'boolean'});
+
+    final notFound = _map(responses['404']);
+    final notFoundContent = _map(notFound['content']);
+    expect(notFoundContent.keys.toList(growable: false), [
+      'application/json',
+    ]);
+    final notFoundSchema = _jsonResponseSchema(affiliation, '404');
+    expect(notFoundSchema['type'], 'object');
+    expect(_required(notFoundSchema), ['error']);
+    expect(notFoundSchema.containsKey('additionalProperties'), isFalse);
+    final notFoundProperties = _properties(notFoundSchema);
+    expect(notFoundProperties.keys.toList(growable: false), ['error']);
+    final error = _map(notFoundProperties['error']);
+    expect(error['type'], 'object');
+    expect(_required(error), ['code', 'message']);
+    expect(error.containsKey('additionalProperties'), isFalse);
+    final errorProperties = _properties(error);
+    expect(errorProperties.keys.toList(growable: false), [
+      'code',
+      'details',
+      'message',
+    ]);
+    expect(_map(errorProperties['code']), {'type': 'string'});
+    expect(_map(errorProperties['message']), {'type': 'string'});
+    expect(_map(errorProperties['details']), {
+      'additionalProperties': {
+        'anyOf': [
+          {'type': 'string'},
+          {'type': 'number'},
+          {'type': 'boolean'},
+        ],
+      },
+      'type': 'object',
+    });
+    for (final path in [
+      '/api/v4/achievements/items/{kind}/{key}/holders',
+      '/api/v4/users/{handle}/achievements',
+      '/api/v4/sources/oj/{ojId}/contests/{nativeId}',
+      '/api/v4/sources/oj/{ojId}/groups/{nativeId}',
+    ]) {
+      expect(_jsonResponseSchema(_get(contract, path), '404'), notFoundSchema);
+    }
+
+    final profile = _get(contract, '/api/v4/users/{handle}');
+    final profileProperties = _properties(_responseSchema(profile));
+    final profileAffiliations = _map(profileProperties['affiliations']);
+    final profileAffiliation = _map(profileAffiliations['items']);
+    final profileAffiliationProperties = _properties(profileAffiliation);
+    const profileSharedFields = {
+      'id',
+      'name',
+      'type',
+      'logoThumbnailUrl',
+      'color',
+    };
+    for (final field in profileSharedFields) {
+      expect(properties[field], profileAffiliationProperties[field]);
+    }
+    expect(
+      _required(schema).where(profileSharedFields.contains).toSet(),
+      profileSharedFields,
+    );
+    expect(
+      _required(profileAffiliation).where(profileSharedFields.contains).toSet(),
+      profileSharedFields,
+    );
+    expect(_map(profileAffiliationProperties['affiliationId']), {
+      'type': 'number',
+    });
+    expect(
+      properties['affiliationId'],
+      isNot(profileAffiliationProperties['affiliationId']),
+    );
+    expect(
+      properties['ratingProblemsHistogram'],
+      profileProperties['ratingProblemsHistogram'],
+    );
+
+    final catalog = _get(contract, '/api/v4/rankings/affiliations');
+    final catalogAffiliations =
+        _map(_properties(_responseSchema(catalog))['affiliations']);
+    final catalogAffiliation = _map(catalogAffiliations['items']);
+    final catalogProperties = _properties(catalogAffiliation);
+    final board = _get(contract, '/api/v4/rankings/affiliation-board');
+    final boardItems = _map(_properties(_responseSchema(board))['items']);
+    final boardAffiliation = _map(boardItems['items']);
+    final boardProperties = _properties(boardAffiliation);
+    const rankingSharedFields = {
+      'affiliationId',
+      'name',
+      'type',
+      'userCount',
+      'logoThumbnailUrl',
+      'color',
+    };
+    for (final field in rankingSharedFields) {
+      expect(properties[field], catalogProperties[field]);
+      expect(properties[field], boardProperties[field]);
+    }
+    for (final sharedSchema in [catalogAffiliation, boardAffiliation]) {
+      expect(
+        _required(sharedSchema).where(rankingSharedFields.contains).toSet(),
+        rankingSharedFields,
+      );
+    }
+    expect(
+      _required(schema).where(rankingSharedFields.contains).toSet(),
+      rankingSharedFields,
+    );
+    expect(_map(catalogProperties['id']), {'type': 'integer'});
+    expect(_map(boardProperties['id']), {'type': 'integer'});
+    expect(properties['id'], isNot(catalogProperties['id']));
+    expect(properties['id'], isNot(boardProperties['id']));
+
+    final siteStats = _get(contract, '/api/v4/site/stats');
+    final siteProperties = _properties(_responseSchema(siteStats));
+    expect(properties['tierCounts'], siteProperties['usersByTier']);
+  });
+
   test('pins the public affiliation board without inferred relations', () {
     final board = _get(contract, '/api/v4/rankings/affiliation-board');
 
@@ -3260,6 +3525,18 @@ Map<String, dynamic> _responseSchema(Map<String, dynamic> operation) => _map(
       _map(
         _map(
           _map(_map(operation['responses'])['200'])['content'],
+        )['application/json'],
+      )['schema'],
+    );
+
+Map<String, dynamic> _jsonResponseSchema(
+  Map<String, dynamic> operation,
+  String status,
+) =>
+    _map(
+      _map(
+        _map(
+          _map(_map(operation['responses'])[status])['content'],
         )['application/json'],
       )['schema'],
     );
