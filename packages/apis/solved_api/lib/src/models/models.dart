@@ -39,6 +39,7 @@ export 'search_object.dart';
 export 'search_suggestion_result.dart';
 export 'site_stats_result.dart';
 export 'solved_user_identity.dart';
+export 'source_contest_detail_result.dart';
 export 'source_group_detail_result.dart';
 export 'source_groups_result.dart';
 export 'source_lookup_result.dart';

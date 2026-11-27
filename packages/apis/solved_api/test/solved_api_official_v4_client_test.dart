@@ -94,6 +94,7 @@ void main() {
               'v4/source_lookup.json',
             '/solved/v4/sources' => 'v4/source_groups.json',
             '/solved/v4/sources/groups/7' => 'v4/source_group_detail.json',
+            '/solved/v4/sources/contests/8' => 'v4/source_contest_detail.json',
             '/solved/v4/achievements' => 'v4/achievement_catalog.json',
             '/solved/v4/achievements/for-problem/1000' =>
               'v4/problem_achievements.json',
@@ -206,6 +207,8 @@ void main() {
         final SourceGroupsResult sourceGroups = await client.v4SourceGroups();
         final SourceGroupDetailResult sourceGroupDetail =
             await client.v4SourceGroupDetail(7);
+        final SourceContestDetailResult sourceContestDetail =
+            await client.v4SourceContestDetail(8);
         final AchievementCatalogResult achievementCatalog =
             await client.v4AchievementCatalog(language: '');
         final ProblemAchievementsResult problemAchievements =
@@ -479,6 +482,8 @@ void main() {
         );
         expect(sourceGroupDetail.query, 'raw & 한 글');
         expect(sourceGroupDetail.contests.last.startsAt, isNull);
+        expect(sourceContestDetail.contest.venue, '');
+        expect(sourceContestDetail.problems, hasLength(3));
         expect(achievementCatalog.userCount, 0);
         expect(achievementCatalog.items, hasLength(2));
         expect(achievementCatalog.items.first.id, -1);
@@ -607,6 +612,7 @@ void main() {
             _uri('sources/oj/boj/groups/team-1'),
             _uri('sources'),
             _uri('sources/groups/7'),
+            _uri('sources/contests/8'),
             Uri.parse(
               'https://proxy.example/solved/v4/achievements?lang=',
             ),
@@ -626,7 +632,7 @@ void main() {
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(38));
+        expect(httpClient.requests, hasLength(39));
         expect(
           httpClient.requests[12].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
@@ -944,7 +950,11 @@ void main() {
         await _captureFailure(client.v4SourceGroupDetail(1)),
         isA<SourceRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(34));
+      expect(
+        await _captureFailure(client.v4SourceContestDetail(1)),
+        isA<SourceRequestFailed>(),
+      );
+      expect(httpClient.requests, hasLength(35));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -2979,6 +2989,80 @@ void main() {
       expect(error.isRetryable, isTrue);
       expect(httpClient.requests.single.url, _uri('sources'));
       expect(httpClient.requests, hasLength(1));
+    });
+
+    test('sends one anonymous bodyless source-contest-detail request',
+        () async {
+      handler =
+          (_) async => _jsonResponse(fixture('v4/source_contest_detail.json'));
+
+      final actual = await client.v4SourceContestDetail(42);
+
+      expect(actual.contest.name, 'Round 1');
+      final request = httpClient.requests.single;
+      expect(request.url, _uri('sources/contests/42'));
+      expect(request.method, 'GET');
+      expect(request.headers, const <String, String>{
+        'accept': 'application/json',
+      });
+      expect(request.bodyBytes, isEmpty);
+    });
+
+    test('rejects source contest ids below one before transport', () {
+      for (final id in [0, -1]) {
+        expect(
+          () => client.v4SourceContestDetail(id),
+          throwsA(
+            isA<ArgumentError>()
+                .having((error) => error.name, 'name', 'id')
+                .having((error) => error.invalidValue, 'invalidValue', id),
+          ),
+        );
+      }
+      expect(httpClient.requests, isEmpty);
+    });
+
+    test('wraps a malformed source contest detail as a source failure',
+        () async {
+      handler = (_) async => _jsonResponse(
+            jsonEncode({'contest': null, 'problems': <Object?>[]}),
+          );
+
+      final error = await _captureFailure(client.v4SourceContestDetail(1));
+
+      expect(error, isA<SourceRequestFailed>());
+      expect(error.statusCode, 200);
+      expect(error.cause, isA<FormatException>());
+      expect(error.responseBody, isNull);
+      expect(httpClient.requests.single.url, _uri('sources/contests/1'));
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves source-contest-detail 404 and 429 failure metadata',
+        () async {
+      for (final status in [404, 429]) {
+        handler = (_) async => _bytesResponse(
+              const <int>[0xff],
+              statusCode: status,
+              headers: <String, String>{
+                'content-type': 'text/plain',
+                if (status == 429) 'retry-after': '19',
+              },
+            );
+
+        final error = await _captureFailure(client.v4SourceContestDetail(1));
+
+        expect(error, isA<SourceRequestFailed>());
+        expect(error.statusCode, status);
+        expect(error.cause, isNull);
+        expect(error.responseBody, isNull);
+        expect(
+          error.retryAfter,
+          status == 429 ? const Duration(seconds: 19) : isNull,
+        );
+        expect(error.isRetryable, status == 429);
+      }
+      expect(httpClient.requests, hasLength(2));
     });
 
     test('sends one anonymous bodyless source-group-detail request', () async {

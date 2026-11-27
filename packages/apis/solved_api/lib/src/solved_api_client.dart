@@ -655,6 +655,14 @@ class SolvedApiClient {
     );
   }
 
+  Future<SourceContestDetailResult> v4SourceContestDetail(int id) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.sourceContestDetail(id),
+      requestType: _RequestType.source,
+    );
+  }
+
   Future<SourceGroupDetailResult> v4SourceGroupDetail(int id) {
     final contract = _requireV4Contract();
     return _getV4(

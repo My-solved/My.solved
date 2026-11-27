@@ -3649,6 +3649,559 @@
         }
       }
     },
+    "/api/v4/sources/contests/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "exclusiveMinimum": 0,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "contest": {
+                      "properties": {
+                        "abbreviation": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "id": {
+                          "type": "number"
+                        },
+                        "level": {
+                          "properties": {
+                            "order": {
+                              "enum": [
+                                "ascending",
+                                "random",
+                                "mixed",
+                                null
+                              ],
+                              "type": [
+                                "string",
+                                "null"
+                              ]
+                            },
+                            "progress": {
+                              "properties": {
+                                "solved": {
+                                  "type": "integer"
+                                },
+                                "through": {
+                                  "properties": {
+                                    "q25": {
+                                      "type": "boolean"
+                                    },
+                                    "q50": {
+                                      "type": "boolean"
+                                    },
+                                    "q75": {
+                                      "type": "boolean"
+                                    }
+                                  },
+                                  "required": [
+                                    "q25",
+                                    "q50",
+                                    "q75"
+                                  ],
+                                  "type": "object"
+                                }
+                              },
+                              "required": [
+                                "solved",
+                                "through"
+                              ],
+                              "type": [
+                                "object",
+                                "null"
+                              ]
+                            },
+                            "q25": {
+                              "type": "integer"
+                            },
+                            "q50": {
+                              "type": "integer"
+                            },
+                            "q75": {
+                              "type": "integer"
+                            },
+                            "ratedCount": {
+                              "type": "integer"
+                            },
+                            "tierCounts": {
+                              "items": {
+                                "type": "integer"
+                              },
+                              "type": "array"
+                            }
+                          },
+                          "required": [
+                            "q25",
+                            "q50",
+                            "q75",
+                            "tierCounts",
+                            "ratedCount",
+                            "order",
+                            "progress"
+                          ],
+                          "type": [
+                            "object",
+                            "null"
+                          ]
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "problemCount": {
+                          "type": "number"
+                        },
+                        "solvedCount": {
+                          "type": [
+                            "number",
+                            "null"
+                          ]
+                        },
+                        "startsAt": {
+                          "format": "date-time",
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "url": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        },
+                        "venue": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "abbreviation",
+                        "startsAt",
+                        "problemCount",
+                        "solvedCount",
+                        "level",
+                        "url",
+                        "venue"
+                      ],
+                      "type": "object"
+                    },
+                    "links": {
+                      "items": {
+                        "properties": {
+                          "ojId": {
+                            "type": "string"
+                          },
+                          "ojName": {
+                            "type": "string"
+                          },
+                          "url": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "ojId",
+                          "ojName",
+                          "url"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "path": {
+                      "items": {
+                        "properties": {
+                          "id": {
+                            "type": "number"
+                          },
+                          "name": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "problems": {
+                      "items": {
+                        "properties": {
+                          "numberInContest": {
+                            "type": "string"
+                          },
+                          "problem": {
+                            "properties": {
+                              "contests": {
+                                "items": {
+                                  "properties": {
+                                    "abbreviation": {
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ]
+                                    },
+                                    "displayId": {
+                                      "type": "string"
+                                    },
+                                    "id": {
+                                      "type": "number"
+                                    },
+                                    "name": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "displayId",
+                                    "name",
+                                    "abbreviation"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "effectiveVoteCount": {
+                                "type": "number"
+                              },
+                              "givesNoRating": {
+                                "type": "boolean"
+                              },
+                              "id": {
+                                "type": "number"
+                              },
+                              "isStandard": {
+                                "type": "boolean"
+                              },
+                              "level": {
+                                "type": "number"
+                              },
+                              "levelAverage": {
+                                "type": "number"
+                              },
+                              "levelStdev": {
+                                "type": "number"
+                              },
+                              "noRatingReasons": {
+                                "items": {
+                                  "enum": [
+                                    "unofficial",
+                                    "legacy",
+                                    "staff",
+                                    "unsettled"
+                                  ],
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              },
+                              "noRatingWarnings": {
+                                "items": {
+                                  "properties": {
+                                    "problem": {
+                                      "properties": {
+                                        "effectiveVoteCount": {
+                                          "type": "number"
+                                        },
+                                        "givesNoRating": {
+                                          "type": "boolean"
+                                        },
+                                        "isStandard": {
+                                          "type": "boolean"
+                                        },
+                                        "level": {
+                                          "type": "number"
+                                        },
+                                        "problemId": {
+                                          "type": "number"
+                                        },
+                                        "subId": {
+                                          "type": "string"
+                                        },
+                                        "userStatus": {
+                                          "enum": [
+                                            "solved",
+                                            "partial",
+                                            "tried",
+                                            null
+                                          ],
+                                          "type": [
+                                            "string",
+                                            "null"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "problemId",
+                                        "subId",
+                                        "level",
+                                        "effectiveVoteCount",
+                                        "givesNoRating",
+                                        "isStandard",
+                                        "userStatus"
+                                      ],
+                                      "type": [
+                                        "object",
+                                        "null"
+                                      ]
+                                    },
+                                    "type": {
+                                      "enum": [
+                                        "same",
+                                        "searchable",
+                                        "wrong-inputs",
+                                        "insufficient-conditions",
+                                        "no-special-judge",
+                                        "wrong-conditions",
+                                        "wrong-statement"
+                                      ],
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "type",
+                                    "problem"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "problemId": {
+                                "type": "number"
+                              },
+                              "solvedUserCount": {
+                                "type": "number"
+                              },
+                              "subId": {
+                                "type": "string"
+                              },
+                              "tags": {
+                                "items": {
+                                  "properties": {
+                                    "id": {
+                                      "type": "number"
+                                    },
+                                    "isMeta": {
+                                      "type": "boolean"
+                                    },
+                                    "key": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "id",
+                                    "key",
+                                    "isMeta"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "titles": {
+                                "items": {
+                                  "properties": {
+                                    "html": {
+                                      "type": "boolean"
+                                    },
+                                    "isOriginal": {
+                                      "type": "boolean"
+                                    },
+                                    "language": {
+                                      "type": "string"
+                                    },
+                                    "latex": {
+                                      "type": "boolean"
+                                    },
+                                    "title": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "language",
+                                    "title",
+                                    "isOriginal",
+                                    "latex",
+                                    "html"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "userStatus": {
+                                "enum": [
+                                  "solved",
+                                  "partial",
+                                  "tried",
+                                  null
+                                ],
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "viewerFolders": {
+                                "items": {
+                                  "properties": {
+                                    "color": {
+                                      "enum": [
+                                        "red",
+                                        "violet",
+                                        "blue",
+                                        "teal",
+                                        "lime",
+                                        "yellow",
+                                        "orange",
+                                        null
+                                      ],
+                                      "type": [
+                                        "string",
+                                        "null"
+                                      ]
+                                    },
+                                    "name": {
+                                      "type": "string"
+                                    },
+                                    "slug": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "slug",
+                                    "name",
+                                    "color"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "votedUserCount": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "problemId",
+                              "subId",
+                              "level",
+                              "levelAverage",
+                              "levelStdev",
+                              "isStandard",
+                              "votedUserCount",
+                              "effectiveVoteCount",
+                              "solvedUserCount",
+                              "givesNoRating",
+                              "noRatingReasons",
+                              "noRatingWarnings",
+                              "titles",
+                              "userStatus",
+                              "contests",
+                              "tags",
+                              "viewerFolders"
+                            ],
+                            "type": "object"
+                          }
+                        },
+                        "required": [
+                          "numberInContest",
+                          "problem"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "query": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "contest",
+                    "path",
+                    "links",
+                    "query",
+                    "problems"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "The contest."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "No such contest."
+          }
+        },
+        "summary": "A contest and its problems, in contest order",
+        "x-access": {
+          "class": "public"
+        }
+      }
+    },
     "/api/v4/sources/groups/{id}": {
       "get": {
         "parameters": [
