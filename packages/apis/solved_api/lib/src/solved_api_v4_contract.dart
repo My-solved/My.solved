@@ -878,6 +878,36 @@ final class SolvedApiV4Contract {
     );
   }
 
+  /// [ref] is a label such as `v3` or `beta`, or an effective day such as
+  /// `20240714`. Only the official patterns are checked; calendar validity
+  /// is not.
+  SolvedApiEndpoint<PolicyResult> policyVersion(
+    PolicySlug slug,
+    String ref, {
+    String? language,
+  }) {
+    if (!RegExp(r'^(v\d{1,3}|beta)$').hasMatch(ref) &&
+        !RegExp(r'^\d{8}$').hasMatch(ref)) {
+      throw ArgumentError.value(
+        ref,
+        'ref',
+        'Must be v1 through v999, beta, or an 8-digit day',
+      );
+    }
+    if (language != null && language.runes.length > 16) {
+      throw ArgumentError.value(
+        language,
+        'language',
+        'Must not exceed 16 characters',
+      );
+    }
+    return _endpoint(
+      path: 'policies/${slug.value}/$ref',
+      queryParameters: {if (language != null) 'lang': language},
+      decode: _decodeV4Policy,
+    );
+  }
+
   /// The official schema declares no length bound for [language].
   SolvedApiEndpoint<HelpArticleResult> helpArticle(
     String slug, {

@@ -3448,6 +3448,37 @@ void main() {
     });
   });
 
+  test('pins the public policy version to the shared policy schema', () {
+    final version = _get(contract, '/api/v4/policies/{slug}/{ref}');
+    final policy = _get(contract, '/api/v4/policies/{slug}');
+
+    expect(_accessClass(version), 'public');
+    expect(_map(version['x-access']).containsKey('scope'), isFalse);
+    expect(version.containsKey('security'), isFalse);
+    expect(version.containsKey('requestBody'), isFalse);
+    expect(
+      version['summary'],
+      'Read one version of a policy, past, current or upcoming, by label (v3) '
+      'or effective day (20240714)',
+    );
+    expect(_parameters(version), [
+      _parameters(policy).first,
+      {
+        'in': 'path',
+        'name': 'ref',
+        'required': true,
+        'schema': {
+          'anyOf': [
+            {'pattern': r'^(v\d{1,3}|beta)$', 'type': 'string'},
+            {'pattern': r'^\d{8}$', 'type': 'string'},
+          ],
+        },
+      },
+      _parameters(policy).last,
+    ]);
+    expect(_map(version['responses']), _map(policy['responses']));
+  });
+
   test('pins public OJ source lookups and their exact shared response', () {
     const operations = {
       '/api/v4/sources/oj/{ojId}/contests/{nativeId}':
