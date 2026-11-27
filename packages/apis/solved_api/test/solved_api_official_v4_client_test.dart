@@ -96,6 +96,7 @@ void main() {
             '/solved/v4/sources' => 'v4/source_groups.json',
             '/solved/v4/sources/groups/7' => 'v4/source_group_detail.json',
             '/solved/v4/sources/contests/8' => 'v4/source_contest_detail.json',
+            '/solved/v4/bookmarks' => 'v4/bookmark_folders.json',
             '/solved/v4/achievements' => 'v4/achievement_catalog.json',
             '/solved/v4/achievements/for-problem/1000' =>
               'v4/problem_achievements.json',
@@ -212,6 +213,8 @@ void main() {
             await client.v4SourceGroupDetail(7);
         final SourceContestDetailResult sourceContestDetail =
             await client.v4SourceContestDetail(8);
+        final BookmarkFoldersResult publicBookmarks =
+            await client.v4PublicBookmarks(page: 1, query: '');
         final AchievementCatalogResult achievementCatalog =
             await client.v4AchievementCatalog(language: '');
         final ProblemAchievementsResult problemAchievements =
@@ -489,6 +492,8 @@ void main() {
         expect(sourceGroupDetail.contests.last.startsAt, isNull);
         expect(sourceContestDetail.contest.venue, '');
         expect(sourceContestDetail.problems, hasLength(3));
+        expect(publicBookmarks.folders.first.slug, 'dp_set');
+        expect(publicBookmarks.page, 2.0);
         expect(achievementCatalog.userCount, 0);
         expect(achievementCatalog.items, hasLength(2));
         expect(achievementCatalog.items.first.id, -1);
@@ -622,6 +627,7 @@ void main() {
             _uri('sources'),
             _uri('sources/groups/7'),
             _uri('sources/contests/8'),
+            Uri.parse('https://proxy.example/solved/v4/bookmarks?page=1&q='),
             Uri.parse(
               'https://proxy.example/solved/v4/achievements?lang=',
             ),
@@ -641,7 +647,7 @@ void main() {
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(40));
+        expect(httpClient.requests, hasLength(41));
         expect(
           httpClient.requests[13].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
@@ -967,7 +973,11 @@ void main() {
         await _captureFailure(client.v4SourceContestDetail(1)),
         isA<SourceRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(36));
+      expect(
+        await _captureFailure(client.v4PublicBookmarks()),
+        isA<BookmarkRequestFailed>(),
+      );
+      expect(httpClient.requests, hasLength(37));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -3136,6 +3146,93 @@ void main() {
       expect(error.responseBody, isNull);
       expect(httpClient.requests.single.url, _uri('sources/contests/1'));
       expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves omitted explicit and typed public-bookmark queries',
+        () async {
+      handler = (_) async => _jsonResponse(fixture('v4/bookmark_folders.json'));
+
+      await client.v4PublicBookmarks();
+      await client.v4PublicBookmarks(
+        page: 1,
+        sort: SolvedApiV4BookmarkSort.updated,
+        query: '',
+      );
+      await client.v4PublicBookmarks(
+        page: 10000,
+        sort: SolvedApiV4BookmarkSort.problems,
+        query: 'a b&한',
+      );
+
+      expect(
+        httpClient.requests.map((request) => request.url.toString()),
+        [
+          'https://proxy.example/solved/v4/bookmarks',
+          'https://proxy.example/solved/v4/bookmarks?page=1&sort=updated&q=',
+          'https://proxy.example/solved/v4/bookmarks?'
+              'page=10000&sort=problems&q=a+b%26%ED%95%9C',
+        ],
+      );
+      for (final request in httpClient.requests) {
+        expect(request.method, 'GET');
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+        });
+        expect(request.bodyBytes, isEmpty);
+      }
+    });
+
+    test('rejects invalid public-bookmark arguments before transport', () {
+      for (final page in [0, 10001]) {
+        expect(
+          () => client.v4PublicBookmarks(page: page),
+          throwsA(
+            isA<ArgumentError>().having((error) => error.name, 'name', 'page'),
+          ),
+        );
+      }
+      expect(
+        () => client.v4PublicBookmarks(query: List.filled(101, 'a').join()),
+        throwsA(
+          isA<ArgumentError>().having((error) => error.name, 'name', 'query'),
+        ),
+      );
+      expect(httpClient.requests, isEmpty);
+    });
+
+    test('wraps malformed public bookmarks as a bookmark failure', () async {
+      handler = (_) async => _jsonResponse(
+            jsonEncode({'folders': <Object?>[], 'total': 0, 'page': 1}),
+          );
+
+      final error = await _captureFailure(client.v4PublicBookmarks());
+
+      expect(error, isA<BookmarkRequestFailed>());
+      expect(error.statusCode, 200);
+      expect(error.cause, isA<FormatException>());
+      expect(error.responseBody, isNull);
+      expect(httpClient.requests.single.url, _uri('bookmarks'));
+    });
+
+    test('preserves public-bookmark 429 failure metadata', () async {
+      handler = (_) async => _bytesResponse(
+            const <int>[0xff],
+            statusCode: 429,
+            headers: const <String, String>{
+              'content-type': 'text/plain',
+              'retry-after': '17',
+            },
+          );
+
+      final error = await _captureFailure(client.v4PublicBookmarks());
+
+      expect(error, isA<BookmarkRequestFailed>());
+      expect(error.statusCode, 429);
+      expect(error.cause, isNull);
+      expect(error.responseBody, isNull);
+      expect(error.retryAfter, const Duration(seconds: 17));
+      expect(error.isRetryable, isTrue);
+      expect(httpClient.requests.single.url, _uri('bookmarks'));
     });
 
     test('preserves source-contest-detail 404 and 429 failure metadata',

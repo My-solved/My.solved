@@ -57,6 +57,16 @@ enum SolvedApiV4UserSort {
   final String value;
 }
 
+/// Sort orders supported by the official v4 public bookmark listing.
+enum SolvedApiV4BookmarkSort {
+  updated('updated'),
+  problems('problems');
+
+  const SolvedApiV4BookmarkSort(this.value);
+
+  final String value;
+}
+
 /// Sort orders supported by the official v4 achievement-holder listing.
 enum SolvedApiV4AchievementHolderSort {
   recent('recent'),
@@ -479,6 +489,32 @@ final class SolvedApiV4Contract {
         if (language != null) 'lang': language,
       },
       decode: _decodeV4AffiliationDetail,
+    );
+  }
+
+  SolvedApiEndpoint<BookmarkFoldersResult> publicBookmarks({
+    int? page,
+    SolvedApiV4BookmarkSort? sort,
+    String? query,
+  }) {
+    if (page != null && (page < 1 || page > 10000)) {
+      throw ArgumentError.value(page, 'page', 'Must be from 1 through 10000');
+    }
+    if (query != null && query.runes.length > 100) {
+      throw ArgumentError.value(
+        query,
+        'query',
+        'Must not exceed 100 characters',
+      );
+    }
+    return _endpoint(
+      path: 'bookmarks',
+      queryParameters: {
+        if (page != null) 'page': page.toString(),
+        if (sort != null) 'sort': sort.value,
+        if (query != null) 'q': query,
+      },
+      decode: _decodeV4BookmarkFolders,
     );
   }
 
@@ -1609,6 +1645,64 @@ ProblemSearchViewerFolder _decodeV4ProblemSearchViewerFolder(
             colorValue,
             '$field.color',
           ),
+  );
+}
+
+BookmarkFoldersResult _decodeV4BookmarkFolders(dynamic json) {
+  final body = _object(json, 'bookmark folders');
+  return BookmarkFoldersResult(
+    folders: List<BookmarkFolder>.unmodifiable(
+      _list(body['folders'], 'folders').map(
+        (value) => _decodeV4BookmarkFolder(
+          _object(value, 'folders[]'),
+          'folders[]',
+        ),
+      ),
+    ),
+    total: _number(body['total'], 'total'),
+    page: _number(body['page'], 'page'),
+    pageSize: _number(body['pageSize'], 'pageSize'),
+  );
+}
+
+BookmarkFolder _decodeV4BookmarkFolder(
+  Map<String, dynamic> body,
+  String field,
+) {
+  final colorValue = _requiredValue(body, 'color', '$field.color');
+  final owner = _object(body['owner'], '$field.owner');
+  return BookmarkFolder(
+    slug: _string(body['slug'], '$field.slug'),
+    name: _string(body['name'], '$field.name'),
+    description: _string(body['description'], '$field.description'),
+    color: colorValue == null
+        ? null
+        : _decodeV4ProblemSearchViewerFolderColor(colorValue, '$field.color'),
+    visibility: switch (_string(body['visibility'], '$field.visibility')) {
+      'private' => BookmarkFolderVisibility.private,
+      'unlisted' => BookmarkFolderVisibility.unlisted,
+      'public' => BookmarkFolderVisibility.public,
+      _ => throw FormatException('Unsupported $field.visibility'),
+    },
+    problemCount: _number(body['problemCount'], '$field.problemCount'),
+    favoriteCount: _number(body['favoriteCount'], '$field.favoriteCount'),
+    solvedCount: _requiredNullableNumber(
+      body,
+      'solvedCount',
+      '$field.solvedCount',
+    ),
+    owner: BookmarkFolderOwner(
+      id: _number(owner['id'], '$field.owner.id'),
+      handle: _string(owner['handle'], '$field.owner.handle'),
+      tier: _requiredNullableTier(owner, '$field.owner.tier'),
+      profileImageUrl: _requiredNullableString(
+        owner,
+        'profileImageUrl',
+        '$field.owner.profileImageUrl',
+      ),
+    ),
+    createdAt: _string(body['createdAt'], '$field.createdAt'),
+    updatedAt: _string(body['updatedAt'], '$field.updatedAt'),
   );
 }
 

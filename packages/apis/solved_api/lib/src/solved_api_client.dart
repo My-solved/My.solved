@@ -135,6 +135,17 @@ class RankingRequestFailed extends SolvedApiException {
   });
 }
 
+class BookmarkRequestFailed extends SolvedApiException {
+  const BookmarkRequestFailed({
+    super.uri,
+    super.statusCode,
+    super.cause,
+    super.stackTrace,
+    super.responseBody,
+    super.retryAfter,
+  });
+}
+
 class SourceRequestFailed extends SolvedApiException {
   const SourceRequestFailed({
     super.uri,
@@ -155,6 +166,7 @@ enum _RequestType {
   site,
   ranking,
   source,
+  bookmark,
 }
 
 class SolvedApiClient {
@@ -542,6 +554,18 @@ class SolvedApiClient {
     return _getV4(
       contract.rankingAffiliationUsers(affiliationId, page: page),
       requestType: _RequestType.ranking,
+    );
+  }
+
+  Future<BookmarkFoldersResult> v4PublicBookmarks({
+    int? page,
+    SolvedApiV4BookmarkSort? sort,
+    String? query,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.publicBookmarks(page: page, sort: sort, query: query),
+      requestType: _RequestType.bookmark,
     );
   }
 
@@ -996,6 +1020,14 @@ class SolvedApiClient {
           retryAfter: retryAfter,
         ),
       _RequestType.source => SourceRequestFailed(
+          uri: uri,
+          statusCode: statusCode,
+          cause: cause,
+          stackTrace: stackTrace,
+          responseBody: responseBody,
+          retryAfter: retryAfter,
+        ),
+      _RequestType.bookmark => BookmarkRequestFailed(
           uri: uri,
           statusCode: statusCode,
           cause: cause,
