@@ -1,3 +1,5 @@
+name: Flutter CI 🔍
+
 on:
   push:
     branches:
