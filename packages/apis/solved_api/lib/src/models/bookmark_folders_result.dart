@@ -1,3 +1,4 @@
+import 'account_settings_result.dart' show NullablePatch;
 import 'problem_search_viewer_folder.dart';
 
 /// One page of official v4 bookmark folders.
@@ -143,5 +144,32 @@ final class NewBookmarkFolder {
   final String? description;
 
   final ProblemSearchViewerFolderColor? color;
+  final BookmarkFolderVisibility? visibility;
+}
+
+/// A partial change to one of the viewer's folders.
+///
+/// Fields left `null` are omitted. An empty patch sends `{}`.
+final class BookmarkFolderPatch {
+  const BookmarkFolderPatch({
+    this.slug,
+    this.name,
+    this.description,
+    this.color,
+    this.visibility,
+  });
+
+  /// A new slug matching `[0-9a-z_]{1,32}` when set.
+  final String? slug;
+
+  /// 1 through 256 code points when set.
+  final String? name;
+
+  /// At most 2048 code points when set.
+  final String? description;
+
+  /// A new color, or [NullablePatch.toNull] to clear it.
+  final NullablePatch<ProblemSearchViewerFolderColor>? color;
+
   final BookmarkFolderVisibility? visibility;
 }

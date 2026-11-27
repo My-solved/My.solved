@@ -5774,6 +5774,54 @@ void main() {
     expect(_map(responses['401']), _map(_map(add['responses'])['401']));
   });
 
+  test('pins updating a bookmark folder as a partial JSON PATCH', () {
+    final paths = _map(contract['paths']);
+    final item = _map(paths['/api/v4/account/bookmarks/{slug}']);
+    final update = _map(item['patch']);
+    final delete = _map(item['delete']);
+    final create = _map(_map(paths['/api/v4/account/bookmarks'])['post']);
+
+    expect(_accessClass(update), 'user');
+    expect(_accessScope(update), 'bookmarks.write');
+    expect(update.containsKey('security'), isFalse);
+    expect(
+      update['summary'],
+      "Rename, describe, recolour or change a folder's visibility",
+    );
+    expect(_parameters(update), _parameters(delete));
+    final content = _map(_map(update['requestBody'])['content']);
+    expect(content.keys.toList(growable: false), ['application/json']);
+    final body = _map(_map(content['application/json'])['schema']);
+    expect(body['type'], 'object');
+    expect(body.containsKey('required'), isFalse);
+    expect(body.containsKey('additionalProperties'), isFalse);
+    final createProperties = _properties(
+      _map(_map(
+              _map(_map(create['requestBody'])['content'])['application/json'])[
+          'schema']),
+    );
+    final properties = _properties(body);
+    expect(properties.keys.toSet(), createProperties.keys.toSet());
+    for (final field in properties.keys) {
+      final expected = Map<String, dynamic>.of(_map(createProperties[field]))
+        ..remove('default');
+      expect(_map(properties[field]), expected, reason: field);
+    }
+    final responses = _map(update['responses']);
+    expect(
+      responses.keys.toList(growable: false),
+      ['200', '401', '404', '409'],
+    );
+    expect(_map(responses['200'])['description'], 'The folder.');
+    expect(_map(responses['404'])['description'], 'No such folder.');
+    expect(_map(responses['409'])['description'], 'That slug is taken.');
+    expect(
+      _map(responses['200'])['content'],
+      _map(_map(create['responses'])['201'])['content'],
+    );
+    expect(_map(responses['401']), _map(_map(delete['responses'])['401']));
+  });
+
   test('pins deleting a bookmark folder as a bodyless 204 DELETE', () {
     final item =
         _map(_map(contract['paths'])['/api/v4/account/bookmarks/{slug}']);

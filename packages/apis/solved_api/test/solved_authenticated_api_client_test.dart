@@ -1051,6 +1051,54 @@ void main() {
       expect(httpClient.requests, hasLength(4));
     });
 
+    test('sends one folder PATCH with only the set fields', () async {
+      final folder = ((jsonDecode(fixture('v4/bookmark_folders.json'))
+              as Map<String, dynamic>)['folders'] as List<dynamic>)
+          .first;
+      handler = (_) async => _jsonResponse(jsonEncode(folder));
+
+      await client.updateBookmarkFolder(
+        'z_9',
+        const BookmarkFolderPatch(color: NullablePatch.toNull()),
+      );
+
+      final request = httpClient.requests.single;
+      expect(request.method, 'PATCH');
+      expect(
+        request.url.toString(),
+        'https://proxy.example/solved/v4/account/bookmarks/z_9',
+      );
+      expect(request.headers, const <String, String>{
+        'accept': 'application/json',
+        'authorization': 'Bearer access-token',
+        'content-type': 'application/json',
+      });
+      expect(utf8.decode(request.bodyBytes), '{"color":null}');
+
+      await expectLater(
+        client.updateBookmarkFolder('a', const BookmarkFolderPatch(name: '')),
+        throwsA(
+          isA<ArgumentError>()
+              .having((error) => error.name, 'name', 'patch.name'),
+        ),
+      );
+      expect(httpClient.requests, hasLength(1));
+
+      for (final status in [404, 409]) {
+        handler = (_) async => _jsonResponse('{}', statusCode: status);
+        final error = await _captureFailure(
+          client.updateBookmarkFolder('a', const BookmarkFolderPatch()),
+        );
+        expect(
+          error.operation,
+          SolvedAuthenticatedOperation.updateBookmarkFolder,
+        );
+        expect(error.kind, SolvedAuthenticatedFailureKind.unexpectedStatus);
+        expect(error.statusCode, status);
+      }
+      expect(httpClient.requests, hasLength(3));
+    });
+
     test('keeps GET success at exactly 200', () async {
       handler = (_) async => _bytesResponse(const <int>[], statusCode: 204);
 
@@ -1153,6 +1201,10 @@ void main() {
         client.createBookmarkFolder(
           const NewBookmarkFolder(slug: 'a', name: 'b'),
         ),
+        throwsStateError,
+      );
+      await expectLater(
+        client.updateBookmarkFolder('a', const BookmarkFolderPatch()),
         throwsStateError,
       );
       expect(httpClient.requests, isEmpty);

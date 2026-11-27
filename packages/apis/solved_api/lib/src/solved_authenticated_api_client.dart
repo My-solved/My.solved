@@ -36,6 +36,7 @@ enum SolvedAuthenticatedOperation {
   deleteBookmarkFolder,
   reorderBookmarkFolders,
   createBookmarkFolder,
+  updateBookmarkFolder,
 }
 
 enum SolvedAuthenticatedFailureKind {
@@ -380,6 +381,23 @@ final class SolvedAuthenticatedApiClient {
       _mutate(
         SolvedAuthenticatedOperation.createBookmarkFolder,
         () => _contract.createBookmarkFolder(folder),
+      );
+
+  /// Changes some fields of the viewer's folder [slug] and returns it. The
+  /// token needs the `bookmarks.write` scope.
+  ///
+  /// Fields left `null` in [patch] are not sent. A 404 (no such folder) or
+  /// 409 (new slug taken) fails as
+  /// [SolvedAuthenticatedFailureKind.unexpectedStatus]. Invalid arguments
+  /// fail the returned future with an [ArgumentError] before any request.
+  /// The request is sent once and never retried.
+  Future<BookmarkFolder> updateBookmarkFolder(
+    String slug,
+    BookmarkFolderPatch patch,
+  ) =>
+      _mutate(
+        SolvedAuthenticatedOperation.updateBookmarkFolder,
+        () => _contract.updateBookmarkFolder(slug, patch),
       );
 
   Future<T> _get<T>(
