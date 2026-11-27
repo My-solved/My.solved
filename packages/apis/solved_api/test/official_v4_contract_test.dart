@@ -3002,6 +3002,111 @@ void main() {
     expect(_map(titles['items']), searchTitle);
   });
 
+  test('pins the public reputation log and its shared problem shape', () {
+    final log = _get(contract, '/api/v4/users/{handle}/reputation/log');
+
+    expect(_accessClass(log), 'public');
+    expect(log.containsKey('security'), isFalse);
+    expect(log.containsKey('requestBody'), isFalse);
+    expect(log['summary'], "What moved a user's reputation, day by day");
+    expect(_parameters(log), [
+      {
+        'in': 'path',
+        'name': 'handle',
+        'required': true,
+        'schema': {'maxLength': 64, 'minLength': 1, 'type': 'string'},
+      },
+      {
+        'in': 'query',
+        'name': 'month',
+        'required': false,
+        'schema': {
+          'pattern': r'^\d{4}-(0[1-9]|1[0-2])$',
+          'type': 'string',
+        },
+      },
+    ]);
+    final responses = _map(log['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '404']);
+    expect(_map(responses['200'])['description'], 'The days, newest first.');
+    expect(_map(responses['404'])['description'], 'No such user.');
+    expect(
+      _jsonResponseSchema(log, '404'),
+      _jsonResponseSchema(_get(contract, '/api/v4/affiliations/{id}'), '404'),
+    );
+
+    const dayPattern = r'^\d{4}-\d{2}-\d{2}$';
+    final schema = _responseSchema(log);
+    expect(schema['type'], 'object');
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    expect(_required(schema), ['days', 'firstDay']);
+    final properties = _properties(schema);
+    expect(properties.keys.length, 2);
+    expect(_map(properties['firstDay']), {
+      'pattern': dayPattern,
+      'type': ['string', 'null'],
+    });
+
+    final days = _map(properties['days']);
+    expect(days['type'], 'array');
+    final day = _map(days['items']);
+    expect(day['type'], 'object');
+    expect(day.containsKey('additionalProperties'), isFalse);
+    expect(_required(day), [
+      'day',
+      'change',
+      'after',
+      'capped',
+      'items',
+      'others',
+    ]);
+    final dayProperties = _properties(day);
+    expect(dayProperties.keys.length, 6);
+    expect(_map(dayProperties['day']), {
+      'pattern': dayPattern,
+      'type': 'string',
+    });
+    for (final field in ['change', 'after', 'capped']) {
+      expect(_map(dayProperties[field]), {'type': 'integer'});
+    }
+    expect(_map(dayProperties['others']), {
+      'properties': {
+        'count': {'type': 'integer'},
+        'points': {'type': 'integer'},
+      },
+      'required': ['count', 'points'],
+      'type': ['object', 'null'],
+    });
+
+    final items = _map(dayProperties['items']);
+    expect(items['type'], 'array');
+    final item = _map(items['items']);
+    expect(item['type'], 'object');
+    expect(item.containsKey('additionalProperties'), isFalse);
+    expect(_required(item), ['kind', 'problem', 'count', 'points']);
+    final itemProperties = _properties(item);
+    expect(itemProperties.keys.length, 4);
+    expect(_map(itemProperties['kind']), {
+      'enum': [
+        'contribution',
+        'helpful',
+        'unhelpful',
+        'markedUnhelpful',
+        'takedown',
+      ],
+      'type': 'string',
+    });
+    for (final field in ['count', 'points']) {
+      expect(_map(itemProperties[field]), {'type': 'integer'});
+    }
+    final feedProblem = _map(
+      _properties(_map(_map(_properties(_responseSchema(
+        _get(contract, '/api/v4/users/{handle}/activity/feed'),
+      ))['events'])['items']))['problem'],
+    );
+    expect(_map(itemProperties['problem']), feedProblem);
+  });
+
   test('pins v4 problem and user search shapes', () {
     final problems = _get(contract, '/api/v4/problems');
     expect(_parameterNames(problems), [

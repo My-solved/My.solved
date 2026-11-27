@@ -1,0 +1,91 @@
+{
+  "days": [
+    {
+      "day": "2026-02-30",
+      "change": -3,
+      "after": 0,
+      "capped": 5,
+      "items": [
+        {
+          "kind": "contribution",
+          "problem": {
+            "problemId": -1000,
+            "subId": "main",
+            "level": 30,
+            "effectiveVoteCount": 0,
+            "givesNoRating": true,
+            "isStandard": false,
+            "titles": [
+              {
+                "language": "ko",
+                "title": "활동 문제",
+                "isOriginal": true,
+                "latex": false,
+                "html": false
+              },
+              {
+                "language": "ko",
+                "title": "활동 문제",
+                "isOriginal": true,
+                "latex": false,
+                "html": false
+              }
+            ],
+            "userStatus": "partial"
+          },
+          "count": 2,
+          "points": -1
+        },
+        {
+          "kind": "markedUnhelpful",
+          "problem": null,
+          "count": 0,
+          "points": 0
+        },
+        {
+          "kind": "contribution",
+          "problem": {
+            "problemId": -1000,
+            "subId": "main",
+            "level": 30,
+            "effectiveVoteCount": 0,
+            "givesNoRating": true,
+            "isStandard": false,
+            "titles": [
+              {
+                "language": "ko",
+                "title": "활동 문제",
+                "isOriginal": true,
+                "latex": false,
+                "html": false
+              },
+              {
+                "language": "ko",
+                "title": "활동 문제",
+                "isOriginal": true,
+                "latex": false,
+                "html": false
+              }
+            ],
+            "userStatus": "partial"
+          },
+          "count": 2,
+          "points": -1
+        }
+      ],
+      "others": {
+        "count": -1,
+        "points": 7
+      }
+    },
+    {
+      "day": "0000-00-00",
+      "change": 0,
+      "after": -10,
+      "capped": 0,
+      "items": [],
+      "others": null
+    }
+  ],
+  "firstDay": "9999-99-99"
+}

@@ -156,6 +156,23 @@ final class SolvedApiV4Contract {
         decode: _decodeV4ProfileReputation,
       );
 
+  SolvedApiEndpoint<ProfileReputationLogResult> userReputationLog(
+    String handle, {
+    String? month,
+  }) {
+    final segment = _pathSegment(handle, 'handle');
+    if (month != null && !RegExp(r'^\d{4}-(0[1-9]|1[0-2])$').hasMatch(month)) {
+      throw ArgumentError.value(month, 'month', 'Must match YYYY-MM');
+    }
+    return _endpoint(
+      path: 'users/$segment/reputation/log',
+      queryParameters: {
+        if (month != null) 'month': month,
+      },
+      decode: _decodeV4ProfileReputationLog,
+    );
+  }
+
   SolvedApiEndpoint<ProfileRatingHistoryResult> userRatingHistory(
     String handle, {
     SolvedApiV4RatingHistoryRange? range,
@@ -2594,6 +2611,72 @@ ProfileActivityFeedEventType _decodeV4ProfileActivityFeedEventType(
     'voteMilestone' => ProfileActivityFeedEventType.voteMilestone,
     _ => throw const FormatException('Unsupported events[].type'),
   };
+}
+
+ProfileReputationLogResult _decodeV4ProfileReputationLog(dynamic json) {
+  final body = _object(json, 'reputation log');
+  final firstDayValue = _requiredValue(body, 'firstDay', 'firstDay');
+  return ProfileReputationLogResult(
+    days: List<ProfileReputationLogDay>.unmodifiable(
+      _list(body['days'], 'days').map(
+        (value) => _decodeV4ProfileReputationLogDay(_object(value, 'days[]')),
+      ),
+    ),
+    firstDay: firstDayValue == null
+        ? null
+        : _profileHistoryDay(firstDayValue, 'firstDay'),
+  );
+}
+
+ProfileReputationLogDay _decodeV4ProfileReputationLogDay(
+  Map<String, dynamic> body,
+) {
+  final othersValue = _requiredValue(body, 'others', 'days[].others');
+  final others =
+      othersValue == null ? null : _object(othersValue, 'days[].others');
+  return ProfileReputationLogDay(
+    day: _profileHistoryDay(body['day'], 'days[].day'),
+    change: _integer(body['change'], 'days[].change'),
+    after: _integer(body['after'], 'days[].after'),
+    capped: _integer(body['capped'], 'days[].capped'),
+    items: List<ProfileReputationLogItem>.unmodifiable(
+      _list(body['items'], 'days[].items').map(
+        (value) => _decodeV4ProfileReputationLogItem(
+          _object(value, 'days[].items[]'),
+        ),
+      ),
+    ),
+    others: others == null
+        ? null
+        : ProfileReputationLogOthers(
+            count: _integer(others['count'], 'days[].others.count'),
+            points: _integer(others['points'], 'days[].others.points'),
+          ),
+  );
+}
+
+ProfileReputationLogItem _decodeV4ProfileReputationLogItem(
+  Map<String, dynamic> body,
+) {
+  final problemValue =
+      _requiredValue(body, 'problem', 'days[].items[].problem');
+  return ProfileReputationLogItem(
+    kind: switch (_string(body['kind'], 'days[].items[].kind')) {
+      'contribution' => ProfileReputationLogKind.contribution,
+      'helpful' => ProfileReputationLogKind.helpful,
+      'unhelpful' => ProfileReputationLogKind.unhelpful,
+      'markedUnhelpful' => ProfileReputationLogKind.markedUnhelpful,
+      'takedown' => ProfileReputationLogKind.takedown,
+      _ => throw const FormatException('Unsupported days[].items[].kind'),
+    },
+    problem: problemValue == null
+        ? null
+        : _decodeV4ProfileActivityFeedProblem(
+            _object(problemValue, 'days[].items[].problem'),
+          ),
+    count: _integer(body['count'], 'days[].items[].count'),
+    points: _integer(body['points'], 'days[].items[].points'),
+  );
 }
 
 ProfileActivityFeedProblem _decodeV4ProfileActivityFeedProblem(
