@@ -773,6 +773,18 @@ class SolvedApiClient {
     );
   }
 
+  Future<PolicyResult> v4PolicyVersion(
+    PolicySlug slug,
+    String ref, {
+    String? language,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.policyVersion(slug, ref, language: language),
+      requestType: _RequestType.site,
+    );
+  }
+
   Future<HelpArticleResult> v4HelpArticle(String slug, {String? language}) {
     final contract = _requireV4Contract();
     return _getV4(
