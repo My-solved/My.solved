@@ -5804,6 +5804,52 @@ void main() {
     );
   });
 
+  test('pins reordering bookmark folders as a 204 JSON POST', () {
+    final item =
+        _map(_map(contract['paths'])['/api/v4/account/bookmarks/order']);
+    final order = _map(item['post']);
+    final folders = _get(contract, '/api/v4/account/bookmarks');
+
+    expect(item.keys.toList(growable: false), ['post']);
+    expect(_accessClass(order), 'user');
+    expect(_accessScope(order), 'bookmarks.write');
+    expect(order.containsKey('security'), isFalse);
+    expect(order.containsKey('parameters'), isFalse);
+    expect(order['summary'], "Rearrange the signed-in user's folders");
+    expect(_map(order['requestBody']), {
+      'content': {
+        'application/json': {
+          'schema': {
+            'properties': {
+              'slugs': {
+                'items': {
+                  'pattern': r'^[0-9a-z_]{1,32}$',
+                  'type': 'string',
+                },
+                'maxItems': 20,
+                'minItems': 1,
+                'type': 'array',
+              },
+            },
+            'required': ['slugs'],
+            'type': 'object',
+          },
+        },
+      },
+    });
+    final responses = _map(order['responses']);
+    expect(responses.keys.toList(growable: false), ['204', '401', '409']);
+    expect(_map(responses['204']), {'description': 'Rearranged.'});
+    expect(
+      _map(responses['409'])['description'],
+      "`STALE_ORDER`: the slugs are not exactly the caller's folders.",
+    );
+    expect(
+      _map(responses['401']),
+      _map(_map(folders['responses'])['401']),
+    );
+  });
+
   test('pins the viewer standing and its shared ban shapes', () {
     final standing = _get(contract, '/api/v4/account/standing');
     final bans = _get(contract, '/api/v4/account/bans');
