@@ -75,6 +75,8 @@ void main() {
             '/solved/v4/rankings/regions' => 'v4/ranking_regions.json',
             '/solved/v4/rankings/affiliations' =>
               'v4/ranking_affiliations.json',
+            '/solved/v4/rankings/affiliation-board' =>
+              'v4/ranking_affiliation_board.json',
             '/solved/v4/rankings/tags' => 'v4/ranking_tags.json',
             '/solved/v4/rankings/users/search' => 'v4/search_users.json',
             '/solved/v4/search/analyze' => 'v4/search_analysis.json',
@@ -159,6 +161,12 @@ void main() {
         final RankingAffiliationsResult rankingAffiliations =
             await client.v4RankingAffiliations(
           query: '',
+          language: '',
+        );
+        final RankingAffiliationBoardResult rankingAffiliationBoard =
+            await client.v4RankingAffiliationBoard(
+          page: 1,
+          affiliationType: OfficialUserProfileAffiliationType.university,
           language: '',
         );
         final RankingTagsResult rankingTags =
@@ -373,6 +381,14 @@ void main() {
         expect(rankingAffiliations.affiliations.last.name, 'duplicate');
         expect(rankingAffiliations.affiliations.last.color,
             'not necessarily a color');
+        expect(rankingAffiliationBoard.mine.single.name, 'mine only');
+        expect(rankingAffiliationBoard.mine.single.page, -7);
+        expect(rankingAffiliationBoard.total, -11);
+        expect(rankingAffiliationBoard.page, 0);
+        expect(rankingAffiliationBoard.pageSize, -2);
+        expect(rankingAffiliationBoard.items, hasLength(2));
+        expect(rankingAffiliationBoard.items.first.globalRank, 0);
+        expect(rankingAffiliationBoard.items.last.globalRank, -8);
         expect(rankingTags.tags.map((tag) => tag.key), ['math', '', 'math']);
         expect(
           rankingTags.tags.map((tag) => tag.ratingTagIndex),
@@ -503,6 +519,10 @@ void main() {
               'rankings/affiliations?q=&lang=',
             ),
             Uri.parse(
+              'https://proxy.example/solved/v4/'
+              'rankings/affiliation-board?page=1&type=university&lang=',
+            ),
+            Uri.parse(
               'https://proxy.example/solved/v4/rankings/tags?lang=',
             ),
             Uri.parse(
@@ -538,23 +558,23 @@ void main() {
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(30));
+        expect(httpClient.requests, hasLength(31));
         expect(
           httpClient.requests[12].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
         );
         expect(
-          httpClient.requests[18].url.toString(),
+          httpClient.requests[19].url.toString(),
           'https://proxy.example/solved/v4/search/suggest?'
           'topic=tag%26%ED%95%9C&value=',
         );
         expect(
-          httpClient.requests[19].url.toString(),
+          httpClient.requests[20].url.toString(),
           'https://proxy.example/solved/v4/search/analyze?'
           'q=tag%26%ED%95%9C',
         );
         expect(
-          httpClient.requests[20].url.toString(),
+          httpClient.requests[21].url.toString(),
           'https://proxy.example/solved/v4/search/random-problem?q=',
         );
         for (final request in httpClient.requests) {
@@ -809,6 +829,10 @@ void main() {
         isA<RankingRequestFailed>(),
       );
       expect(
+        await _captureFailure(client.v4RankingAffiliationBoard()),
+        isA<RankingRequestFailed>(),
+      );
+      expect(
         await _captureFailure(client.v4RankingTags()),
         isA<RankingRequestFailed>(),
       );
@@ -824,7 +848,7 @@ void main() {
         await _captureFailure(client.v4SourceGroup('boj', 'group')),
         isA<SourceRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(26));
+      expect(httpClient.requests, hasLength(27));
     });
 
     test('wraps malformed rating history as a user failure', () async {
@@ -1961,6 +1985,140 @@ void main() {
       expect(
         httpClient.requests.single.url,
         _uri('rankings/affiliations'),
+      );
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves omitted default and raw affiliation-board queries',
+        () async {
+      handler = (_) async => _jsonResponse(
+            fixture('v4/ranking_affiliation_board.json'),
+          );
+
+      final omitted = await client.v4RankingAffiliationBoard();
+      final explicit = await client.v4RankingAffiliationBoard(
+        page: 1,
+        affiliationType: OfficialUserProfileAffiliationType.undefined,
+        language: '',
+      );
+      final raw = await client.v4RankingAffiliationBoard(
+        page: 999,
+        affiliationType: OfficialUserProfileAffiliationType.community,
+        language: '한 글 & raw',
+      );
+
+      expect(omitted.mine.single.page, -7);
+      expect(explicit.items.first.globalRank, 0);
+      expect(raw.items.last.color, 'not necessarily a color');
+      expect(
+        httpClient.requests.map((request) => request.url.toString()),
+        [
+          'https://proxy.example/solved/v4/rankings/affiliation-board',
+          'https://proxy.example/solved/v4/rankings/affiliation-board?'
+              'page=1&type=undefined&lang=',
+          'https://proxy.example/solved/v4/rankings/affiliation-board?'
+              'page=999&type=community&lang='
+              '%ED%95%9C+%EA%B8%80+%26+raw',
+        ],
+      );
+      for (final request in httpClient.requests) {
+        expect(request.method, 'GET');
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+        });
+        expect(request.bodyBytes, isEmpty);
+      }
+      expect(httpClient.requests, hasLength(3));
+    });
+
+    test('rejects invalid affiliation-board queries before transport', () {
+      for (final page in [0, -1]) {
+        expect(
+          () => client.v4RankingAffiliationBoard(page: page),
+          throwsA(
+            isA<ArgumentError>()
+                .having((error) => error.name, 'name', 'page')
+                .having((error) => error.invalidValue, 'invalidValue', page),
+          ),
+        );
+      }
+      final language = List<String>.filled(17, '🌏').join();
+      expect(
+        () => client.v4RankingAffiliationBoard(language: language),
+        throwsA(
+          isA<ArgumentError>()
+              .having((error) => error.name, 'name', 'language')
+              .having(
+                (error) => error.invalidValue,
+                'invalidValue',
+                language,
+              ),
+        ),
+      );
+      expect(httpClient.requests, isEmpty);
+    });
+
+    test('wraps a malformed affiliation board as a ranking failure',
+        () async {
+      handler = (_) async => _jsonResponse(
+            jsonEncode({
+              'mine': <Object?>[],
+              'total': 0,
+              'page': 1,
+              'pageSize': 50,
+              'items': <Object?>[
+                <String, Object?>{
+                  'id': 1,
+                  'affiliationId': 2,
+                  'name': 'school',
+                  'type': 'university',
+                  'logoThumbnailUrl': null,
+                  'color': null,
+                  'rank': 1,
+                  'globalRank': null,
+                  'rating': 100,
+                  'userCount': 3,
+                },
+              ],
+            }),
+          );
+
+      final error =
+          await _captureFailure(client.v4RankingAffiliationBoard());
+
+      expect(error, isA<RankingRequestFailed>());
+      expect(error.statusCode, 200);
+      expect(error.cause, isA<FormatException>());
+      expect(error.responseBody, isNull);
+      expect(
+        httpClient.requests.single.url,
+        _uri('rankings/affiliation-board'),
+      );
+      expect(httpClient.requests, hasLength(1));
+    });
+
+    test('preserves affiliation-board 429 failure metadata', () async {
+      handler = (_) async => _bytesResponse(
+            const <int>[0xff],
+            statusCode: 429,
+            headers: const <String, String>{
+              'content-type': 'text/plain',
+              'retry-after': '23',
+            },
+          );
+
+      final error =
+          await _captureFailure(client.v4RankingAffiliationBoard());
+
+      expect(error, isA<RankingRequestFailed>());
+      expect(error.statusCode, 429);
+      expect(error.cause, isNull);
+      expect(error.responseBody, isNull);
+      expect(error.retryAfter, const Duration(seconds: 23));
+      expect(error.isRetryable, isTrue);
+      expect(
+        httpClient.requests.single.url,
+        _uri('rankings/affiliation-board'),
       );
       expect(httpClient.requests, hasLength(1));
     });

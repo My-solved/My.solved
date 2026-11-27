@@ -1083,6 +1083,231 @@
         }
       }
     },
+    "/api/v4/rankings/affiliation-board": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "enum": [
+                "undefined",
+                "university",
+                "high_school",
+                "middle_school",
+                "elementary_school",
+                "company",
+                "community"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "lang",
+            "required": false,
+            "schema": {
+              "default": "ko",
+              "maxLength": 16,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "properties": {
+                          "affiliationId": {
+                            "type": "integer"
+                          },
+                          "color": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "globalRank": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "id": {
+                            "type": "integer"
+                          },
+                          "logoThumbnailUrl": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "rank": {
+                            "type": "integer"
+                          },
+                          "rating": {
+                            "type": "integer"
+                          },
+                          "solvedCount": {
+                            "type": "integer"
+                          },
+                          "type": {
+                            "enum": [
+                              "undefined",
+                              "university",
+                              "high_school",
+                              "middle_school",
+                              "elementary_school",
+                              "company",
+                              "community"
+                            ],
+                            "type": "string"
+                          },
+                          "userCount": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "affiliationId",
+                          "name",
+                          "type",
+                          "logoThumbnailUrl",
+                          "color",
+                          "rank",
+                          "globalRank",
+                          "rating",
+                          "userCount",
+                          "solvedCount"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "mine": {
+                      "items": {
+                        "properties": {
+                          "affiliationId": {
+                            "type": "integer"
+                          },
+                          "color": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "globalRank": {
+                            "type": [
+                              "integer",
+                              "null"
+                            ]
+                          },
+                          "id": {
+                            "type": "integer"
+                          },
+                          "logoThumbnailUrl": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "page": {
+                            "type": "integer"
+                          },
+                          "rank": {
+                            "type": "integer"
+                          },
+                          "rating": {
+                            "type": "integer"
+                          },
+                          "solvedCount": {
+                            "type": "integer"
+                          },
+                          "type": {
+                            "enum": [
+                              "undefined",
+                              "university",
+                              "high_school",
+                              "middle_school",
+                              "elementary_school",
+                              "company",
+                              "community"
+                            ],
+                            "type": "string"
+                          },
+                          "userCount": {
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "affiliationId",
+                          "name",
+                          "type",
+                          "logoThumbnailUrl",
+                          "color",
+                          "rank",
+                          "globalRank",
+                          "rating",
+                          "userCount",
+                          "solvedCount",
+                          "page"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "pageSize": {
+                      "type": "integer"
+                    },
+                    "total": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "mine",
+                    "total",
+                    "page",
+                    "pageSize",
+                    "items"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "One page of the board."
+          }
+        },
+        "summary": "Affiliations themselves, by rating",
+        "x-access": {
+          "class": "public"
+        }
+      }
+    },
     "/api/v4/rankings/affiliations": {
       "get": {
         "parameters": [
