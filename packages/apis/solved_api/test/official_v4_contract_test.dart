@@ -6045,6 +6045,66 @@ void main() {
     expect(_map(responses['404']), _map(addResponses['404']));
   });
 
+  test('pins moving a bookmark problem or setting its note', () {
+    final paths = _map(contract['paths']);
+    final item =
+        _map(paths['/api/v4/account/bookmarks/{slug}/problems/{problemId}']);
+    final update = _map(item['patch']);
+    final add =
+        _map(_map(paths['/api/v4/account/bookmarks/{slug}/problems'])['post']);
+
+    expect(item.keys.toList(growable: false), ['patch']);
+    expect(_accessClass(update), 'user');
+    expect(_accessScope(update), 'bookmarks.write');
+    expect(update.containsKey('security'), isFalse);
+    expect(
+      update['summary'],
+      'Move a problem within its folder, or set its note',
+    );
+    expect(_parameters(update), [
+      ..._parameters(add),
+      {
+        'in': 'path',
+        'name': 'problemId',
+        'required': true,
+        'schema': {'exclusiveMinimum': 0, 'type': 'integer'},
+      },
+    ]);
+    expect(_map(update['requestBody']), {
+      'content': {
+        'application/json': {
+          'schema': {
+            'properties': {
+              'after': {'exclusiveMinimum': 0, 'type': 'integer'},
+              'before': {
+                'exclusiveMinimum': 0,
+                'type': ['integer', 'null'],
+              },
+              'note': {
+                'maxLength': 2048,
+                'type': ['string', 'null'],
+              },
+            },
+            'type': 'object',
+          },
+        },
+      },
+    });
+    final responses = _map(update['responses']);
+    final addResponses = _map(add['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '401', '404']);
+    expect(_map(responses['200'])['description'], 'Updated.');
+    expect(
+      _map(responses['404'])['description'],
+      'No such folder or problem in it.',
+    );
+    expect(
+      _map(responses['200'])['content'],
+      _map(addResponses['200'])['content'],
+    );
+    expect(_map(responses['401']), _map(addResponses['401']));
+  });
+
   test('pins the viewer standing and its shared ban shapes', () {
     final standing = _get(contract, '/api/v4/account/standing');
     final bans = _get(contract, '/api/v4/account/bans');

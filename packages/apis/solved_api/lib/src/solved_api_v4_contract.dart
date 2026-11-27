@@ -380,6 +380,40 @@ final class SolvedApiV4Contract {
         decode: _decodeV4BookmarkFolderChange,
       );
 
+  /// Moves a problem within one of the viewer's folders, or sets its note. It
+  /// requires a user token with `bookmarks.write` scope, so it is only
+  /// exposed through [SolvedAuthenticatedApiClient].
+  SolvedApiMutation<BookmarkFolderChangeResult> updateBookmarkProblem(
+    String slug,
+    int problemId,
+    BookmarkProblemPatch patch,
+  ) {
+    final path = 'account/bookmarks/${_bookmarkSlug(slug)}/problems/'
+        '${_positiveId(problemId, 'problemId')}';
+    final after = patch.after;
+    final body = <String, Object?>{
+      if (after != null) 'after': _positiveId(after, 'patch.after'),
+    };
+    _putPatch(
+      body,
+      'before',
+      patch.before,
+      (value) => _positiveId(value, 'patch.before'),
+    );
+    _putPatch(
+      body,
+      'note',
+      patch.note,
+      (value) => _boundedText(value, 'patch.note', 0, 2048),
+    );
+    return SolvedApiMutation(
+      method: SolvedApiMutationMethod.patch,
+      proxy: SolvedApiTarget(baseUri: _proxyBaseUri, path: path),
+      jsonBody: jsonEncode(body),
+      decode: _decodeV4BookmarkFolderChange,
+    );
+  }
+
   /// The viewer's standing warnings and bans. It requires a user token with
   /// `standing` scope, so it is only exposed through
   /// [SolvedAuthenticatedApiClient].
@@ -3525,6 +3559,11 @@ String _boundedText(String value, String name, int minimum, int maximum) {
       'Must have $minimum through $maximum characters',
     );
   }
+  return value;
+}
+
+int _positiveId(int value, String name) {
+  if (value < 1) throw ArgumentError.value(value, name, 'Must be positive');
   return value;
 }
 

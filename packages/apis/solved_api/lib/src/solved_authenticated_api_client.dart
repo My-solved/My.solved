@@ -39,6 +39,7 @@ enum SolvedAuthenticatedOperation {
   updateBookmarkFolder,
   addBookmarkProblems,
   removeBookmarkProblems,
+  updateBookmarkProblem,
 }
 
 enum SolvedAuthenticatedFailureKind {
@@ -432,6 +433,24 @@ final class SolvedAuthenticatedApiClient {
       _mutate(
         SolvedAuthenticatedOperation.removeBookmarkProblems,
         () => _contract.removeBookmarkProblems(slug, problemIds),
+      );
+
+  /// Moves [problemId] within the viewer's folder [slug], or sets its note.
+  /// The token needs the `bookmarks.write` scope.
+  ///
+  /// Fields left `null` in [patch] are not sent. A 404 (no such folder or
+  /// problem in it) fails as
+  /// [SolvedAuthenticatedFailureKind.unexpectedStatus]. Invalid arguments
+  /// fail the returned future with an [ArgumentError] before any request.
+  /// The request is sent once and never retried.
+  Future<BookmarkFolderChangeResult> updateBookmarkProblem(
+    String slug,
+    int problemId,
+    BookmarkProblemPatch patch,
+  ) =>
+      _mutate(
+        SolvedAuthenticatedOperation.updateBookmarkProblem,
+        () => _contract.updateBookmarkProblem(slug, problemId, patch),
       );
 
   Future<T> _get<T>(
