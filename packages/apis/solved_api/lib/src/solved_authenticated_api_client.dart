@@ -33,6 +33,7 @@ enum SolvedAuthenticatedOperation {
   updateAccountSettings,
   addBookmarkFavorite,
   removeBookmarkFavorite,
+  deleteBookmarkFolder,
 }
 
 enum SolvedAuthenticatedFailureKind {
@@ -340,6 +341,18 @@ final class SolvedAuthenticatedApiClient {
         () => _contract.removeBookmarkFavorite(handle, slug),
       );
 
+  /// Deletes the viewer's folder [slug] and its list. The token needs the
+  /// `bookmarks.write` scope.
+  ///
+  /// Completes only on exactly 204 with no content. An invalid [slug] fails
+  /// the returned future with an [ArgumentError] before any request. The
+  /// request is sent once and never retried; after a timeout or transport
+  /// failure the folder may or may not have been deleted.
+  Future<void> deleteBookmarkFolder(String slug) => _mutate(
+        SolvedAuthenticatedOperation.deleteBookmarkFolder,
+        () => _contract.deleteBookmarkFolder(slug),
+      );
+
   Future<T> _get<T>(
     SolvedAuthenticatedOperation operation,
     SolvedApiEndpoint<T> Function() buildEndpoint,
@@ -349,6 +362,7 @@ final class SolvedAuthenticatedApiClient {
         final target = endpoint.proxy;
         return (
           target: target,
+          successStatus: 200,
           decode: endpoint.decode,
           send: () => _transport.getWithBearer(
                 relativePath: target.path,
@@ -367,6 +381,7 @@ final class SolvedAuthenticatedApiClient {
         final target = mutation.proxy;
         return (
           target: target,
+          successStatus: mutation.successStatus,
           decode: mutation.decode,
           send: () => _transport.sendJsonWithBearer(
                 method: mutation.method.value,
@@ -469,7 +484,7 @@ final class SolvedAuthenticatedApiClient {
         retryAfter: _parseRetryAfter(response.headers),
       );
     }
-    if (statusCode != 200) {
+    if (statusCode != request.successStatus) {
       throw SolvedAuthenticatedRequestFailed(
         operation: operation,
         uri: uri,
@@ -479,6 +494,15 @@ final class SolvedAuthenticatedApiClient {
     }
 
     try {
+      if (statusCode == 204) {
+        if (response.bodyBytes.isNotEmpty ||
+            response.headers.keys.any(
+              (name) => name.toLowerCase() == 'content-type',
+            )) {
+          throw const FormatException('A 204 response must have no content');
+        }
+        return request.decode(null);
+      }
       _requireJsonContentType(response.headers);
       final json = jsonDecode(utf8.decode(response.bodyBytes));
       return request.decode(json);
@@ -509,6 +533,7 @@ final class SolvedAuthenticatedApiClient {
 
 typedef _PreparedRequest<T> = ({
   SolvedApiTarget target,
+  int successStatus,
   SolvedApiDecoder<T> decode,
   Future<SolvedProxyResponse> Function() send,
 });

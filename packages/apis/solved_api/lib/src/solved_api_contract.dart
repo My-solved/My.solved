@@ -50,6 +50,7 @@ final class SolvedApiMutation<T> {
     required this.proxy,
     required this.jsonBody,
     required this.decode,
+    this.successStatus = 200,
   });
 
   final SolvedApiMutationMethod method;
@@ -57,6 +58,12 @@ final class SolvedApiMutation<T> {
 
   /// The exact JSON text sent as the request body, or `null` for no body.
   final String? jsonBody;
+
+  /// The only status treated as success.
+  ///
+  /// For 204 the response must have no body and no `Content-Type`, and
+  /// [decode] receives `null`.
+  final int successStatus;
 
   final SolvedApiDecoder<T> decode;
 }
