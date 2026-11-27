@@ -360,6 +360,26 @@ final class SolvedApiV4Contract {
         decode: _decodeV4BookmarkFolderChange,
       );
 
+  /// Removes problems from one of the viewer's folders. It requires a user
+  /// token with `bookmarks.write` scope, so it is only exposed through
+  /// [SolvedAuthenticatedApiClient].
+  ///
+  /// [problemIds] needs 1 through 100 positive ids, sent in order with
+  /// duplicates included.
+  SolvedApiMutation<BookmarkFolderChangeResult> removeBookmarkProblems(
+    String slug,
+    List<int> problemIds,
+  ) =>
+      SolvedApiMutation(
+        method: SolvedApiMutationMethod.post,
+        proxy: SolvedApiTarget(
+          baseUri: _proxyBaseUri,
+          path: 'account/bookmarks/${_bookmarkSlug(slug)}/problems/remove',
+        ),
+        jsonBody: _bookmarkProblemIdsBody(problemIds),
+        decode: _decodeV4BookmarkFolderChange,
+      );
+
   /// The viewer's standing warnings and bans. It requires a user token with
   /// `standing` scope, so it is only exposed through
   /// [SolvedAuthenticatedApiClient].

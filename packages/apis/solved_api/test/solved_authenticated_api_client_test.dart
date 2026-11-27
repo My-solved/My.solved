@@ -1144,6 +1144,49 @@ void main() {
       expect(httpClient.requests, hasLength(3));
     });
 
+    test('sends one problem-remove POST with a JSON body', () async {
+      handler = (_) async => _jsonResponse(
+            fixture('v4/bookmark_folder_change.json'),
+          );
+
+      final actual = await client.removeBookmarkProblems('z_9', [1000]);
+
+      expect(actual.changed, -0.5);
+      final request = httpClient.requests.single;
+      expect(request.method, 'POST');
+      expect(
+        request.url.toString(),
+        'https://proxy.example/solved/v4/account/bookmarks/z_9/problems/remove',
+      );
+      expect(request.headers, const <String, String>{
+        'accept': 'application/json',
+        'authorization': 'Bearer access-token',
+        'content-type': 'application/json',
+      });
+      expect(utf8.decode(request.bodyBytes), '{"problemIds":[1000]}');
+
+      await expectLater(
+        client.removeBookmarkProblems('a', const [0]),
+        throwsA(
+          isA<ArgumentError>()
+              .having((error) => error.name, 'name', 'problemIds'),
+        ),
+      );
+      expect(httpClient.requests, hasLength(1));
+
+      handler = (_) async => _jsonResponse('{}', statusCode: 404);
+      final error = await _captureFailure(
+        client.removeBookmarkProblems('a', const [1]),
+      );
+      expect(
+        error.operation,
+        SolvedAuthenticatedOperation.removeBookmarkProblems,
+      );
+      expect(error.kind, SolvedAuthenticatedFailureKind.unexpectedStatus);
+      expect(error.statusCode, 404);
+      expect(httpClient.requests, hasLength(2));
+    });
+
     test('keeps GET success at exactly 200', () async {
       handler = (_) async => _bytesResponse(const <int>[], statusCode: 204);
 
@@ -1254,6 +1297,10 @@ void main() {
       );
       await expectLater(
         client.addBookmarkProblems('a', const [1]),
+        throwsStateError,
+      );
+      await expectLater(
+        client.removeBookmarkProblems('a', const [1]),
         throwsStateError,
       );
       expect(httpClient.requests, isEmpty);
