@@ -127,6 +127,19 @@ final class SolvedApiV4Contract {
         decode: _decodeV4UserIdentity,
       );
 
+  /// The viewer's rival board. It requires a user token with `rivals` scope,
+  /// so it is only exposed through [SolvedAuthenticatedApiClient].
+  SolvedApiEndpoint<RivalLeaderboardResult> rivals({int? page}) {
+    if (page != null) {
+      _positivePage(page);
+    }
+    return _endpoint(
+      path: 'rankings/rivals',
+      queryParameters: {if (page != null) 'page': page.toString()},
+      decode: _decodeV4RivalLeaderboard,
+    );
+  }
+
   SolvedApiEndpoint<OfficialUserProfile> userProfile(String handle) =>
       _endpoint(
         path: 'users/${_pathSegment(handle, 'handle')}',
@@ -2932,6 +2945,38 @@ RankingLeaderboardResult _decodeV4RankingLeaderboard(dynamic json) {
           'items[]',
         ),
       ),
+    ),
+  );
+}
+
+RivalLeaderboardResult _decodeV4RivalLeaderboard(dynamic json) {
+  final body = _object(json, 'rival leaderboard');
+  final meValue = _requiredValue(body, 'me', 'me');
+  return RivalLeaderboardResult(
+    me: meValue == null
+        ? null
+        : _decodeV4RankingLeaderboardUser(_object(meValue, 'me'), 'me'),
+    mePage: _requiredNullableInteger(body, 'mePage', 'mePage'),
+    total: _integer(body['total'], 'total'),
+    page: _integer(body['page'], 'page'),
+    pageSize: _integer(body['pageSize'], 'pageSize'),
+    items: List<RivalLeaderboardUser>.unmodifiable(
+      _list(body['items'], 'items').map((value) {
+        final item = _object(value, 'items[]');
+        return RivalLeaderboardUser(
+          user: _decodeV4RankingLeaderboardUser(item, 'items[]'),
+          isRival: _boolean(item['isRival'], 'items[].isRival'),
+          isReverseRival: _boolean(
+            item['isReverseRival'],
+            'items[].isReverseRival',
+          ),
+        );
+      }),
+    ),
+    rivalCount: _integer(body['rivalCount'], 'rivalCount'),
+    reverseRivalCount: _integer(
+      body['reverseRivalCount'],
+      'reverseRivalCount',
     ),
   );
 }

@@ -5,6 +5,8 @@ import 'package:http/http.dart' as http;
 import 'package:solved_api/solved_api.dart';
 import 'package:test/test.dart';
 
+import 'helpers/fixture.dart';
+
 typedef _RequestHandler = Future<http.StreamedResponse> Function(
   http.Request request,
 );
@@ -252,6 +254,77 @@ void main() {
       expect(httpClient.requests, hasLength(2));
     });
 
+    test('sends one token-bound rivals GET and decodes the board', () async {
+      handler =
+          (_) async => _jsonResponse(fixture('v4/rival_leaderboard.json'));
+
+      final omitted = await client.rivals();
+      final explicit = await client.rivals(page: 1);
+
+      expect(omitted.rivalCount, -1);
+      expect(explicit.items.first.isRival, isTrue);
+      expect(httpClient.requests.map((request) => request.url.toString()), [
+        'https://proxy.example/solved/v4/rankings/rivals',
+        'https://proxy.example/solved/v4/rankings/rivals?page=1',
+      ]);
+      for (final request in httpClient.requests) {
+        expect(request.method, 'GET');
+        expect(request.followRedirects, isFalse);
+        expect(request.maxRedirects, 0);
+        expect(request.headers, const <String, String>{
+          'accept': 'application/json',
+          'authorization': 'Bearer access-token',
+        });
+        expect(request.url.toString(), isNot(contains('do-not-send-refresh')));
+        expect(request.bodyBytes, isEmpty);
+      }
+    });
+
+    test('rejects an invalid rivals page before any request', () async {
+      await expectLater(
+        client.rivals(page: 0),
+        throwsA(
+          isA<ArgumentError>().having((error) => error.name, 'name', 'page'),
+        ),
+      );
+      expect(httpClient.requests, isEmpty);
+    });
+
+    test('classifies rivals failures with the rivals operation', () async {
+      handler = (_) async => _bytesResponse(
+            utf8.encode('do-not-log-response'),
+            statusCode: 401,
+            headers: const <String, String>{'content-type': 'text/plain'},
+          );
+      final unauthorized = await _captureFailure(client.rivals(page: 3));
+      expect(unauthorized.operation, SolvedAuthenticatedOperation.rivals);
+      expect(unauthorized.kind, SolvedAuthenticatedFailureKind.unauthorized);
+      expect(
+        unauthorized.uri,
+        Uri.parse('https://proxy.example/solved/v4/rankings/rivals?page=3'),
+      );
+      expect(unauthorized.toString(), isNot(contains('access-token')));
+
+      handler = (_) async => _jsonResponse('{"items":[]}');
+      final invalid = await _captureFailure(client.rivals());
+      expect(invalid.kind, SolvedAuthenticatedFailureKind.invalidResponse);
+      expect(invalid.statusCode, 200);
+      expect(
+        invalid.uri,
+        Uri.parse('https://proxy.example/solved/v4/rankings/rivals'),
+      );
+
+      handler = (_) async => _bytesResponse(
+            const <int>[],
+            statusCode: 429,
+            headers: const <String, String>{'retry-after': '7'},
+          );
+      final limited = await _captureFailure(client.rivals());
+      expect(limited.kind, SolvedAuthenticatedFailureKind.rateLimited);
+      expect(limited.retryAfter, const Duration(seconds: 7));
+      expect(httpClient.requests, hasLength(3));
+    });
+
     test('does not close an injected client and rejects use after close',
         () async {
       client.close();
@@ -268,6 +341,7 @@ void main() {
           ),
         ),
       );
+      await expectLater(client.rivals(), throwsStateError);
       expect(httpClient.requests, isEmpty);
     });
   });

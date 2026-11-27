@@ -5,12 +5,13 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart' show MediaType, parseHttpDate;
 
 import 'models/models.dart';
+import 'solved_api_contract.dart';
 import 'solved_api_v4_contract.dart';
 import 'solved_bearer_authorization.dart';
 import 'solved_oauth_contract.dart';
 import 'solved_proxy_transport.dart';
 
-enum SolvedAuthenticatedOperation { currentUser }
+enum SolvedAuthenticatedOperation { currentUser, rivals }
 
 enum SolvedAuthenticatedFailureKind {
   timeout,
@@ -103,19 +104,40 @@ final class SolvedAuthenticatedApiClient {
 
   bool _isClosed = false;
 
-  Future<SolvedUserIdentity> currentUser() async {
+  Future<SolvedUserIdentity> currentUser() => _get(
+        SolvedAuthenticatedOperation.currentUser,
+        _contract.currentUser,
+      );
+
+  /// One page of the viewer's rivals. The token needs the `rivals` scope.
+  ///
+  /// An invalid [page] fails the returned future with an [ArgumentError]
+  /// before any request is sent.
+  Future<RivalLeaderboardResult> rivals({int? page}) => _get(
+        SolvedAuthenticatedOperation.rivals,
+        () => _contract.rivals(page: page),
+      );
+
+  Future<T> _get<T>(
+    SolvedAuthenticatedOperation operation,
+    SolvedApiEndpoint<T> Function() buildEndpoint,
+  ) async {
     if (_isClosed) {
       throw StateError('SolvedAuthenticatedApiClient is closed');
     }
 
-    const operation = SolvedAuthenticatedOperation.currentUser;
-    final endpoint = _contract.currentUser();
-    final uri = _transport.proxyBaseUri.resolve(endpoint.proxy.path);
+    final endpoint = buildEndpoint();
+    final target = endpoint.proxy;
+    final resolved = _transport.proxyBaseUri.resolve(target.path);
+    final uri = target.queryParameters.isEmpty
+        ? resolved
+        : resolved.replace(queryParameters: target.queryParameters);
 
     late SolvedProxyResponse response;
     try {
       response = await _transport.getWithBearer(
-        relativePath: endpoint.proxy.path,
+        relativePath: target.path,
+        queryParameters: target.queryParameters,
         authorization: _authorization,
       );
     } on SolvedProxyDeadlineExceeded catch (_, stackTrace) {

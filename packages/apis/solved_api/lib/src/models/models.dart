@@ -29,6 +29,7 @@ export 'ranking_affiliations_result.dart';
 export 'ranking_leaderboard_result.dart';
 export 'ranking_regions_result.dart';
 export 'ranking_tags_result.dart';
+export 'rival_leaderboard_result.dart';
 export 'profile_activity_feed_result.dart';
 export 'profile_activity_result.dart';
 export 'profile_achievement_summary_result.dart';

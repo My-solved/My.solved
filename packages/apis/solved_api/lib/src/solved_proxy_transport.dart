@@ -114,12 +114,16 @@ final class SolvedProxyTransport {
   Future<SolvedProxyResponse> getWithBearer({
     required String relativePath,
     required SolvedBearerAuthorization authorization,
+    Map<String, String> queryParameters = const <String, String>{},
   }) {
     if (_isClosed) {
       throw StateError('SolvedProxyTransport is closed');
     }
 
-    final uri = _resolveRelativePath(relativePath);
+    final uri = _withQueryParameters(
+      _resolveRelativePath(relativePath),
+      queryParameters,
+    );
     final abortTrigger = Completer<void>();
     final request = http.AbortableRequest(
       'GET',
