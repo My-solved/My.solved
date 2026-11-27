@@ -284,6 +284,34 @@ final class SolvedApiV4Contract {
     );
   }
 
+  /// Creates a folder for the viewer. It requires a user token with
+  /// `bookmarks.write` scope, so it is only exposed through
+  /// [SolvedAuthenticatedApiClient]. Success is exactly 201.
+  SolvedApiMutation<BookmarkFolder> createBookmarkFolder(
+    NewBookmarkFolder folder,
+  ) {
+    final slug = _bookmarkSlug(folder.slug);
+    final name = _boundedText(folder.name, 'name', 1, 256);
+    final description = folder.description;
+    final color = folder.color;
+    final visibility = folder.visibility;
+    final body = <String, Object?>{
+      'slug': slug,
+      'name': name,
+      if (description != null)
+        'description': _boundedText(description, 'description', 0, 2048),
+      if (color != null) 'color': color.value,
+      if (visibility != null) 'visibility': visibility.value,
+    };
+    return SolvedApiMutation(
+      method: SolvedApiMutationMethod.post,
+      proxy: SolvedApiTarget(baseUri: _proxyBaseUri, path: 'account/bookmarks'),
+      jsonBody: jsonEncode(body),
+      successStatus: 201,
+      decode: _decodeV4MutatedBookmarkFolder,
+    );
+  }
+
   /// The viewer's standing warnings and bans. It requires a user token with
   /// `standing` scope, so it is only exposed through
   /// [SolvedAuthenticatedApiClient].
@@ -3419,6 +3447,21 @@ String _bookmarkSlug(String slug, [String name = 'slug']) {
 }
 
 void _ignoreNoContent(dynamic _) {}
+
+String _boundedText(String value, String name, int minimum, int maximum) {
+  final length = value.runes.length;
+  if (length < minimum || length > maximum) {
+    throw ArgumentError.value(
+      value,
+      name,
+      'Must have $minimum through $maximum characters',
+    );
+  }
+  return value;
+}
+
+BookmarkFolder _decodeV4MutatedBookmarkFolder(dynamic json) =>
+    _decodeV4BookmarkFolder(_object(json, 'folder'), 'folder');
 
 BookmarkFavoriteState _decodeV4BookmarkFavoriteState(dynamic json) {
   final body = _object(json, 'bookmark favorite');
