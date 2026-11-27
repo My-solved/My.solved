@@ -1,0 +1,92 @@
+{
+  "items": [
+    {
+      "id": 10,
+      "user": {
+        "id": 1.5,
+        "handle": "reporter",
+        "tier": 0,
+        "profileImageUrl": "not necessarily a URI"
+      },
+      "reason": {
+        "type": "same-problem",
+        "problemIds": [
+          1,
+          1,
+          9007199254740991
+        ]
+      },
+      "sameProblems": [
+        {
+          "problemId": 1000.5,
+          "subId": "",
+          "level": -1,
+          "effectiveVoteCount": 0,
+          "givesNoRating": true,
+          "isStandard": false,
+          "userStatus": null
+        },
+        {
+          "problemId": 3,
+          "subId": "",
+          "level": -1,
+          "effectiveVoteCount": 0,
+          "givesNoRating": true,
+          "isStandard": false,
+          "userStatus": "tried"
+        }
+      ],
+      "comment": "",
+      "status": "accepted",
+      "statusChange": {
+        "by": {
+          "id": 2,
+          "handle": "",
+          "tier": null,
+          "profileImageUrl": null
+        },
+        "at": "not a date",
+        "comment": null
+      },
+      "createdAt": "not a date"
+    },
+    {
+      "id": -1.25,
+      "user": null,
+      "reason": {
+        "type": "issue",
+        "url": "not a URI"
+      },
+      "sameProblems": [],
+      "comment": "raw / 한 글",
+      "status": "pending",
+      "statusChange": null,
+      "createdAt": ""
+    },
+    {
+      "id": 12,
+      "user": {
+        "id": 1.5,
+        "handle": "reporter",
+        "tier": 0,
+        "profileImageUrl": "not necessarily a URI"
+      },
+      "reason": {
+        "type": "issue-resolved",
+        "problemReportId": 10
+      },
+      "sameProblems": [],
+      "comment": "c",
+      "status": "resolved",
+      "statusChange": {
+        "by": null,
+        "at": "",
+        "comment": "done"
+      },
+      "createdAt": "x"
+    }
+  ],
+  "total": -3,
+  "page": 2.0,
+  "pageSize": 10
+}

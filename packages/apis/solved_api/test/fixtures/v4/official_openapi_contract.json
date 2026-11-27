@@ -1482,6 +1482,361 @@
         }
       }
     },
+    "/api/v4/problems/{problemId}/reports": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "problemId",
+            "required": true,
+            "schema": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sub",
+            "required": false,
+            "schema": {
+              "default": "",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "properties": {
+                          "comment": {
+                            "type": "string"
+                          },
+                          "createdAt": {
+                            "type": "string"
+                          },
+                          "id": {
+                            "type": "number"
+                          },
+                          "reason": {
+                            "oneOf": [
+                              {
+                                "properties": {
+                                  "problemIds": {
+                                    "items": {
+                                      "exclusiveMinimum": 0,
+                                      "type": "integer"
+                                    },
+                                    "maxItems": 20,
+                                    "minItems": 1,
+                                    "type": "array"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "same-problem"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "problemIds"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "properties": {
+                                  "type": {
+                                    "enum": [
+                                      "issue"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "url": {
+                                    "format": "uri",
+                                    "maxLength": 512,
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "url"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "properties": {
+                                  "problemReportId": {
+                                    "exclusiveMinimum": 0,
+                                    "type": "integer"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "issue-resolved"
+                                    ],
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "type",
+                                  "problemReportId"
+                                ],
+                                "type": "object"
+                              }
+                            ]
+                          },
+                          "sameProblems": {
+                            "items": {
+                              "properties": {
+                                "effectiveVoteCount": {
+                                  "type": "number"
+                                },
+                                "givesNoRating": {
+                                  "type": "boolean"
+                                },
+                                "isStandard": {
+                                  "type": "boolean"
+                                },
+                                "level": {
+                                  "type": "number"
+                                },
+                                "problemId": {
+                                  "type": "number"
+                                },
+                                "subId": {
+                                  "type": "string"
+                                },
+                                "userStatus": {
+                                  "enum": [
+                                    "solved",
+                                    "partial",
+                                    "tried",
+                                    null
+                                  ],
+                                  "type": [
+                                    "string",
+                                    "null"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "problemId",
+                                "subId",
+                                "level",
+                                "effectiveVoteCount",
+                                "givesNoRating",
+                                "isStandard",
+                                "userStatus"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "status": {
+                            "enum": [
+                              "pending",
+                              "accepted",
+                              "rejected",
+                              "resolved"
+                            ],
+                            "type": "string"
+                          },
+                          "statusChange": {
+                            "properties": {
+                              "at": {
+                                "type": "string"
+                              },
+                              "by": {
+                                "properties": {
+                                  "handle": {
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "type": "number"
+                                  },
+                                  "profileImageUrl": {
+                                    "format": "uri",
+                                    "type": [
+                                      "string",
+                                      "null"
+                                    ]
+                                  },
+                                  "tier": {
+                                    "maximum": 31,
+                                    "minimum": 0,
+                                    "type": [
+                                      "integer",
+                                      "null"
+                                    ]
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "handle",
+                                  "tier",
+                                  "profileImageUrl"
+                                ],
+                                "type": [
+                                  "object",
+                                  "null"
+                                ]
+                              },
+                              "comment": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "by",
+                              "at",
+                              "comment"
+                            ],
+                            "type": [
+                              "object",
+                              "null"
+                            ]
+                          },
+                          "user": {
+                            "properties": {
+                              "handle": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "number"
+                              },
+                              "profileImageUrl": {
+                                "format": "uri",
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "tier": {
+                                "maximum": 31,
+                                "minimum": 0,
+                                "type": [
+                                  "integer",
+                                  "null"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "handle",
+                              "tier",
+                              "profileImageUrl"
+                            ],
+                            "type": [
+                              "object",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "user",
+                          "reason",
+                          "sameProblems",
+                          "comment",
+                          "status",
+                          "statusChange",
+                          "createdAt"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "page": {
+                      "type": "number"
+                    },
+                    "pageSize": {
+                      "type": "number"
+                    },
+                    "total": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "total",
+                    "page",
+                    "pageSize"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "One page of reports, with the staff decision on each."
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Problem not found."
+          }
+        },
+        "summary": "A problem's reports, newest first (page size 10)",
+        "x-access": {
+          "class": "public"
+        }
+      }
+    },
     "/api/v4/rankings/affiliation-board": {
       "get": {
         "parameters": [
