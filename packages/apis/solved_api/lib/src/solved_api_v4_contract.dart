@@ -827,6 +827,39 @@ final class SolvedApiV4Contract {
     );
   }
 
+  SolvedApiEndpoint<NoticeListResult> notices({
+    String? language,
+    int? page,
+    String? query,
+  }) {
+    if (language != null && language.runes.length > 16) {
+      throw ArgumentError.value(
+        language,
+        'language',
+        'Must not exceed 16 characters',
+      );
+    }
+    if (page != null && (page < 1 || page > 10000)) {
+      throw ArgumentError.value(page, 'page', 'Must be from 1 through 10000');
+    }
+    if (query != null && query.runes.length > 64) {
+      throw ArgumentError.value(
+        query,
+        'query',
+        'Must not exceed 64 characters',
+      );
+    }
+    return _endpoint(
+      path: 'posts/notice',
+      queryParameters: {
+        if (language != null) 'lang': language,
+        if (page != null) 'page': page.toString(),
+        if (query != null) 'q': query,
+      },
+      decode: _decodeV4NoticeList,
+    );
+  }
+
   SolvedApiEndpoint<SiteStatsResult> siteStats() => _endpoint(
         path: 'site/stats',
         decode: _decodeV4SiteStats,
@@ -1662,6 +1695,34 @@ num? _requiredNullableNumber(
 ) {
   final value = _requiredValue(body, wireKey, field);
   return value == null ? null : _number(value, field);
+}
+
+NoticeListResult _decodeV4NoticeList(dynamic json) {
+  final body = _object(json, 'notice list');
+  return NoticeListResult(
+    items: List<NoticeListItem>.unmodifiable(
+      _list(body['items'], 'items').map((value) {
+        final item = _object(value, 'items[]');
+        return NoticeListItem(
+          path: _string(item['path'], 'items[].path'),
+          language: _string(item['language'], 'items[].language'),
+          title: _string(item['title'], 'items[].title'),
+          summary: _requiredNullableString(item, 'summary', 'items[].summary'),
+          publishedAt: _string(item['publishedAt'], 'items[].publishedAt'),
+          pinned: _boolean(item['pinned'], 'items[].pinned'),
+          isNew: _boolean(item['isNew'], 'items[].isNew'),
+          coverImageUrl: _requiredNullableString(
+            item,
+            'coverImageUrl',
+            'items[].coverImageUrl',
+          ),
+        );
+      }),
+    ),
+    total: _integer(body['total'], 'total'),
+    page: _integer(body['page'], 'page'),
+    perPage: _integer(body['perPage'], 'perPage'),
+  );
 }
 
 SourceLookupResult _decodeV4SourceLookup(dynamic json) {

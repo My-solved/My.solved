@@ -1,0 +1,27 @@
+{
+  "items": [
+    {
+      "path": "notice/first",
+      "language": "ko",
+      "title": "",
+      "summary": "raw / 한 글",
+      "publishedAt": "not a date",
+      "pinned": true,
+      "isNew": false,
+      "coverImageUrl": "not a URI"
+    },
+    {
+      "path": "",
+      "language": "",
+      "title": "Second",
+      "summary": null,
+      "publishedAt": "",
+      "pinned": false,
+      "isNew": true,
+      "coverImageUrl": null
+    }
+  ],
+  "total": -1,
+  "page": 7,
+  "perPage": 0
+}

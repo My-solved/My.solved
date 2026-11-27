@@ -753,6 +753,18 @@ class SolvedApiClient {
     );
   }
 
+  Future<NoticeListResult> v4Notices({
+    String? language,
+    int? page,
+    String? query,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.notices(language: language, page: page, query: query),
+      requestType: _RequestType.site,
+    );
+  }
+
   Future<SourceLookupResult> v4SourceContest(
     String ojId,
     String nativeId,
