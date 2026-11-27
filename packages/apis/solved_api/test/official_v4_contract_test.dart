@@ -5054,6 +5054,52 @@ void main() {
     );
   });
 
+  test('pins the viewer pending consents and their two slugs', () {
+    final consents = _get(contract, '/api/v4/account/consents');
+
+    expect(_accessClass(consents), 'user');
+    expect(_accessScope(consents), 'profile');
+    expect(consents.containsKey('security'), isFalse);
+    expect(consents.containsKey('requestBody'), isFalse);
+    expect(consents.containsKey('parameters'), isFalse);
+    expect(
+      consents['summary'],
+      'The policy versions in force that this account has not agreed to',
+    );
+    final responses = _map(consents['responses']);
+    expect(responses.keys.toList(growable: false), ['200', '401']);
+    expect(
+      _map(responses['200'])['description'],
+      'Empty when the account is up to date.',
+    );
+    expect(_map(responses['401'])['description'], 'Not signed in.');
+    expect(
+      _jsonResponseSchema(consents, '401'),
+      _jsonResponseSchema(_get(contract, '/api/v4/affiliations/{id}'), '404'),
+    );
+    expect(_responseSchema(consents), {
+      'properties': {
+        'pending': {
+          'items': {
+            'properties': {
+              'label': {'type': 'string'},
+              'slug': {
+                'enum': ['tos', 'privacy'],
+                'type': 'string',
+              },
+              'version': {'type': 'string'},
+            },
+            'required': ['slug', 'version', 'label'],
+            'type': 'object',
+          },
+          'type': 'array',
+        },
+      },
+      'required': ['pending'],
+      'type': 'object',
+    });
+  });
+
   test('pins the viewer tag progress without joining its lists', () {
     final progress = _get(contract, '/api/v4/me/tag-progress');
 

@@ -1,3 +1,4 @@
+export 'account_consents_result.dart';
 export 'achievement_catalog_result.dart';
 export 'achievement_holders_result.dart';
 export 'affiliation_detail_result.dart';

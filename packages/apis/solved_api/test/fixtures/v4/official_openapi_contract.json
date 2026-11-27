@@ -725,6 +725,104 @@
         }
       }
     },
+    "/api/v4/account/consents": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "pending": {
+                      "items": {
+                        "properties": {
+                          "label": {
+                            "type": "string"
+                          },
+                          "slug": {
+                            "enum": [
+                              "tos",
+                              "privacy"
+                            ],
+                            "type": "string"
+                          },
+                          "version": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "slug",
+                          "version",
+                          "label"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "pending"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Empty when the account is up to date."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "error": {
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "details": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "type": "boolean"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        },
+                        "message": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "message"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Not signed in."
+          }
+        },
+        "summary": "The policy versions in force that this account has not agreed to",
+        "x-access": {
+          "class": "user",
+          "scope": "profile"
+        }
+      }
+    },
     "/api/v4/affiliations/{id}": {
       "get": {
         "parameters": [
