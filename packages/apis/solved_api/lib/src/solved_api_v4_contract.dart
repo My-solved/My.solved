@@ -608,6 +608,35 @@ final class SolvedApiV4Contract {
     );
   }
 
+  /// A user's contributions, with what each earns.
+  SolvedApiEndpoint<UserContributionsResult> userContributions(
+    String handle, {
+    int? page,
+    int? limit,
+    UserContributionSort? sort,
+    UserContributionFilter? only,
+    bool? commented,
+  }) {
+    final segment = _pathSegment(handle, 'handle');
+    if (page != null && (page < 1 || page > 10000)) {
+      throw ArgumentError.value(page, 'page', 'Must be from 1 through 10000');
+    }
+    if (limit != null && (limit < 1 || limit > 20)) {
+      throw ArgumentError.value(limit, 'limit', 'Must be from 1 through 20');
+    }
+    return _endpoint(
+      path: 'users/$segment/contributions',
+      queryParameters: {
+        if (page != null) 'page': page.toString(),
+        if (limit != null) 'limit': limit.toString(),
+        if (sort != null) 'sort': sort.value,
+        if (only != null) 'only': only.value,
+        if (commented != null) 'commented': commented.toString(),
+      },
+      decode: _decodeV4UserContributions,
+    );
+  }
+
   SolvedApiEndpoint<ProfileRatingHistoryResult> userRatingHistory(
     String handle, {
     SolvedApiV4RatingHistoryRange? range,
@@ -2572,6 +2601,84 @@ ProblemVotesResult _decodeV4ProblemVotes(dynamic json) {
           },
     unhelpfulLocked: _boolean(body['unhelpfulLocked'], 'unhelpfulLocked'),
   );
+}
+
+UserContributionsResult _decodeV4UserContributions(dynamic json) {
+  final body = _object(json, 'user contributions');
+  return UserContributionsResult(
+    items: List<UserContribution>.unmodifiable(
+      _list(body['items'], 'items').map(
+        (value) => _decodeV4UserContribution(_object(value, 'items[]')),
+      ),
+    ),
+    total: _integer(body['total'], 'total'),
+    hiddenCount: _integer(body['hiddenCount'], 'hiddenCount'),
+    page: _integer(body['page'], 'page'),
+    pageSize: _integer(body['pageSize'], 'pageSize'),
+    sort: switch (_string(body['sort'], 'sort')) {
+      'recent' => UserContributionSort.recent,
+      'helpful' => UserContributionSort.helpful,
+      _ => throw const FormatException('Unsupported sort'),
+    },
+  );
+}
+
+UserContribution _decodeV4UserContribution(Map<String, dynamic> body) {
+  const field = 'items[]';
+  final problem = _object(body['problem'], '$field.problem');
+  final userStatusValue = _requiredValue(
+    problem,
+    'userStatus',
+    '$field.problem.userStatus',
+  );
+  return UserContribution(
+    voteId: _integer(body['voteId'], '$field.voteId'),
+    problem: ContributionProblem(
+      problemId: _integer(problem['problemId'], '$field.problem.problemId'),
+      subId: _string(problem['subId'], '$field.problem.subId'),
+      level: _boundedInteger(problem['level'], '$field.problem.level', 0, 30),
+      effectiveVoteCount: _boundedInteger(
+        problem['effectiveVoteCount'],
+        '$field.problem.effectiveVoteCount',
+        0,
+        null,
+      ),
+      givesNoRating: _boolean(
+        problem['givesNoRating'],
+        '$field.problem.givesNoRating',
+      ),
+      isStandard: _boolean(problem['isStandard'], '$field.problem.isStandard'),
+      titles: List<ProblemSearchTitle>.unmodifiable(
+        _list(problem['titles'], '$field.problem.titles').map(
+          (value) => _decodeV4ProblemSearchTitle(
+            _object(value, '$field.problem.titles[]'),
+            '$field.problem.titles[]',
+          ),
+        ),
+      ),
+      userStatus: userStatusValue == null
+          ? null
+          : _decodeV4ProblemUserStatus(
+              userStatusValue,
+              '$field.problem.userStatus',
+            ),
+    ),
+    votedAt: _string(body['votedAt'], '$field.votedAt'),
+    points: _integer(body['points'], '$field.points'),
+    place: _requiredNullableInteger(body, 'place', '$field.place'),
+    vote: _decodeV4ProblemVote(
+      _object(body['vote'], '$field.vote'),
+      '$field.vote',
+    ),
+  );
+}
+
+int _boundedInteger(Object? value, String field, int minimum, int? maximum) {
+  final integer = _integer(value, field);
+  if (integer < minimum || (maximum != null && integer > maximum)) {
+    throw FormatException('Out-of-range $field');
+  }
+  return integer;
 }
 
 ProblemVote _decodeV4ProblemVote(Map<String, dynamic> body, String field) {

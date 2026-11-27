@@ -60,6 +60,8 @@ void main() {
               'v4/user_activity_feed.json',
             '/solved/v4/users/index/reputation' => 'v4/user_reputation.json',
             '/solved/v4/users/index/reputation/log' => 'v4/reputation_log.json',
+            '/solved/v4/users/index/contributions' =>
+              'v4/user_contributions.json',
             '/solved/v4/users/index/rating/history' =>
               'v4/user_rating_history.json',
             '/solved/v4/users/index/tags/number_theory/histogram' =>
@@ -147,6 +149,15 @@ void main() {
         );
         final ProfileReputationLogResult reputationLog =
             await client.v4UserReputationLog('index', month: '2026-11');
+        final UserContributionsResult contributions =
+            await client.v4UserContributions(
+          'index',
+          page: 2,
+          limit: 20,
+          sort: UserContributionSort.recent,
+          only: UserContributionFilter.vouched,
+          commented: false,
+        );
         final ProfileRatingHistoryResult ratingHistory =
             await client.v4UserRatingHistory(
           'index',
@@ -376,6 +387,7 @@ void main() {
         expect(reputation.reputation, 314);
         expect(reputation.history.single.day, '2026-11-17');
         expect(reputationLog.firstDay, '9999-99-99');
+        expect(contributions.sort, UserContributionSort.helpful);
         expect(reputationLog.days.first.items.first.problem?.level, 30);
         expect(reputation.history.single.value, 314);
         expect(reputation.today.contributions.count, 2);
@@ -609,6 +621,13 @@ void main() {
               'users/index/reputation/log',
               <String, String>{'month': '2026-11'},
             ),
+            _uri('users/index/contributions', <String, String>{
+              'page': '2',
+              'limit': '20',
+              'sort': 'recent',
+              'only': 'vouched',
+              'commented': 'false',
+            }),
             _uri(
               'users/index/rating/history',
               <String, String>{'range': '90d'},
@@ -731,23 +750,23 @@ void main() {
             _uri('tags/number_theory'),
           ],
         );
-        expect(httpClient.requests, hasLength(54));
+        expect(httpClient.requests, hasLength(55));
         expect(
-          httpClient.requests[13].url.toString(),
+          httpClient.requests[14].url.toString(),
           'https://proxy.example/solved/v4/problems/1000?sub=',
         );
         expect(
-          httpClient.requests[25].url.toString(),
+          httpClient.requests[26].url.toString(),
           'https://proxy.example/solved/v4/search/suggest?'
           'topic=tag%26%ED%95%9C&value=',
         );
         expect(
-          httpClient.requests[26].url.toString(),
+          httpClient.requests[27].url.toString(),
           'https://proxy.example/solved/v4/search/analyze?'
           'q=tag%26%ED%95%9C',
         );
         expect(
-          httpClient.requests[27].url.toString(),
+          httpClient.requests[28].url.toString(),
           'https://proxy.example/solved/v4/search/random-problem?q=',
         );
         for (final request in httpClient.requests) {
@@ -910,6 +929,10 @@ void main() {
       );
       expect(
         await _captureFailure(client.v4UserReputationLog('index')),
+        isA<UserRequestFailed>(),
+      );
+      expect(
+        await _captureFailure(client.v4UserContributions('index')),
         isA<UserRequestFailed>(),
       );
       expect(
@@ -1113,7 +1136,7 @@ void main() {
         await _captureFailure(client.v4ProblemVoteSummary(1000)),
         isA<SearchRequestFailed>(),
       );
-      expect(httpClient.requests, hasLength(50));
+      expect(httpClient.requests, hasLength(51));
     });
 
     test('wraps malformed rating history as a user failure', () async {

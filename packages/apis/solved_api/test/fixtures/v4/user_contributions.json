@@ -1,0 +1,258 @@
+{
+  "items": [
+    {
+      "voteId": -1,
+      "problem": {
+        "problemId": 1000,
+        "subId": "",
+        "level": 30,
+        "effectiveVoteCount": 0,
+        "givesNoRating": true,
+        "isStandard": false,
+        "titles": [
+          {
+            "language": "ko",
+            "title": "한 글",
+            "isOriginal": true,
+            "latex": false,
+            "html": true
+          },
+          {
+            "language": "ko",
+            "title": "한 글",
+            "isOriginal": true,
+            "latex": false,
+            "html": true
+          }
+        ],
+        "userStatus": null
+      },
+      "votedAt": "not a date",
+      "points": -5,
+      "place": null,
+      "vote": {
+        "id": 1.5,
+        "user": {
+          "id": 7,
+          "handle": "voter",
+          "tier": 31,
+          "profileImageUrl": "not a URI"
+        },
+        "votedAt": "not a date",
+        "level": 12.5,
+        "weight": -1,
+        "invalidated": true,
+        "notInCalculation": false,
+        "banned": true,
+        "superseded": false,
+        "cutoff": true,
+        "comment": "raw / 한 글",
+        "commentLanguage": "ko",
+        "emoticonId": "smile",
+        "emoticon": {
+          "key": "other",
+          "url": "not a URI"
+        },
+        "source": "",
+        "tags": [
+          {
+            "tag": {
+              "id": 1,
+              "key": "math",
+              "isMeta": false
+            },
+            "legacyKey": "legacy"
+          },
+          {
+            "tag": null,
+            "legacyKey": null
+          },
+          {
+            "tag": {
+              "id": 1,
+              "key": "math",
+              "isMeta": false
+            },
+            "legacyKey": "legacy"
+          }
+        ],
+        "isStandard": false,
+        "marks": {
+          "score": -3,
+          "counts": {
+            "helpful": 0,
+            "unhelpful": 5
+          },
+          "mine": "unhelpful",
+          "own": true
+        }
+      }
+    },
+    {
+      "voteId": 2,
+      "problem": {
+        "problemId": 1000,
+        "subId": "",
+        "level": 0,
+        "effectiveVoteCount": 0,
+        "givesNoRating": true,
+        "isStandard": false,
+        "titles": [],
+        "userStatus": "partial"
+      },
+      "votedAt": "not a date",
+      "points": -5,
+      "place": 3,
+      "vote": {
+        "id": 1.5,
+        "user": {
+          "id": 7,
+          "handle": "voter",
+          "tier": 31,
+          "profileImageUrl": "not a URI"
+        },
+        "votedAt": "not a date",
+        "level": 12.5,
+        "weight": -1,
+        "invalidated": true,
+        "notInCalculation": false,
+        "banned": true,
+        "superseded": false,
+        "cutoff": true,
+        "comment": "raw / 한 글",
+        "commentLanguage": "ko",
+        "emoticonId": "smile",
+        "emoticon": {
+          "key": "other",
+          "url": "not a URI"
+        },
+        "source": "",
+        "tags": [
+          {
+            "tag": {
+              "id": 1,
+              "key": "math",
+              "isMeta": false
+            },
+            "legacyKey": "legacy"
+          },
+          {
+            "tag": null,
+            "legacyKey": null
+          },
+          {
+            "tag": {
+              "id": 1,
+              "key": "math",
+              "isMeta": false
+            },
+            "legacyKey": "legacy"
+          }
+        ],
+        "isStandard": false,
+        "marks": {
+          "score": -3,
+          "counts": {
+            "helpful": 0,
+            "unhelpful": 5
+          },
+          "mine": "unhelpful",
+          "own": true
+        }
+      }
+    },
+    {
+      "voteId": -1,
+      "problem": {
+        "problemId": 1000,
+        "subId": "",
+        "level": 30,
+        "effectiveVoteCount": 0,
+        "givesNoRating": true,
+        "isStandard": false,
+        "titles": [
+          {
+            "language": "ko",
+            "title": "한 글",
+            "isOriginal": true,
+            "latex": false,
+            "html": true
+          },
+          {
+            "language": "ko",
+            "title": "한 글",
+            "isOriginal": true,
+            "latex": false,
+            "html": true
+          }
+        ],
+        "userStatus": null
+      },
+      "votedAt": "not a date",
+      "points": -5,
+      "place": null,
+      "vote": {
+        "id": 1.5,
+        "user": {
+          "id": 7,
+          "handle": "voter",
+          "tier": 31,
+          "profileImageUrl": "not a URI"
+        },
+        "votedAt": "not a date",
+        "level": 12.5,
+        "weight": -1,
+        "invalidated": true,
+        "notInCalculation": false,
+        "banned": true,
+        "superseded": false,
+        "cutoff": true,
+        "comment": "raw / 한 글",
+        "commentLanguage": "ko",
+        "emoticonId": "smile",
+        "emoticon": {
+          "key": "other",
+          "url": "not a URI"
+        },
+        "source": "",
+        "tags": [
+          {
+            "tag": {
+              "id": 1,
+              "key": "math",
+              "isMeta": false
+            },
+            "legacyKey": "legacy"
+          },
+          {
+            "tag": null,
+            "legacyKey": null
+          },
+          {
+            "tag": {
+              "id": 1,
+              "key": "math",
+              "isMeta": false
+            },
+            "legacyKey": "legacy"
+          }
+        ],
+        "isStandard": false,
+        "marks": {
+          "score": -3,
+          "counts": {
+            "helpful": 0,
+            "unhelpful": 5
+          },
+          "mine": "unhelpful",
+          "own": true
+        }
+      }
+    }
+  ],
+  "total": 1,
+  "hiddenCount": -2,
+  "page": 9,
+  "pageSize": 0,
+  "sort": "helpful"
+}
