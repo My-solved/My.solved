@@ -16,6 +16,7 @@ enum SolvedAuthenticatedOperation {
   rivals,
   reverseRivals,
   bookmarkFavorites,
+  collection,
 }
 
 enum SolvedAuthenticatedFailureKind {
@@ -141,6 +142,31 @@ final class SolvedAuthenticatedApiClient {
   Future<BookmarkFoldersResult> bookmarkFavorites({int? page}) => _get(
         SolvedAuthenticatedOperation.bookmarkFavorites,
         () => _contract.bookmarkFavorites(page: page),
+      );
+
+  /// One page of the badges or backgrounds the viewer owns. The token needs
+  /// the `collection` scope.
+  ///
+  /// Invalid arguments fail the returned future with an [ArgumentError]
+  /// before any request is sent.
+  Future<UserCollectionResult> collection({
+    String? language,
+    OfficialAchievementItemKind? kind,
+    SolvedApiV4CollectionSort? sort,
+    String? category,
+    String? query,
+    int? offset,
+  }) =>
+      _get(
+        SolvedAuthenticatedOperation.collection,
+        () => _contract.accountCollection(
+          language: language,
+          kind: kind,
+          sort: sort,
+          category: category,
+          query: query,
+          offset: offset,
+        ),
       );
 
   Future<T> _get<T>(
