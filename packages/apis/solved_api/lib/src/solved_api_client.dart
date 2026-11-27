@@ -647,6 +647,14 @@ class SolvedApiClient {
     );
   }
 
+  Future<SourceGroupsResult> v4SourceGroups() {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.sourceGroups(),
+      requestType: _RequestType.source,
+    );
+  }
+
   Future<SearchObject<TagSearchItem>> v4SearchTags(
     String query, {
     int page = 1,

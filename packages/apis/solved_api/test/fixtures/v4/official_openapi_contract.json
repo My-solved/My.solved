@@ -3482,6 +3482,173 @@
         }
       }
     },
+    "/api/v4/sources": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "groups": {
+                      "items": {
+                        "properties": {
+                          "abbreviation": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "contestCount": {
+                            "type": "number"
+                          },
+                          "groupCount": {
+                            "type": "number"
+                          },
+                          "id": {
+                            "type": "number"
+                          },
+                          "level": {
+                            "properties": {
+                              "order": {
+                                "enum": [
+                                  "ascending",
+                                  "random",
+                                  "mixed",
+                                  null
+                                ],
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "progress": {
+                                "properties": {
+                                  "solved": {
+                                    "type": "integer"
+                                  },
+                                  "through": {
+                                    "properties": {
+                                      "q25": {
+                                        "type": "boolean"
+                                      },
+                                      "q50": {
+                                        "type": "boolean"
+                                      },
+                                      "q75": {
+                                        "type": "boolean"
+                                      }
+                                    },
+                                    "required": [
+                                      "q25",
+                                      "q50",
+                                      "q75"
+                                    ],
+                                    "type": "object"
+                                  }
+                                },
+                                "required": [
+                                  "solved",
+                                  "through"
+                                ],
+                                "type": [
+                                  "object",
+                                  "null"
+                                ]
+                              },
+                              "q25": {
+                                "type": "integer"
+                              },
+                              "q50": {
+                                "type": "integer"
+                              },
+                              "q75": {
+                                "type": "integer"
+                              },
+                              "ratedCount": {
+                                "type": "integer"
+                              },
+                              "tierCounts": {
+                                "items": {
+                                  "type": "integer"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "required": [
+                              "q25",
+                              "q50",
+                              "q75",
+                              "tierCounts",
+                              "ratedCount",
+                              "order",
+                              "progress"
+                            ],
+                            "type": [
+                              "object",
+                              "null"
+                            ]
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "order": {
+                            "enum": [
+                              "ascending",
+                              "random",
+                              "mixed",
+                              null
+                            ],
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "problemCount": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          },
+                          "solvedCount": {
+                            "type": [
+                              "number",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "abbreviation",
+                          "groupCount",
+                          "contestCount",
+                          "problemCount",
+                          "solvedCount",
+                          "level",
+                          "order"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "groups"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Groups with anything in them."
+          }
+        },
+        "summary": "The top-level source groups",
+        "x-access": {
+          "class": "public"
+        }
+      }
+    },
     "/api/v4/sources/oj/{ojId}/contests/{nativeId}": {
       "get": {
         "parameters": [
