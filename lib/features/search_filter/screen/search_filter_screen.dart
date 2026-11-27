@@ -139,7 +139,7 @@ class _SearchFilterViewState extends State<SearchFilterView> {
                         value: state.showSolvedProblem,
                         onChanged: (isOn) => widget.searchBLoc.add(
                             SearchFilterShowSolvedProblemChanged(isOn: isOn)),
-                        activeColor: MySolvedColor.background,
+                        activeThumbColor: MySolvedColor.background,
                         activeTrackColor: MySolvedColor.main,
                         inactiveThumbColor: MySolvedColor.background,
                         inactiveTrackColor:
@@ -169,7 +169,7 @@ class _SearchFilterViewState extends State<SearchFilterView> {
                         value: !state.showProblemTag,
                         onChanged: (isOn) => widget.searchBLoc.add(
                             SearchFilterShowProblemTagChanged(isOn: !isOn)),
-                        activeColor: MySolvedColor.background,
+                        activeThumbColor: MySolvedColor.background,
                         activeTrackColor: MySolvedColor.main,
                         inactiveThumbColor: MySolvedColor.background,
                         inactiveTrackColor:

@@ -1,0 +1,66 @@
+name: Native Build Check 🧱
+
+# Builds both platforms without signing when native build inputs change, so a
+# toolchain or store-policy break is caught before a release tag.
+on:
+  pull_request:
+    paths:
+      - "android/**"
+      - "ios/**"
+      - "pubspec.yaml"
+      - "packages/**/pubspec.yaml"
+      - ".github/workflows/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-check-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: "3.47.9"
+  JAVA_VERSION: "17"
+
+jobs:
+  android:
+    name: Build Android 🤖
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Build debug APK
+        run: flutter build apk --debug
+
+  ios:
+    name: Build iOS 🍎
+    runs-on: macos-26
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Build iOS release (unsigned)
+        run: flutter build ios --release --no-codesign
