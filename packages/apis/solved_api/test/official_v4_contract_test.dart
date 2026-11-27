@@ -3249,6 +3249,38 @@ void main() {
     expect(userProperties.containsKey('page'), isFalse);
   });
 
+  test('pins the public region ranking to the shared leaderboard schema', () {
+    final region = _get(contract, '/api/v4/rankings/regions/{countryCode}');
+
+    expect(_accessClass(region), 'public');
+    expect(region.containsKey('security'), isFalse);
+    expect(region.containsKey('requestBody'), isFalse);
+    expect(region['summary'], 'The ranking within one region');
+    expect(_parameterNames(region), ['countryCode', 'page']);
+
+    final parameters = _parameters(region);
+    expect(parameters.first, {
+      'in': 'path',
+      'name': 'countryCode',
+      'required': true,
+      'schema': {'maxLength': 2, 'minLength': 2, 'type': 'string'},
+    });
+    expect(parameters.last, {
+      'in': 'query',
+      'name': 'page',
+      'required': false,
+      'schema': {'default': 1, 'minimum': 1, 'type': 'integer'},
+    });
+
+    final responses = _map(region['responses']);
+    expect(responses.keys.toList(growable: false), ['200']);
+    expect(_map(responses['200'])['description'], 'One page of the board.');
+    expect(
+      _responseSchema(region),
+      _responseSchema(_get(contract, '/api/v4/rankings/users')),
+    );
+  });
+
   test('pins the tag catalog and standalone asset item envelope', () {
     final tags = _get(contract, '/api/v4/tags');
     expect(_parameterNames(tags), isEmpty);

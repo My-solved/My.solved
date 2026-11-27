@@ -378,6 +378,34 @@ final class SolvedApiV4Contract {
     );
   }
 
+  SolvedApiEndpoint<RankingLeaderboardResult> rankingRegionUsers(
+    String countryCode, {
+    int? page,
+  }) {
+    if (countryCode.runes.length != 2) {
+      throw ArgumentError.value(
+        countryCode,
+        'countryCode',
+        'Must be exactly 2 characters',
+      );
+    }
+    final segment = _pathSegment(
+      countryCode,
+      'countryCode',
+      maximumLength: 2,
+    );
+    if (page != null) {
+      _positivePage(page);
+    }
+    return _endpoint(
+      path: 'rankings/regions/$segment',
+      queryParameters: {
+        if (page != null) 'page': page.toString(),
+      },
+      decode: _decodeV4RankingLeaderboard,
+    );
+  }
+
   SolvedApiEndpoint<AffiliationDetailResult> affiliationDetail(
     int id, {
     String? language,

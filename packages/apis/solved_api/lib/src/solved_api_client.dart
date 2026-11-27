@@ -501,6 +501,17 @@ class SolvedApiClient {
     );
   }
 
+  Future<RankingLeaderboardResult> v4RankingRegionUsers(
+    String countryCode, {
+    int? page,
+  }) {
+    final contract = _requireV4Contract();
+    return _getV4(
+      contract.rankingRegionUsers(countryCode, page: page),
+      requestType: _RequestType.ranking,
+    );
+  }
+
   Future<RankingRegionsResult> v4RankingRegions() {
     final contract = _requireV4Contract();
     return _getV4(
