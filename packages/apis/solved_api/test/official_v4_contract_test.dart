@@ -1767,6 +1767,126 @@ void main() {
     expect(properties['tierCounts'], siteProperties['usersByTier']);
   });
 
+  test('pins the public bookmark folders without inferred relations', () {
+    final bookmarks = _get(contract, '/api/v4/bookmarks');
+
+    expect(_accessClass(bookmarks), 'public');
+    expect(bookmarks.containsKey('security'), isFalse);
+    expect(bookmarks.containsKey('requestBody'), isFalse);
+    expect(bookmarks['summary'], "Everyone's public bookmark folders");
+    expect(_parameters(bookmarks), [
+      {
+        'in': 'query',
+        'name': 'page',
+        'required': false,
+        'schema': {
+          'default': 1,
+          'maximum': 10000,
+          'minimum': 1,
+          'type': 'integer',
+        },
+      },
+      {
+        'in': 'query',
+        'name': 'sort',
+        'required': false,
+        'schema': {
+          'default': 'updated',
+          'enum': ['updated', 'problems'],
+          'type': 'string',
+        },
+      },
+      {
+        'in': 'query',
+        'name': 'q',
+        'required': false,
+        'schema': {'maxLength': 100, 'type': 'string'},
+      },
+    ]);
+    final responses = _map(bookmarks['responses']);
+    expect(responses.keys.toList(growable: false), ['200']);
+    expect(_map(responses['200'])['description'], 'One page of folders.');
+
+    final schema = _responseSchema(bookmarks);
+    expect(schema['type'], 'object');
+    expect(schema.containsKey('additionalProperties'), isFalse);
+    expect(_required(schema), ['folders', 'total', 'page', 'pageSize']);
+    final properties = _properties(schema);
+    expect(properties.keys.length, 4);
+    for (final field in ['total', 'page', 'pageSize']) {
+      expect(_map(properties[field]), {'type': 'number'});
+    }
+    final folders = _map(properties['folders']);
+    expect(folders['type'], 'array');
+    final folder = _map(folders['items']);
+    expect(folder['type'], 'object');
+    expect(folder.containsKey('additionalProperties'), isFalse);
+    expect(_required(folder), [
+      'slug',
+      'name',
+      'description',
+      'color',
+      'visibility',
+      'problemCount',
+      'favoriteCount',
+      'solvedCount',
+      'owner',
+      'createdAt',
+      'updatedAt',
+    ]);
+    final folderProperties = _properties(folder);
+    expect(folderProperties.keys.length, 11);
+    for (final field in ['slug', 'name', 'description']) {
+      expect(_map(folderProperties[field]), {'type': 'string'});
+    }
+    for (final field in ['problemCount', 'favoriteCount']) {
+      expect(_map(folderProperties[field]), {'type': 'number'});
+    }
+    expect(_map(folderProperties['solvedCount']), {
+      'type': ['number', 'null'],
+    });
+    for (final field in ['createdAt', 'updatedAt']) {
+      expect(_map(folderProperties[field]), {
+        'format': 'date-time',
+        'type': 'string',
+      });
+    }
+    expect(_map(folderProperties['visibility']), {
+      'enum': ['private', 'unlisted', 'public'],
+      'type': 'string',
+    });
+    expect(_map(folderProperties['color']), {
+      'enum': [
+        'red',
+        'violet',
+        'blue',
+        'teal',
+        'lime',
+        'yellow',
+        'orange',
+        null,
+      ],
+      'type': ['string', 'null'],
+    });
+    expect(_map(folderProperties['owner']), {
+      'properties': {
+        'handle': {'type': 'string'},
+        'id': {'type': 'number'},
+        'profileImageUrl': {
+          'format': 'uri',
+          'type': ['string', 'null'],
+        },
+        'tier': {
+          'maximum': 31,
+          'minimum': 0,
+          'type': ['integer', 'null'],
+        },
+      },
+      'required': ['id', 'handle', 'tier', 'profileImageUrl'],
+      'type': 'object',
+    });
+  });
+
   test('pins the public affiliation board without inferred relations', () {
     final board = _get(contract, '/api/v4/rankings/affiliation-board');
 
