@@ -814,6 +814,43 @@ void main() {
       expect(httpClient.requests.last.bodyBytes, utf8.encode('{}'));
     });
 
+    test('sends one bodyless favorite POST and never retries', () async {
+      handler = (_) async => _jsonResponse(
+            fixture('v4/bookmark_favorite_state.json'),
+          );
+
+      final actual = await client.addBookmarkFavorite('a b', 'z_9');
+
+      expect(actual.isFavorite, isFalse);
+      final request = httpClient.requests.single;
+      expect(request.method, 'POST');
+      expect(
+        request.url.toString(),
+        'https://proxy.example/solved/v4/account/bookmark-favorites/a%20b/z_9',
+      );
+      expect(request.followRedirects, isFalse);
+      expect(request.headers, const <String, String>{
+        'accept': 'application/json',
+        'authorization': 'Bearer access-token',
+      });
+      expect(request.bodyBytes, isEmpty);
+
+      await expectLater(
+        client.addBookmarkFavorite('a', 'A'),
+        throwsA(
+          isA<ArgumentError>().having((error) => error.name, 'name', 'slug'),
+        ),
+      );
+      expect(httpClient.requests, hasLength(1));
+
+      handler = (_) async => _jsonResponse('{}', statusCode: 404);
+      final error = await _captureFailure(client.addBookmarkFavorite('a', 'b'));
+      expect(error.operation, SolvedAuthenticatedOperation.addBookmarkFavorite);
+      expect(error.kind, SolvedAuthenticatedFailureKind.unexpectedStatus);
+      expect(error.statusCode, 404);
+      expect(httpClient.requests, hasLength(2));
+    });
+
     test('rejects an invalid rivals page before any request', () async {
       await expectLater(
         client.rivals(page: 0),
@@ -896,6 +933,7 @@ void main() {
         client.updateAccountSettings(const AccountSettingsPatch()),
         throwsStateError,
       );
+      await expectLater(client.addBookmarkFavorite('a', 'b'), throwsStateError);
       expect(httpClient.requests, isEmpty);
     });
   });

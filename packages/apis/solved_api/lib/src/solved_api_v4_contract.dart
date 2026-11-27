@@ -204,6 +204,23 @@ final class SolvedApiV4Contract {
         decode: _decodeV4AccountSettings,
       );
 
+  /// Adds someone else's folder to the viewer's favorites. It requires a user
+  /// token with `bookmarks.write` scope, so it is only exposed through
+  /// [SolvedAuthenticatedApiClient]. The request has no body.
+  SolvedApiMutation<BookmarkFavoriteState> addBookmarkFavorite(
+    String handle,
+    String slug,
+  ) =>
+      SolvedApiMutation(
+        method: SolvedApiMutationMethod.post,
+        proxy: SolvedApiTarget(
+          baseUri: _proxyBaseUri,
+          path: _bookmarkFavoritePath(handle, slug),
+        ),
+        jsonBody: null,
+        decode: _decodeV4BookmarkFavoriteState,
+      );
+
   /// The viewer's standing warnings and bans. It requires a user token with
   /// `standing` scope, so it is only exposed through
   /// [SolvedAuthenticatedApiClient].
@@ -3324,6 +3341,26 @@ int? _boundedNullableInteger(
     throw FormatException('Expected $minimum through $maximum for $field');
   }
   return value;
+}
+
+String _bookmarkFavoritePath(String handle, String slug) {
+  final handleSegment = _pathSegment(handle, 'handle');
+  return 'account/bookmark-favorites/$handleSegment/${_bookmarkSlug(slug)}';
+}
+
+String _bookmarkSlug(String slug, [String name = 'slug']) {
+  if (!RegExp(r'^[0-9a-z_]{1,32}$').hasMatch(slug)) {
+    throw ArgumentError.value(slug, name, 'Must match [0-9a-z_]{1,32}');
+  }
+  return slug;
+}
+
+BookmarkFavoriteState _decodeV4BookmarkFavoriteState(dynamic json) {
+  final body = _object(json, 'bookmark favorite');
+  return BookmarkFavoriteState(
+    isFavorite: _boolean(body['isFavorite'], 'isFavorite'),
+    favoriteCount: _number(body['favoriteCount'], 'favoriteCount'),
+  );
 }
 
 Map<String, Object?> _encodeAccountSettingsPatch(AccountSettingsPatch patch) {
