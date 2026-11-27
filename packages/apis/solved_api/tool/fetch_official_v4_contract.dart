@@ -13,6 +13,7 @@ const _relevantPaths = <String>[
   '/api/v4/account/bookmark-favorites',
   '/api/v4/account/bookmark-favorites/{handle}/{slug}',
   '/api/v4/account/bookmarks',
+  '/api/v4/account/bookmarks/{slug}',
   '/api/v4/account/collection',
   '/api/v4/account/consents',
   '/api/v4/account/items',

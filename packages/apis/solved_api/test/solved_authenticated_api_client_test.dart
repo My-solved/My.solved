@@ -893,6 +893,76 @@ void main() {
       expect(httpClient.requests, hasLength(2));
     });
 
+    test('sends one folder DELETE and requires exactly no content', () async {
+      handler = (_) async => _bytesResponse(const <int>[], statusCode: 204);
+
+      await client.deleteBookmarkFolder('z_9');
+
+      final request = httpClient.requests.single;
+      expect(request.method, 'DELETE');
+      expect(
+        request.url.toString(),
+        'https://proxy.example/solved/v4/account/bookmarks/z_9',
+      );
+      expect(request.followRedirects, isFalse);
+      expect(request.headers, const <String, String>{
+        'accept': 'application/json',
+        'authorization': 'Bearer access-token',
+      });
+      expect(request.bodyBytes, isEmpty);
+
+      await expectLater(
+        client.deleteBookmarkFolder('Z'),
+        throwsA(
+          isA<ArgumentError>().having((error) => error.name, 'name', 'slug'),
+        ),
+      );
+      expect(httpClient.requests, hasLength(1));
+
+      for (final (response, kind) in [
+        (
+          () => _bytesResponse(const <int>[0x7b, 0x7d], statusCode: 204),
+          SolvedAuthenticatedFailureKind.invalidResponse,
+        ),
+        (
+          () => _bytesResponse(
+                const <int>[],
+                statusCode: 204,
+                headers: const <String, String>{
+                  'Content-Type': 'application/json',
+                },
+              ),
+          SolvedAuthenticatedFailureKind.invalidResponse,
+        ),
+        (
+          () => _jsonResponse('{}'),
+          SolvedAuthenticatedFailureKind.unexpectedStatus,
+        ),
+        (
+          () => _jsonResponse('{}', statusCode: 404),
+          SolvedAuthenticatedFailureKind.unexpectedStatus,
+        ),
+      ]) {
+        handler = (_) async => response();
+        final error = await _captureFailure(client.deleteBookmarkFolder('a'));
+        expect(
+          error.operation,
+          SolvedAuthenticatedOperation.deleteBookmarkFolder,
+        );
+        expect(error.kind, kind);
+      }
+      expect(httpClient.requests, hasLength(5));
+    });
+
+    test('keeps GET success at exactly 200', () async {
+      handler = (_) async => _bytesResponse(const <int>[], statusCode: 204);
+
+      final error = await _captureFailure(client.accountSettings());
+
+      expect(error.kind, SolvedAuthenticatedFailureKind.unexpectedStatus);
+      expect(error.statusCode, 204);
+    });
+
     test('rejects an invalid rivals page before any request', () async {
       await expectLater(
         client.rivals(page: 0),
@@ -980,6 +1050,7 @@ void main() {
         client.removeBookmarkFavorite('a', 'b'),
         throwsStateError,
       );
+      await expectLater(client.deleteBookmarkFolder('a'), throwsStateError);
       expect(httpClient.requests, isEmpty);
     });
   });

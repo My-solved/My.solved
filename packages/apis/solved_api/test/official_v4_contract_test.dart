@@ -5774,6 +5774,36 @@ void main() {
     expect(_map(responses['401']), _map(_map(add['responses'])['401']));
   });
 
+  test('pins deleting a bookmark folder as a bodyless 204 DELETE', () {
+    final item =
+        _map(_map(contract['paths'])['/api/v4/account/bookmarks/{slug}']);
+    final delete = _map(item['delete']);
+    final folders = _get(contract, '/api/v4/account/bookmarks');
+
+    expect(item.keys.toList(growable: false), ['delete', 'patch']);
+    expect(_accessClass(delete), 'user');
+    expect(_accessScope(delete), 'bookmarks.write');
+    expect(delete.containsKey('security'), isFalse);
+    expect(delete.containsKey('requestBody'), isFalse);
+    expect(delete['summary'], 'Delete a folder and its list');
+    expect(_parameters(delete), [
+      {
+        'in': 'path',
+        'name': 'slug',
+        'required': true,
+        'schema': {'pattern': r'^[0-9a-z_]{1,32}$', 'type': 'string'},
+      },
+    ]);
+    final responses = _map(delete['responses']);
+    expect(responses.keys.toList(growable: false), ['204', '401', '404']);
+    expect(_map(responses['204']), {'description': 'Deleted.'});
+    expect(_map(responses['404'])['description'], 'No such folder.');
+    expect(
+      _map(responses['401']),
+      _map(_map(folders['responses'])['401']),
+    );
+  });
+
   test('pins the viewer standing and its shared ban shapes', () {
     final standing = _get(contract, '/api/v4/account/standing');
     final bans = _get(contract, '/api/v4/account/bans');

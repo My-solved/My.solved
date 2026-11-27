@@ -238,6 +238,22 @@ final class SolvedApiV4Contract {
         decode: _decodeV4BookmarkFavoriteState,
       );
 
+  /// Deletes one of the viewer's folders and its list. It requires a user
+  /// token with `bookmarks.write` scope, so it is only exposed through
+  /// [SolvedAuthenticatedApiClient]. The request has no body, and success is
+  /// exactly 204 with no content.
+  SolvedApiMutation<void> deleteBookmarkFolder(String slug) =>
+      SolvedApiMutation(
+        method: SolvedApiMutationMethod.delete,
+        proxy: SolvedApiTarget(
+          baseUri: _proxyBaseUri,
+          path: 'account/bookmarks/${_bookmarkSlug(slug)}',
+        ),
+        jsonBody: null,
+        successStatus: 204,
+        decode: _ignoreNoContent,
+      );
+
   /// The viewer's standing warnings and bans. It requires a user token with
   /// `standing` scope, so it is only exposed through
   /// [SolvedAuthenticatedApiClient].
@@ -3371,6 +3387,8 @@ String _bookmarkSlug(String slug, [String name = 'slug']) {
   }
   return slug;
 }
+
+void _ignoreNoContent(dynamic _) {}
 
 BookmarkFavoriteState _decodeV4BookmarkFavoriteState(dynamic json) {
   final body = _object(json, 'bookmark favorite');
